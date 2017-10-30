@@ -8,6 +8,13 @@ acmacs::chart::Chart::~Chart()
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::Info::~Info()
+{
+
+} // acmacs::chart::Info::~Info
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::Antigens::~Antigens()
 {
 
@@ -19,6 +26,13 @@ acmacs::chart::Sera::~Sera()
 {
 
 } // acmacs::chart::Sera::~Sera
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Projections::~Projections()
+{
+
+} // acmacs::chart::Projections::~Projections
 
 // ----------------------------------------------------------------------
 /// Local Variables:
