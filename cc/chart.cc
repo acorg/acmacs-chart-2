@@ -15,6 +15,20 @@ acmacs::chart::Info::~Info()
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::Antigen::~Antigen()
+{
+
+} // acmacs::chart::Antigen::~Antigen
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Serum::~Serum()
+{
+
+} // acmacs::chart::Serum::~Serum
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::Antigens::~Antigens()
 {
 
