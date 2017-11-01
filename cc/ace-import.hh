@@ -40,8 +40,20 @@ namespace acmacs::chart
 
         std::string make_info() const override;
 
+        inline std::string name() const { return make_field("N", " + "); }
+        inline std::string virus() const { return make_field("v", "+"); }
+        inline std::string virus_type() const { return make_field("V", "+"); }
+        inline std::string subset() const { return make_field("s", "+"); }
+        inline std::string assay() const { return make_field("A", "+"); }
+        inline std::string lab() const { return make_field("l", "+"); }
+        inline std::string rbc_species() const { return make_field("r", "+"); }
+        inline std::string date() const;
+        inline size_t number_of_sources() const { return mData.get_or_empty_array("S").size(); }
+
      private:
         const rjson::value& mData;
+
+        std::string make_field(const char* aField, const char* aSeparator) const;
 
     }; // class AceInfo
 
