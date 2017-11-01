@@ -2,6 +2,7 @@
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-chart/factory.hh"
+#include "acmacs-chart/chart.hh"
 
 // ----------------------------------------------------------------------
 
@@ -24,7 +25,7 @@ int main(int argc, char* const argv[])
             const bool verify = args["--verify"];
             for (size_t file_no = 0; file_no < args.number_of_arguments(); ++file_no) {
                 auto chart = acmacs::chart::factory(args[file_no], verify);
-                  //std::cout << chart->make_info() << '\n';
+                std::cout << chart->make_info() << '\n';
             }
         }
     }

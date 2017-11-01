@@ -31,6 +31,20 @@ namespace acmacs::chart
 
     std::shared_ptr<Chart> ace_import(const std::string_view& aData, bool aVerify);
 
+// ----------------------------------------------------------------------
+
+    class AceInfo : public Info
+    {
+      public:
+        inline AceInfo(const rjson::value& aData) : mData{aData} {}
+
+        std::string make_info() const override;
+
+     private:
+        const rjson::value& mData;
+
+    }; // class AceInfo
+
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------

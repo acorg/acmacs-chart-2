@@ -14,6 +14,8 @@ namespace acmacs::chart
       public:
         virtual ~Info();
 
+        virtual std::string make_info() const = 0;
+
     }; // class Info
 
 // ----------------------------------------------------------------------
@@ -149,6 +151,8 @@ namespace acmacs::chart
         inline size_t number_of_antigens() const { return antigens()->size(); }
         inline size_t number_of_sera() const { return sera()->size(); }
         inline size_t number_of_projections() const { return projections()->size(); }
+
+        std::string make_info() const;
 
     }; // class Chart
 

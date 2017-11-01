@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "acmacs-base/string.hh"
 #include "acmacs-chart/ace-import.hh"
 
 using namespace acmacs::chart;
@@ -27,6 +28,7 @@ void AceChart::verify_data() const
 
 std::shared_ptr<Info> AceChart::info() const
 {
+    return std::make_shared<AceInfo>(mData["c"]["i"]);
 
 } // AceChart::info
 
@@ -50,6 +52,22 @@ std::shared_ptr<Projections> AceChart::projections() const
 {
 
 } // AceChart::projections
+
+// ----------------------------------------------------------------------
+
+std::string AceInfo::make_info() const
+{
+    return string::join(" ", {mData.get_or_default("N", ""),
+                              mData.get_or_default("v", ""),
+                              mData.get_or_default("l", ""),
+                              mData.get_or_default("V", ""),
+                              mData.get_or_default("s", ""),
+                              mData.get_or_default("A", ""),
+                              mData.get_or_default("r", ""),
+                              mData.get_or_default("D", ""),
+                             });
+
+} // AceInfo::make_info
 
 // ----------------------------------------------------------------------
 

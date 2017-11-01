@@ -2,6 +2,14 @@
 
 // ----------------------------------------------------------------------
 
+std::string acmacs::chart::Chart::make_info() const
+{
+    return info()->make_info();
+
+} // acmacs::chart::Chart::make_info
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::Chart::~Chart()
 {
 } // acmacs::chart::Chart::~Chart
