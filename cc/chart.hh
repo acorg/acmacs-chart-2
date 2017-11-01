@@ -1,7 +1,9 @@
 #pragma once
 
 #include <memory>
-#include <string>
+
+#include "base.hh"
+#include "passage.hh"
 
 // ----------------------------------------------------------------------
 
@@ -16,23 +18,21 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class Name
+    class Name : public internal::string_data
     {
+     public:
+        using internal::string_data::string_data;
+
     }; // class Name
 
-    class Date
+    class Date : public internal::string_data
     {
+     public:
+        using internal::string_data::string_data;
+
     }; // class Date
 
     enum class BLineage { Victoria, Yamagata };
-
-    class Passage
-    {
-    }; // class Passage
-
-    class Reassortant
-    {
-    }; // class Reassortant
 
     class LabIds
     {
@@ -46,12 +46,18 @@ namespace acmacs::chart
     {
     }; // class Clades
 
-    class SerumId
+    class SerumId : public internal::string_data
     {
+     public:
+        using internal::string_data::string_data;
+
     }; // class SerumId
 
-    class SerumSpecies
+    class SerumSpecies : public internal::string_data
     {
+     public:
+        using internal::string_data::string_data;
+
     }; // class SerumSpecies
 
 // ----------------------------------------------------------------------
