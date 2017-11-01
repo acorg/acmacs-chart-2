@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "base.hh"
-#include "passage.hh"
+#include "acmacs-chart/base.hh"
+#include "acmacs-chart/passage.hh"
 
 // ----------------------------------------------------------------------
 

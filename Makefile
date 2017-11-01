@@ -9,9 +9,10 @@ MAKEFLAGS = -w
 N=_n
 
 TARGETS = \
-    $(ACMACS_CHART_LIB)
+    $(ACMACS_CHART_LIB) \
+    $(DIST)/chart-info
 
-SOURCES = chart.cc
+SOURCES = chart.cc factory.cc ace-import.cc
 
 # ----------------------------------------------------------------------
 
@@ -28,9 +29,9 @@ PKG_INCLUDES = $(shell pkg-config --cflags liblzma)
 
 # ----------------------------------------------------------------------
 
-all: check-acmacsd-root install-headers $(ACMACS_CHART_LIB) $(BACKEND)
+all: check-acmacsd-root $(TARGETS)
 
-install: check-acmacsd-root install-headers $(ACMACS_CHART_LIB) $(BACKEND)
+install: check-acmacsd-root install-headers $(ACMACS_CHART_LIB)
 	$(call install_lib,$(ACMACS_CHART_LIB))
 	@#ln -sf $(abspath bin)/acmacs-chart-* $(AD_BIN)
 
@@ -49,9 +50,9 @@ $(ACMACS_CHART_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SOURCES)) | $(DIST) $(LOCATI
 	@echo "SHARED     " $@ # '<--' $^
 	@$(CXX) -shared $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-$(DIST)/%: $(BUILD)/%.o | $(ACMACS_MAP_DRAW_LIB)
+$(DIST)/%: $(BUILD)/%.o | $(ACMACS_CHART_LIB)
 	@echo "LINK       " $@
-	@$(CXX) $(LDFLAGS) -o $@ $^ $(ACMACS_MAP_DRAW_LIB) $(LDLIBS)
+	@$(CXX) $(LDFLAGS) -o $@ $^ $(ACMACS_CHART_LIB) $(LDLIBS)
 
 # ======================================================================
 ### Local Variables:
