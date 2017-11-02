@@ -83,9 +83,11 @@ std::string AceInfo::make_field(const char* aField, const char* aSeparator) cons
     std::string result{mData.get_or_default(aField, "")};
     if (result.empty()) {
         const auto& sources{mData.get_or_empty_array("S")};
-        std::set<std::string> composition;
-        std::transform(std::begin(sources), std::end(sources), std::inserter(composition, composition.begin()), [aField](const auto& sinfo) { return sinfo.get_or_default(aField, ""); });
-        result = string::join(aSeparator, composition);
+        if (!sources.empty()) {
+            std::set<std::string> composition;
+            std::transform(std::begin(sources), std::end(sources), std::inserter(composition, composition.begin()), [aField](const auto& sinfo) { return sinfo.get_or_default(aField, ""); });
+            result = string::join(aSeparator, composition);
+        }
     }
     return result;
 
@@ -98,10 +100,12 @@ std::string AceInfo::date() const
     std::string result{mData.get_or_default("D", "")};
     if (result.empty()) {
         const auto& sources{mData.get_or_empty_array("S")};
-        std::vector<std::string> composition{sources.size()};
-        std::transform(std::begin(sources), std::end(sources), std::begin(composition), [](const auto& sinfo) { return sinfo.get_or_default("D", ""); });
-        std::sort(std::begin(composition), std::end(composition));
-        result = string::join("-", {composition.front(), composition.back()});
+        if (!sources.empty()) {
+            std::vector<std::string> composition{sources.size()};
+            std::transform(std::begin(sources), std::end(sources), std::begin(composition), [](const auto& sinfo) { return sinfo.get_or_default("D", ""); });
+            std::sort(std::begin(composition), std::end(composition));
+            result = string::join("-", {composition.front(), composition.back()});
+        }
     }
     return result;
 
