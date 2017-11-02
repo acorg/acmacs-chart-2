@@ -8,7 +8,9 @@
 std::shared_ptr<acmacs::chart::Chart> acmacs::chart::factory(std::string aFilename, bool aVerify)
 {
     Timeit ti("reading chart from " + aFilename + ": ");
+    Timeit ti_file("reading " + aFilename + ": ");
     const auto data = acmacs_base::read_file(aFilename, true);
+    ti_file.report();
     if (acmacs::chart::is_ace(data))
         return acmacs::chart::ace_import(data, aVerify);
     throw import_error{"[chart::factory]: unrecognized file content: " + aFilename};

@@ -31,9 +31,11 @@ PKG_INCLUDES = $(shell pkg-config --cflags liblzma)
 
 all: check-acmacsd-root $(TARGETS)
 
-install: check-acmacsd-root install-headers $(ACMACS_CHART_LIB)
-	$(call install_lib,$(ACMACS_CHART_LIB))
-	@#ln -sf $(abspath bin)/acmacs-chart-* $(AD_BIN)
+install: $(TARGETS)
+
+# install: check-acmacsd-root install-headers $(TARGETS)
+#	$(call install_lib,$(ACMACS_CHART_LIB))
+#	@#ln -sf $(abspath bin)/acmacs-chart-* $(AD_BIN)
 
 test: install
 	test/test

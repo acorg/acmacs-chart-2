@@ -34,18 +34,27 @@ namespace acmacs::chart
 
     }; // class Date
 
-    enum class BLineage { Victoria, Yamagata };
+    enum class BLineage { Unknown, Victoria, Yamagata };
 
-    class LabIds
+    class LabIds : public internal::string_list_data
     {
+     public:
+        using internal::string_list_data::string_list_data;
+
     }; // class LabIds
 
-    class Annotations
+    class Annotations : public internal::string_list_data
     {
+     public:
+        using internal::string_list_data::string_list_data;
+
     }; // class Annotations
 
-    class Clades
+    class Clades : public internal::string_list_data
     {
+     public:
+        using internal::string_list_data::string_list_data;
+
     }; // class Clades
 
     class SerumId : public internal::string_data
@@ -124,12 +133,28 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+    class Projection
+    {
+      public:
+        virtual ~Projection();
+
+        virtual std::string make_info() const;
+        virtual double stress() const = 0;
+        virtual size_t number_of_dimensions() const = 0;
+
+    }; // class Projection
+
+// ----------------------------------------------------------------------
+
     class Projections
     {
       public:
         virtual ~Projections();
 
+        virtual bool empty() const = 0;
         virtual size_t size() const = 0;
+        virtual std::shared_ptr<Projection> operator[](size_t aIndex) const = 0;
+        virtual std::string make_info() const;
 
     }; // class Projections
 
