@@ -65,13 +65,13 @@ namespace acmacs::chart
         inline AceAntigen(const rjson::object& aData) : mData{aData} {}
 
         inline Name name() const override { return mData["N"]; }
-        inline Date date() const override { return mData["D"]; }
-        inline Passage passage() const override { return mData["P"]; }
+        inline Date date() const override { return mData.get_or_default("D", ""); }
+        inline Passage passage() const override { return mData.get_or_default("P", ""); }
         BLineage lineage() const override;
-        inline Reassortant reassortant() const override { return mData["R"]; }
-        inline LabIds lab_ids() const override { return mData["l"]; }
-        inline Clades clades() const override { return mData["c"]; }
-        inline Annotations annotations() const override { return mData["a"]; }
+        inline Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
+        inline LabIds lab_ids() const override { return mData.get_or_empty_array("l"); }
+        inline Clades clades() const override { return mData.get_or_empty_array("c"); }
+        inline Annotations annotations() const override { return mData.get_or_empty_array("a"); }
         inline bool reference() const override { return static_cast<std::string>(mData["S"]).find("R") != std::string::npos; }
 
      private:
@@ -87,12 +87,12 @@ namespace acmacs::chart
         inline AceSerum(const rjson::object& aData) : mData{aData} {}
 
         inline Name name() const override { return mData["N"]; }
-        inline Passage passage() const override { return mData["P"]; }
+        inline Passage passage() const override { return mData.get_or_default("P", ""); }
         BLineage lineage() const override;
-        inline Reassortant reassortant() const override { return mData["R"]; }
-        inline Annotations annotations() const override { return mData["a"]; }
-        inline SerumId serum_id() const override { return mData["I"]; }
-        inline SerumSpecies serum_species() const override { return mData["s"]; }
+        inline Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
+        inline Annotations annotations() const override { return mData.get_or_empty_array("a"); }
+        inline SerumId serum_id() const override { return mData.get_or_default("I", ""); }
+        inline SerumSpecies serum_species() const override { return mData.get_or_default("s", ""); }
 
      private:
         const rjson::object& mData;
@@ -103,7 +103,7 @@ namespace acmacs::chart
 
     class AceAntigens : public Antigens
     {
-      public:
+     public:
         inline AceAntigens(const rjson::array& aData) : mData{aData} {}
 
         inline size_t size() const override { return mData.size(); }

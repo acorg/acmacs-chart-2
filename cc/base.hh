@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "acmacs-base/rjson.hh"
+#include "acmacs-base/stream.hh"
 
 // ----------------------------------------------------------------------
 
@@ -20,8 +21,8 @@ namespace acmacs::chart
             inline string_data(std::string&& aSrc) : mData{std::move(aSrc)} {}
             inline string_data(const rjson::value& aSrc) : mData{static_cast<std::string>(aSrc)} {}
 
-            inline const std::string& data() { return mData; }
-            inline operator const std::string&() { return mData; }
+            inline const std::string& data() const noexcept { return mData; }
+            inline operator const std::string&() const noexcept { return mData; }
 
          private:
             std::string mData;
@@ -34,12 +35,13 @@ namespace acmacs::chart
         {
          public:
             inline string_list_data() = default;
-            inline string_list_data(const rjson::value& aSrc) : mData(static_cast<const rjson::array&>(aSrc).begin(), static_cast<const rjson::array&>(aSrc).end()) {}
-            // inline string_list_data(const std::string& aSrc) : mData{aSrc} {}
-            // inline string_list_data(std::string&& aSrc) : mData{std::move(aSrc)} {}
+            inline string_list_data(const rjson::array& aSrc) : mData(aSrc.begin(), aSrc.end()) {}
+            inline string_list_data(const rjson::value& aSrc) : string_list_data(static_cast<const rjson::array&>(aSrc)) {}
 
-            inline const std::vector<std::string>& data() { return mData; }
-            inline operator const std::vector<std::string>&() { return mData; }
+            inline const std::vector<std::string>& data() const noexcept { return mData; }
+            inline operator const std::vector<std::string>&() const noexcept { return mData; }
+            inline auto begin() const { return mData.begin(); }
+            inline auto end() const { return mData.end(); }
 
          private:
             std::vector<std::string> mData;
@@ -48,6 +50,18 @@ namespace acmacs::chart
     } // namespace internal
 
 } // namespace acmacs::chart
+
+// ----------------------------------------------------------------------
+
+inline std::ostream& operator << (std::ostream& out, const acmacs::chart::internal::string_data& a)
+{
+    return out << a.data();
+}
+
+inline std::ostream& operator << (std::ostream& out, const acmacs::chart::internal::string_list_data& a)
+{
+    return out << a.data();
+}
 
 // ----------------------------------------------------------------------
 /// Local Variables:

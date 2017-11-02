@@ -9,6 +9,30 @@
 
 namespace acmacs::chart
 {
+    namespace internal
+    {
+        template <typename Parent, typename Reference> class iterator
+        {
+         public:
+            using reference = Reference;
+
+            inline iterator& operator++() { ++mIndex; return *this; }
+            inline bool operator!=(const iterator& other) const { return &mParent != &other.mParent || mIndex != other.mIndex; }
+            inline reference operator*() { return mParent[mIndex]; }
+
+         private:
+            inline iterator(const Parent& aParent, size_t aIndex) : mParent{aParent}, mIndex{aIndex} {}
+
+            const Parent& mParent;
+            size_t mIndex;
+
+            friend Parent;
+        };
+
+    } // namespace internal
+
+// ----------------------------------------------------------------------
+
     class Info
     {
       public:
@@ -116,6 +140,9 @@ namespace acmacs::chart
 
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Antigen> operator[](size_t aIndex) const = 0;
+        using iterator = internal::iterator<Antigens, std::shared_ptr<Antigen>>;
+        inline iterator begin() const { return {*this, 0}; }
+        inline iterator end() const { return {*this, size()}; }
 
     }; // class Antigens
 
@@ -128,6 +155,9 @@ namespace acmacs::chart
 
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Serum> operator[](size_t aIndex) const = 0;
+        using iterator = internal::iterator<Sera, std::shared_ptr<Serum>>;
+        inline iterator begin() const { return {*this, 0}; }
+        inline iterator end() const { return {*this, size()}; }
 
     }; // class Sera
 
@@ -154,6 +184,10 @@ namespace acmacs::chart
         virtual bool empty() const = 0;
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Projection> operator[](size_t aIndex) const = 0;
+        using iterator = internal::iterator<Projections, std::shared_ptr<Projection>>;
+        inline iterator begin() const { return {*this, 0}; }
+        inline iterator end() const { return {*this, size()}; }
+
         virtual std::string make_info() const;
 
     }; // class Projections
@@ -182,6 +216,12 @@ namespace acmacs::chart
     }; // class Chart
 
 } // namespace acmacs::chart
+
+// ----------------------------------------------------------------------
+
+template <> struct std::iterator_traits<acmacs::chart::Antigens::iterator> { using reference = typename acmacs::chart::Antigens::iterator::reference; };
+template <> struct std::iterator_traits<acmacs::chart::Sera::iterator> { using reference = typename acmacs::chart::Sera::iterator::reference; };
+template <> struct std::iterator_traits<acmacs::chart::Projections::iterator> { using reference = typename acmacs::chart::Projections::iterator::reference; };
 
 // ----------------------------------------------------------------------
 /// Local Variables:

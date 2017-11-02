@@ -10,7 +10,8 @@ N=_n
 
 TARGETS = \
     $(ACMACS_CHART_LIB) \
-    $(DIST)/chart-info
+    $(DIST)/chart-info \
+    $(DIST)/chart-names
 
 SOURCES = chart.cc factory.cc ace-import.cc
 
