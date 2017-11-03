@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "acmacs-base/color.hh"
+#include "acmacs-base/text-style.hh"
 #include "acmacs-chart/base.hh"
 #include "acmacs-chart/passage.hh"
 
@@ -245,17 +246,12 @@ namespace acmacs::chart
         virtual Color outline() const = 0;
         virtual double outline_width() const = 0;
         virtual double size() const = 0;
+
         // virtual Shape shape() const = 0;
         // virtual Rotation rotation() const = 0;
         // virtual Aspect aspect() const = 0;
-        // virtual bool label_shown() const = 0;
-        // virtual Offset label_offset() const = 0;
-        // virtual std::string label_text() const = 0;
-        // virtual TextStyle label_style() const = 0;
-        // virtual double label_size() const = 0;
-        // virtual Color label_color() const = 0;
-        // virtual Rotation label_rotation() const = 0;
-        // virtual double label_interline() const = 0;
+        virtual LabelStyle label_style() const = 0;
+        virtual std::string label_text() const = 0;
 
     }; // class PointStyle
 

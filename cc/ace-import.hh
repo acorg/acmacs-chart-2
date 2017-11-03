@@ -210,6 +210,9 @@ namespace acmacs::chart
         inline double outline_width() const override { return mData.get_or_default("o", 1.0); }
         inline double size() const override { return mData.get_or_default("s", 1.0); }
 
+        LabelStyle label_style() const override;
+        inline std::string label_text() const override { try { return mData["l"]["t"]; } catch (std::exception&) { return {}; } }
+
      private:
         const rjson::object& mData;
 
