@@ -211,7 +211,7 @@ namespace acmacs::chart
         inline double size() const override { return mData.get_or_default("s", 1.0); }
         inline Rotation rotation() const override { return Rotation{mData.get_or_default("r", 0.0)}; }
         inline Aspect aspect() const override { return Aspect{mData.get_or_default("a", 1.0)}; }
-
+        inline PointShape shape() const override { return mData.get_or_default("S", "C"); }
         LabelStyle label_style() const override;
         inline std::string label_text() const override { try { return mData["l"]["t"]; } catch (std::exception&) { return {}; } }
 

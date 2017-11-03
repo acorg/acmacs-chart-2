@@ -111,6 +111,64 @@ namespace acmacs::chart
 
     }; // class DrawingOrder
 
+    class PointShape
+    {
+     public:
+        enum Shape {Circle, Box, Triangle};
+
+        inline PointShape() : mShape{Circle} {}
+        inline PointShape(const PointShape&) = default;
+        inline PointShape(Shape aShape) : mShape{aShape} {}
+        inline PointShape(std::string aShape) { from_string(aShape); }
+        inline PointShape& operator=(const PointShape&) = default;
+        inline PointShape& operator=(Shape aShape) { mShape = aShape; return *this; }
+        inline PointShape& operator=(std::string aShape) { from_string(aShape); return *this; }
+
+        inline operator std::string() const
+            {
+                switch(mShape) {
+                  case Circle:
+                      return "CIRCLE";
+                  case Box:
+                      return "BOX";
+                  case Triangle:
+                      return "TRIANGLE";
+                }
+                  //return "?";
+            }
+
+     private:
+        Shape mShape;
+
+        inline void from_string(std::string aShape)
+            {
+                if (!aShape.empty()) {
+                    switch (aShape.front()) {
+                      case 'C':
+                      case 'c':
+                          mShape = Circle;
+                          break;
+                      case 'B':
+                      case 'b':
+                      case 'R': // rectangle
+                      case 'r':
+                          mShape = Box;
+                          break;
+                      case 'T':
+                      case 't':
+                          mShape = Triangle;
+                          break;
+                      default:
+                          std::runtime_error("Unrecognized point shape: " + aShape);
+                    }
+                }
+                else {
+                    std::runtime_error("Unrecognized empty point shape");
+                }
+            }
+
+    }; // class PointShape
+
 // ----------------------------------------------------------------------
 
     class Antigen
@@ -248,8 +306,7 @@ namespace acmacs::chart
         virtual double size() const = 0;
         virtual Rotation rotation() const = 0;
         virtual Aspect aspect() const = 0;
-
-        // virtual Shape shape() const = 0;
+        virtual PointShape shape() const = 0;
         virtual LabelStyle label_style() const = 0;
         virtual std::string label_text() const = 0;
 
