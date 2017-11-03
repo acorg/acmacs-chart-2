@@ -4,6 +4,7 @@
 
 #include "acmacs-base/color.hh"
 #include "acmacs-base/text-style.hh"
+#include "acmacs-base/transformation.hh"
 #include "acmacs-chart/base.hh"
 #include "acmacs-chart/passage.hh"
 
@@ -103,6 +104,48 @@ namespace acmacs::chart
         using internal::string_data::string_data;
 
     }; // class Titer
+
+    class PointIndexList : public internal::index_list_data
+    {
+     public:
+        using internal::index_list_data::index_list_data;
+
+    }; // class PointIndexList
+
+    class MinimumColumnBasis
+    {
+     public:
+        inline MinimumColumnBasis(double aValue = 0) : mValue{aValue} {}
+        inline MinimumColumnBasis(const MinimumColumnBasis&) = default;
+        inline MinimumColumnBasis(std::string aValue) { from(aValue); }
+        inline MinimumColumnBasis& operator=(double aValue) { mValue = aValue; return *this; }
+        inline MinimumColumnBasis& operator=(const MinimumColumnBasis&) = default;
+        inline MinimumColumnBasis& operator=(std::string aValue) { from(aValue); return *this; }
+
+        inline operator std::string() const noexcept
+            {
+                if (float_zero(mValue))
+                    return "none";
+                else if (float_equal(mValue, 7.0))
+                    return "1280";
+                else
+                    return std::to_string(mValue);
+            }
+
+     private:
+        double mValue;
+
+        inline void from(std::string aValue)
+            {
+                if (aValue.empty() || aValue == "none")
+                    mValue = 0;
+                else if (aValue == "1280")
+                    mValue = 7;
+                else
+                    throw std::runtime_error{"Unrecognized minimum_column_basis value: " + aValue};
+            }
+
+    }; // class MinimumColumnBasis
 
     class DrawingOrder : public internal::index_list_data
     {
@@ -273,6 +316,18 @@ namespace acmacs::chart
         virtual std::string make_info() const;
         virtual double stress() const = 0;
         virtual size_t number_of_dimensions() const = 0;
+        virtual std::string comment() const = 0;
+        virtual double coordinate(size_t aPointNo, size_t aDimensionNo) const = 0;
+        virtual MinimumColumnBasis minimum_column_basis() const = 0;
+        virtual std::shared_ptr<ForcedColumnBases> forced_column_bases() const = 0;
+        virtual Transformation transformation() const = 0;
+        virtual bool dodgy_titer_is_regular() const = 0;
+        virtual double stress_diff_to_stop() const = 0;
+        virtual PointIndexList unmovable() const = 0;
+        virtual PointIndexList disconnected() const = 0;
+        virtual PointIndexList unmovable_in_the_last_dimension() const = 0;
+          // antigens_sera_gradient_multipliers, double for each point
+          // antigens_sera_titers_multipliers, double for each point
 
     }; // class Projection
 

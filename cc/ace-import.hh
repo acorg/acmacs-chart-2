@@ -175,6 +175,16 @@ namespace acmacs::chart
 
         inline double stress() const override { return mData.get_or_default("s", 0.0); }
         size_t number_of_dimensions() const override;
+        inline std::string comment() const override { return mData.get_or_default("c", ""); }
+        double coordinate(size_t aPointNo, size_t aDimensionNo) const override;
+        inline MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_default("m", "none"); }
+        std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
+        Transformation transformation() const override;
+        inline bool dodgy_titer_is_regular() const override { return mData.get_or_default("d", false); }
+        inline double stress_diff_to_stop() const override { return mData.get_or_default("d", 0.0); }
+        inline PointIndexList unmovable() const override { return mData.get_or_empty_array("U"); }
+        inline PointIndexList disconnected() const override { return mData.get_or_empty_array("D"); }
+        inline PointIndexList unmovable_in_the_last_dimension() const override { return mData.get_or_empty_array("u"); }
 
      private:
         const rjson::object& mData;
@@ -227,7 +237,7 @@ namespace acmacs::chart
       public:
         inline AcePlotSpec(const rjson::object& aData) : mData{aData} {}
 
-        DrawingOrder drawing_order() const override;
+        inline DrawingOrder drawing_order() const override { return mData["d"]; }
         Color error_line_positive_color() const override;
         Color error_line_negative_color() const override;
         std::shared_ptr<PointStyle> style(size_t aPointNo) const override;

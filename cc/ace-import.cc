@@ -203,11 +203,32 @@ size_t AceProjection::number_of_dimensions() const
 
 // ----------------------------------------------------------------------
 
-DrawingOrder AcePlotSpec::drawing_order() const
+double AceProjection::coordinate(size_t aPointNo, size_t aDimensionNo) const
 {
-    return mData["d"];
+    const auto& layout = mData.get_or_empty_array("l");
+    return layout[aPointNo][aDimensionNo];
 
-} // AcePlotSpec::drawing_order
+} // AceProjection::coordinate
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<ForcedColumnBases> AceProjection::forced_column_bases() const
+{
+    return std::make_shared<AceForcedColumnBases>(mData.get_or_empty_array("C"));
+
+} // AceProjection::forced_column_bases
+
+// ----------------------------------------------------------------------
+
+Transformation AceProjection::transformation() const
+{
+    Transformation result;
+    if (auto [present, array] = mData.get_array_if("t"); present) {
+        result.set(array[0], array[1], array[2], array[3]);
+    }
+    return result;
+
+} // AceProjection::transformation
 
 // ----------------------------------------------------------------------
 
