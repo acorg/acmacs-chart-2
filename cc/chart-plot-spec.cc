@@ -77,8 +77,8 @@ void print_plot_spec(const argc_argv& args)
         antigen_fields["outline_width"].push_back(std::to_string(style->outline_width()));
         antigen_fields["size"].push_back(std::to_string(style->size()));
         antigen_fields["shown"].push_back(bool_to_string(style->shown()));
-        // antigen_fields["aspect"].push_back(std::to_string(style->aspect()));
-        // antigen_fields["rotation"].push_back(std::to_string(style->rotation()));
+        antigen_fields["aspect"].push_back(std::to_string(style->aspect()));
+        antigen_fields["rotation"].push_back(std::to_string(style->rotation()));
             // drawing_level="66"
             // label=""
             // label_color=""
@@ -100,7 +100,7 @@ void print_plot_spec(const argc_argv& args)
               << "#\n# Antigens\n#\n";
     for (size_t ag_no = 0; ag_no < chart->number_of_antigens(); ++ag_no) {
         std::cout << "T=\"AG\"";
-        for (std::string field_name: {"I", "name", "reassortant", "annotations", "passage", "fill_color", "outline_color", "outline_width", "size", "shown"/*, "aspect", "rotation"*/}) {
+        for (std::string field_name: {"I", "name", "reassortant", "annotations", "passage", "fill_color", "outline_color", "outline_width", "size", "shown", "aspect", "rotation"}) {
             const std::string value = field_name + "=\"" + antigen_fields[field_name][ag_no] + '"';
             std::cout << ' ' << std::left << std::setw(static_cast<int>(antigen_field_lengths[field_name] + field_name.size() + 3)) << value;
         }

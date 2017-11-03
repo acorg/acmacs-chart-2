@@ -209,6 +209,8 @@ namespace acmacs::chart
         inline Color outline() const override { return mData.get_or_default("O", "black"); }
         inline double outline_width() const override { return mData.get_or_default("o", 1.0); }
         inline double size() const override { return mData.get_or_default("s", 1.0); }
+        inline Rotation rotation() const override { return Rotation{mData.get_or_default("r", 0.0)}; }
+        inline Aspect aspect() const override { return Aspect{mData.get_or_default("a", 1.0)}; }
 
         LabelStyle label_style() const override;
         inline std::string label_text() const override { try { return mData["l"]["t"]; } catch (std::exception&) { return {}; } }

@@ -246,10 +246,10 @@ namespace acmacs::chart
         virtual Color outline() const = 0;
         virtual double outline_width() const = 0;
         virtual double size() const = 0;
+        virtual Rotation rotation() const = 0;
+        virtual Aspect aspect() const = 0;
 
         // virtual Shape shape() const = 0;
-        // virtual Rotation rotation() const = 0;
-        // virtual Aspect aspect() const = 0;
         virtual LabelStyle label_style() const = 0;
         virtual std::string label_text() const = 0;
 
