@@ -18,6 +18,7 @@ namespace acmacs::chart
         std::shared_ptr<Titers> titers() const override;
         std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
         std::shared_ptr<Projections> projections() const override;
+        std::shared_ptr<PlotSpec> plot_spec() const override;
 
         void verify_data() const;
 
@@ -195,6 +196,35 @@ namespace acmacs::chart
         const rjson::array& mData;
 
     }; // class AceProjections
+
+// ----------------------------------------------------------------------
+
+    class AcePointStyle : public PointStyle
+    {
+      public:
+        inline AcePointStyle(const rjson::object& aData) : mData{aData} {}
+
+     private:
+        const rjson::object& mData;
+
+    }; // class AcePointStyle
+
+// ----------------------------------------------------------------------
+
+    class AcePlotSpec : public PlotSpec
+    {
+      public:
+        inline AcePlotSpec(const rjson::object& aData) : mData{aData} {}
+
+        DrawingOrder drawing_order() const override;
+        Color error_line_positive_color() const override;
+        Color error_line_negative_color() const override;
+        std::shared_ptr<PointStyle> style(size_t aPointNo) const override;
+
+     private:
+        const rjson::object& mData;
+
+    }; // class AcePlotSpec
 
 // ----------------------------------------------------------------------
 

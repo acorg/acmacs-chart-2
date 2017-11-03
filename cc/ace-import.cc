@@ -76,6 +76,14 @@ std::shared_ptr<Projections> AceChart::projections() const
 
 // ----------------------------------------------------------------------
 
+std::shared_ptr<PlotSpec> AceChart::plot_spec() const
+{
+    return std::make_shared<AcePlotSpec>(mData["c"].get_or_empty_object("p"));
+
+} // AceChart::plot_spec
+
+// ----------------------------------------------------------------------
+
 std::string AceInfo::make_info() const
 {
     const auto n_sources = number_of_sources();
@@ -192,6 +200,34 @@ size_t AceProjection::number_of_dimensions() const
     return 0;
 
 } // AceProjection::number_of_dimensions
+
+// ----------------------------------------------------------------------
+
+DrawingOrder AcePlotSpec::drawing_order() const
+{
+
+} // AcePlotSpec::drawing_order
+
+// ----------------------------------------------------------------------
+
+Color AcePlotSpec::error_line_positive_color() const
+{
+
+} // AcePlotSpec::error_line_positive_color
+
+// ----------------------------------------------------------------------
+
+Color AcePlotSpec::error_line_negative_color() const
+{
+
+} // AcePlotSpec::error_line_negative_color
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<PointStyle> AcePlotSpec::style(size_t aPointNo) const
+{
+
+} // AcePlotSpec::style
 
 // ----------------------------------------------------------------------
 

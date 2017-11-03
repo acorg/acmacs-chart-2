@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "acmacs-base/color.hh"
 #include "acmacs-chart/base.hh"
 #include "acmacs-chart/passage.hh"
 
@@ -101,6 +102,10 @@ namespace acmacs::chart
         using internal::string_data::string_data;
 
     }; // class Titer
+
+    class DrawingOrder
+    {
+    }; // class DrawingOrder
 
 // ----------------------------------------------------------------------
 
@@ -227,6 +232,29 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+    class PointStyle
+    {
+      public:
+        virtual ~PointStyle();
+
+    }; // class PointStyle
+
+// ----------------------------------------------------------------------
+
+    class PlotSpec
+    {
+      public:
+        virtual ~PlotSpec();
+
+        virtual DrawingOrder drawing_order() const = 0;
+        virtual Color error_line_positive_color() const = 0;
+        virtual Color error_line_negative_color() const = 0;
+        virtual std::shared_ptr<PointStyle> style(size_t aPointNo) const = 0;
+
+    }; // class PlotSpec
+
+// ----------------------------------------------------------------------
+
     class Chart
     {
       public:
@@ -238,7 +266,7 @@ namespace acmacs::chart
         virtual std::shared_ptr<Titers> titers() const = 0;
         virtual std::shared_ptr<ForcedColumnBases> forced_column_bases() const = 0;
         virtual std::shared_ptr<Projections> projections() const = 0;
-          // plot spec
+        virtual std::shared_ptr<PlotSpec> plot_spec() const = 0;
 
         inline size_t number_of_antigens() const { return antigens()->size(); }
         inline size_t number_of_sera() const { return sera()->size(); }
