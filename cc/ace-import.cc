@@ -52,6 +52,22 @@ std::shared_ptr<Sera> AceChart::sera() const
 
 // ----------------------------------------------------------------------
 
+std::shared_ptr<Titers> AceChart::titers() const
+{
+    return std::make_shared<AceTiters>(mData["c"].get_or_empty_object("t"));
+
+} // AceChart::titers
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<ForcedColumnBases> AceChart::forced_column_bases() const
+{
+    return std::make_shared<AceForcedColumnBases>(mData["c"].get_or_empty_array("C"));
+
+} // AceChart::forced_column_bases
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<Projections> AceChart::projections() const
 {
     return std::make_shared<AceProjections>(mData["c"].get_or_empty_array("P"));
@@ -137,6 +153,27 @@ BLineage AceSerum::lineage() const
     return b_lineage(mData["L"]);
 
 } // AceSerum::lineage
+
+// ----------------------------------------------------------------------
+
+Titer AceTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
+{
+    if (auto [present, list] = mData.get_array_if("l"); present) {
+        return list[aAntigenNo][aSerumNo];
+    }
+    else {
+        return mData["d"][aAntigenNo][std::to_string(aSerumNo)];
+    }
+
+} // AceTiters::titer
+
+// ----------------------------------------------------------------------
+
+Titer AceTiters::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const
+{
+    return mData["L"][aLayerNo][aAntigenNo][std::to_string(aSerumNo)];
+
+} // AceTiters::titer_of_layer
 
 // ----------------------------------------------------------------------
 

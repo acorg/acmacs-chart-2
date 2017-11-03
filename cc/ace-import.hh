@@ -15,6 +15,8 @@ namespace acmacs::chart
         std::shared_ptr<Info> info() const override;
         std::shared_ptr<Antigens> antigens() const override;
         std::shared_ptr<Sera> sera() const override;
+        std::shared_ptr<Titers> titers() const override;
+        std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
         std::shared_ptr<Projections> projections() const override;
 
         void verify_data() const;
@@ -128,6 +130,40 @@ namespace acmacs::chart
         const rjson::array& mData;
 
     }; // class AceSera
+
+// ----------------------------------------------------------------------
+
+    class AceTiters : public Titers
+    {
+      public:
+        inline AceTiters(const rjson::object& aData) : mData{aData} {}
+
+        Titer titer(size_t aAntigenNo, size_t aSerumNo) const override;
+        Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override;
+        inline size_t number_of_layers() const override { return layers().size(); }
+
+     private:
+        const rjson::object& mData;
+
+        inline const rjson::array& layers() const { return mData.get_or_empty_array("L"); }
+        inline const rjson::object& layer(size_t aLayerNo) const { return layers()[aLayerNo]; }
+
+    }; // class AceTiters
+
+// ----------------------------------------------------------------------
+
+    class AceForcedColumnBases : public ForcedColumnBases
+    {
+      public:
+        inline AceForcedColumnBases(const rjson::array& aData) : mData{aData} {}
+
+        inline bool exists() const override { return !mData.empty(); }
+        inline double column_basis(size_t aSerumNo) const override { return mData[aSerumNo]; }
+
+     private:
+        const rjson::array& mData;
+
+    }; // class AceForcedColumnBases
 
 // ----------------------------------------------------------------------
 

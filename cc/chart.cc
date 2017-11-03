@@ -41,49 +41,54 @@ acmacs::chart::Chart::~Chart()
 
 acmacs::chart::Info::~Info()
 {
-
 } // acmacs::chart::Info::~Info
 
 // ----------------------------------------------------------------------
 
 acmacs::chart::Antigen::~Antigen()
 {
-
 } // acmacs::chart::Antigen::~Antigen
 
 // ----------------------------------------------------------------------
 
 acmacs::chart::Serum::~Serum()
 {
-
 } // acmacs::chart::Serum::~Serum
 
 // ----------------------------------------------------------------------
 
 acmacs::chart::Antigens::~Antigens()
 {
-
 } // acmacs::chart::Antigens::~Antigens
 
 // ----------------------------------------------------------------------
 
 acmacs::chart::Sera::~Sera()
 {
-
 } // acmacs::chart::Sera::~Sera
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Titers::~Titers()
+{
+} // acmacs::chart::Titers::~Titers
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::ForcedColumnBases::~ForcedColumnBases()
+{
+} // acmacs::chart::ForcedColumnBases::~ForcedColumnBases
 
 // ----------------------------------------------------------------------
 
 acmacs::chart::Projection::~Projection()
 {
-
 } // acmacs::chart::Projection::~Projection
 
 // ----------------------------------------------------------------------
 
 acmacs::chart::Projections::~Projections()
 {
-
 } // acmacs::chart::Projections::~Projections
 
 // ----------------------------------------------------------------------

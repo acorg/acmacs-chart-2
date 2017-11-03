@@ -95,6 +95,13 @@ namespace acmacs::chart
 
     }; // class SerumSpecies
 
+    class Titer : public internal::string_data
+    {
+     public:
+        using internal::string_data::string_data;
+
+    }; // class Titer
+
 // ----------------------------------------------------------------------
 
     class Antigen
@@ -163,6 +170,32 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+    class Titers
+    {
+      public:
+        virtual ~Titers();
+
+        virtual Titer titer(size_t aAntigenNo, size_t aSerumNo) const = 0;
+        virtual Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const = 0;
+        virtual size_t number_of_layers() const = 0;
+
+    }; // class Titers
+
+// ----------------------------------------------------------------------
+
+    class ForcedColumnBases
+    {
+      public:
+        virtual ~ForcedColumnBases();
+
+        virtual bool exists() const = 0;
+        inline operator bool() const { return exists(); }
+        virtual double column_basis(size_t aSerumNo) const = 0;
+
+    }; // class ForcedColumnBases
+
+// ----------------------------------------------------------------------
+
     class Projection
     {
       public:
@@ -202,8 +235,8 @@ namespace acmacs::chart
         virtual std::shared_ptr<Info> info() const = 0;
         virtual std::shared_ptr<Antigens> antigens() const = 0;
         virtual std::shared_ptr<Sera> sera() const = 0;
-          // titers
-          // forced column bases for new projections
+        virtual std::shared_ptr<Titers> titers() const = 0;
+        virtual std::shared_ptr<ForcedColumnBases> forced_column_bases() const = 0;
         virtual std::shared_ptr<Projections> projections() const = 0;
           // plot spec
 
