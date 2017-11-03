@@ -220,9 +220,9 @@ std::shared_ptr<ForcedColumnBases> AceProjection::forced_column_bases() const
 
 // ----------------------------------------------------------------------
 
-Transformation AceProjection::transformation() const
+acmacs::Transformation AceProjection::transformation() const
 {
-    Transformation result;
+    acmacs::Transformation result;
     if (auto [present, array] = mData.get_array_if("t"); present) {
         result.set(array[0], array[1], array[2], array[3]);
     }

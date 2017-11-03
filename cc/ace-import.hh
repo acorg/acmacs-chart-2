@@ -179,7 +179,7 @@ namespace acmacs::chart
         double coordinate(size_t aPointNo, size_t aDimensionNo) const override;
         inline MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_default("m", "none"); }
         std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
-        Transformation transformation() const override;
+        acmacs::Transformation transformation() const override;
         inline bool dodgy_titer_is_regular() const override { return mData.get_or_default("d", false); }
         inline double stress_diff_to_stop() const override { return mData.get_or_default("d", 0.0); }
         inline PointIndexList unmovable() const override { return mData.get_or_empty_array("U"); }

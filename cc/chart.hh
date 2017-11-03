@@ -320,7 +320,7 @@ namespace acmacs::chart
         virtual double coordinate(size_t aPointNo, size_t aDimensionNo) const = 0;
         virtual MinimumColumnBasis minimum_column_basis() const = 0;
         virtual std::shared_ptr<ForcedColumnBases> forced_column_bases() const = 0;
-        virtual Transformation transformation() const = 0;
+        virtual acmacs::Transformation transformation() const = 0;
         virtual bool dodgy_titer_is_regular() const = 0;
         virtual double stress_diff_to_stop() const = 0;
         virtual PointIndexList unmovable() const = 0;
