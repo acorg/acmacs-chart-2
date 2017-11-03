@@ -7,6 +7,7 @@
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/string.hh"
+#include "acmacs-base/range.hh"
 #include "acmacs-chart/factory.hh"
 #include "acmacs-chart/chart.hh"
 
@@ -54,6 +55,8 @@ void print_plot_spec(const argc_argv& args)
     auto plot_spec = chart->plot_spec();
     const auto drawing_order = plot_spec->drawing_order();
     auto now = std::time(nullptr);
+    const auto number_of_antigens = chart->number_of_antigens();
+    const auto number_of_sera = chart->number_of_sera();
 
     auto bool_to_string = [](bool b) -> std::string { return b ? "True" : "False"; };
 
@@ -87,10 +90,10 @@ void print_plot_spec(const argc_argv& args)
         antigen_fields["label"].push_back(style->label_text());
         antigen_fields["drawing_level"].push_back(std::to_string(drawing_order.index_of(point_no)));
     }
+      // sort antigens by name on output
+    auto antigen_fields_indices = acmacs::filled_with_indexes<size_t>(number_of_antigens);
+    std::sort(antigen_fields_indices.begin(), antigen_fields_indices.end(), [&antigen_fields](size_t a, size_t b) -> bool { return antigen_fields["name"][a] < antigen_fields["name"][b]; });
     auto antigen_field_lengths = field_max_length(antigen_fields);
-
-    const auto number_of_antigens = chart->number_of_antigens();
-    const auto number_of_sera = chart->number_of_sera();
 
     fields_t serum_fields;
     for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
@@ -124,6 +127,9 @@ void print_plot_spec(const argc_argv& args)
         serum_fields["label"].push_back(style->label_text());
         serum_fields["drawing_level"].push_back(std::to_string(drawing_order.index_of(point_no)));
     }
+      // sort sera by name on output
+    auto serum_fields_indices = acmacs::filled_with_indexes<size_t>(number_of_sera);
+    std::sort(serum_fields_indices.begin(), serum_fields_indices.end(), [&serum_fields](size_t a, size_t b) -> bool { return serum_fields["name"][a] < serum_fields["name"][b]; });
     auto serum_field_lengths = field_max_length(serum_fields);
 
     std::cout << "plot_style version 1" << '\n'
@@ -131,7 +137,7 @@ void print_plot_spec(const argc_argv& args)
               << "#\n# drawing_level - point with the greatest level drawn on top of other ones\n"
               << "# shape - CIRCLE, BOX, TRIANGLE\n"
               << "#\n# Antigens\n#\n";
-    for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
+    for (const auto ag_no: antigen_fields_indices) {
         std::cout << "T=\"AG\"";
         for (std::string field_name: {
                 "I", "name", "reassortant", "annotations", "passage", "fill_color", "outline_color", "outline_width", "size", "shown", "aspect", "rotation", "shape",
@@ -142,7 +148,7 @@ void print_plot_spec(const argc_argv& args)
         std::cout << '\n';
     }
     std::cout << "#\n# Sera\n#\n";
-    for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
+    for (const auto sr_no: serum_fields_indices) {
         std::cout << "T=\"SR\"";
         for (std::string field_name: {
                 "I", "name", "reassortant", "annotations", "serum_id", "serum_species", "passage", "fill_color", "outline_color", "outline_width", "size", "shown", "aspect", "rotation", "shape",
