@@ -46,7 +46,27 @@ namespace acmacs::chart
          private:
             std::vector<std::string> mData;
 
-        }; // class string_data
+        }; // class string_list_data
+
+// ----------------------------------------------------------------------
+
+        class index_list_data
+        {
+         public:
+            inline index_list_data() = default;
+            inline index_list_data(const rjson::array& aSrc) : mData(aSrc.begin(), aSrc.end()) {}
+            inline index_list_data(const rjson::value& aSrc) : index_list_data(static_cast<const rjson::array&>(aSrc)) {}
+
+            inline const std::vector<size_t>& data() const noexcept { return mData; }
+            inline operator const std::vector<size_t>&() const noexcept { return mData; }
+            inline auto begin() const { return mData.begin(); }
+            inline auto end() const { return mData.end(); }
+
+         private:
+            std::vector<size_t> mData;
+
+        }; // class index_list_data
+
     } // namespace internal
 
 } // namespace acmacs::chart

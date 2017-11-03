@@ -204,6 +204,12 @@ namespace acmacs::chart
       public:
         inline AcePointStyle(const rjson::object& aData) : mData{aData} {}
 
+        inline bool shown() const override { return mData.get_or_default("+", true); }
+        inline Color fill() const override { return mData.get_or_default("F", "transparent"); }
+        inline Color outline() const override { return mData.get_or_default("O", "black"); }
+        inline double outline_width() const override { return mData.get_or_default("o", 1.0); }
+        inline double size() const override { return mData.get_or_default("s", 1.0); }
+
      private:
         const rjson::object& mData;
 

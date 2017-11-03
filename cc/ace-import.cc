@@ -205,6 +205,7 @@ size_t AceProjection::number_of_dimensions() const
 
 DrawingOrder AcePlotSpec::drawing_order() const
 {
+    return mData["d"];
 
 } // AcePlotSpec::drawing_order
 
@@ -212,6 +213,12 @@ DrawingOrder AcePlotSpec::drawing_order() const
 
 Color AcePlotSpec::error_line_positive_color() const
 {
+    try {
+        return static_cast<std::string>(mData["E"]["c"]);
+    }
+    catch (rjson::field_not_found&) {
+        return "red";
+    }
 
 } // AcePlotSpec::error_line_positive_color
 
@@ -219,6 +226,12 @@ Color AcePlotSpec::error_line_positive_color() const
 
 Color AcePlotSpec::error_line_negative_color() const
 {
+    try {
+        return static_cast<std::string>(mData["e"]["c"]);
+    }
+    catch (rjson::field_not_found&) {
+        return "blue";
+    }
 
 } // AcePlotSpec::error_line_negative_color
 
@@ -226,6 +239,8 @@ Color AcePlotSpec::error_line_negative_color() const
 
 std::shared_ptr<PointStyle> AcePlotSpec::style(size_t aPointNo) const
 {
+    const rjson::array& indices = mData["p"];
+    return std::make_shared<AcePointStyle>(mData["P"][indices[aPointNo]]);
 
 } // AcePlotSpec::style
 

@@ -103,8 +103,11 @@ namespace acmacs::chart
 
     }; // class Titer
 
-    class DrawingOrder
+    class DrawingOrder : public internal::index_list_data
     {
+     public:
+        using internal::index_list_data::index_list_data;
+
     }; // class DrawingOrder
 
 // ----------------------------------------------------------------------
@@ -236,6 +239,23 @@ namespace acmacs::chart
     {
       public:
         virtual ~PointStyle();
+
+        virtual bool shown() const = 0;
+        virtual Color fill() const = 0;
+        virtual Color outline() const = 0;
+        virtual double outline_width() const = 0;
+        virtual double size() const = 0;
+        // virtual Shape shape() const = 0;
+        // virtual Rotation rotation() const = 0;
+        // virtual Aspect aspect() const = 0;
+        // virtual bool label_shown() const = 0;
+        // virtual Offset label_offset() const = 0;
+        // virtual std::string label_text() const = 0;
+        // virtual TextStyle label_style() const = 0;
+        // virtual double label_size() const = 0;
+        // virtual Color label_color() const = 0;
+        // virtual Rotation label_rotation() const = 0;
+        // virtual double label_interline() const = 0;
 
     }; // class PointStyle
 
