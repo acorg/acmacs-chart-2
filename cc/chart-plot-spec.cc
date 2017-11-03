@@ -35,14 +35,6 @@ int main(int argc, char* const argv[])
         }
         else {
             print_plot_spec(args);
-            //     const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
-            //     for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-            //         std::cout << "AG " << std::setw(num_digits) << ag_no << " " << string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant(), antigen->passage(), antigen->date(), string::join(" ", antigen->lab_ids())}) << '\n';
-            //     }
-            //     for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
-            //         std::cout << "SR " << std::setw(num_digits) << sr_no << " " << string::join(" ", {serum->name(), string::join(" ", serum->annotations()), serum->reassortant(), serum->passage(), serum->serum_id(), serum->serum_species()}) << '\n';
-            //     }
-            // }
         }
     }
     catch (std::exception& err) {
@@ -80,33 +72,81 @@ void print_plot_spec(const argc_argv& args)
         antigen_fields["aspect"].push_back(std::to_string(style->aspect()));
         antigen_fields["rotation"].push_back(std::to_string(style->rotation()));
         antigen_fields["shape"].push_back(style->shape());
+        const auto label_style = style->label_style();
+        antigen_fields["label_shown"].push_back(bool_to_string(label_style.shown()));
+        antigen_fields["label_color"].push_back(label_style.color());
+        antigen_fields["label_font_face"].push_back(label_style.text_style().font_family());
+        antigen_fields["label_font_slant"].push_back(label_style.text_style().slant_as_stirng());
+        antigen_fields["label_font_weight"].push_back(label_style.text_style().weight_as_stirng());
+        antigen_fields["label_position_x"].push_back(std::to_string(label_style.offset().x));
+        antigen_fields["label_position_y"].push_back(std::to_string(label_style.offset().y));
+        antigen_fields["label_rotation"].push_back(std::to_string(label_style.rotation()));
+        antigen_fields["label_size"].push_back(std::to_string(label_style.size()));
+        antigen_fields["label"].push_back(style->label_text());
             // drawing_level="66"
-            // label=""
-            // label_color=""
-            // label_font_face=""
-            // label_font_slant="normal"
-            // label_font_weight="normal"
-            // label_position_x="0.0"
-            // label_position_y="1.0"
-            // label_rotation="0.0"
-            // label_shown="True"
-            // label_size="1.0"
-            // show_label="1"
     }
     auto antigen_field_lengths = field_max_length(antigen_fields);
+
+    const auto number_of_antigens = chart->number_of_antigens();
+    const auto number_of_sera = chart->number_of_sera();
+
+    fields_t serum_fields;
+    for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
+        serum_fields["I"].push_back(std::to_string(sr_no));
+        serum_fields["name"].push_back(serum->name());
+        serum_fields["reassortant"].push_back(serum->reassortant());
+        serum_fields["annotations"].push_back(serum->annotations().join());
+        serum_fields["passage"].push_back(serum->passage());
+        serum_fields["serum_id"].push_back(serum->serum_id());
+        serum_fields["serum_species"].push_back(serum->serum_species());
+        auto style = plot_spec->style(number_of_antigens + sr_no);
+        serum_fields["fill_color"].push_back(style->fill());
+        serum_fields["outline_color"].push_back(style->outline());
+        serum_fields["outline_width"].push_back(std::to_string(style->outline_width()));
+        serum_fields["size"].push_back(std::to_string(style->size()));
+        serum_fields["shown"].push_back(bool_to_string(style->shown()));
+        serum_fields["aspect"].push_back(std::to_string(style->aspect()));
+        serum_fields["rotation"].push_back(std::to_string(style->rotation()));
+        serum_fields["shape"].push_back(style->shape());
+        const auto label_style = style->label_style();
+        serum_fields["label_shown"].push_back(bool_to_string(label_style.shown()));
+        serum_fields["label_color"].push_back(label_style.color());
+        serum_fields["label_font_face"].push_back(label_style.text_style().font_family());
+        serum_fields["label_font_slant"].push_back(label_style.text_style().slant_as_stirng());
+        serum_fields["label_font_weight"].push_back(label_style.text_style().weight_as_stirng());
+        serum_fields["label_position_x"].push_back(std::to_string(label_style.offset().x));
+        serum_fields["label_position_y"].push_back(std::to_string(label_style.offset().y));
+        serum_fields["label_rotation"].push_back(std::to_string(label_style.rotation()));
+        serum_fields["label_size"].push_back(std::to_string(label_style.size()));
+        serum_fields["label"].push_back(style->label_text());
+            // drawing_level="66"
+    }
+    auto serum_field_lengths = field_max_length(serum_fields);
 
     std::cout << "plot_style version 1" << '\n'
               << "# generated by chart-plot-spec on " << std::put_time(std::localtime(&now), "%c %Z") << '\n'
               << "#\n# Antigens\n#\n";
-    for (size_t ag_no = 0; ag_no < chart->number_of_antigens(); ++ag_no) {
+    for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
         std::cout << "T=\"AG\"";
-        for (std::string field_name: {"I", "name", "reassortant", "annotations", "passage", "fill_color", "outline_color", "outline_width", "size", "shown", "aspect", "rotation", "shape"}) {
+        for (std::string field_name:
+                     {"I", "name", "reassortant", "annotations", "passage", "fill_color", "outline_color", "outline_width", "size", "shown", "aspect", "rotation", "shape",
+                      "label_shown", "label_color", "label_font_face", "label_font_slant", "label_font_weight", "label_position_x", "label_position_y", "label_rotation", "label_size"}) {
             const std::string value = field_name + "=\"" + antigen_fields[field_name][ag_no] + '"';
             std::cout << ' ' << std::left << std::setw(static_cast<int>(antigen_field_lengths[field_name] + field_name.size() + 3)) << value;
         }
         std::cout << '\n';
     }
-            // const auto number_of_points = chart->number_of_antigens() + chart->number_of_sera();
+    std::cout << "#\n# Sera\n#\n";
+    for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
+        std::cout << "T=\"SR\"";
+        for (std::string field_name:
+                     {"I", "name", "reassortant", "annotations", "serum_id", "serum_species", "passage", "fill_color", "outline_color", "outline_width", "size", "shown", "aspect", "rotation", "shape",
+                      "label_shown", "label_color", "label_font_face", "label_font_slant", "label_font_weight", "label_position_x", "label_position_y", "label_rotation", "label_size"}) {
+            const std::string value = field_name + "=\"" + serum_fields[field_name][sr_no] + '"';
+            std::cout << ' ' << std::left << std::setw(static_cast<int>(serum_field_lengths[field_name] + field_name.size() + 3)) << value;
+        }
+        std::cout << '\n';
+    }
 
 } // print_plot_spec
 
