@@ -109,6 +109,8 @@ namespace acmacs::chart
      public:
         using internal::index_list_data::index_list_data;
 
+        inline size_t index_of(size_t aValue) const { return static_cast<size_t>(std::find(begin(), end(), aValue) - begin()); }
+
     }; // class DrawingOrder
 
     class PointShape
