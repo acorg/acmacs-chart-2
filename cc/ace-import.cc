@@ -240,7 +240,7 @@ Color AcePlotSpec::error_line_negative_color() const
 std::shared_ptr<PointStyle> AcePlotSpec::style(size_t aPointNo) const
 {
     const rjson::array& indices = mData["p"];
-    return std::make_shared<AcePointStyle>(mData["P"][indices[aPointNo]]);
+    return std::make_shared<AcePointStyle>(mData["P"][static_cast<size_t>(indices[aPointNo])]);
 
 } // AcePlotSpec::style
 

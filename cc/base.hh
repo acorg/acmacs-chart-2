@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "acmacs-base/rjson.hh"
+#include "acmacs-base/string.hh"
 #include "acmacs-base/stream.hh"
 
 // ----------------------------------------------------------------------
@@ -42,6 +43,8 @@ namespace acmacs::chart
             inline operator const std::vector<std::string>&() const noexcept { return mData; }
             inline auto begin() const { return mData.begin(); }
             inline auto end() const { return mData.end(); }
+
+            inline std::string join() const { return string::join(" ", begin(), end()); }
 
          private:
             std::vector<std::string> mData;
