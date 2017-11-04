@@ -12,7 +12,8 @@ TARGETS = \
     $(ACMACS_CHART_LIB) \
     $(DIST)/chart-info \
     $(DIST)/chart-names \
-    $(DIST)/chart-plot-spec
+    $(DIST)/chart-plot-spec \
+    $(DIST)/chart-convert
 
 SOURCES = chart.cc factory.cc ace-import.cc
 
