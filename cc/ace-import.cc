@@ -294,6 +294,15 @@ acmacs::LabelStyle AcePointStyle::label_style() const
                       case 'i':
                           result.interline = field_value;
                           break;
+                      case 'f':
+                          result.style.font_family = static_cast<std::string>(field_value);
+                          break;
+                      case 'S':
+                          result.style.slant = static_cast<std::string>(field_value);
+                          break;
+                      case 'W':
+                          result.style.weight = static_cast<std::string>(field_value);
+                          break;
                     }
                 }
                 catch (std::exception& err) {
@@ -301,10 +310,6 @@ acmacs::LabelStyle AcePointStyle::label_style() const
                 }
             }
         }
-
-        result
-                .text_style({style.get_or_default("f", ""), style.get_or_default("S", ""), style.get_or_default("W", "")})
-                ;
     }
     return result;
 
