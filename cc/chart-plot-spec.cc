@@ -63,7 +63,7 @@ void print_plot_spec(const argc_argv& args)
     fields_t antigen_fields;
     for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
         const size_t point_no = ag_no;
-        antigen_fields["I"].push_back(std::to_string(ag_no));
+        antigen_fields["I"].push_back(acmacs::to_string(ag_no));
         antigen_fields["name"].push_back(antigen->name());
         antigen_fields["reassortant"].push_back(antigen->reassortant());
         antigen_fields["annotations"].push_back(antigen->annotations().join());
@@ -71,23 +71,23 @@ void print_plot_spec(const argc_argv& args)
         const auto style = plot_spec->style(ag_no);
         antigen_fields["fill_color"].push_back(*style.fill);
         antigen_fields["outline_color"].push_back(*style.outline);
-        antigen_fields["outline_width"].push_back(std::to_string(*style.outline_width));
-        antigen_fields["size"].push_back(std::to_string(*style.size));
+        antigen_fields["outline_width"].push_back(acmacs::to_string(*style.outline_width));
+        antigen_fields["size"].push_back(acmacs::to_string(*style.size));
         antigen_fields["shown"].push_back(bool_to_string(*style.shown));
-        antigen_fields["aspect"].push_back(std::to_string(*style.aspect));
-        antigen_fields["rotation"].push_back(std::to_string(*style.rotation));
+        antigen_fields["aspect"].push_back(acmacs::to_string(*style.aspect));
+        antigen_fields["rotation"].push_back(acmacs::to_string(*style.rotation));
         antigen_fields["shape"].push_back(*style.shape);
         antigen_fields["label_shown"].push_back(bool_to_string(style.label.shown));
         antigen_fields["label_color"].push_back(*style.label.color);
         antigen_fields["label_font_face"].push_back(*style.label.style.font_family);
         antigen_fields["label_font_slant"].push_back(*style.label.style.slant);
         antigen_fields["label_font_weight"].push_back(*style.label.style.weight);
-        antigen_fields["label_position_x"].push_back(std::to_string(style.label.offset->x));
-        antigen_fields["label_position_y"].push_back(std::to_string(style.label.offset->y));
-        antigen_fields["label_rotation"].push_back(std::to_string(*style.label.rotation));
-        antigen_fields["label_size"].push_back(std::to_string(*style.label.size));
+        antigen_fields["label_position_x"].push_back(acmacs::to_string(style.label.offset->x));
+        antigen_fields["label_position_y"].push_back(acmacs::to_string(style.label.offset->y));
+        antigen_fields["label_rotation"].push_back(acmacs::to_string(*style.label.rotation));
+        antigen_fields["label_size"].push_back(acmacs::to_string(*style.label.size));
         antigen_fields["label"].push_back(*style.label_text);
-        antigen_fields["drawing_level"].push_back(std::to_string(drawing_order.index_of(point_no)));
+        antigen_fields["drawing_level"].push_back(acmacs::to_string(drawing_order.index_of(point_no)));
     }
       // sort antigens by name on output
     auto antigen_fields_indices = acmacs::filled_with_indexes<size_t>(number_of_antigens);
@@ -97,7 +97,7 @@ void print_plot_spec(const argc_argv& args)
     fields_t serum_fields;
     for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
         const size_t point_no = number_of_antigens + sr_no;
-        serum_fields["I"].push_back(std::to_string(sr_no));
+        serum_fields["I"].push_back(acmacs::to_string(sr_no));
         serum_fields["name"].push_back(serum->name());
         serum_fields["reassortant"].push_back(serum->reassortant());
         serum_fields["annotations"].push_back(serum->annotations().join());
@@ -107,23 +107,23 @@ void print_plot_spec(const argc_argv& args)
         auto style = plot_spec->style(point_no);
         serum_fields["fill_color"].push_back(*style.fill);
         serum_fields["outline_color"].push_back(*style.outline);
-        serum_fields["outline_width"].push_back(std::to_string(*style.outline_width));
-        serum_fields["size"].push_back(std::to_string(*style.size));
+        serum_fields["outline_width"].push_back(acmacs::to_string(*style.outline_width));
+        serum_fields["size"].push_back(acmacs::to_string(*style.size));
         serum_fields["shown"].push_back(bool_to_string(*style.shown));
-        serum_fields["aspect"].push_back(std::to_string(*style.aspect));
-        serum_fields["rotation"].push_back(std::to_string(*style.rotation));
+        serum_fields["aspect"].push_back(acmacs::to_string(*style.aspect));
+        serum_fields["rotation"].push_back(acmacs::to_string(*style.rotation));
         serum_fields["shape"].push_back(*style.shape);
         serum_fields["label_shown"].push_back(bool_to_string(style.label.shown));
         serum_fields["label_color"].push_back(*style.label.color);
         serum_fields["label_font_face"].push_back(*style.label.style.font_family);
         serum_fields["label_font_slant"].push_back(*style.label.style.slant);
         serum_fields["label_font_weight"].push_back(*style.label.style.weight);
-        serum_fields["label_position_x"].push_back(std::to_string(style.label.offset->x));
-        serum_fields["label_position_y"].push_back(std::to_string(style.label.offset->y));
-        serum_fields["label_rotation"].push_back(std::to_string(*style.label.rotation));
-        serum_fields["label_size"].push_back(std::to_string(*style.label.size));
+        serum_fields["label_position_x"].push_back(acmacs::to_string(style.label.offset->x));
+        serum_fields["label_position_y"].push_back(acmacs::to_string(style.label.offset->y));
+        serum_fields["label_rotation"].push_back(acmacs::to_string(*style.label.rotation));
+        serum_fields["label_size"].push_back(acmacs::to_string(*style.label.size));
         serum_fields["label"].push_back(*style.label_text);
-        serum_fields["drawing_level"].push_back(std::to_string(drawing_order.index_of(point_no)));
+        serum_fields["drawing_level"].push_back(acmacs::to_string(drawing_order.index_of(point_no)));
     }
       // sort sera by name on output
     auto serum_fields_indices = acmacs::filled_with_indexes<size_t>(number_of_sera);
