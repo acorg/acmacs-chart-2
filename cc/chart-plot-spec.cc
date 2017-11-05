@@ -80,14 +80,14 @@ void print_plot_spec(const argc_argv& args)
         const auto label_style = style->label_style();
           //if (label_style.shown.not_default())
         antigen_fields["label_shown"].push_back(bool_to_string(label_style.shown));
-        antigen_fields["label_color"].push_back(label_style.color());
+        antigen_fields["label_color"].push_back(*label_style.color);
         antigen_fields["label_font_face"].push_back(label_style.text_style().font_family());
         antigen_fields["label_font_slant"].push_back(label_style.text_style().slant_as_stirng());
         antigen_fields["label_font_weight"].push_back(label_style.text_style().weight_as_stirng());
         antigen_fields["label_position_x"].push_back(std::to_string(label_style.offset->x));
         antigen_fields["label_position_y"].push_back(std::to_string(label_style.offset->y));
-        antigen_fields["label_rotation"].push_back(std::to_string(label_style.rotation()));
-        antigen_fields["label_size"].push_back(std::to_string(label_style.size()));
+        antigen_fields["label_rotation"].push_back(std::to_string(*label_style.rotation));
+        antigen_fields["label_size"].push_back(std::to_string(*label_style.size));
         antigen_fields["label"].push_back(style->label_text());
         antigen_fields["drawing_level"].push_back(std::to_string(drawing_order.index_of(point_no)));
     }
@@ -118,14 +118,14 @@ void print_plot_spec(const argc_argv& args)
         const auto label_style = style->label_style();
           //if (label_style.shown.not_default())
         serum_fields["label_shown"].push_back(bool_to_string(label_style.shown));
-        serum_fields["label_color"].push_back(label_style.color());
+        serum_fields["label_color"].push_back(*label_style.color);
         serum_fields["label_font_face"].push_back(label_style.text_style().font_family());
         serum_fields["label_font_slant"].push_back(label_style.text_style().slant_as_stirng());
         serum_fields["label_font_weight"].push_back(label_style.text_style().weight_as_stirng());
         serum_fields["label_position_x"].push_back(std::to_string(label_style.offset->x));
         serum_fields["label_position_y"].push_back(std::to_string(label_style.offset->y));
-        serum_fields["label_rotation"].push_back(std::to_string(label_style.rotation()));
-        serum_fields["label_size"].push_back(std::to_string(label_style.size()));
+        serum_fields["label_rotation"].push_back(std::to_string(*label_style.rotation));
+        serum_fields["label_size"].push_back(std::to_string(*label_style.size));
         serum_fields["label"].push_back(style->label_text());
         serum_fields["drawing_level"].push_back(std::to_string(drawing_order.index_of(point_no)));
     }

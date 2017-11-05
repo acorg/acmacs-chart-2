@@ -271,18 +271,39 @@ acmacs::LabelStyle AcePointStyle::label_style() const
 {
     LabelStyle result;
     if (auto [present, style] = mData.get_object_if("l"); present) {
-        acmacs::Offset offset;
-        if (auto [offset_present, offset_data] = style.get_array_if("p"); offset_present)
-            result.offset = acmacs::Offset(offset_data[0], offset_data[1]);
-        if (auto [shown_present, shown] = style.get_value_if("+"); shown_present)
-            result.shown = shown;
-        result//.shown(style.get_or_default("+", true))
-                  //.offset(offset)
+        for (auto [field_name_v, field_value]: style) {
+            const std::string field_name(field_name_v);
+            if (!field_name.empty()) {
+                try {
+                    switch (field_name[0]) {
+                      case '+':
+                          result.shown = field_value;
+                          break;
+                      case 'p':
+                          result.offset = acmacs::Offset(field_value[0], field_value[1]);
+                          break;
+                      case 's':
+                          result.size = field_value;
+                          break;
+                      case 'c':
+                          result.color = Color(field_value);
+                          break;
+                      case 'r':
+                          result.rotation = Rotation{field_value};
+                          break;
+                      case 'i':
+                          result.interline = field_value;
+                          break;
+                    }
+                }
+                catch (std::exception& err) {
+                    std::cerr << "WARNING: [ace]: label style field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << field_value.to_json() << '\n';
+                }
+            }
+        }
+
+        result
                 .text_style({style.get_or_default("f", ""), style.get_or_default("S", ""), style.get_or_default("W", "")})
-                .size(style.get_or_default("s", 1))
-                .color(style.get_or_default("c", "black"))
-                .rotation(Rotation{style.get_or_default("r", 0.0)})
-                .interline(style.get_or_default("i", 0.2))
                 ;
     }
     return result;
