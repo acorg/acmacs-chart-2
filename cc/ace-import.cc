@@ -273,9 +273,11 @@ acmacs::LabelStyle AcePointStyle::label_style() const
     if (auto [present, style] = mData.get_object_if("l"); present) {
         acmacs::Offset offset;
         if (auto [offset_present, offset_data] = style.get_array_if("p"); offset_present)
-            offset.set(offset_data[0], offset_data[1]);
-        result.shown(style.get_or_default("+", true))
-                .offset(offset)
+            result.offset = acmacs::Offset(offset_data[0], offset_data[1]);
+        if (auto [shown_present, shown] = style.get_value_if("+"); shown_present)
+            result.shown = shown;
+        result//.shown(style.get_or_default("+", true))
+                  //.offset(offset)
                 .text_style({style.get_or_default("f", ""), style.get_or_default("S", ""), style.get_or_default("W", "")})
                 .size(style.get_or_default("s", 1))
                 .color(style.get_or_default("c", "black"))
