@@ -258,19 +258,13 @@ Color AcePlotSpec::error_line_negative_color() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<PointStyle> AcePlotSpec::style(size_t aPointNo) const
+acmacs::PointStyle AcePlotSpec::style(size_t aPointNo) const
 {
-    const rjson::array& indices = mData["p"];
-    return std::make_shared<AcePointStyle>(mData["P"][static_cast<size_t>(indices[aPointNo])]);
-
-} // AcePlotSpec::style
-
-// ----------------------------------------------------------------------
-
-acmacs::LabelStyle AcePointStyle::label_style() const
-{
-    LabelStyle result;
-    if (auto [present, style] = mData.get_object_if("l"); present) {
+    acmacs::PointStyle result;
+    try {
+        const rjson::array& indices = mData["p"];
+        const size_t style_no = indices[aPointNo];
+        const rjson::object& style = mData["P"][style_no];
         for (auto [field_name_v, field_value]: style) {
             const std::string field_name(field_name_v);
             if (!field_name.empty()) {
@@ -279,44 +273,94 @@ acmacs::LabelStyle AcePointStyle::label_style() const
                       case '+':
                           result.shown = field_value;
                           break;
-                      case 'p':
-                          result.offset = acmacs::Offset(field_value[0], field_value[1]);
+                      case 'F':
+                          result.fill = Color(field_value);
+                          break;
+                      case 'O':
+                          result.outline = Color(field_value);
+                          break;
+                      case 'o':
+                          result.outline_width = Pixels{field_value};
                           break;
                       case 's':
                           result.size = field_value;
                           break;
-                      case 'c':
-                          result.color = Color(field_value);
-                          break;
                       case 'r':
                           result.rotation = Rotation{field_value};
                           break;
-                      case 'i':
-                          result.interline = field_value;
-                          break;
-                      case 'f':
-                          result.style.font_family = static_cast<std::string>(field_value);
+                      case 'a':
+                          result.aspect = Aspect{field_value};
                           break;
                       case 'S':
-                          result.style.slant = static_cast<std::string>(field_value);
+                          result.shape = static_cast<std::string>(field_value);
                           break;
-                      case 'W':
-                          result.style.weight = static_cast<std::string>(field_value);
+                      case 'l':
+                          label_style(result, field_value);
                           break;
                     }
                 }
                 catch (std::exception& err) {
-                    std::cerr << "WARNING: [ace]: label style field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << field_value.to_json() << '\n';
+                    std::cerr << "WARNING: [ace]: point " << aPointNo << " style " << style_no << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << field_value.to_json() << '\n';
                 }
             }
         }
     }
+    catch (std::exception& err) {
+        std::cerr << "WARNING: [ace]: cannot get style for point " << aPointNo << ": " << err.what() << '\n';
+    }
     return result;
 
-} // AcePointStyle::label_style
+} // AcePlotSpec::style
 
 // ----------------------------------------------------------------------
 
+void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::object& aData) const
+{
+    auto& label_style = aStyle.label;
+    for (auto [field_name_v, field_value]: aData) {
+        const std::string field_name(field_name_v);
+        if (!field_name.empty()) {
+            try {
+                switch (field_name[0]) {
+                  case '+':
+                      label_style.shown = field_value;
+                      break;
+                  case 'p':
+                      label_style.offset = acmacs::Offset(field_value[0], field_value[1]);
+                      break;
+                  case 's':
+                      label_style.size = field_value;
+                      break;
+                  case 'c':
+                      label_style.color = Color(field_value);
+                      break;
+                  case 'r':
+                      label_style.rotation = Rotation{field_value};
+                      break;
+                  case 'i':
+                      label_style.interline = field_value;
+                      break;
+                  case 'f':
+                      label_style.style.font_family = static_cast<std::string>(field_value);
+                      break;
+                  case 'S':
+                      label_style.style.slant = static_cast<std::string>(field_value);
+                      break;
+                  case 'W':
+                      label_style.style.weight = static_cast<std::string>(field_value);
+                      break;
+                  case 't':
+                      aStyle.label_text = static_cast<std::string>(field_value);
+                      break;
+                }
+            }
+            catch (std::exception& err) {
+                std::cerr << "WARNING: [ace]: label style field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << field_value.to_json() << '\n';
+            }
+        }
+    }
+
+} // AcePlotSpec::label_style
 
 // ----------------------------------------------------------------------
 /// Local Variables:

@@ -209,29 +209,6 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class AcePointStyle : public PointStyle
-    {
-      public:
-        inline AcePointStyle(const rjson::object& aData) : mData{aData} {}
-
-        inline bool shown() const override { return mData.get_or_default("+", true); }
-        inline Color fill() const override { return mData.get_or_default("F", "transparent"); }
-        inline Color outline() const override { return mData.get_or_default("O", "black"); }
-        inline double outline_width() const override { return mData.get_or_default("o", 1.0); }
-        inline double size() const override { return mData.get_or_default("s", 1.0); }
-        inline Rotation rotation() const override { return Rotation{mData.get_or_default("r", 0.0)}; }
-        inline Aspect aspect() const override { return Aspect{mData.get_or_default("a", 1.0)}; }
-        inline PointShape shape() const override { return mData.get_or_default("S", "C"); }
-        LabelStyle label_style() const override;
-        inline std::string label_text() const override { try { return mData["l"]["t"]; } catch (std::exception&) { return {}; } }
-
-     private:
-        const rjson::object& mData;
-
-    }; // class AcePointStyle
-
-// ----------------------------------------------------------------------
-
     class AcePlotSpec : public PlotSpec
     {
       public:
@@ -240,10 +217,12 @@ namespace acmacs::chart
         inline DrawingOrder drawing_order() const override { return mData["d"]; }
         Color error_line_positive_color() const override;
         Color error_line_negative_color() const override;
-        std::shared_ptr<PointStyle> style(size_t aPointNo) const override;
+        PointStyle style(size_t aPointNo) const override;
 
      private:
         const rjson::object& mData;
+
+        void label_style(PointStyle& aStyle, const rjson::object& aData) const;
 
     }; // class AcePlotSpec
 

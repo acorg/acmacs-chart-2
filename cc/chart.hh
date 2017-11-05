@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "acmacs-base/color.hh"
-#include "acmacs-base/text-style.hh"
+#include "acmacs-base/point-style.hh"
 #include "acmacs-base/transformation.hh"
 #include "acmacs-chart/base.hh"
 #include "acmacs-chart/passage.hh"
@@ -156,64 +156,6 @@ namespace acmacs::chart
 
     }; // class DrawingOrder
 
-    class PointShape
-    {
-     public:
-        enum Shape {Circle, Box, Triangle};
-
-        inline PointShape() : mShape{Circle} {}
-        inline PointShape(const PointShape&) = default;
-        inline PointShape(Shape aShape) : mShape{aShape} {}
-        inline PointShape(std::string aShape) { from_string(aShape); }
-        inline PointShape& operator=(const PointShape&) = default;
-        inline PointShape& operator=(Shape aShape) { mShape = aShape; return *this; }
-        inline PointShape& operator=(std::string aShape) { from_string(aShape); return *this; }
-
-        inline operator std::string() const
-            {
-                switch(mShape) {
-                  case Circle:
-                      return "CIRCLE";
-                  case Box:
-                      return "BOX";
-                  case Triangle:
-                      return "TRIANGLE";
-                }
-                  //return "?";
-            }
-
-     private:
-        Shape mShape;
-
-        inline void from_string(std::string aShape)
-            {
-                if (!aShape.empty()) {
-                    switch (aShape.front()) {
-                      case 'C':
-                      case 'c':
-                          mShape = Circle;
-                          break;
-                      case 'B':
-                      case 'b':
-                      case 'R': // rectangle
-                      case 'r':
-                          mShape = Box;
-                          break;
-                      case 'T':
-                      case 't':
-                          mShape = Triangle;
-                          break;
-                      default:
-                          std::runtime_error("Unrecognized point shape: " + aShape);
-                    }
-                }
-                else {
-                    std::runtime_error("Unrecognized empty point shape");
-                }
-            }
-
-    }; // class PointShape
-
 // ----------------------------------------------------------------------
 
     class Antigen
@@ -351,26 +293,6 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class PointStyle
-    {
-      public:
-        virtual ~PointStyle();
-
-        virtual bool shown() const = 0;
-        virtual Color fill() const = 0;
-        virtual Color outline() const = 0;
-        virtual double outline_width() const = 0;
-        virtual double size() const = 0;
-        virtual Rotation rotation() const = 0;
-        virtual Aspect aspect() const = 0;
-        virtual PointShape shape() const = 0;
-        virtual LabelStyle label_style() const = 0;
-        virtual std::string label_text() const = 0;
-
-    }; // class PointStyle
-
-// ----------------------------------------------------------------------
-
     class PlotSpec
     {
       public:
@@ -379,7 +301,7 @@ namespace acmacs::chart
         virtual DrawingOrder drawing_order() const = 0;
         virtual Color error_line_positive_color() const = 0;
         virtual Color error_line_negative_color() const = 0;
-        virtual std::shared_ptr<PointStyle> style(size_t aPointNo) const = 0;
+        virtual PointStyle style(size_t aPointNo) const = 0;
 
     }; // class PlotSpec
 

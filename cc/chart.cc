@@ -93,12 +93,6 @@ acmacs::chart::Projections::~Projections()
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::PointStyle::~PointStyle()
-{
-} // acmacs::chart::PointStyle::~PointStyle
-
-// ----------------------------------------------------------------------
-
 acmacs::chart::PlotSpec::~PlotSpec()
 {
 } // acmacs::chart::PlotSpec::~PlotSpec
