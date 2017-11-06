@@ -122,6 +122,33 @@ void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSe
 
 void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters)
 {
+      // std::cerr << "number_of_non_dont_cares: " << aTiters->number_of_non_dont_cares() << '\n';
+      // std::cerr << "percent_of_non_dont_cares: " << aTiters->percent_of_non_dont_cares() << '\n';
+    const size_t number_of_antigens = aTiters->number_of_antigens();
+    const size_t number_of_sera = aTiters->number_of_sera();
+    const double percent_of_non_dont_cares = static_cast<double>(aTiters->number_of_non_dont_cares()) / (number_of_antigens * number_of_sera);
+    if (percent_of_non_dont_cares > 0.7) {
+        rjson::array& list = aTarget.set_field("l", rjson::array{});
+        for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
+            rjson::array& row = list.insert(rjson::array{});
+            for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
+                row.insert(rjson::string{aTiters->titer(ag_no, sr_no)});
+            }
+        }
+    }
+    else {
+        rjson::array& list = aTarget.set_field("d", rjson::array{});
+        for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
+            rjson::object& row = list.insert(rjson::object{});
+            for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
+                const auto titer = aTiters->titer(ag_no, sr_no);
+                if (!titer.is_dont_care())
+                    row.set_field(acmacs::to_string(sr_no), rjson::string{titer});
+            }
+        }
+    }
+
+      // layers
 
 } // export_titers
 

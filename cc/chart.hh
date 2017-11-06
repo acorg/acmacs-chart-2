@@ -116,6 +116,8 @@ namespace acmacs::chart
      public:
         using internal::string_data::string_data;
 
+        inline bool is_dont_care() const { return data() == "*"; }
+
     }; // class Titer
 
     class PointIndexList : public internal::index_list_data
@@ -248,6 +250,8 @@ namespace acmacs::chart
         virtual size_t number_of_layers() const = 0;
         virtual size_t number_of_antigens() const = 0;
         virtual size_t number_of_sera() const = 0;
+        virtual size_t number_of_non_dont_cares() const = 0;
+        virtual inline double percent_of_non_dont_cares() const { return static_cast<double>(number_of_non_dont_cares()) / (number_of_antigens() * number_of_sera()); }
 
     }; // class Titers
 

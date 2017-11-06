@@ -196,7 +196,12 @@ Titer AceTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
         return list[aAntigenNo][aSerumNo];
     }
     else {
-        return mData["d"][aAntigenNo][std::to_string(aSerumNo)];
+        try {
+            return mData["d"][aAntigenNo][std::to_string(aSerumNo)];
+        }
+        catch (rjson::field_not_found&) {
+            return "*";
+        }
     }
 
 } // AceTiters::titer
@@ -235,6 +240,27 @@ size_t AceTiters::number_of_sera() const
     }
 
 } // AceTiters::number_of_sera
+
+// ----------------------------------------------------------------------
+
+size_t AceTiters::number_of_non_dont_cares() const
+{
+    size_t result = 0;
+    if (auto [present, list] = mData.get_array_if("l"); present) {
+        for (const rjson::array& row: list) {
+            for (const Titer titer: row) {
+                if (!titer.is_dont_care())
+                    ++result;
+            }
+        }
+    }
+    else {
+        const rjson::array& d = mData["d"];
+        result = std::accumulate(d.begin(), d.end(), 0U, [](size_t a, const rjson::object& row) -> size_t { return a + row.size(); });
+    }
+    return result;
+
+} // AceTiters::number_of_non_dont_cares
 
 // ----------------------------------------------------------------------
 

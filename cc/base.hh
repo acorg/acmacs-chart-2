@@ -20,6 +20,7 @@ namespace acmacs::chart
             inline string_data() = default;
             inline string_data(const std::string& aSrc) : mData{aSrc} {}
             inline string_data(std::string&& aSrc) : mData{std::move(aSrc)} {}
+            inline string_data(const char* aSrc) : mData{aSrc} {}
             inline string_data(const rjson::value& aSrc) : mData{static_cast<std::string>(aSrc)} {}
 
             inline const std::string& data() const noexcept { return mData; }

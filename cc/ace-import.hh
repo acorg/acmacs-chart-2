@@ -147,6 +147,7 @@ namespace acmacs::chart
         inline size_t number_of_layers() const override { return layers().size(); }
         size_t number_of_antigens() const override;
         size_t number_of_sera() const override;
+        size_t number_of_non_dont_cares() const override;
 
      private:
         const rjson::object& mData;
