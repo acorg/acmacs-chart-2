@@ -1,7 +1,9 @@
 #include <iostream>
 
 #include "acmacs-base/argc-argv.hh"
-#include "acmacs-chart/factory.hh"
+#include "acmacs-base/filesystem.hh"
+#include "acmacs-chart/factory-import.hh"
+#include "acmacs-chart/factory-export.hh"
 #include "acmacs-chart/chart.hh"
 
 // ----------------------------------------------------------------------
@@ -21,9 +23,9 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            auto chart = acmacs::chart::factory(args[0], acmacs::chart::Verify::All);
+            auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::All);
             std::cout << chart->make_info() << '\n';
-
+            acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename());
         }
     }
     catch (std::exception& err) {

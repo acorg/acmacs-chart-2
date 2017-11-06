@@ -1,9 +1,6 @@
 #pragma once
 
 #include <string>
-#include <memory>
-
-#include "acmacs-chart/verify.hh"
 
 // ----------------------------------------------------------------------
 
@@ -11,7 +8,7 @@ namespace acmacs::chart
 {
     class Chart;
 
-    std::shared_ptr<Chart> factory(std::string aFilename, Verify aVerify);
+    std::string ace_export(std::shared_ptr<Chart> aChart, std::string aProgramName);
 
 } // namespace acmacs::chart
 

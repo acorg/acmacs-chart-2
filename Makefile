@@ -15,7 +15,9 @@ TARGETS = \
     $(DIST)/chart-plot-spec \
     $(DIST)/chart-convert
 
-SOURCES = chart.cc factory.cc ace-import.cc
+SOURCES = chart.cc \
+    factory-import.cc ace-import.cc \
+    factory-export.cc ace-export.cc
 
 # ----------------------------------------------------------------------
 

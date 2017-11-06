@@ -1,16 +1,17 @@
 #pragma once
 
-#include <stdexcept>
+#include <string>
+#include <memory>
+
+#include "acmacs-chart/verify.hh"
 
 // ----------------------------------------------------------------------
 
 namespace acmacs::chart
 {
-    enum class Verify { None, All };
+    class Chart;
 
-    class import_error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
-
-    class export_error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+    std::shared_ptr<Chart> import_factory(std::string aFilename, Verify aVerify);
 
 } // namespace acmacs::chart
 
