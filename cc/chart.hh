@@ -38,10 +38,23 @@ namespace acmacs::chart
 
     class Info
     {
-      public:
+     public:
+        enum class Compute { No, Yes };
+
         virtual ~Info();
 
         virtual std::string make_info() const = 0;
+
+        virtual std::string name(Compute = Compute::No) const = 0;
+        virtual std::string virus(Compute = Compute::No) const = 0;
+        virtual std::string virus_type(Compute = Compute::No) const = 0;
+        virtual std::string subset(Compute = Compute::No) const = 0;
+        virtual std::string assay(Compute = Compute::No) const = 0;
+        virtual std::string lab(Compute = Compute::No) const = 0;
+        virtual std::string rbc_species(Compute = Compute::No) const = 0;
+        virtual std::string date(Compute aCompute = Compute::No) const = 0;
+        virtual size_t number_of_sources() const = 0;
+        virtual std::shared_ptr<Info> source(size_t aSourceNo) const = 0;
 
     }; // class Info
 

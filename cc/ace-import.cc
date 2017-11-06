@@ -114,13 +114,13 @@ std::string AceInfo::make_info() const
 {
     const auto n_sources = number_of_sources();
     return string::join(" ", {name(),
-                    virus(),
-                    lab(),
-                    virus_type(),
-                    subset(),
-                    assay(),
-                    rbc_species(),
-                    date(),
+                    virus(Compute::Yes),
+                    lab(Compute::Yes),
+                    virus_type(Compute::Yes),
+                    subset(Compute::Yes),
+                    assay(Compute::Yes),
+                    rbc_species(Compute::Yes),
+                    date(Compute::Yes),
                     n_sources ? ("(" + std::to_string(n_sources) + " tables)") : std::string{}
                              });
 
@@ -128,10 +128,10 @@ std::string AceInfo::make_info() const
 
 // ----------------------------------------------------------------------
 
-std::string AceInfo::make_field(const char* aField, const char* aSeparator) const
+std::string AceInfo::make_field(const char* aField, const char* aSeparator, Compute aCompute) const
 {
     std::string result{mData.get_or_default(aField, "")};
-    if (result.empty()) {
+    if (result.empty() && aCompute == Compute::Yes) {
         const auto& sources{mData.get_or_empty_array("S")};
         if (!sources.empty()) {
             std::set<std::string> composition;
@@ -145,10 +145,10 @@ std::string AceInfo::make_field(const char* aField, const char* aSeparator) cons
 
 // ----------------------------------------------------------------------
 
-std::string AceInfo::date() const
+std::string AceInfo::date(Compute aCompute) const
 {
     std::string result{mData.get_or_default("D", "")};
-    if (result.empty()) {
+    if (result.empty() && aCompute == Compute::Yes) {
         const auto& sources{mData.get_or_empty_array("S")};
         if (!sources.empty()) {
             std::vector<std::string> composition{sources.size()};
