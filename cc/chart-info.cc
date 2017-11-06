@@ -24,7 +24,7 @@ int main(int argc, char* const argv[])
         else {
             const bool verify = args["--verify"];
             for (size_t file_no = 0; file_no < args.number_of_arguments(); ++file_no) {
-                auto chart = acmacs::chart::factory(args[file_no], verify);
+                auto chart = acmacs::chart::factory(args[file_no], verify ? acmacs::chart::Verify::All : acmacs::chart::Verify::None);
                 std::cout << chart->make_info() << '\n';
             }
         }

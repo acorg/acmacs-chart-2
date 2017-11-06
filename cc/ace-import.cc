@@ -9,20 +9,21 @@ using namespace acmacs::chart;
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Chart> acmacs::chart::ace_import(const std::string_view& aData, bool aVerify)
+std::shared_ptr<Chart> acmacs::chart::ace_import(const std::string_view& aData, Verify aVerify)
 {
     auto chart = std::make_shared<AceChart>(rjson::parse_string(aData));
-    if (aVerify)
-        chart->verify_data();
+    chart->verify_data(aVerify);
     return chart;
 
 } // acmacs::chart::ace_import
 
 // ----------------------------------------------------------------------
 
-void AceChart::verify_data() const
+void AceChart::verify_data(Verify aVerify) const
 {
-    std::cerr << "WARNING: AceChart::verify_data not implemented\n";
+    if (aVerify != Verify::None) {
+        std::cerr << "WARNING: AceChart::verify_data not implemented\n";
+    }
 
 } // AceChart::verify_data
 

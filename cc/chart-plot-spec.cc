@@ -49,7 +49,7 @@ int main(int argc, char* const argv[])
 
 void print_plot_spec(const argc_argv& args)
 {
-    auto chart = acmacs::chart::factory(args[0], false);
+    auto chart = acmacs::chart::factory(args[0], acmacs::chart::Verify::None);
     auto antigens = chart->antigens();
     auto sera = chart->sera();
     auto plot_spec = chart->plot_spec();

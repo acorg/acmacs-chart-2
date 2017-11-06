@@ -21,7 +21,7 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            auto chart = acmacs::chart::factory(args[0], false);
+            auto chart = acmacs::chart::factory(args[0], acmacs::chart::Verify::All);
             std::cout << chart->make_info() << '\n';
 
         }

@@ -2,6 +2,7 @@
 
 #include "acmacs-base/rjson.hh"
 #include "acmacs-chart/chart.hh"
+#include "acmacs-chart/verify.hh"
 
 // ----------------------------------------------------------------------
 
@@ -20,7 +21,7 @@ namespace acmacs::chart
         std::shared_ptr<Projections> projections() const override;
         std::shared_ptr<PlotSpec> plot_spec() const override;
 
-        void verify_data() const;
+        void verify_data(Verify aVerify) const;
 
      private:
         rjson::value mData;
@@ -32,7 +33,7 @@ namespace acmacs::chart
         return aData.size() > 35 && aData.front() == '{' && aData.find("\"acmacs-ace-v1\"") != std::string_view::npos;
     }
 
-    std::shared_ptr<Chart> ace_import(const std::string_view& aData, bool aVerify);
+    std::shared_ptr<Chart> ace_import(const std::string_view& aData, Verify aVerify);
 
 // ----------------------------------------------------------------------
 
