@@ -32,43 +32,35 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-        class string_list_data
+        template <typename T> class T_list_data
         {
          public:
-            inline string_list_data() = default;
-            inline string_list_data(const rjson::array& aSrc) : mData(aSrc.begin(), aSrc.end()) {}
-            inline string_list_data(const rjson::value& aSrc) : string_list_data(static_cast<const rjson::array&>(aSrc)) {}
+            inline T_list_data() = default;
+            inline T_list_data(const rjson::array& aSrc) : mData(aSrc.begin(), aSrc.end()) {}
+            inline T_list_data(const rjson::value& aSrc) : T_list_data(static_cast<const rjson::array&>(aSrc)) {}
 
-            inline const std::vector<std::string>& data() const noexcept { return mData; }
-            inline operator const std::vector<std::string>&() const noexcept { return mData; }
+            inline bool empty() const { return mData.empty(); }
+            inline size_t size() const { return mData.size(); }
+            inline const std::vector<T>& data() const noexcept { return mData; }
+            inline operator const std::vector<T>&() const noexcept { return mData; }
             inline auto begin() const { return mData.begin(); }
             inline auto end() const { return mData.end(); }
+
+         private:
+            std::vector<T> mData;
+
+        }; // T_list_data<>
+
+        class string_list_data : public T_list_data<std::string>
+        {
+         public:
+            using T_list_data<std::string>::T_list_data;
 
             inline std::string join() const { return string::join(" ", begin(), end()); }
 
-         private:
-            std::vector<std::string> mData;
-
         }; // class string_list_data
 
-// ----------------------------------------------------------------------
-
-        class index_list_data
-        {
-         public:
-            inline index_list_data() = default;
-            inline index_list_data(const rjson::array& aSrc) : mData(aSrc.begin(), aSrc.end()) {}
-            inline index_list_data(const rjson::value& aSrc) : index_list_data(static_cast<const rjson::array&>(aSrc)) {}
-
-            inline const std::vector<size_t>& data() const noexcept { return mData; }
-            inline operator const std::vector<size_t>&() const noexcept { return mData; }
-            inline auto begin() const { return mData.begin(); }
-            inline auto end() const { return mData.end(); }
-
-         private:
-            std::vector<size_t> mData;
-
-        }; // class index_list_data
+        using index_list_data = T_list_data<size_t>;
 
     } // namespace internal
 

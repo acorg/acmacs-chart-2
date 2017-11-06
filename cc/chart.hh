@@ -202,6 +202,7 @@ namespace acmacs::chart
         virtual Annotations annotations() const = 0;
         virtual SerumId serum_id() const = 0;
         virtual SerumSpecies serum_species() const = 0;
+        virtual PointIndexList homologous_antigens() const = 0;
 
     }; // class Serum
 

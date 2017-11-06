@@ -77,7 +77,7 @@ namespace acmacs::chart
         inline LabIds lab_ids() const override { return mData.get_or_empty_array("l"); }
         inline Clades clades() const override { return mData.get_or_empty_array("c"); }
         inline Annotations annotations() const override { return mData.get_or_empty_array("a"); }
-        inline bool reference() const override { return static_cast<std::string>(mData["S"]).find("R") != std::string::npos; }
+        inline bool reference() const override { return mData.get_or_default("S", "").find("R") != std::string::npos; }
 
      private:
         const rjson::object& mData;
@@ -98,6 +98,7 @@ namespace acmacs::chart
         inline Annotations annotations() const override { return mData.get_or_empty_array("a"); }
         inline SerumId serum_id() const override { return mData.get_or_default("I", ""); }
         inline SerumSpecies serum_species() const override { return mData.get_or_default("s", ""); }
+        inline PointIndexList homologous_antigens() const override { return mData.get_or_empty_array("h"); }
 
      private:
         const rjson::object& mData;

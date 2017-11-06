@@ -6,6 +6,8 @@
 // ----------------------------------------------------------------------
 
 static void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aInfo);
+static void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens);
+static void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera);
 
 // ----------------------------------------------------------------------
 
@@ -22,6 +24,11 @@ std::string acmacs::chart::ace_export(std::shared_ptr<acmacs::chart::Chart> aCha
                         }}}
             }}};
     export_info(ace["c"]["i"], aChart->info());
+    export_antigens(ace["c"]["a"], aChart->antigens());
+    export_sera(ace["c"]["s"], aChart->sera());
+      // titers
+      // projections
+      // plot spec
     return ace.to_json_pp(1);
 
 } // acmacs::chart::ace_export
@@ -49,6 +56,66 @@ void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aI
     }
 
 } // export_info
+
+// ----------------------------------------------------------------------
+
+void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens)
+{
+    for (auto antigen: *aAntigens) {
+        rjson::object& object = aTarget.insert(rjson::object{});
+
+        object.set_field("N", rjson::string{antigen->name()});
+        object.set_field_if_not_empty("D", static_cast<const std::string&>(antigen->date()));
+        object.set_field_if_not_empty("P", static_cast<const std::string&>(antigen->passage()));
+        object.set_field_if_not_empty("R", static_cast<const std::string&>(antigen->reassortant()));
+        object.set_array_field_if_not_empty("l", antigen->lab_ids());
+        if (antigen->reference())
+            object.set_field("S", rjson::string{"R"});
+        object.set_array_field_if_not_empty("a", antigen->annotations());
+        object.set_array_field_if_not_empty("c", antigen->clades());
+
+        switch (antigen->lineage()) {
+          case acmacs::chart::BLineage::Victoria:
+              object.set_field("L", rjson::string{"V"});
+              break;
+          case acmacs::chart::BLineage::Yamagata:
+              object.set_field("L", rjson::string{"Y"});
+              break;
+          case acmacs::chart::BLineage::Unknown:
+              break;
+        }
+    }
+
+} // export_antigens
+
+// ----------------------------------------------------------------------
+
+void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera)
+{
+    for (auto serum: *aSera) {
+        rjson::object& object = aTarget.insert(rjson::object{});
+
+        object.set_field("N", rjson::string{serum->name()});
+        object.set_field_if_not_empty("P", static_cast<const std::string&>(serum->passage()));
+        object.set_field_if_not_empty("R", static_cast<const std::string&>(serum->reassortant()));
+        object.set_field_if_not_empty("I", static_cast<const std::string&>(serum->serum_id()));
+        object.set_array_field_if_not_empty("a", serum->annotations());
+        object.set_field_if_not_empty("s", static_cast<const std::string&>(serum->serum_species()));
+        object.set_array_field_if_not_empty("h", serum->homologous_antigens());
+
+        switch (serum->lineage()) {
+          case acmacs::chart::BLineage::Victoria:
+              object.set_field("L", rjson::string{"V"});
+              break;
+          case acmacs::chart::BLineage::Yamagata:
+              object.set_field("L", rjson::string{"Y"});
+              break;
+          case acmacs::chart::BLineage::Unknown:
+              break;
+        }
+    }
+
+} // export_sera
 
 // ----------------------------------------------------------------------
 
