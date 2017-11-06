@@ -196,15 +196,18 @@ Titer AceTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
         return list[aAntigenNo][aSerumNo];
     }
     else {
-        try {
-            return mData["d"][aAntigenNo][std::to_string(aSerumNo)];
-        }
-        catch (rjson::field_not_found&) {
-            return "*";
-        }
+        return titer_in_d(mData["d"], aAntigenNo, aSerumNo);
     }
 
 } // AceTiters::titer
+
+// ----------------------------------------------------------------------
+
+Titer AceTiters::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const
+{
+    return titer_in_d(mData["L"][aLayerNo], aAntigenNo, aSerumNo);
+
+} // AceTiters::titer_of_layer
 
 // ----------------------------------------------------------------------
 
@@ -261,14 +264,6 @@ size_t AceTiters::number_of_non_dont_cares() const
     return result;
 
 } // AceTiters::number_of_non_dont_cares
-
-// ----------------------------------------------------------------------
-
-Titer AceTiters::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const
-{
-    return mData["L"][aLayerNo][aAntigenNo][std::to_string(aSerumNo)];
-
-} // AceTiters::titer_of_layer
 
 // ----------------------------------------------------------------------
 

@@ -155,6 +155,16 @@ namespace acmacs::chart
         inline const rjson::array& layers() const { return mData.get_or_empty_array("L"); }
         inline const rjson::object& layer(size_t aLayerNo) const { return layers()[aLayerNo]; }
 
+        inline Titer titer_in_d(const rjson::array& aSource, size_t aAntigenNo, size_t aSerumNo) const
+            {
+                try {
+                    return aSource[aAntigenNo][std::to_string(aSerumNo)];
+                }
+                catch (rjson::field_not_found&) {
+                    return "*";
+                }
+            }
+
     }; // class AceTiters
 
 // ----------------------------------------------------------------------

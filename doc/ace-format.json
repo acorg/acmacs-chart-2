@@ -46,7 +46,7 @@
       // either "l" or "d" must be present (not both)
       "l": [["2560", ">2560", "<10", "~40", "*"]], // titers as list of lists
       "d": [{"1": "160", 2: "320"}, {"2": "640"}], // titers as list of objects, each list element correspond to the antigen, object key is serum index, dont-care titers omitted
-      "L": [{}, {}]                                          // layers, for each layer data as in "d"
+      "L": [[{}, {}], [{}, {}]]                    // layers, for each layer data as in "d"
     },
     "C": [7.0, 6.0],            // forced column bases for new projections
     "P": [                      // projections
