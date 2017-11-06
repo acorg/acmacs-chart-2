@@ -137,9 +137,11 @@ namespace acmacs::chart
         inline MinimumColumnBasis& operator=(const MinimumColumnBasis&) = default;
         inline MinimumColumnBasis& operator=(std::string aValue) { from(aValue); return *this; }
 
+        inline bool is_none() const { return float_zero(mValue); }
+
         inline operator std::string() const noexcept
             {
-                if (float_zero(mValue))
+                if (is_none())
                     return "none";
                 else if (float_equal(mValue, 7.0))
                     return "1280";
@@ -265,6 +267,7 @@ namespace acmacs::chart
         virtual bool exists() const = 0;
         inline operator bool() const { return exists(); }
         virtual double column_basis(size_t aSerumNo) const = 0;
+        virtual size_t size() const = 0;
 
     }; // class ForcedColumnBases
 
@@ -278,6 +281,7 @@ namespace acmacs::chart
         virtual std::string make_info() const;
         virtual double stress() const = 0;
         virtual size_t number_of_dimensions() const = 0;
+        virtual size_t number_of_points() const = 0;
         virtual std::string comment() const = 0;
         virtual double coordinate(size_t aPointNo, size_t aDimensionNo) const = 0;
         virtual MinimumColumnBasis minimum_column_basis() const = 0;

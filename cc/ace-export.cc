@@ -9,6 +9,7 @@ static void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::I
 static void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens);
 static void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera);
 static void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters);
+static void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections);
 
 // ----------------------------------------------------------------------
 
@@ -28,7 +29,8 @@ std::string acmacs::chart::ace_export(std::shared_ptr<acmacs::chart::Chart> aCha
     export_antigens(ace["c"]["a"], aChart->antigens());
     export_sera(ace["c"]["s"], aChart->sera());
     export_titers(ace["c"]["t"], aChart->titers());
-      // projections
+    if (auto projections = aChart->projections(); !projections->empty())
+        export_projections(ace["c"].set_field("P", rjson::array{}), projections);
       // plot spec
     return ace.to_json_pp(1);
 
@@ -160,6 +162,53 @@ void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers
     }
 
 } // export_titers
+
+// ----------------------------------------------------------------------
+
+void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections)
+{
+    for (const auto projection: *aProjections) {
+        rjson::object& target = aTarget.insert(rjson::object{});
+
+        if (const auto number_of_points = projection->number_of_points(), number_of_dimensions = projection->number_of_dimensions(); number_of_points && number_of_dimensions) {
+            rjson::array& ar = target.set_field("l", rjson::array{});
+            for (size_t p_no = 0; p_no < number_of_points; ++p_no) {
+                rjson::array& p = ar.insert(rjson::array{});
+                for (size_t dim = 0; dim < number_of_dimensions; ++dim) {
+                    const auto c = projection->coordinate(p_no, dim);
+                    if (std::isnan(c))
+                        break;
+                    p.insert(rjson::to_value(c));
+                }
+            }
+        }
+
+        target.set_field_if_not_empty("c", static_cast<const std::string&>(projection->comment()));
+        target.set_field_if_not_default("s", projection->stress(), 0.0);
+        if (const auto minimum_column_basis = projection->minimum_column_basis(); !minimum_column_basis.is_none())
+            target.set_field("m", rjson::string{minimum_column_basis});
+        if (const auto forced_column_bases = projection->forced_column_bases(); forced_column_bases->exists()) {
+            rjson::array& ar = target.set_field("C", rjson::array{});
+            for (size_t sr_no = 0; sr_no < forced_column_bases->size(); ++sr_no)
+                ar.insert(rjson::to_value(forced_column_bases->column_basis(sr_no)));
+        }
+        if (const auto transformation = projection->transformation(); transformation != acmacs::Transformation{})
+            target.set_field("t", rjson::array{transformation.a, transformation.b, transformation.c, transformation.d});
+        target.set_field_if_not_default("d", projection->dodgy_titer_is_regular(), false);
+        target.set_field_if_not_default("e", projection->stress_diff_to_stop(), 0.0);
+        if (const auto unmovable = projection->unmovable(); ! unmovable.empty())
+            target.set_field("U", rjson::array(unmovable.begin(), unmovable.end()));
+        if (const auto disconnected = projection->disconnected(); ! disconnected.empty())
+            target.set_field("D", rjson::array(disconnected.begin(), disconnected.end()));
+        if (const auto unmovable_in_the_last_dimension = projection->unmovable_in_the_last_dimension(); ! unmovable_in_the_last_dimension.empty())
+            target.set_field("u", rjson::array(unmovable_in_the_last_dimension.begin(), unmovable_in_the_last_dimension.end()));
+
+        // "i": 600,               // number of iterations?
+        // "g": [],            // antigens_sera_gradient_multipliers, double for each point
+        // "f": [],            // antigens_sera_titers_multipliers, double for each point
+    }
+
+} // export_projections
 
 // ----------------------------------------------------------------------
 

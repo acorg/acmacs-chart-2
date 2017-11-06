@@ -1,5 +1,6 @@
 #include <set>
 #include <vector>
+#include <limits>
 
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
@@ -288,7 +289,13 @@ size_t AceProjection::number_of_dimensions() const
 double AceProjection::coordinate(size_t aPointNo, size_t aDimensionNo) const
 {
     const auto& layout = mData.get_or_empty_array("l");
-    return layout[aPointNo][aDimensionNo];
+    const auto& point = layout[aPointNo];
+    try {
+        return point[aDimensionNo];
+    }
+    catch (std::exception&) {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
 
 } // AceProjection::coordinate
 
