@@ -5,6 +5,7 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-chart/ace-import.hh"
 
+using namespace std::string_literals;
 using namespace acmacs::chart;
 
 // ----------------------------------------------------------------------
@@ -21,8 +22,32 @@ std::shared_ptr<Chart> acmacs::chart::ace_import(const std::string_view& aData, 
 
 void AceChart::verify_data(Verify aVerify) const
 {
-    if (aVerify != Verify::None) {
-        std::cerr << "WARNING: AceChart::verify_data not implemented\n";
+    try {
+        const auto& antigens = mData["c"].get_or_empty_array("a");
+        if (antigens.empty())
+            throw import_error("[ace]: no antigens");
+        const auto& sera = mData["c"].get_or_empty_array("s");
+        if (sera.empty())
+            throw import_error("[ace]: no sera");
+        const auto& titers = mData["c"].get_or_empty_object("t");
+        if (titers.empty())
+            throw import_error("[ace]: no titers");
+        if (auto [ll_present, ll] = titers.get_array_if("l"); ll_present) {
+            if (ll.size() != antigens.size())
+                throw import_error("[ace]: number of the titer rows (" + acmacs::to_string(ll.size()) + ") does not correspond to the number of antigens (" + acmacs::to_string(antigens.size()) + ")");
+        }
+        else if (auto [dd_present, dd] = titers.get_array_if("d"); dd_present) {
+            if (dd.size() != antigens.size())
+                throw import_error("[ace]: number of the titer rows (" + acmacs::to_string(dd.size()) + ") does not correspond to the number of antigens (" + acmacs::to_string(antigens.size()) + ")");
+        }
+        else
+            throw import_error("[ace]: no titers (neither \"l\" nor \"d\" present)");
+        if (aVerify != Verify::None) {
+            std::cerr << "WARNING: AceChart::verify_data not implemented\n";
+        }
+    }
+    catch (std::exception& err) {
+        throw import_error("[ace]: structure verification failed: "s + err.what());
     }
 
 } // AceChart::verify_data
