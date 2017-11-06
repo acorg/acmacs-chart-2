@@ -246,6 +246,8 @@ namespace acmacs::chart
         virtual Titer titer(size_t aAntigenNo, size_t aSerumNo) const = 0;
         virtual Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const = 0;
         virtual size_t number_of_layers() const = 0;
+        virtual size_t number_of_antigens() const = 0;
+        virtual size_t number_of_sera() const = 0;
 
     }; // class Titers
 

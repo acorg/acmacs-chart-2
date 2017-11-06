@@ -203,6 +203,41 @@ Titer AceTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
 
 // ----------------------------------------------------------------------
 
+size_t AceTiters::number_of_antigens() const
+{
+    if (auto [present, list] = mData.get_array_if("l"); present) {
+        return list.size();
+    }
+    else {
+        return static_cast<const rjson::array&>(mData["d"]).size();
+    }
+
+} // AceTiters::number_of_antigens
+
+// ----------------------------------------------------------------------
+
+size_t AceTiters::number_of_sera() const
+{
+    if (auto [present, list] = mData.get_array_if("l"); present) {
+        return static_cast<const rjson::array&>(list[0]).size();
+    }
+    else {
+        const rjson::array& d = mData["d"];
+        auto max_index = [](const rjson::object& obj) -> size_t {
+                             size_t result = 0;
+                             for (auto [key, value]: obj) {
+                                 if (const size_t ind = std::stoul(key); ind > result)
+                                     result = ind;
+                             }
+                             return result;
+                         };
+        return max_index(*std::max_element(d.begin(), d.end(), [max_index](const rjson::object& a, const rjson::object& b) { return max_index(a) < max_index(b); })) + 1;
+    }
+
+} // AceTiters::number_of_sera
+
+// ----------------------------------------------------------------------
+
 Titer AceTiters::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const
 {
     return mData["L"][aLayerNo][aAntigenNo][std::to_string(aSerumNo)];

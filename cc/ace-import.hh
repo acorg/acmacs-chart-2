@@ -145,6 +145,8 @@ namespace acmacs::chart
         Titer titer(size_t aAntigenNo, size_t aSerumNo) const override;
         Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override;
         inline size_t number_of_layers() const override { return layers().size(); }
+        size_t number_of_antigens() const override;
+        size_t number_of_sera() const override;
 
      private:
         const rjson::object& mData;

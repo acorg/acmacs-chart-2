@@ -8,6 +8,7 @@
 static void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aInfo);
 static void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens);
 static void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera);
+static void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters);
 
 // ----------------------------------------------------------------------
 
@@ -26,7 +27,7 @@ std::string acmacs::chart::ace_export(std::shared_ptr<acmacs::chart::Chart> aCha
     export_info(ace["c"]["i"], aChart->info());
     export_antigens(ace["c"]["a"], aChart->antigens());
     export_sera(ace["c"]["s"], aChart->sera());
-      // titers
+    export_titers(ace["c"]["t"], aChart->titers());
       // projections
       // plot spec
     return ace.to_json_pp(1);
@@ -116,6 +117,13 @@ void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSe
     }
 
 } // export_sera
+
+// ----------------------------------------------------------------------
+
+void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters)
+{
+
+} // export_titers
 
 // ----------------------------------------------------------------------
 
