@@ -6,7 +6,16 @@
 
 std::string acmacs::chart::ace_export(std::shared_ptr<acmacs::chart::Chart> aChart, std::string aProgramName)
 {
-    rjson::value ace{rjson::object{{{"  version", rjson::string{"acmacs-ace-v1"}}, {"?created", rjson::string{aProgramName + " on " + acmacs::time_format()}}}}};
+    rjson::value ace{rjson::object{{
+                {"  version", rjson::string{"acmacs-ace-v1"}},
+                {"?created", rjson::string{aProgramName + " on " + acmacs::time_format()}},
+                {"c", rjson::object{{
+                            {"i", rjson::object{}},
+                            {"a", rjson::array{}},
+                            {"s", rjson::array{}},
+                            {"t", rjson::object{}},
+                        }}}
+            }}};
     return ace.to_json_pp();
 
 } // acmacs::chart::ace_export
