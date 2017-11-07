@@ -10,6 +10,8 @@
 
 // ----------------------------------------------------------------------
 
+namespace rjson { class array; }
+
 namespace acmacs::chart
 {
     namespace internal
@@ -33,6 +35,10 @@ namespace acmacs::chart
         };
 
     } // namespace internal
+
+// ----------------------------------------------------------------------
+
+    class data_not_available : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
 // ----------------------------------------------------------------------
 
@@ -254,6 +260,11 @@ namespace acmacs::chart
         virtual size_t number_of_sera() const = 0;
         virtual size_t number_of_non_dont_cares() const = 0;
         virtual inline double percent_of_non_dont_cares() const { return static_cast<double>(number_of_non_dont_cares()) / (number_of_antigens() * number_of_sera()); }
+
+          // support for fast exporting into ace, if source was ace or acd1
+        virtual inline const rjson::array& rjson_list_list() const { throw data_not_available{"rjson_list_list titers are not available"}; }
+        virtual inline const rjson::array& rjson_list_dict() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
+        virtual inline const rjson::array& rjson_layers() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
 
     }; // class Titers
 

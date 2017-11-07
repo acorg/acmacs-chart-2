@@ -153,30 +153,65 @@ void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers
         }
     };
 
-    Timeit ti_titers("export titers ");
-    if (const double percent_of_non_dont_cares = static_cast<double>(aTiters->number_of_non_dont_cares()) / (number_of_antigens * number_of_sera); percent_of_non_dont_cares > 0.7) {
-        rjson::array& list = aTarget.set_field("l", rjson::array{});
-        for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
-            rjson::array& row = list.insert(rjson::array{});
-            for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
-                row.insert(rjson::string{aTiters->titer(ag_no, sr_no)});
+      // --------------------------------------------------
+
+      // Timeit ti_titers("export titers ");
+    bool titers_exported = false;
+    try {
+        aTarget.set_field("d", aTiters->rjson_list_dict());
+        titers_exported = true;
+    }
+    catch (acmacs::chart::data_not_available&) {
+    }
+
+    if (!titers_exported) {
+        try {
+            aTarget.set_field("l", aTiters->rjson_list_list());
+            titers_exported = true;
+        }
+        catch (acmacs::chart::data_not_available&) {
+        }
+    }
+
+    if (!titers_exported) {
+          // slow method
+        if (const double percent_of_non_dont_cares = static_cast<double>(aTiters->number_of_non_dont_cares()) / (number_of_antigens * number_of_sera); percent_of_non_dont_cares > 0.7) {
+            rjson::array& list = aTarget.set_field("l", rjson::array{});
+            for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
+                rjson::array& row = list.insert(rjson::array{});
+                for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
+                    row.insert(rjson::string{aTiters->titer(ag_no, sr_no)});
+                }
+            }
+        }
+        else {
+            fill_d(aTarget.set_field("d", rjson::array{}), [aTiters](size_t ag_no, size_t sr_no) { return aTiters->titer(ag_no, sr_no); });
+        }
+    }
+      // ti_titers.report();
+
+      // --------------------------------------------------
+      // layers
+
+      // Timeit ti_layers("export layers ");
+    bool layers_exported = false;
+    try {
+        aTarget.set_field("L", aTiters->rjson_layers());
+        layers_exported = true;
+    }
+    catch (acmacs::chart::data_not_available&) {
+    }
+
+    if (!layers_exported) {
+          // slow method
+        if (const size_t number_of_layers = aTiters->number_of_layers(); number_of_layers) {
+            rjson::array& layers = aTarget.set_field("L", rjson::array{});
+            for (size_t layer_no = 0; layer_no < number_of_layers; ++layer_no) {
+                fill_d(layers.insert(rjson::array{}), [aTiters, layer_no](size_t ag_no, size_t sr_no) { return aTiters->titer_of_layer(layer_no, ag_no, sr_no); });
             }
         }
     }
-    else {
-        fill_d(aTarget.set_field("d", rjson::array{}), [aTiters](size_t ag_no, size_t sr_no) { return aTiters->titer(ag_no, sr_no); });
-    }
-    ti_titers.report();
-
-    Timeit ti_layers("export layers ");
-      // layers
-    if (const size_t number_of_layers = aTiters->number_of_layers(); number_of_layers) {
-        rjson::array& layers = aTarget.set_field("L", rjson::array{});
-        for (size_t layer_no = 0; layer_no < number_of_layers; ++layer_no) {
-            fill_d(layers.insert(rjson::array{}), [aTiters, layer_no](size_t ag_no, size_t sr_no) { return aTiters->titer_of_layer(layer_no, ag_no, sr_no); });
-        }
-    }
-    ti_layers.report();
+      // ti_layers.report();
 
 } // export_titers
 

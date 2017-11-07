@@ -144,16 +144,20 @@ namespace acmacs::chart
 
         Titer titer(size_t aAntigenNo, size_t aSerumNo) const override;
         Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override;
-        inline size_t number_of_layers() const override { return layers().size(); }
+        inline size_t number_of_layers() const override { return rjson_layers().size(); }
         size_t number_of_antigens() const override;
         size_t number_of_sera() const override;
         size_t number_of_non_dont_cares() const override;
 
+          // support for fast exporting into ace, if source was ace or acd1
+        inline const rjson::array& rjson_list_list() const override { return mData.get_or_empty_array("l"); }
+        inline const rjson::array& rjson_list_dict() const override { return mData.get_or_empty_array("d"); }
+        inline const rjson::array& rjson_layers() const override { return mData.get_or_empty_array("L"); }
+
      private:
         const rjson::object& mData;
 
-        inline const rjson::array& layers() const { return mData.get_or_empty_array("L"); }
-        inline const rjson::object& layer(size_t aLayerNo) const { return layers()[aLayerNo]; }
+        inline const rjson::object& layer(size_t aLayerNo) const { return rjson_layers()[aLayerNo]; }
 
         inline Titer titer_in_d(const rjson::array& aSource, size_t aAntigenNo, size_t aSerumNo) const
             {
