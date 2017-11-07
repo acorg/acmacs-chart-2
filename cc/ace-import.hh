@@ -236,14 +236,17 @@ namespace acmacs::chart
       public:
         inline AcePlotSpec(const rjson::object& aData) : mData{aData} {}
 
+        inline bool empty() const override { return mData.empty(); }
         inline DrawingOrder drawing_order() const override { return mData["d"]; }
         Color error_line_positive_color() const override;
         Color error_line_negative_color() const override;
         PointStyle style(size_t aPointNo) const override;
+        std::vector<PointStyle> all_styles() const override;
 
      private:
         const rjson::object& mData;
 
+        PointStyle extract(const rjson::object& aSrc, size_t aPointNo, size_t aStyleNo) const;
         void label_style(PointStyle& aStyle, const rjson::object& aData) const;
 
     }; // class AcePlotSpec

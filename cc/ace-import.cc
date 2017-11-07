@@ -4,6 +4,7 @@
 
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
+#include "acmacs-base/enumerate.hh"
 #include "acmacs-chart/ace-import.hh"
 
 using namespace std::string_literals;
@@ -353,53 +354,82 @@ acmacs::PointStyle AcePlotSpec::style(size_t aPointNo) const
     try {
         const rjson::array& indices = mData["p"];
         const size_t style_no = indices[aPointNo];
-        const rjson::object& style = mData["P"][style_no];
-        for (auto [field_name_v, field_value]: style) {
-            const std::string field_name(field_name_v);
-            if (!field_name.empty()) {
-                try {
-                    switch (field_name[0]) {
-                      case '+':
-                          result.shown = field_value;
-                          break;
-                      case 'F':
-                          result.fill = Color(field_value);
-                          break;
-                      case 'O':
-                          result.outline = Color(field_value);
-                          break;
-                      case 'o':
-                          result.outline_width = Pixels{field_value};
-                          break;
-                      case 's':
-                          result.size = field_value;
-                          break;
-                      case 'r':
-                          result.rotation = Rotation{field_value};
-                          break;
-                      case 'a':
-                          result.aspect = Aspect{field_value};
-                          break;
-                      case 'S':
-                          result.shape = static_cast<std::string>(field_value);
-                          break;
-                      case 'l':
-                          label_style(result, field_value);
-                          break;
-                    }
-                }
-                catch (std::exception& err) {
-                    std::cerr << "WARNING: [ace]: point " << aPointNo << " style " << style_no << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << field_value.to_json() << '\n';
-                }
-            }
-        }
+        return extract(mData["P"][style_no], aPointNo, style_no);
     }
     catch (std::exception& err) {
         std::cerr << "WARNING: [ace]: cannot get style for point " << aPointNo << ": " << err.what() << '\n';
     }
-    return result;
+    return {};
 
 } // AcePlotSpec::style
+
+// ----------------------------------------------------------------------
+
+std::vector<acmacs::PointStyle> AcePlotSpec::all_styles() const
+{
+    try {
+        const rjson::array& indices = mData["p"];
+        std::vector<acmacs::PointStyle> result(indices.size());
+        for (auto [point_no, target]: acmacs::enumerate(result)) {
+            const size_t style_no = indices[point_no];
+            target = extract(mData["P"][style_no], point_no, style_no);
+        }
+        return result;
+    }
+    catch (std::exception& err) {
+        std::cerr << "WARNING: [ace]: cannot get point styles: " << err.what() << '\n';
+    }
+    return {};
+
+} // AcePlotSpec::all_styles
+
+// ----------------------------------------------------------------------
+
+acmacs::PointStyle AcePlotSpec::extract(const rjson::object& aSrc, size_t aPointNo, size_t aStyleNo) const
+{
+    acmacs::PointStyle result;
+    for (auto [field_name_v, field_value]: aSrc) {
+        const std::string field_name(field_name_v);
+        if (!field_name.empty()) {
+            try {
+                switch (field_name[0]) {
+                  case '+':
+                      result.shown = field_value;
+                      break;
+                  case 'F':
+                      result.fill = Color(field_value);
+                      break;
+                  case 'O':
+                      result.outline = Color(field_value);
+                      break;
+                  case 'o':
+                      result.outline_width = Pixels{field_value};
+                      break;
+                  case 's':
+                      result.size = field_value;
+                      break;
+                  case 'r':
+                      result.rotation = Rotation{field_value};
+                      break;
+                  case 'a':
+                      result.aspect = Aspect{field_value};
+                      break;
+                  case 'S':
+                      result.shape = static_cast<std::string>(field_value);
+                      break;
+                  case 'l':
+                      label_style(result, field_value);
+                      break;
+                }
+            }
+            catch (std::exception& err) {
+                std::cerr << "WARNING: [ace]: point " << aPointNo << " style " << aStyleNo << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << field_value.to_json() << '\n';
+            }
+        }
+    }
+    return result;
+
+} // AcePlotSpec::extract
 
 // ----------------------------------------------------------------------
 

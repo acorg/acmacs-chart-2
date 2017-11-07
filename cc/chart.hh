@@ -333,10 +333,12 @@ namespace acmacs::chart
       public:
         virtual ~PlotSpec();
 
+        virtual bool empty() const = 0;
         virtual DrawingOrder drawing_order() const = 0;
         virtual Color error_line_positive_color() const = 0;
         virtual Color error_line_negative_color() const = 0;
         virtual PointStyle style(size_t aPointNo) const = 0;
+        virtual std::vector<PointStyle> all_styles() const = 0;
 
     }; // class PlotSpec
 

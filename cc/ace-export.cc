@@ -11,6 +11,7 @@ static void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart
 static void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera);
 static void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters);
 static void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections);
+static void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec);
 
 // ----------------------------------------------------------------------
 
@@ -43,7 +44,8 @@ std::string acmacs::chart::ace_export(std::shared_ptr<acmacs::chart::Chart> aCha
         export_projections(ace["c"].set_field("P", rjson::array{}), projections);
     // ti_projections.report();
     Timeit ti_plot_spec("export plot_spec ");
-      // plot spec
+    if (auto plot_spec = aChart->plot_spec(); !plot_spec->empty())
+        export_plot_spec(ace["c"].set_field("p", rjson::object{}), plot_spec);
     ti_plot_spec.report();
     return ace.to_json_pp(1);
 
@@ -261,6 +263,26 @@ void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Pr
     }
 
 } // export_projections
+
+// ----------------------------------------------------------------------
+
+void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec)
+{
+    if (const auto drawing_order = aPlotSpec->drawing_order(); ! drawing_order.empty())
+        aTarget.set_field("d", rjson::array(rjson::array::use_iterator, drawing_order.begin(), drawing_order.end()));
+    aTarget.set_field("E", rjson::object{{{"c", rjson::string{aPlotSpec->error_line_positive_color()}}}});
+    aTarget.set_field("e", rjson::object{{{"c", rjson::string{aPlotSpec->error_line_negative_color()}}}});
+
+      // "p": [],                  // for each point (antigens followed by sera) index in the "P" list
+      // "P": [                    // list of point styles
+
+      // "g": {},                  // ? grid data
+      // "l": [],                  // ? for each procrustes line, index in the "L" list
+      // "L": []                    // ? list of procrustes lines styles
+      // "s": [],                  // list of point indices for point shown on all maps in the time series
+      // "t": {}                    // title style?
+
+} // export_plot_spec
 
 // ----------------------------------------------------------------------
 
