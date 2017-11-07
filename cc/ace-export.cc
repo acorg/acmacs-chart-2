@@ -1,5 +1,6 @@
 #include "acmacs-base/rjson.hh"
 #include "acmacs-base/time.hh"
+#include "acmacs-base/timeit.hh"
 #include "acmacs-chart/ace-export.hh"
 #include "acmacs-chart/chart.hh"
 
@@ -25,13 +26,25 @@ std::string acmacs::chart::ace_export(std::shared_ptr<acmacs::chart::Chart> aCha
                             {"t", rjson::object{}},
                         }}}
             }}};
+    // Timeit ti_info("export info ");
     export_info(ace["c"]["i"], aChart->info());
+    // ti_info.report();
+    // Timeit ti_antigens("export antigens ");
     export_antigens(ace["c"]["a"], aChart->antigens());
+    // ti_antigens.report();
+    // Timeit ti_sera("export sera ");
     export_sera(ace["c"]["s"], aChart->sera());
+    // ti_sera.report();
+    // Timeit ti_titers("export titers ");
     export_titers(ace["c"]["t"], aChart->titers());
+    // ti_titers.report();
+    // Timeit ti_projections("export projections ");
     if (auto projections = aChart->projections(); !projections->empty())
         export_projections(ace["c"].set_field("P", rjson::array{}), projections);
+    // ti_projections.report();
+    Timeit ti_plot_spec("export plot_spec ");
       // plot spec
+    ti_plot_spec.report();
     return ace.to_json_pp(1);
 
 } // acmacs::chart::ace_export
@@ -140,6 +153,7 @@ void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers
         }
     };
 
+    Timeit ti_titers("export titers ");
     if (const double percent_of_non_dont_cares = static_cast<double>(aTiters->number_of_non_dont_cares()) / (number_of_antigens * number_of_sera); percent_of_non_dont_cares > 0.7) {
         rjson::array& list = aTarget.set_field("l", rjson::array{});
         for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
@@ -152,7 +166,9 @@ void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers
     else {
         fill_d(aTarget.set_field("d", rjson::array{}), [aTiters](size_t ag_no, size_t sr_no) { return aTiters->titer(ag_no, sr_no); });
     }
+    ti_titers.report();
 
+    Timeit ti_layers("export layers ");
       // layers
     if (const size_t number_of_layers = aTiters->number_of_layers(); number_of_layers) {
         rjson::array& layers = aTarget.set_field("L", rjson::array{});
@@ -160,6 +176,7 @@ void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers
             fill_d(layers.insert(rjson::array{}), [aTiters, layer_no](size_t ag_no, size_t sr_no) { return aTiters->titer_of_layer(layer_no, ag_no, sr_no); });
         }
     }
+    ti_layers.report();
 
 } // export_titers
 
@@ -197,11 +214,11 @@ void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Pr
         target.set_field_if_not_default("d", projection->dodgy_titer_is_regular(), false);
         target.set_field_if_not_default("e", projection->stress_diff_to_stop(), 0.0);
         if (const auto unmovable = projection->unmovable(); ! unmovable.empty())
-            target.set_field("U", rjson::array(unmovable.begin(), unmovable.end()));
+            target.set_field("U", rjson::array(rjson::array::use_iterator, unmovable.begin(), unmovable.end()));
         if (const auto disconnected = projection->disconnected(); ! disconnected.empty())
-            target.set_field("D", rjson::array(disconnected.begin(), disconnected.end()));
+            target.set_field("D", rjson::array(rjson::array::use_iterator, disconnected.begin(), disconnected.end()));
         if (const auto unmovable_in_the_last_dimension = projection->unmovable_in_the_last_dimension(); ! unmovable_in_the_last_dimension.empty())
-            target.set_field("u", rjson::array(unmovable_in_the_last_dimension.begin(), unmovable_in_the_last_dimension.end()));
+            target.set_field("u", rjson::array(rjson::array::use_iterator, unmovable_in_the_last_dimension.begin(), unmovable_in_the_last_dimension.end()));
 
         // "i": 600,               // number of iterations?
         // "g": [],            // antigens_sera_gradient_multipliers, double for each point
