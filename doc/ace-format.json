@@ -69,10 +69,10 @@
     ],
     "p": {                      // plot spec
       "d": [],                  // drawing order, point indices
-      "E": {                    // error line positive
+      "E": {                    // error line positive (default: {"c": "red"})
         "c": "color: #FF0000"
       },
-      "e": {},                  // error line negative, same as "E"
+      "e": {},                  // error line negative, same as "E" (default: {"c": "blue"})
       "g": {},                  // ? grid data
       "p": [],                  // for each point (antigens followed by sera) index in the "P" list
       "P": [                    // list of point styles

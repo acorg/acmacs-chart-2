@@ -272,8 +272,10 @@ void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Plo
 {
     if (const auto drawing_order = aPlotSpec->drawing_order(); ! drawing_order.empty())
         aTarget.set_field("d", rjson::array(rjson::array::use_iterator, drawing_order.begin(), drawing_order.end()));
-    aTarget.set_field("E", rjson::object{{{"c", rjson::string{aPlotSpec->error_line_positive_color()}}}});
-    aTarget.set_field("e", rjson::object{{{"c", rjson::string{aPlotSpec->error_line_negative_color()}}}});
+    if (const auto color = aPlotSpec->error_line_positive_color(); color != RED)
+        aTarget.set_field("E", rjson::object{{{"c", rjson::string{color}}}});
+    if (const auto color = aPlotSpec->error_line_negative_color(); color != BLUE)
+        aTarget.set_field("e", rjson::object{{{"c", rjson::string{color}}}});
 
     std::vector<acmacs::PointStyle> compacted;
     std::vector<size_t> p_index;
