@@ -295,13 +295,58 @@ void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Plo
 
 void compact_styles(const std::vector<acmacs::PointStyle>& aAllStyles, std::vector<acmacs::PointStyle>& aCompacted, std::vector<size_t>& aIndex)
 {
+    for (const auto& style: aAllStyles) {
+        if (auto found = std::find(aCompacted.begin(), aCompacted.end(), style); found == aCompacted.end()) {
+            aCompacted.push_back(style);
+            aIndex.push_back(aCompacted.size() - 1);
+        }
+        else {
+            aIndex.push_back(static_cast<size_t>(found - aCompacted.begin()));
+        }
+    }
 
 } // compact_styles
 
 // ----------------------------------------------------------------------
 
+namespace rjson
+{
+    template <> struct content_type<Color> { using type = rjson::string; };
+    template <> struct content_type<acmacs::PointShape> { using type = rjson::string; };
+
+    template <char Tag> inline value to_value(_acmacs_base_internal::SizeScale<Tag> aValue) { return to_value(aValue.value()); }
+
+} // namespace rjson
+
+template <typename T> inline void set_field(rjson::object& target, const char* name, const acmacs::internal::field_optional_with_default<T>& field)
+{
+    if (field.not_default())
+        target.set_field(name, rjson::to_value(*field));
+}
+
 void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle)
 {
+    rjson::object& st = target_styles.insert(rjson::object{});
+    set_field(st, "+", aStyle.shown);
+    set_field(st, "F", aStyle.fill);
+    set_field(st, "O", aStyle.outline);
+    set_field(st, "o", aStyle.outline_width);
+    set_field(st, "s", aStyle.size);
+    set_field(st, "r", aStyle.rotation);
+    set_field(st, "a", aStyle.aspect);
+    set_field(st, "S", aStyle.shape);
+          // "l": {                 // label style
+          //   "+": false,         // if label is shown
+          //   "p": [0.0, 1.0],    // label position (2D only), list of two doubles, default is [0, 1] means under point
+          //   "t": "label text if forced by user",
+          //   "f": "font face",
+          //   "S": "normal OR italic OR oblique", // font slant, default normal
+          //   "W": "normal OR bold", // font weight, default normal
+          //   "s": 1.0,           // size, default 1.0
+          //   "c": "black",   // color, default black
+          //   "r": 0.0,       // rotation, default 0.0
+          //   "i": 0.2, // addtional interval between lines as a fraction of line height, default - 0.2
+          // },
 
 } // export_style
 
