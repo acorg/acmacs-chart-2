@@ -45,10 +45,10 @@ std::string acmacs::chart::ace_export(std::shared_ptr<acmacs::chart::Chart> aCha
     if (auto projections = aChart->projections(); !projections->empty())
         export_projections(ace["c"].set_field("P", rjson::array{}), projections);
     // ti_projections.report();
-    Timeit ti_plot_spec("export plot_spec ");
+    // Timeit ti_plot_spec("export plot_spec ");
     if (auto plot_spec = aChart->plot_spec(); !plot_spec->empty())
         export_plot_spec(ace["c"].set_field("p", rjson::object{}), plot_spec);
-    ti_plot_spec.report();
+    // ti_plot_spec.report();
     return ace.to_json_pp(1);
 
 } // acmacs::chart::ace_export
@@ -313,8 +313,12 @@ namespace rjson
 {
     template <> struct content_type<Color> { using type = rjson::string; };
     template <> struct content_type<acmacs::PointShape> { using type = rjson::string; };
+    template <> struct content_type<acmacs::FontSlant> { using type = rjson::string; };
+    template <> struct content_type<acmacs::FontWeight> { using type = rjson::string; };
 
     template <char Tag> inline value to_value(_acmacs_base_internal::SizeScale<Tag> aValue) { return to_value(aValue.value()); }
+
+    inline value to_value(const acmacs::Offset aValue) { return array{aValue.x, aValue.y}; }
 
 } // namespace rjson
 
@@ -335,18 +339,20 @@ void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle)
     set_field(st, "r", aStyle.rotation);
     set_field(st, "a", aStyle.aspect);
     set_field(st, "S", aStyle.shape);
-          // "l": {                 // label style
-          //   "+": false,         // if label is shown
-          //   "p": [0.0, 1.0],    // label position (2D only), list of two doubles, default is [0, 1] means under point
-          //   "t": "label text if forced by user",
-          //   "f": "font face",
-          //   "S": "normal OR italic OR oblique", // font slant, default normal
-          //   "W": "normal OR bold", // font weight, default normal
-          //   "s": 1.0,           // size, default 1.0
-          //   "c": "black",   // color, default black
-          //   "r": 0.0,       // rotation, default 0.0
-          //   "i": 0.2, // addtional interval between lines as a fraction of line height, default - 0.2
-          // },
+
+    rjson::object ls;
+    set_field(ls, "+", aStyle.label.shown);
+    set_field(ls, "t", aStyle.label_text);
+    set_field(ls, "f", aStyle.label.style.font_family);
+    set_field(ls, "S", aStyle.label.style.slant);
+    set_field(ls, "W", aStyle.label.style.weight);
+    set_field(ls, "s", aStyle.label.size);
+    set_field(ls, "c", aStyle.label.color);
+    set_field(ls, "r", aStyle.label.rotation);
+    set_field(ls, "i", aStyle.label.interline);
+    set_field(ls, "p", aStyle.label.offset);
+    if (!ls.empty())
+        st.set_field("l", std::move(ls));
 
 } // export_style
 
