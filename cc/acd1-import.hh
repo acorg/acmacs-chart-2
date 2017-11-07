@@ -1,0 +1,269 @@
+#pragma once
+
+#include "acmacs-base/rjson.hh"
+#include "acmacs-chart/chart.hh"
+#include "acmacs-chart/verify.hh"
+
+// ----------------------------------------------------------------------
+
+namespace acmacs::chart
+{
+    class Acd1Chart : public Chart
+    {
+      public:
+        inline Acd1Chart(rjson::value&& aSrc) : mData{std::move(aSrc)} {}
+
+        std::shared_ptr<Info> info() const override;
+        std::shared_ptr<Antigens> antigens() const override;
+        std::shared_ptr<Sera> sera() const override;
+        std::shared_ptr<Titers> titers() const override;
+        std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
+        std::shared_ptr<Projections> projections() const override;
+        std::shared_ptr<PlotSpec> plot_spec() const override;
+
+        void verify_data(Verify aVerify) const;
+
+     private:
+        rjson::value mData;
+
+    }; // class Chart
+
+    inline bool is_acd1(const std::string_view& aData)
+    {
+        if (aData.size() < 100)
+            return false;
+        const auto start = aData.find("data = {");
+        if (start == std::string_view::npos)
+            return false;
+        const auto ver = aData.find("'version': 4,", start + 8);
+        if (ver == std::string_view::npos)
+            return false;
+        return true;
+    }
+
+    std::shared_ptr<Chart> acd1_import(const std::string_view& aData, Verify aVerify);
+
+// ----------------------------------------------------------------------
+
+    class Acd1Info : public Info
+    {
+      public:
+        inline Acd1Info(const rjson::value& aData) : mData{aData} {}
+
+        std::string make_info() const override;
+
+        inline std::string name(Compute aCompute = Compute::No) const override { return make_field("N", " + ", aCompute); }
+        inline std::string virus(Compute aCompute = Compute::No) const override { return make_field("v", "+", aCompute); }
+        inline std::string virus_type(Compute aCompute = Compute::No) const override { return make_field("V", "+", aCompute); }
+        inline std::string subset(Compute aCompute = Compute::No) const override { return make_field("s", "+", aCompute); }
+        inline std::string assay(Compute aCompute = Compute::No) const override { return make_field("A", "+", aCompute); }
+        inline std::string lab(Compute aCompute = Compute::No) const override { return make_field("l", "+", aCompute); }
+        inline std::string rbc_species(Compute aCompute = Compute::No) const override { return make_field("r", "+", aCompute); }
+        inline std::string date(Compute aCompute = Compute::No) const override;
+        inline size_t number_of_sources() const override { return mData.get_or_empty_array("S").size(); }
+        inline std::shared_ptr<Info> source(size_t aSourceNo) const override { return std::make_shared<Acd1Info>(mData.get_or_empty_array("S")[aSourceNo]); }
+
+     private:
+        const rjson::value& mData;
+
+        std::string make_field(const char* aField, const char* aSeparator, Compute aCompute) const;
+
+    }; // class Acd1Info
+
+// ----------------------------------------------------------------------
+
+    class Acd1Antigen : public Antigen
+    {
+      public:
+        inline Acd1Antigen(const rjson::object& aData) : mData{aData} {}
+
+        inline Name name() const override { return mData["N"]; }
+        inline Date date() const override { return mData.get_or_default("D", ""); }
+        inline Passage passage() const override { return mData.get_or_default("P", ""); }
+        BLineage lineage() const override;
+        inline Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
+        inline LabIds lab_ids() const override { return mData.get_or_empty_array("l"); }
+        inline Clades clades() const override { return mData.get_or_empty_array("c"); }
+        inline Annotations annotations() const override { return mData.get_or_empty_array("a"); }
+        inline bool reference() const override { return mData.get_or_default("S", "").find("R") != std::string::npos; }
+
+     private:
+        const rjson::object& mData;
+
+    }; // class Acd1Antigen
+
+// ----------------------------------------------------------------------
+
+    class Acd1Serum : public Serum
+    {
+      public:
+        inline Acd1Serum(const rjson::object& aData) : mData{aData} {}
+
+        inline Name name() const override { return mData["N"]; }
+        inline Passage passage() const override { return mData.get_or_default("P", ""); }
+        BLineage lineage() const override;
+        inline Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
+        inline Annotations annotations() const override { return mData.get_or_empty_array("a"); }
+        inline SerumId serum_id() const override { return mData.get_or_default("I", ""); }
+        inline SerumSpecies serum_species() const override { return mData.get_or_default("s", ""); }
+        inline PointIndexList homologous_antigens() const override { return mData.get_or_empty_array("h"); }
+
+     private:
+        const rjson::object& mData;
+
+    }; // class Acd1Serum
+
+// ----------------------------------------------------------------------
+
+    class Acd1Antigens : public Antigens
+    {
+     public:
+        inline Acd1Antigens(const rjson::array& aData) : mData{aData} {}
+
+        inline size_t size() const override { return mData.size(); }
+        inline std::shared_ptr<Antigen> operator[](size_t aIndex) const override { return std::make_shared<Acd1Antigen>(mData[aIndex]); }
+
+     private:
+        const rjson::array& mData;
+
+    }; // class Acd1Antigens
+
+// ----------------------------------------------------------------------
+
+    class Acd1Sera : public Sera
+    {
+      public:
+        inline Acd1Sera(const rjson::array& aData) : mData{aData} {}
+
+        inline size_t size() const override { return mData.size(); }
+        inline std::shared_ptr<Serum> operator[](size_t aIndex) const override { return std::make_shared<Acd1Serum>(mData[aIndex]); }
+
+     private:
+        const rjson::array& mData;
+
+    }; // class Acd1Sera
+
+// ----------------------------------------------------------------------
+
+    class Acd1Titers : public Titers
+    {
+      public:
+        inline Acd1Titers(const rjson::object& aData) : mData{aData} {}
+
+        Titer titer(size_t aAntigenNo, size_t aSerumNo) const override;
+        Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override;
+        inline size_t number_of_layers() const override { return rjson_layers().size(); }
+        size_t number_of_antigens() const override;
+        size_t number_of_sera() const override;
+        size_t number_of_non_dont_cares() const override;
+
+          // support for fast exporting into ace, if source was ace or acd1
+        inline const rjson::array& rjson_list_list() const override { return mData.get_or_empty_array("l"); }
+        inline const rjson::array& rjson_list_dict() const override { return mData.get_or_empty_array("d"); }
+        inline const rjson::array& rjson_layers() const override { return mData.get_or_empty_array("L"); }
+
+     private:
+        const rjson::object& mData;
+
+        inline const rjson::object& layer(size_t aLayerNo) const { return rjson_layers()[aLayerNo]; }
+
+        inline Titer titer_in_d(const rjson::array& aSource, size_t aAntigenNo, size_t aSerumNo) const
+            {
+                try {
+                    return aSource[aAntigenNo][std::to_string(aSerumNo)];
+                }
+                catch (rjson::field_not_found&) {
+                    return "*";
+                }
+            }
+
+    }; // class Acd1Titers
+
+// ----------------------------------------------------------------------
+
+    class Acd1ForcedColumnBases : public ForcedColumnBases
+    {
+      public:
+        inline Acd1ForcedColumnBases(const rjson::array& aData) : mData{aData} {}
+
+        inline bool exists() const override { return !mData.empty(); }
+        inline double column_basis(size_t aSerumNo) const override { return mData[aSerumNo]; }
+        inline size_t size() const override { return mData.size(); }
+
+     private:
+        const rjson::array& mData;
+
+    }; // class Acd1ForcedColumnBases
+
+// ----------------------------------------------------------------------
+
+    class Acd1Projection : public Projection
+    {
+      public:
+        inline Acd1Projection(const rjson::object& aData) : mData{aData} {}
+
+        inline double stress() const override { return mData.get_or_default("s", 0.0); }
+        size_t number_of_dimensions() const override;
+        inline size_t number_of_points() const override { return mData.get_or_empty_array("l").size(); }
+        double coordinate(size_t aPointNo, size_t aDimensionNo) const override;
+        inline std::string comment() const override { return mData.get_or_default("c", ""); }
+        inline MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_default("m", "none"); }
+        std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
+        acmacs::Transformation transformation() const override;
+        inline bool dodgy_titer_is_regular() const override { return mData.get_or_default("d", false); }
+        inline double stress_diff_to_stop() const override { return mData.get_or_default("d", 0.0); }
+        inline PointIndexList unmovable() const override { return mData.get_or_empty_array("U"); }
+        inline PointIndexList disconnected() const override { return mData.get_or_empty_array("D"); }
+        inline PointIndexList unmovable_in_the_last_dimension() const override { return mData.get_or_empty_array("u"); }
+
+     private:
+        const rjson::object& mData;
+
+    }; // class Acd1Projections
+
+// ----------------------------------------------------------------------
+
+    class Acd1Projections : public Projections
+    {
+      public:
+        inline Acd1Projections(const rjson::array& aData) : mData{aData} {}
+
+        inline bool empty() const override { return mData.empty(); }
+        inline size_t size() const override { return mData.size(); }
+        inline std::shared_ptr<Projection> operator[](size_t aIndex) const override { return std::make_shared<Acd1Projection>(mData[aIndex]); }
+
+     private:
+        const rjson::array& mData;
+
+    }; // class Acd1Projections
+
+// ----------------------------------------------------------------------
+
+    class Acd1PlotSpec : public PlotSpec
+    {
+      public:
+        inline Acd1PlotSpec(const rjson::object& aData) : mData{aData} {}
+
+        inline bool empty() const override { return mData.empty(); }
+        inline DrawingOrder drawing_order() const override { return mData["d"]; }
+        Color error_line_positive_color() const override;
+        Color error_line_negative_color() const override;
+        PointStyle style(size_t aPointNo) const override;
+        std::vector<PointStyle> all_styles() const override;
+
+     private:
+        const rjson::object& mData;
+
+        PointStyle extract(const rjson::object& aSrc, size_t aPointNo, size_t aStyleNo) const;
+        void label_style(PointStyle& aStyle, const rjson::object& aData) const;
+
+    }; // class Acd1PlotSpec
+
+// ----------------------------------------------------------------------
+
+} // namespace acmacs::chart
+
+// ----------------------------------------------------------------------
+/// Local Variables:
+/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
+/// End:
