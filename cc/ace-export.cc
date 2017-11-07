@@ -12,6 +12,8 @@ static void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Se
 static void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters);
 static void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections);
 static void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec);
+static void compact_styles(const std::vector<acmacs::PointStyle>& aAllStyles, std::vector<acmacs::PointStyle>& aCompacted, std::vector<size_t>& aIndex);
+static void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle);
 
 // ----------------------------------------------------------------------
 
@@ -273,8 +275,13 @@ void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Plo
     aTarget.set_field("E", rjson::object{{{"c", rjson::string{aPlotSpec->error_line_positive_color()}}}});
     aTarget.set_field("e", rjson::object{{{"c", rjson::string{aPlotSpec->error_line_negative_color()}}}});
 
-      // "p": [],                  // for each point (antigens followed by sera) index in the "P" list
-      // "P": [                    // list of point styles
+    std::vector<acmacs::PointStyle> compacted;
+    std::vector<size_t> p_index;
+    compact_styles(aPlotSpec->all_styles(), compacted, p_index);
+    aTarget.set_field("p", rjson::array(rjson::array::use_iterator, p_index.begin(), p_index.end()));
+    rjson::array& target_styles = aTarget.set_field("P", rjson::array{});
+    for (const auto& style: compacted)
+        export_style(target_styles, style);
 
       // "g": {},                  // ? grid data
       // "l": [],                  // ? for each procrustes line, index in the "L" list
@@ -286,6 +293,17 @@ void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Plo
 
 // ----------------------------------------------------------------------
 
+void compact_styles(const std::vector<acmacs::PointStyle>& aAllStyles, std::vector<acmacs::PointStyle>& aCompacted, std::vector<size_t>& aIndex)
+{
+
+} // compact_styles
+
+// ----------------------------------------------------------------------
+
+void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle)
+{
+
+} // export_style
 
 // ----------------------------------------------------------------------
 /// Local Variables:
