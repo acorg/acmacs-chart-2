@@ -274,7 +274,11 @@ static inline Name make_name(const rjson::object& aData)
         return string::join("/", {aData.get_or_default("virus_type", ""), host, aData.get_or_empty_object("location").get_or_default("name", ""), isolation_number, aData.get_or_default("year", "")});
     }
     else {
-        return string::join(" ", {aData.get_or_empty_object("location").get_or_default("cdc_abbreviation", ""), aData.get_or_default("name", "")});
+        const std::string cdc_abbreviation = aData.get_or_empty_object("location").get_or_default("cdc_abbreviation", "");
+        std::string name = aData.get_or_default("name", "");
+        if (!cdc_abbreviation.empty() && name.size() > 3 && name[2] == '-' && name[0] == cdc_abbreviation[0] && name[1] == cdc_abbreviation[1])
+            name.erase(0, 3);   // old cdc name (acmacs-b?) begins with cdc_abbreviation
+        return string::join(" ", {cdc_abbreviation, name});
     }
 }
 
@@ -511,6 +515,19 @@ size_t Acd1Titers::number_of_non_dont_cares() const
     return result;
 
 } // Acd1Titers::number_of_non_dont_cares
+
+// ----------------------------------------------------------------------
+
+std::string Acd1Projection::comment() const
+{
+    try {
+        return mData["comment"];
+    }
+    catch (std::exception&) {
+        return {};
+    }
+
+} // Acd1Projection::comment
 
 // ----------------------------------------------------------------------
 
