@@ -253,7 +253,6 @@ namespace acmacs::chart
         const rjson::object& mData;
 
         PointStyle extract(const rjson::object& aSrc, size_t aPointNo, size_t aStyleNo) const;
-        void label_style(PointStyle& aStyle, const rjson::object& aData) const;
 
     }; // class Acd1PlotSpec
 

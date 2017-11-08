@@ -613,9 +613,9 @@ DrawingOrder Acd1PlotSpec::drawing_order() const
 Color Acd1PlotSpec::error_line_positive_color() const
 {
     try {
-        return static_cast<std::string>(mData["E"]["c"]);
+        return static_cast<std::string>(mData["error_line_positive"]["color"]);
     }
-    catch (rjson::field_not_found&) {
+    catch (std::exception&) {
         return "red";
     }
 
@@ -626,9 +626,9 @@ Color Acd1PlotSpec::error_line_positive_color() const
 Color Acd1PlotSpec::error_line_negative_color() const
 {
     try {
-        return static_cast<std::string>(mData["e"]["c"]);
+        return static_cast<std::string>(mData["error_line_negative"]["color"]);
     }
-    catch (rjson::field_not_found&) {
+    catch (std::exception&) {
         return "blue";
     }
 
@@ -640,9 +640,9 @@ acmacs::PointStyle Acd1PlotSpec::style(size_t aPointNo) const
 {
     acmacs::PointStyle result;
     try {
-        const rjson::array& indices = mData["p"];
+        const rjson::array& indices = mData["points"];
         const size_t style_no = indices[aPointNo];
-        return extract(mData["P"][style_no], aPointNo, style_no);
+        return extract(mData["styles"][style_no], aPointNo, style_no);
     }
     catch (std::exception& err) {
         std::cerr << "WARNING: [acd1]: cannot get style for point " << aPointNo << ": " << err.what() << '\n';
@@ -656,11 +656,11 @@ acmacs::PointStyle Acd1PlotSpec::style(size_t aPointNo) const
 std::vector<acmacs::PointStyle> Acd1PlotSpec::all_styles() const
 {
     try {
-        const rjson::array& indices = mData["p"];
+        const rjson::array& indices = mData["points"];
         std::vector<acmacs::PointStyle> result(indices.size());
         for (auto [point_no, target]: acmacs::enumerate(result)) {
             const size_t style_no = indices[point_no];
-            target = extract(mData["P"][style_no], point_no, style_no);
+            target = extract(mData["styles"][style_no], point_no, style_no);
         }
         return result;
     }
@@ -678,96 +678,53 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::object& aSrc, size_t aPoin
     acmacs::PointStyle result;
     for (auto [field_name_v, field_value]: aSrc) {
         const std::string field_name(field_name_v);
-        if (!field_name.empty()) {
-            try {
-                switch (field_name[0]) {
-                  case '+':
-                      result.shown = field_value;
-                      break;
-                  case 'F':
-                      result.fill = Color(field_value);
-                      break;
-                  case 'O':
-                      result.outline = Color(field_value);
-                      break;
-                  case 'o':
-                      result.outline_width = Pixels{field_value};
-                      break;
-                  case 's':
-                      result.size = field_value;
-                      break;
-                  case 'r':
-                      result.rotation = Rotation{field_value};
-                      break;
-                  case 'a':
-                      result.aspect = Aspect{field_value};
-                      break;
-                  case 'S':
-                      result.shape = static_cast<std::string>(field_value);
-                      break;
-                  case 'l':
-                      label_style(result, field_value);
-                      break;
-                }
-            }
-            catch (std::exception& err) {
-                std::cerr << "WARNING: [acd1]: point " << aPointNo << " style " << aStyleNo << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << field_value.to_json() << '\n';
-            }
+        try {
+            if (field_name == "shown")
+                result.shown = field_value;
+            else if (field_name == "fill_color")
+                result.fill = Color(static_cast<size_t>(field_value));
+            else if (field_name == "outline_color")
+                result.outline = Color(static_cast<size_t>(field_value));
+            else if (field_name == "outline_width")
+                result.outline_width = Pixels{field_value};
+            else if (field_name == "line_width") // acmacs-b3
+                result.outline_width = Pixels{field_value};
+            else if (field_name == "shape")
+                result.shape = static_cast<std::string>(field_value);
+            else if (field_name == "size")
+                result.size = field_value;
+            else if (field_name == "rotation")
+                result.rotation = Rotation{field_value};
+            else if (field_name == "aspect")
+                result.aspect = Aspect{field_value};
+            else if (field_name == "show_label")
+                result.label.shown = field_value;
+            else if (field_name == "label_position_x")
+                result.label.offset.set().x = field_value;
+            else if (field_name == "label_position_y")
+                result.label.offset.set().y = field_value;
+            else if (field_name == "label")
+                result.label_text = static_cast<std::string>(field_value);
+            else if (field_name == "label_size")
+                result.label.size = field_value;
+            else if (field_name == "label_color")
+                result.label.color = Color(static_cast<size_t>(field_value));
+            else if (field_name == "label_rotation")
+                result.label.rotation = Rotation{field_value};
+            else if (field_name == "label_font_face")
+                result.label.style.font_family = static_cast<std::string>(field_value);
+            else if (field_name == "label_font_slant")
+                result.label.style.slant = static_cast<std::string>(field_value);
+            else if (field_name == "label_font_weight")
+                result.label.style.weight = static_cast<std::string>(field_value);
+        }
+        catch (std::exception& err) {
+            std::cerr << "WARNING: [acd1]: point " << aPointNo << " style " << aStyleNo << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << field_value.to_json() << '\n';
         }
     }
     return result;
 
 } // Acd1PlotSpec::extract
-
-// ----------------------------------------------------------------------
-
-void Acd1PlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::object& aData) const
-{
-    auto& label_style = aStyle.label;
-    for (auto [field_name_v, field_value]: aData) {
-        const std::string field_name(field_name_v);
-        if (!field_name.empty()) {
-            try {
-                switch (field_name[0]) {
-                  case '+':
-                      label_style.shown = field_value;
-                      break;
-                  case 'p':
-                      label_style.offset = acmacs::Offset(field_value[0], field_value[1]);
-                      break;
-                  case 's':
-                      label_style.size = field_value;
-                      break;
-                  case 'c':
-                      label_style.color = Color(field_value);
-                      break;
-                  case 'r':
-                      label_style.rotation = Rotation{field_value};
-                      break;
-                  case 'i':
-                      label_style.interline = field_value;
-                      break;
-                  case 'f':
-                      label_style.style.font_family = static_cast<std::string>(field_value);
-                      break;
-                  case 'S':
-                      label_style.style.slant = static_cast<std::string>(field_value);
-                      break;
-                  case 'W':
-                      label_style.style.weight = static_cast<std::string>(field_value);
-                      break;
-                  case 't':
-                      aStyle.label_text = static_cast<std::string>(field_value);
-                      break;
-                }
-            }
-            catch (std::exception& err) {
-                std::cerr << "WARNING: [acd1]: label style field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << field_value.to_json() << '\n';
-            }
-        }
-    }
-
-} // Acd1PlotSpec::label_style
 
 // ----------------------------------------------------------------------
 /// Local Variables:
