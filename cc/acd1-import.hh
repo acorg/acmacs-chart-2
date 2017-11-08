@@ -50,16 +50,16 @@ namespace acmacs::chart
       public:
         inline Acd1Info(const rjson::value& aData) : mData{aData} {}
 
-        inline std::string name(Compute aCompute = Compute::No) const override { return make_field("N", " + ", aCompute); }
-        inline std::string virus(Compute aCompute = Compute::No) const override { return make_field("v", "+", aCompute); }
-        inline std::string virus_type(Compute aCompute = Compute::No) const override { return make_field("V", "+", aCompute); }
-        inline std::string subset(Compute aCompute = Compute::No) const override { return make_field("s", "+", aCompute); }
-        inline std::string assay(Compute aCompute = Compute::No) const override { return make_field("A", "+", aCompute); }
-        inline std::string lab(Compute aCompute = Compute::No) const override { return make_field("l", "+", aCompute); }
-        inline std::string rbc_species(Compute aCompute = Compute::No) const override { return make_field("r", "+", aCompute); }
+        inline std::string name(Compute aCompute = Compute::No) const override { return make_field("name", " + ", aCompute); }
+        inline std::string virus(Compute aCompute = Compute::No) const override { return make_field("virus", "+", aCompute); }
+        inline std::string virus_type(Compute aCompute = Compute::No) const override { return make_field("virus_type", "+", aCompute); }
+        inline std::string subset(Compute aCompute = Compute::No) const override { return make_field("virus_subset", "+", aCompute); }
+        inline std::string assay(Compute aCompute = Compute::No) const override { return make_field("assay", "+", aCompute); }
+        inline std::string lab(Compute aCompute = Compute::No) const override { return make_field("lab", "+", aCompute); }
+        inline std::string rbc_species(Compute aCompute = Compute::No) const override { return make_field("rbc_species", "+", aCompute); }
         std::string date(Compute aCompute = Compute::No) const override;
-        inline size_t number_of_sources() const override { return mData.get_or_empty_array("S").size(); }
-        inline std::shared_ptr<Info> source(size_t aSourceNo) const override { return std::make_shared<Acd1Info>(mData.get_or_empty_array("S")[aSourceNo]); }
+        inline size_t number_of_sources() const override { return mData.get_or_empty_array("sources").size(); }
+        inline std::shared_ptr<Info> source(size_t aSourceNo) const override { return std::make_shared<Acd1Info>(mData.get_or_empty_array("sources")[aSourceNo]); }
 
      private:
         const rjson::value& mData;
@@ -75,15 +75,15 @@ namespace acmacs::chart
       public:
         inline Acd1Antigen(const rjson::object& aData) : mData{aData} {}
 
-        inline Name name() const override { return mData["N"]; }
-        inline Date date() const override { return mData.get_or_default("D", ""); }
-        inline Passage passage() const override { return mData.get_or_default("P", ""); }
+        Name name() const override;
+        inline Date date() const override { return mData.get_or_default("date", ""); }
+        Passage passage() const override;
         BLineage lineage() const override;
-        inline Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
-        inline LabIds lab_ids() const override { return mData.get_or_empty_array("l"); }
-        inline Clades clades() const override { return mData.get_or_empty_array("c"); }
-        inline Annotations annotations() const override { return mData.get_or_empty_array("a"); }
-        inline bool reference() const override { return mData.get_or_default("S", "").find("R") != std::string::npos; }
+        Reassortant reassortant() const override;
+        LabIds lab_ids() const override;
+        inline Clades clades() const override { throw std::runtime_error("Acd1Antigen::clades not implemented"); }
+        Annotations annotations() const override;
+        inline bool reference() const override { return mData.get_or_default("reference", false); }
 
      private:
         const rjson::object& mData;

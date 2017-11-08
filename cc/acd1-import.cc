@@ -217,7 +217,7 @@ std::string Acd1Info::make_field(const char* aField, const char* aSeparator, Com
 {
     std::string result{mData.get_or_default(aField, "")};
     if (result.empty() && aCompute == Compute::Yes) {
-        const auto& sources{mData.get_or_empty_array("S")};
+        const auto& sources{mData.get_or_empty_array("sources")};
         if (!sources.empty()) {
             std::set<std::string> composition;
             std::transform(std::begin(sources), std::end(sources), std::inserter(composition, composition.begin()), [aField](const auto& sinfo) { return sinfo.get_or_default(aField, ""); });
@@ -232,12 +232,12 @@ std::string Acd1Info::make_field(const char* aField, const char* aSeparator, Com
 
 std::string Acd1Info::date(Compute aCompute) const
 {
-    std::string result{mData.get_or_default("D", "")};
+    std::string result{mData.get_or_default("date", "")};
     if (result.empty() && aCompute == Compute::Yes) {
-        const auto& sources{mData.get_or_empty_array("S")};
+        const auto& sources{mData.get_or_empty_array("sources")};
         if (!sources.empty()) {
             std::vector<std::string> composition{sources.size()};
-            std::transform(std::begin(sources), std::end(sources), std::begin(composition), [](const auto& sinfo) { return sinfo.get_or_default("D", ""); });
+            std::transform(std::begin(sources), std::end(sources), std::begin(composition), [](const auto& sinfo) { return sinfo.get_or_default("date", ""); });
             std::sort(std::begin(composition), std::end(composition));
             result = string::join("-", {composition.front(), composition.back()});
         }
@@ -245,6 +245,41 @@ std::string Acd1Info::date(Compute aCompute) const
     return result;
 
 } // Acd1Info::date
+
+// ----------------------------------------------------------------------
+
+Name Acd1Antigen::name() const
+{
+
+} // Acd1Antigen::name
+
+// ----------------------------------------------------------------------
+
+Passage Acd1Antigen::passage() const
+{
+
+} // Acd1Antigen::passage
+
+// ----------------------------------------------------------------------
+
+Reassortant Acd1Antigen::reassortant() const
+{
+
+} // Acd1Antigen::reassortant
+
+// ----------------------------------------------------------------------
+
+LabIds Acd1Antigen::lab_ids() const
+{
+
+} // Acd1Antigen::lab_ids
+
+// ----------------------------------------------------------------------
+
+Annotations Acd1Antigen::annotations() const
+{
+
+} // Acd1Antigen::annotations
 
 // ----------------------------------------------------------------------
 
@@ -263,13 +298,13 @@ static inline BLineage b_lineage(std::string aLin)
 
 BLineage Acd1Antigen::lineage() const
 {
-    return b_lineage(mData["L"]);
+    return b_lineage(mData["lineage"]);
 
 } // Acd1Antigen::lineage
 
 BLineage Acd1Serum::lineage() const
 {
-    return b_lineage(mData["L"]);
+    return b_lineage(mData["lineage"]);
 
 } // Acd1Serum::lineage
 
