@@ -173,8 +173,8 @@ void convert_set_of_one_string(std::string& aData)
 void Acd1Chart::verify_data(Verify aVerify) const
 {
     try {
-        if (static_cast<size_t>(mData["version"]) != 4)
-            throw import_error("invalid version");
+        // if (static_cast<size_t>(mData["version"]) != 4)
+        //     throw import_error("invalid version");
         const auto& antigens = mData["table"].get_or_empty_array("antigens");
         if (antigens.empty())
             throw import_error("no antigens");

@@ -35,9 +35,9 @@ namespace acmacs::chart
         const auto start = aData.find("data = {");
         if (start == std::string_view::npos)
             return false;
-        const auto ver = aData.find("'version': 4,", start + 8);
-        if (ver == std::string_view::npos)
-            return false;
+        // const auto ver = aData.find("'version': 4,", start + 8);
+        // if (ver == std::string_view::npos)
+        //     return false;
         return true;
     }
 
