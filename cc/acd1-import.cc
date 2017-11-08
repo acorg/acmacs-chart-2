@@ -1,6 +1,7 @@
 #include <set>
 #include <vector>
 #include <limits>
+#include <regex>
 
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
@@ -11,6 +12,7 @@ using namespace std::string_literals;
 using namespace acmacs::chart;
 
 static std::string convert_to_json(const std::string_view& aData);
+static void convert_set_of_one_string(std::string& aData);
 
 // ----------------------------------------------------------------------
 
@@ -147,10 +149,24 @@ std::string convert_to_json(const std::string_view& aData)
               break;
         }
     }
+    convert_set_of_one_string(result);
     // std::cout << result << '\n';
     return result;
 
 } // convert_to_json
+
+// ----------------------------------------------------------------------
+
+void convert_set_of_one_string(std::string& aData)
+{
+    std::regex set_of_one_string("\\{\"[^\"]+\"\\}");
+    std::match_results<decltype(aData.begin())> match;
+    for (auto start = aData.begin(); std::regex_search(start, aData.end(), match, set_of_one_string); start += match.position(0) + match.length(0)) {
+        *(start + match.position(0)) = '[';
+        *(start + match.position(0) + match.length(0) - 1) = ']';
+    }
+
+} // convert_set_of_one_string
 
 // ----------------------------------------------------------------------
 
