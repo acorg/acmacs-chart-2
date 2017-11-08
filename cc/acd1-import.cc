@@ -52,15 +52,17 @@ static inline std::pair<bool, size_t> object_numeric_key(const std::string_view&
 
 std::string convert_to_json(const std::string_view& aData)
 {
-      //const size_t output_size = aData.size() + 100000; // reserve for double-quote replacement
     std::string result;
     for (auto input = aData.find("data = {") + 7; input < aData.size(); ++input) {
         switch (aData[input]) {
           case '\'':
-              result.append(1, '"');
+              if (input > 0 && std::isalnum(aData[input - 1]) && std::isalnum(aData[input + 1]))
+                  result.append(1, aData[input]); // "COTE D'IVOIR" case
+              else
+                  result.append(1, '"');
               break;
-          case '"':
-              result.append(1, '\\');
+          case '"': // string containing ' enclosed in double quotes, e.g. "COTE D'IVOIR"
+              // result.append(1, '\\');
               result.append(1, aData[input]);
               break;
           case '\\':
@@ -123,6 +125,22 @@ std::string convert_to_json(const std::string_view& aData)
                   if (result[output] == ',')
                       result[output] = ' ';
               }
+              break;
+          case '(': // lab_id is set of tuples
+              if (input > 0 && aData[input - 1] == '{') {
+                  result.back() = '[';
+                  result.append(1, '[');
+              }
+              else
+                  result.append(1, aData[input]);
+              break;
+          case ')': // lab_id is set of tuples
+              if (aData[input + 1] == '}') {
+                  result.append(1, ']').append(1, ']');
+                  ++input;
+              }
+              else
+                  result.append(1, aData[input]);
               break;
           default:
               result.append(1, aData[input]);
