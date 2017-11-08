@@ -1,7 +1,6 @@
 #include <set>
 #include <vector>
 #include <limits>
-#include <regex>
 
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
@@ -25,11 +24,28 @@ std::shared_ptr<Chart> acmacs::chart::acd1_import(const std::string_view& aData,
 
 // ----------------------------------------------------------------------
 
+static inline bool input_matches(const std::string_view& aInput, size_t aOffset, const std::string_view& aExpected)
+{
+      // aOffset can be "negative" (overflow), ignore that case
+    return aOffset < aInput.size() && aInput.substr(aOffset, aExpected.size()) == aExpected;
+}
+
+// returns [it is a numeric key, end of digits pos]
+static inline std::pair<bool, size_t> object_numeric_key(const std::string_view& aInput, size_t aOffset)
+{
+    size_t prev = aOffset - 1;
+      // skip spaces
+    for (; prev > 0 && std::isspace(aInput[prev]); --prev);
+    const bool numeric_key_start = aInput[prev] == ',' || aInput[prev] == '{';
+      // skip number (including fraction and exp)
+    for (++aOffset; std::isdigit(aInput[aOffset]) || aInput[aOffset] == '.' || aInput[aOffset] == '-' || aInput[aOffset] == '+' || aInput[aOffset] == 'e' || aInput[aOffset] == 'E'; ++aOffset);
+    const bool numeric_key_end = aInput[aOffset] == ':';
+    return {numeric_key_start && numeric_key_end, aOffset};
+}
+
 std::string convert_to_json(const std::string_view& aData)
 {
       //const size_t output_size = aData.size() + 100000; // reserve for double-quote replacement
-    std::regex numeric_key("([0-9]+):");
-    std::cmatch numeric_key_match;
     std::string result;
     for (auto input = aData.find("data = {") + 7; input < aData.size(); ++input) {
         switch (aData[input]) {
@@ -46,7 +62,7 @@ std::string convert_to_json(const std::string_view& aData)
               std::cerr << "WARNING: [acd1]: convert_to_json: \\ in the data\n";
               break;
           case 'T':
-              if (input > 2 && ! std::memcmp(&aData[input - 2], ": True", 6)) {
+              if (input_matches(aData, input - 2, ": True")) {
                   result.append("true");
                   input += 3;
               }
@@ -54,7 +70,7 @@ std::string convert_to_json(const std::string_view& aData)
                   result.append(1, aData[input]);
               break;
           case 'F':
-              if (input > 2 && ! std::memcmp(&aData[input - 2], ": False", 7)) {
+              if (input_matches(aData, input - 2, ": False")) {
                   result.append("false");
                   input += 4;
               }
@@ -62,22 +78,17 @@ std::string convert_to_json(const std::string_view& aData)
                   result.append(1, aData[input]);
               break;
           case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-              if (input > 2 && (aData[input - 1] == '{' || aData[input - 1] == ',' || (aData[input - 1] == ' ' && aData[input - 2] == ','))
-                  && (aData[input+1] == ':' || aData[input+2] == ':' || aData[input+3] == ':' || aData[input+4] == ':' || aData[input+5] == ':')
-                  && std::regex_search(aData.data() + input, numeric_key_match, numeric_key)
-                  ) {
-                    // numeric key for dict/object
-                  result.append(1, '"');
-                  const auto number_length = static_cast<size_t>(numeric_key_match[1].length());
-                  result.append(aData.substr(input, number_length));
-                  result.append(1,  '"');
-                  input += number_length - 1;
+              if (auto [numeric_key, end_of_number] = object_numeric_key(aData, input); numeric_key) {
+                  result.append(1, '"').append(aData.substr(input, end_of_number - input)).append(1, '"');
+                  input = end_of_number - 1;
               }
-              else
-                  result.append(1, aData[input]);
+              else {
+                  result.append(aData.substr(input, end_of_number - input));
+                  input = end_of_number - 1;
+              }
               break;
           case 'n':
-              if (input > 1 && ! std::memcmp(&aData[input - 1], "[nan", 4)) {
+              if (input_matches(aData, input - 1, "[nan, nan")) {
                     // replace [nan, nan] with []
                   for (input += 3; input < aData.size() && aData[input] != ']'; ++input)
                       ;
@@ -103,7 +114,7 @@ std::string convert_to_json(const std::string_view& aData)
               break;
         }
     }
-    std::cout << result << '\n';
+    // std::cout << result << '\n';
     return result;
 
 } // convert_to_json
