@@ -248,8 +248,24 @@ std::string Acd1Info::date(Compute aCompute) const
 
 // ----------------------------------------------------------------------
 
+static inline Name make_name(const rjson::object& aData)
+{
+    if (auto [name_present, name] = aData.get_R_if<std::string>("_name"); name_present)
+        return name;
+    if (auto [isolation_number_present, isolation_number] = aData.get_R_if<std::string>("isolation_number"); isolation_number_present) {
+        std::string host = aData.get_or_default("host", "");
+        if (host == "HUMAN")
+            host.clear();
+        return string::join("/", {aData.get_or_default("virus_type", ""), host, aData.get_or_empty_object("location").get_or_default("name", ""), isolation_number, aData.get_or_default("year", "")});
+    }
+    else {
+        return string::join(" ", {aData.get_or_empty_object("location").get_or_default("cdc_abbreviation", ""), aData.get_or_default("name", "")});
+    }
+}
+
 Name Acd1Antigen::name() const
 {
+    return make_name(mData);
 
 } // Acd1Antigen::name
 
@@ -257,6 +273,17 @@ Name Acd1Antigen::name() const
 
 Passage Acd1Antigen::passage() const
 {
+    if (auto [p_dict_present, p_dict] = mData.get_object_if("passage"); p_dict_present) {
+        std::string p = p_dict["passage"];
+        if (auto [date_present, date] = p_dict.get_R_if<std::string>("date"); date_present)
+            p += " (" + date + ")";
+        return p;
+    }
+    else if (auto [p_str_present, p_str] = mData.get_R_if<std::string>("passage"); p_str_present) {
+        return p_str;
+    }
+    else
+        return {};
 
 } // Acd1Antigen::passage
 
@@ -264,6 +291,19 @@ Passage Acd1Antigen::passage() const
 
 Reassortant Acd1Antigen::reassortant() const
 {
+    if (auto [r_dict_present, r_dict] = mData.get_object_if("reassortant"); r_dict_present) {
+        const rjson::array& complete = r_dict.get_or_empty_array("complete");
+        const rjson::array& incomplete = r_dict.get_or_empty_array("incomplete");
+        std::vector<std::string> composition;
+        std::transform(complete.begin(), complete.end(), std::back_inserter(composition), [](const auto& val) -> std::string { return val; });
+        std::transform(incomplete.begin(), incomplete.end(), std::back_inserter(composition), [](const auto& val) -> std::string { return val; });
+        return string::join(" ", composition);
+    }
+    else if (auto [r_str_present, r_str] = mData.get_R_if<std::string>("reassortant"); r_str_present) {
+        return r_str;
+    }
+    else
+        return {};
 
 } // Acd1Antigen::reassortant
 
@@ -271,13 +311,34 @@ Reassortant Acd1Antigen::reassortant() const
 
 LabIds Acd1Antigen::lab_ids() const
 {
+    LabIds result;
+    if (auto [li_present, li] = mData.get_array_if("lab_id"); li_present) {
+        for(const auto& entry: li)
+            result.push_back(static_cast<std::string>(entry[0]) + '#' + static_cast<std::string>(entry[1]));
+    }
+    return result;
 
 } // Acd1Antigen::lab_ids
 
 // ----------------------------------------------------------------------
 
+static inline Annotations make_annotations(const rjson::object& aData)
+{
+    Annotations result;
+      // mutations, extra, distinct, annotations, control_duplicate
+    if (aData.get_or_default("distinct", false) || ! aData.get_or_default("control_duplicate", "").empty())
+        result.push_back("DISTINCT");
+    result.push_back(aData.get_or_default("extra", ""));
+    for (const auto& annotation: aData.get_or_empty_array("annotations"))
+        result.push_back(annotation);
+    for (const auto& mutation: aData.get_or_empty_array("mutations"))
+        result.push_back(mutation);
+    return result;
+}
+
 Annotations Acd1Antigen::annotations() const
 {
+    return make_annotations(mData);
 
 } // Acd1Antigen::annotations
 

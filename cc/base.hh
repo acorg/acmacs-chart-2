@@ -47,6 +47,9 @@ namespace acmacs::chart
             inline auto begin() const { return mData.begin(); }
             inline auto end() const { return mData.end(); }
 
+            inline void push_back(const T& val) { mData.push_back(val); }
+            inline void push_back(T&& val) { mData.push_back(std::forward<T>(val)); }
+
          private:
             std::vector<T> mData;
 
@@ -58,6 +61,8 @@ namespace acmacs::chart
             using T_list_data<std::string>::T_list_data;
 
             inline std::string join() const { return string::join(" ", begin(), end()); }
+            inline void push_back(const std::string& val) { if (!val.empty()) T_list_data<std::string>::push_back(val); }
+            inline void push_back(std::string&& val) { if (!val.empty()) T_list_data<std::string>::push_back(std::move(val)); }
 
         }; // class string_list_data
 
