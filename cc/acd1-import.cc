@@ -16,9 +16,16 @@ static std::string convert_to_json(const std::string_view& aData);
 
 std::shared_ptr<Chart> acmacs::chart::acd1_import(const std::string_view& aData, Verify aVerify)
 {
-    auto chart = std::make_shared<Acd1Chart>(rjson::parse_string(convert_to_json(aData)));
-    chart->verify_data(aVerify);
-    return chart;
+    const std::string json = convert_to_json(aData);
+    try {
+        auto chart = std::make_shared<Acd1Chart>(rjson::parse_string(json));
+        chart->verify_data(aVerify);
+        return chart;
+    }
+    catch (rjson::parse_error&) {
+        std::cout << json << '\n';
+        throw;
+    }
 
 } // acmacs::chart::acd1_import
 
@@ -73,6 +80,14 @@ std::string convert_to_json(const std::string_view& aData)
               if (input_matches(aData, input - 2, ": False")) {
                   result.append("false");
                   input += 4;
+              }
+              else
+                  result.append(1, aData[input]);
+              break;
+          case 'N':
+              if (input_matches(aData, input - 2, ": None")) {
+                  result.append("null");
+                  input += 3;
               }
               else
                   result.append(1, aData[input]);
@@ -393,13 +408,13 @@ static inline BLineage b_lineage(std::string aLin)
 
 BLineage Acd1Antigen::lineage() const
 {
-    return b_lineage(mData["lineage"]);
+    return b_lineage(mData.get_or_default("lineage", ""));
 
 } // Acd1Antigen::lineage
 
 BLineage Acd1Serum::lineage() const
 {
-    return b_lineage(mData["lineage"]);
+    return b_lineage(mData.get_or_default("lineage", ""));
 
 } // Acd1Serum::lineage
 

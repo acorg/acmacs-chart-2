@@ -162,13 +162,13 @@ static inline BLineage b_lineage(std::string aLin)
 
 BLineage AceAntigen::lineage() const
 {
-    return b_lineage(mData["L"]);
+    return b_lineage(mData.get_or_default("L", ""));
 
 } // AceAntigen::lineage
 
 BLineage AceSerum::lineage() const
 {
-    return b_lineage(mData["L"]);
+    return b_lineage(mData.get_or_default("L", ""));
 
 } // AceSerum::lineage
 
