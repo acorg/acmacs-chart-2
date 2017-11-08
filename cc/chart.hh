@@ -49,7 +49,7 @@ namespace acmacs::chart
 
         virtual ~Info();
 
-        virtual std::string make_info() const = 0;
+        virtual std::string make_info() const;
 
         virtual std::string name(Compute = Compute::No) const = 0;
         virtual std::string virus(Compute = Compute::No) const = 0;

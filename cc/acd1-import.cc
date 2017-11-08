@@ -124,25 +124,27 @@ std::string convert_to_json(const std::string_view& aData)
 void Acd1Chart::verify_data(Verify aVerify) const
 {
     try {
-        const auto& antigens = mData["c"].get_or_empty_array("a");
+        if (static_cast<size_t>(mData["version"]) != 4)
+            throw import_error("invalid version");
+        const auto& antigens = mData["table"].get_or_empty_array("antigens");
         if (antigens.empty())
-            throw import_error("[acd1]: no antigens");
-        const auto& sera = mData["c"].get_or_empty_array("s");
+            throw import_error("no antigens");
+        const auto& sera = mData["table"].get_or_empty_array("sera");
         if (sera.empty())
-            throw import_error("[acd1]: no sera");
-        const auto& titers = mData["c"].get_or_empty_object("t");
+            throw import_error("no sera");
+        const auto& titers = mData["table"].get_or_empty_object("titers");
         if (titers.empty())
-            throw import_error("[acd1]: no titers");
-        if (auto [ll_present, ll] = titers.get_array_if("l"); ll_present) {
+            throw import_error("no titers");
+        if (auto [ll_present, ll] = titers.get_array_if("titers_list_of_list"); ll_present) {
             if (ll.size() != antigens.size())
-                throw import_error("[acd1]: number of the titer rows (" + acmacs::to_string(ll.size()) + ") does not correspond to the number of antigens (" + acmacs::to_string(antigens.size()) + ")");
+                throw import_error("number of the titer rows (" + acmacs::to_string(ll.size()) + ") does not correspond to the number of antigens (" + acmacs::to_string(antigens.size()) + ")");
         }
-        else if (auto [dd_present, dd] = titers.get_array_if("d"); dd_present) {
+        else if (auto [dd_present, dd] = titers.get_array_if("titers_list_of_dict"); dd_present) {
             if (dd.size() != antigens.size())
-                throw import_error("[acd1]: number of the titer rows (" + acmacs::to_string(dd.size()) + ") does not correspond to the number of antigens (" + acmacs::to_string(antigens.size()) + ")");
+                throw import_error("number of the titer rows (" + acmacs::to_string(dd.size()) + ") does not correspond to the number of antigens (" + acmacs::to_string(antigens.size()) + ")");
         }
         else
-            throw import_error("[acd1]: no titers (neither \"l\" nor \"d\" present)");
+            throw import_error("no titers (neither \"titers_list_of_list\" nor \"titers_list_of_dict\" present)");
         if (aVerify != Verify::None) {
             std::cerr << "WARNING: Acd1Chart::verify_data not implemented\n";
         }
@@ -157,7 +159,7 @@ void Acd1Chart::verify_data(Verify aVerify) const
 
 std::shared_ptr<Info> Acd1Chart::info() const
 {
-    return std::make_shared<Acd1Info>(mData["c"]["i"]);
+    return std::make_shared<Acd1Info>(mData["chart_info"]);
 
 } // Acd1Chart::info
 
@@ -165,7 +167,7 @@ std::shared_ptr<Info> Acd1Chart::info() const
 
 std::shared_ptr<Antigens> Acd1Chart::antigens() const
 {
-    return std::make_shared<Acd1Antigens>(mData["c"].get_or_empty_array("a"));
+    return std::make_shared<Acd1Antigens>(mData["table"].get_or_empty_array("antigens"));
 
 } // Acd1Chart::antigens
 
@@ -173,7 +175,7 @@ std::shared_ptr<Antigens> Acd1Chart::antigens() const
 
 std::shared_ptr<Sera> Acd1Chart::sera() const
 {
-    return std::make_shared<Acd1Sera>(mData["c"].get_or_empty_array("s"));
+    return std::make_shared<Acd1Sera>(mData["table"].get_or_empty_array("sera"));
 
 } // Acd1Chart::sera
 
@@ -181,7 +183,7 @@ std::shared_ptr<Sera> Acd1Chart::sera() const
 
 std::shared_ptr<Titers> Acd1Chart::titers() const
 {
-    return std::make_shared<Acd1Titers>(mData["c"].get_or_empty_object("t"));
+    return std::make_shared<Acd1Titers>(mData["table"].get_or_empty_object("titers"));
 
 } // Acd1Chart::titers
 
@@ -189,7 +191,7 @@ std::shared_ptr<Titers> Acd1Chart::titers() const
 
 std::shared_ptr<ForcedColumnBases> Acd1Chart::forced_column_bases() const
 {
-    return std::make_shared<Acd1ForcedColumnBases>(mData["c"].get_or_empty_array("C"));
+    return std::make_shared<Acd1ForcedColumnBases>(mData["table"].get_or_empty_array("column_bases"));
 
 } // Acd1Chart::forced_column_bases
 
@@ -197,7 +199,7 @@ std::shared_ptr<ForcedColumnBases> Acd1Chart::forced_column_bases() const
 
 std::shared_ptr<Projections> Acd1Chart::projections() const
 {
-    return std::make_shared<Acd1Projections>(mData["c"].get_or_empty_array("P"));
+    return std::make_shared<Acd1Projections>(mData.get_or_empty_array("projections"));
 
 } // Acd1Chart::projections
 
@@ -205,27 +207,9 @@ std::shared_ptr<Projections> Acd1Chart::projections() const
 
 std::shared_ptr<PlotSpec> Acd1Chart::plot_spec() const
 {
-    return std::make_shared<Acd1PlotSpec>(mData["c"].get_or_empty_object("p"));
+    return std::make_shared<Acd1PlotSpec>(mData.get_or_empty_object("plot_spec"));
 
 } // Acd1Chart::plot_spec
-
-// ----------------------------------------------------------------------
-
-std::string Acd1Info::make_info() const
-{
-    const auto n_sources = number_of_sources();
-    return string::join(" ", {name(),
-                    virus(Compute::Yes),
-                    lab(Compute::Yes),
-                    virus_type(Compute::Yes),
-                    subset(Compute::Yes),
-                    assay(Compute::Yes),
-                    rbc_species(Compute::Yes),
-                    date(Compute::Yes),
-                    n_sources ? ("(" + std::to_string(n_sources) + " tables)") : std::string{}
-                             });
-
-} // Acd1Info::make_info
 
 // ----------------------------------------------------------------------
 

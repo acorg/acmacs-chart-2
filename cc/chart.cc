@@ -14,6 +14,24 @@ std::string acmacs::chart::Chart::make_info() const
 
 // ----------------------------------------------------------------------
 
+std::string acmacs::chart::Info::make_info() const
+{
+    const auto n_sources = number_of_sources();
+    return string::join(" ", {name(),
+                    virus(Compute::Yes),
+                    lab(Compute::Yes),
+                    virus_type(Compute::Yes),
+                    subset(Compute::Yes),
+                    assay(Compute::Yes),
+                    rbc_species(Compute::Yes),
+                    date(Compute::Yes),
+                    n_sources ? ("(" + std::to_string(n_sources) + " tables)") : std::string{}
+                             });
+
+} // acmacs::chart::Info::make_info
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Projection::make_info() const
 {
     return std::to_string(stress()) + " " + std::to_string(number_of_dimensions()) + "d";

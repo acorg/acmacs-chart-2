@@ -42,8 +42,6 @@ namespace acmacs::chart
       public:
         inline AceInfo(const rjson::value& aData) : mData{aData} {}
 
-        std::string make_info() const override;
-
         inline std::string name(Compute aCompute = Compute::No) const override { return make_field("N", " + ", aCompute); }
         inline std::string virus(Compute aCompute = Compute::No) const override { return make_field("v", "+", aCompute); }
         inline std::string virus_type(Compute aCompute = Compute::No) const override { return make_field("V", "+", aCompute); }
@@ -51,7 +49,7 @@ namespace acmacs::chart
         inline std::string assay(Compute aCompute = Compute::No) const override { return make_field("A", "+", aCompute); }
         inline std::string lab(Compute aCompute = Compute::No) const override { return make_field("l", "+", aCompute); }
         inline std::string rbc_species(Compute aCompute = Compute::No) const override { return make_field("r", "+", aCompute); }
-        inline std::string date(Compute aCompute = Compute::No) const override;
+        std::string date(Compute aCompute = Compute::No) const override;
         inline size_t number_of_sources() const override { return mData.get_or_empty_array("S").size(); }
         inline std::shared_ptr<Info> source(size_t aSourceNo) const override { return std::make_shared<AceInfo>(mData.get_or_empty_array("S")[aSourceNo]); }
 
