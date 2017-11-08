@@ -422,11 +422,11 @@ SerumId Acd1Serum::serum_id() const
 
 Titer Acd1Titers::titer(size_t aAntigenNo, size_t aSerumNo) const
 {
-    if (auto [present, list] = mData.get_array_if("l"); present) {
+    if (auto [present, list] = mData.get_array_if("titers_list_of_list"); present) {
         return list[aAntigenNo][aSerumNo];
     }
     else {
-        return titer_in_d(mData["d"], aAntigenNo, aSerumNo);
+        return titer_in_d(mData["titers_list_of_dict"], aAntigenNo, aSerumNo);
     }
 
 } // Acd1Titers::titer
@@ -435,7 +435,7 @@ Titer Acd1Titers::titer(size_t aAntigenNo, size_t aSerumNo) const
 
 Titer Acd1Titers::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const
 {
-    return titer_in_d(mData["L"][aLayerNo], aAntigenNo, aSerumNo);
+    return titer_in_d(mData["layers_dict_for_antigen"][aLayerNo], aAntigenNo, aSerumNo);
 
 } // Acd1Titers::titer_of_layer
 
@@ -443,11 +443,12 @@ Titer Acd1Titers::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSer
 
 size_t Acd1Titers::number_of_antigens() const
 {
-    if (auto [present, list] = mData.get_array_if("l"); present) {
+    if (auto [present, list] = mData.get_array_if("titers_list_of_list"); present) {
+        // std::cerr << "number_of_antigens " << list << '\n';
         return list.size();
     }
     else {
-        return static_cast<const rjson::array&>(mData["d"]).size();
+        return static_cast<const rjson::array&>(mData["titers_list_of_dict"]).size();
     }
 
 } // Acd1Titers::number_of_antigens
@@ -456,11 +457,12 @@ size_t Acd1Titers::number_of_antigens() const
 
 size_t Acd1Titers::number_of_sera() const
 {
-    if (auto [present, list] = mData.get_array_if("l"); present) {
+    if (auto [present, list] = mData.get_array_if("titers_list_of_list"); present) {
+        // std::cerr << "number_of_sera " << list << '\n';
         return static_cast<const rjson::array&>(list[0]).size();
     }
     else {
-        const rjson::array& d = mData["d"];
+        const rjson::array& d = mData["titers_list_of_dict"];
         auto max_index = [](const rjson::object& obj) -> size_t {
                              size_t result = 0;
                              for (auto [key, value]: obj) {
@@ -479,7 +481,7 @@ size_t Acd1Titers::number_of_sera() const
 size_t Acd1Titers::number_of_non_dont_cares() const
 {
     size_t result = 0;
-    if (auto [present, list] = mData.get_array_if("l"); present) {
+    if (auto [present, list] = mData.get_array_if("titers_list_of_list"); present) {
         for (const rjson::array& row: list) {
             for (const Titer titer: row) {
                 if (!titer.is_dont_care())
@@ -488,7 +490,7 @@ size_t Acd1Titers::number_of_non_dont_cares() const
         }
     }
     else {
-        const rjson::array& d = mData["d"];
+        const rjson::array& d = mData["titers_list_of_dict"];
         result = std::accumulate(d.begin(), d.end(), 0U, [](size_t a, const rjson::object& row) -> size_t { return a + row.size(); });
     }
     return result;
@@ -500,7 +502,7 @@ size_t Acd1Titers::number_of_non_dont_cares() const
 size_t Acd1Projection::number_of_dimensions() const
 {
     try {
-        for (const rjson::array& row: static_cast<const rjson::array&>(mData["l"])) {
+        for (const rjson::array& row: static_cast<const rjson::array&>(mData["layout"])) {
             if (!row.empty())
                 return row.size();
         }
@@ -517,7 +519,7 @@ size_t Acd1Projection::number_of_dimensions() const
 
 double Acd1Projection::coordinate(size_t aPointNo, size_t aDimensionNo) const
 {
-    const auto& layout = mData.get_or_empty_array("l");
+    const auto& layout = mData.get_or_empty_array("layout");
     const auto& point = layout[aPointNo];
     try {
         return point[aDimensionNo];
@@ -532,7 +534,10 @@ double Acd1Projection::coordinate(size_t aPointNo, size_t aDimensionNo) const
 
 std::shared_ptr<ForcedColumnBases> Acd1Projection::forced_column_bases() const
 {
-    return std::make_shared<Acd1ForcedColumnBases>(mData.get_or_empty_array("C"));
+    const rjson::object& sep = mData.get_or_empty_object("stress_evaluator_parameters");
+    if (const rjson::array& cb = sep.get_or_empty_array("column_bases"); !cb.empty())
+        return std::make_shared<Acd1ForcedColumnBases>(cb);
+    return std::make_shared<Acd1ForcedColumnBases>(sep.get_or_empty_array("columns_bases"));
 
 } // Acd1Projection::forced_column_bases
 
@@ -541,12 +546,67 @@ std::shared_ptr<ForcedColumnBases> Acd1Projection::forced_column_bases() const
 acmacs::Transformation Acd1Projection::transformation() const
 {
     acmacs::Transformation result;
-    if (auto [present, array] = mData.get_array_if("t"); present) {
-        result.set(array[0], array[1], array[2], array[3]);
+    if (auto [present, array] = mData.get_array_if("transformation"); present) {
+        result.set(array[0][0], array[0][1], array[1][0], array[1][1]);
     }
     return result;
 
 } // Acd1Projection::transformation
+
+// ----------------------------------------------------------------------
+
+static inline PointIndexList make_attributes(const rjson::object& aData, size_t aAttr)
+{
+    const rjson::object& attrs = aData.get_or_empty_object("stress_evaluator_parameters").get_or_empty_object("antigens_sera_attributes");
+    PointIndexList result;
+    for (auto [ag_no, attr]: acmacs::enumerate(attrs.get_or_empty_array("antigens"))) {
+        if (static_cast<size_t>(attr) == aAttr)
+            result.push_back(ag_no);
+    }
+    const size_t number_of_antigens = attrs.get_or_empty_array("antigens").size();
+    for (auto [sr_no, attr]: acmacs::enumerate(attrs.get_or_empty_array("sera"))) {
+        if (static_cast<size_t>(attr) == aAttr)
+            result.push_back(sr_no + number_of_antigens);
+    }
+
+    return result;
+}
+
+PointIndexList Acd1Projection::unmovable() const
+{
+    return make_attributes(mData, 1);
+
+} // Acd1Projection::unmovable
+
+// ----------------------------------------------------------------------
+
+PointIndexList Acd1Projection::disconnected() const
+{
+    return make_attributes(mData, 2);
+
+} // Acd1Projection::disconnected
+
+// ----------------------------------------------------------------------
+
+PointIndexList Acd1Projection::unmovable_in_the_last_dimension() const
+{
+    return make_attributes(mData, 3);
+
+} // Acd1Projection::unmovable_in_the_last_dimension
+
+// ----------------------------------------------------------------------
+
+DrawingOrder Acd1PlotSpec::drawing_order() const
+{
+    DrawingOrder result;
+    if (const rjson::array& do1 = mData.get_or_empty_array("drawing_order"); !do1.empty()) {
+        for (const rjson::array& do2: do1)
+            for (size_t index: do2)
+                result.push_back(index);
+    }
+    return result;
+
+} // Acd1PlotSpec::drawing_order
 
 // ----------------------------------------------------------------------
 

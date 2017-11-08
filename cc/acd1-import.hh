@@ -156,9 +156,9 @@ namespace acmacs::chart
         size_t number_of_non_dont_cares() const override;
 
           // support for fast exporting into ace, if source was ace or acd1
-        inline const rjson::array& rjson_list_list() const override { return mData.get_or_empty_array("l"); }
-        inline const rjson::array& rjson_list_dict() const override { return mData.get_or_empty_array("d"); }
-        inline const rjson::array& rjson_layers() const override { return mData.get_or_empty_array("L"); }
+        inline const rjson::array& rjson_list_list() const override { return mData.get_or_empty_array("titers_list_of_list"); }
+        inline const rjson::array& rjson_list_dict() const override { return mData.get_or_empty_array("titers_list_of_dict"); }
+        inline const rjson::array& rjson_layers() const override { return mData.get_or_empty_array("layers_dict_for_antigen"); }
 
      private:
         const rjson::object& mData;
@@ -200,19 +200,19 @@ namespace acmacs::chart
       public:
         inline Acd1Projection(const rjson::object& aData) : mData{aData} {}
 
-        inline double stress() const override { return mData.get_or_default("s", 0.0); }
+        inline double stress() const override { return mData.get_or_default("stress", 0.0); }
         size_t number_of_dimensions() const override;
-        inline size_t number_of_points() const override { return mData.get_or_empty_array("l").size(); }
+        inline size_t number_of_points() const override { return mData.get_or_empty_array("layout").size(); }
         double coordinate(size_t aPointNo, size_t aDimensionNo) const override;
-        inline std::string comment() const override { return mData.get_or_default("c", ""); }
-        inline MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_default("m", "none"); }
+        inline std::string comment() const override { return mData.get_or_default("comment", ""); }
+        inline MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("minimum_column_basis", "none"); }
         std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
         acmacs::Transformation transformation() const override;
-        inline bool dodgy_titer_is_regular() const override { return mData.get_or_default("d", false); }
-        inline double stress_diff_to_stop() const override { return mData.get_or_default("d", 0.0); }
-        inline PointIndexList unmovable() const override { return mData.get_or_empty_array("U"); }
-        inline PointIndexList disconnected() const override { return mData.get_or_empty_array("D"); }
-        inline PointIndexList unmovable_in_the_last_dimension() const override { return mData.get_or_empty_array("u"); }
+        inline bool dodgy_titer_is_regular() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("dodgy_titer_is_regular", false); }
+        inline double stress_diff_to_stop() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("stress_diff_to_stop", 0.0); }
+        PointIndexList unmovable() const override;
+        PointIndexList disconnected() const override;
+        PointIndexList unmovable_in_the_last_dimension() const override;
 
      private:
         const rjson::object& mData;
@@ -243,7 +243,7 @@ namespace acmacs::chart
         inline Acd1PlotSpec(const rjson::object& aData) : mData{aData} {}
 
         inline bool empty() const override { return mData.empty(); }
-        inline DrawingOrder drawing_order() const override { return mData["d"]; }
+        DrawingOrder drawing_order() const override;
         Color error_line_positive_color() const override;
         Color error_line_negative_color() const override;
         PointStyle style(size_t aPointNo) const override;
