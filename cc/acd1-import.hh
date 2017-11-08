@@ -81,7 +81,7 @@ namespace acmacs::chart
         BLineage lineage() const override;
         Reassortant reassortant() const override;
         LabIds lab_ids() const override;
-        inline Clades clades() const override { throw std::runtime_error("Acd1Antigen::clades not implemented"); }
+        inline Clades clades() const override { return {}; /* not implemented */ }
         Annotations annotations() const override;
         inline bool reference() const override { return mData.get_or_default("reference", false); }
 
@@ -97,14 +97,14 @@ namespace acmacs::chart
       public:
         inline Acd1Serum(const rjson::object& aData) : mData{aData} {}
 
-        inline Name name() const override { return mData["N"]; }
-        inline Passage passage() const override { return mData.get_or_default("P", ""); }
+        Name name() const override;
+        Passage passage() const override;
         BLineage lineage() const override;
-        inline Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
-        inline Annotations annotations() const override { return mData.get_or_empty_array("a"); }
-        inline SerumId serum_id() const override { return mData.get_or_default("I", ""); }
-        inline SerumSpecies serum_species() const override { return mData.get_or_default("s", ""); }
-        inline PointIndexList homologous_antigens() const override { return mData.get_or_empty_array("h"); }
+        Reassortant reassortant() const override;
+        Annotations annotations() const override;
+        SerumId serum_id() const override;
+        inline SerumSpecies serum_species() const override { return mData.get_or_default("serum_species", ""); }
+        inline PointIndexList homologous_antigens() const override { return {}; }
 
      private:
         const rjson::object& mData;
