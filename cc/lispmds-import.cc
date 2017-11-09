@@ -78,7 +78,7 @@ std::shared_ptr<ForcedColumnBases> LispmdsChart::forced_column_bases() const
     try {
         const auto number_of_antigens = mData[0][1].size();
         const auto number_of_sera = mData[0][2].size();
-        return std::make_shared<LispmdsForcedColumnBases>(mData[":STARTING-COORDSS"][number_of_antigens][0][1], number_of_antigens, number_of_sera);
+        return std::make_shared<LispmdsForcedColumnBases>(mData[":STARTING-COORDSS"][number_of_antigens + number_of_sera][0][1], number_of_antigens, number_of_sera);
     }
     catch (acmacs::lispmds::keyword_no_found&) {
         return std::make_shared<LispmdsNoColumnBases>();
@@ -246,12 +246,27 @@ double LispmdsForcedColumnBases::column_basis(size_t aSerumNo) const
 
 // ----------------------------------------------------------------------
 
+inline const acmacs::lispmds::value& LispmdsProjection::data() const
+{
+    return mIndex == 0 ? mData[":STARTING-COORDSS"] : mData[":BATCH-RUNS"][mIndex - 1];
+
+} // LispmdsProjection::data
+
+// ----------------------------------------------------------------------
+
+inline const acmacs::lispmds::value& LispmdsProjection::layout() const
+{
+    return mIndex == 0 ? data() : data()[0];
+
+} // LispmdsProjection::layout
+
+// ----------------------------------------------------------------------
+
 double LispmdsProjection::stress() const
 {
     if (mIndex == 0)
         return 0;
-    const auto& batch_runs = mData[":BATCH-RUNS"];
-    return std::get<acmacs::lispmds::number>(batch_runs[mIndex - 1][1]);
+    return std::get<acmacs::lispmds::number>(data()[1]);
 
 } // LispmdsProjection::stress
 
@@ -259,6 +274,7 @@ double LispmdsProjection::stress() const
 
 size_t LispmdsProjection::number_of_points() const
 {
+    return mNumberOfAntigens + mNumberOfSera;
 
 } // LispmdsProjection::number_of_points
 
@@ -266,8 +282,7 @@ size_t LispmdsProjection::number_of_points() const
 
 size_t LispmdsProjection::number_of_dimensions() const
 {
-    const auto& point0 = mIndex == 0 ? mData[":STARTING-COORDSS"][0] : mData[":BATCH-RUNS"][mIndex - 1][0];
-    return point0.size();
+    return layout()[0].size();
 
 } // LispmdsProjection::number_of_dimensions
 
@@ -282,6 +297,7 @@ double LispmdsProjection::coordinate(size_t aPointNo, size_t aDimensionNo) const
 
 std::shared_ptr<ForcedColumnBases> LispmdsProjection::forced_column_bases() const
 {
+    return std::make_shared<LispmdsForcedColumnBases>(layout()[mNumberOfAntigens + mNumberOfSera][0][1] , mNumberOfAntigens, mNumberOfSera);
 
 } // LispmdsProjection::forced_column_bases
 
@@ -329,15 +345,15 @@ bool LispmdsProjections::empty() const
 size_t LispmdsProjections::size() const
 {
     size_t result = 0;
-    // try {
-    //     const auto& starting_coordss = mData[":STARTING-COORDSS"];
-    //     if (!starting_coordss.empty())
-    //         ++result;
-    //     const auto& batch_runs = mData[":BATCH-RUNS"];
-    //     result += batch_runs.size();
-    // }
-    // catch (acmacs::lispmds::keyword_no_found&) {
-    // }
+    try {
+        const auto& starting_coordss = mData[":STARTING-COORDSS"];
+        if (!starting_coordss.empty())
+            ++result;
+        const auto& batch_runs = mData[":BATCH-RUNS"];
+        result += batch_runs.size();
+    }
+    catch (acmacs::lispmds::keyword_no_found&) {
+    }
     return result;
 
 } // LispmdsProjections::size
@@ -346,7 +362,9 @@ size_t LispmdsProjections::size() const
 
 std::shared_ptr<Projection> LispmdsProjections::operator[](size_t aIndex) const
 {
-    return std::make_shared<LispmdsProjection>(mData, aIndex);
+    const auto number_of_antigens = mData[0][1].size();
+    const auto number_of_sera = mData[0][2].size();
+    return std::make_shared<LispmdsProjection>(mData, aIndex, number_of_antigens, number_of_sera);
 
 } // LispmdsProjections::operator[]
 

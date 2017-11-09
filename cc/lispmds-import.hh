@@ -133,8 +133,8 @@ namespace acmacs::chart
       public:
         inline LispmdsSera(const acmacs::lispmds::value& aData) : mData{aData} {}
 
-        inline size_t size() const override;
-        inline std::shared_ptr<Serum> operator[](size_t aIndex) const override;
+        size_t size() const override;
+        std::shared_ptr<Serum> operator[](size_t aIndex) const override;
 
      private:
         const acmacs::lispmds::value& mData;
@@ -194,7 +194,8 @@ namespace acmacs::chart
     class LispmdsProjection : public Projection
     {
       public:
-        inline LispmdsProjection(const acmacs::lispmds::value& aData, size_t aIndex) : mData{aData}, mIndex{aIndex} {}
+        inline LispmdsProjection(const acmacs::lispmds::value& aData, size_t aIndex, size_t aNumberOfAntigens, size_t aNumberOfSera)
+            : mData{aData}, mIndex{aIndex}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} {}
 
         double stress() const override;
         size_t number_of_dimensions() const override;
@@ -213,6 +214,10 @@ namespace acmacs::chart
      private:
         const acmacs::lispmds::value& mData;
         size_t mIndex;
+        size_t mNumberOfAntigens, mNumberOfSera;
+
+        const acmacs::lispmds::value& data() const;
+        const acmacs::lispmds::value& layout() const;
 
     }; // class LispmdsProjections
 
