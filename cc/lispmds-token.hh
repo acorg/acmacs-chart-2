@@ -2,6 +2,7 @@
 
 #include <variant>
 #include <string>
+#include <vector>
 
 // ----------------------------------------------------------------------
 
@@ -92,6 +93,10 @@ namespace acmacs::lispmds
           // inline ~value() { std::cerr << "DEBUG: ~value " << to_json() << DEBUG_LINE_FUNC << '\n'; }
 
     }; // class value
+
+// ----------------------------------------------------------------------
+
+    value parse_string(const std::string_view& aData);
 
 } // namespace acmacs::lispmds
 

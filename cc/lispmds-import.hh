@@ -32,12 +32,12 @@ namespace acmacs::chart
     {
         if (aData.size() < 100)
             return false;
-        const auto start = aData.find("data = {");
+        const auto start = aData.find("(MAKE-MASTER-MDS-WINDOW");
         if (start == std::string_view::npos)
             return false;
-        // const auto ver = aData.find("'version': 4,", start + 8);
-        // if (ver == std::string_view::npos)
-        //     return false;
+        const auto hi_in = aData.find("(HI-IN", start + 23);
+        if (hi_in == std::string_view::npos)
+            return false;
         return true;
     }
 

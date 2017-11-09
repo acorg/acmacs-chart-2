@@ -16,8 +16,7 @@ using namespace acmacs::chart;
 std::shared_ptr<Chart> acmacs::chart::lispmds_import(const std::string_view& aData, Verify aVerify)
 {
     try {
-        acmacs::lispmds::value val;
-        auto chart = std::make_shared<LispmdsChart>(std::move(val));
+        auto chart = std::make_shared<LispmdsChart>(acmacs::lispmds::parse_string(aData));
         chart->verify_data(aVerify);
         return chart;
     }
