@@ -174,6 +174,20 @@ std::shared_ptr<Serum> LispmdsSera::operator[](size_t aIndex) const
 
 Titer LispmdsTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
 {
+    const auto& titer_v = mData[0][3][aAntigenNo][aSerumNo];
+    std::string prefix;
+    double titer = 0;
+    try {
+        titer = std::get<acmacs::lispmds::number>(titer_v);
+    }
+    catch (std::bad_variant_access&) {
+        const std::string sym = std::get<acmacs::lispmds::symbol>(titer_v);
+        prefix.append(1, sym[0]);
+        if (prefix == "*")
+            return prefix;
+        titer = std::stod(sym.substr(1));
+    }
+    return prefix + acmacs::to_string(static_cast<size_t>(std::exp2(titer) * 10));
 
 } // LispmdsTiters::titer
 
@@ -181,6 +195,7 @@ Titer LispmdsTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
 
 size_t LispmdsTiters::number_of_antigens() const
 {
+    return mData[0][3].size();
 
 } // LispmdsTiters::number_of_antigens
 
@@ -188,6 +203,7 @@ size_t LispmdsTiters::number_of_antigens() const
 
 size_t LispmdsTiters::number_of_sera() const
 {
+    return mData[0][3][0].size();
 
 } // LispmdsTiters::number_of_sera
 
