@@ -71,6 +71,8 @@ namespace acmacs::lispmds
             inline string(const std::string_view& aValue) : mValue(aValue) {}
 
             inline operator std::string() const { return mValue; }
+            inline bool operator==(const string& s) const { return mValue == s.mValue; }
+            inline bool operator!=(const string& s) const { return mValue != s.mValue; }
             inline bool operator==(std::string s) const { return mValue == s; }
             inline bool operator!=(std::string s) const { return mValue != s; }
 

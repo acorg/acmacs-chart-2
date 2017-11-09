@@ -126,8 +126,9 @@ bool LispmdsAntigen::reference() const
         const auto& val = mData[":REFERENCE-ANTIGENS"];
         if (val.empty())
             return false;
-        std::cerr << val;
-        return false;
+        const auto& name = std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]);
+        const auto& val_l = std::get<acmacs::lispmds::list>(val);
+        return std::find_if(val_l.begin(), val_l.end(), [&name](const auto& ev) -> bool { return std::get<acmacs::lispmds::symbol>(ev) == name; }) != val_l.end();
     }
     catch (acmacs::lispmds::keyword_no_found&) {
         return false;
