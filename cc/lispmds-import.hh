@@ -165,14 +165,27 @@ namespace acmacs::chart
     class LispmdsForcedColumnBases : public ForcedColumnBases
     {
       public:
-        inline LispmdsForcedColumnBases(const acmacs::lispmds::value& aData) : mData{aData} {}
+        inline LispmdsForcedColumnBases(const acmacs::lispmds::value& aData, size_t aNumberOfAntigens, size_t aNumberOfSera)
+            : mData{aData}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} {}
 
         inline bool exists() const override { return true; }
         double column_basis(size_t aSerumNo) const override;
-        size_t size() const override;
+        inline size_t size() const override { return mNumberOfSera; }
 
      private:
         const acmacs::lispmds::value& mData;
+        size_t mNumberOfAntigens, mNumberOfSera;
+
+    }; // class LispmdsForcedColumnBases
+
+    class LispmdsNoColumnBases : public ForcedColumnBases
+    {
+      public:
+        inline LispmdsNoColumnBases() = default;
+
+        inline bool exists() const override { return false; }
+        double column_basis(size_t) const override { return 0; }
+        inline size_t size() const override { return 0; }
 
     }; // class LispmdsForcedColumnBases
 
