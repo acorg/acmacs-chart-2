@@ -129,6 +129,7 @@ bool LispmdsAntigen::reference() const
 
 size_t LispmdsAntigens::size() const
 {
+    return mData[0][1].size();
 
 } // LispmdsAntigens::size
 
@@ -143,6 +144,7 @@ std::shared_ptr<Antigen> LispmdsAntigens::operator[](size_t aIndex) const
 
 size_t LispmdsSera::size() const
 {
+    return mData[0][2].size();
 
 } // LispmdsSera::size
 

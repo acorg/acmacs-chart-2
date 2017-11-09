@@ -12,6 +12,8 @@
 namespace acmacs::lispmds
 {
     class type_mismatch : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+    class keyword_no_found : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+    class keyword_has_no_value : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
     class value;
 
@@ -59,47 +61,31 @@ namespace acmacs::lispmds
 
     }; // class number
 
-    class string
+    namespace internal
     {
-     public:
-        inline string() = default;
-        inline string(std::string aValue) : mValue(aValue) {}
-        inline string(const std::string_view& aValue) : mValue(aValue) {}
+        class string
+        {
+         public:
+            inline string() = default;
+            inline string(std::string aValue) : mValue(aValue) {}
+            inline string(const std::string_view& aValue) : mValue(aValue) {}
 
-        inline operator std::string() const { return mValue; }
+            inline operator std::string() const { return mValue; }
+            inline bool operator==(std::string s) const { return mValue == s; }
+            inline bool operator!=(std::string s) const { return mValue != s; }
 
-     private:
-        std::string mValue;
+         private:
+            std::string mValue;
 
-    }; // class string
+        }; // class string
 
-    class symbol
-    {
-     public:
-        inline symbol() = default;
-        inline symbol(std::string aValue) : mValue(aValue) {}
-        inline symbol(const std::string_view& aValue) : mValue(aValue) {}
+    } // namespace internal
 
-        inline operator std::string() const { return mValue; }
+    class string : public internal::string { public: using internal::string::string; };
 
-     private:
-        std::string mValue;
+    class symbol : public internal::string { public: using internal::string::string; };
 
-    }; // class symbol
-
-    class keyword
-    {
-     public:
-        inline keyword() = default;
-        inline keyword(std::string aValue) : mValue(aValue) {}
-        inline keyword(const std::string_view& aValue) : mValue(aValue) {}
-
-        inline operator std::string() const { return mValue; }
-
-     private:
-        std::string mValue;
-
-    }; // class keyword
+    class keyword : public internal::string { public: using internal::string::string; };
 
     class list
     {
@@ -118,6 +104,18 @@ namespace acmacs::lispmds
             {
                 mContent.push_back(std::move(to_add));
                 return mContent.back();
+            }
+
+        inline const value& operator[](size_t aIndex) const
+            {
+                return mContent.at(aIndex);
+            }
+
+        const value& operator[](std::string aKeyword) const;
+
+        inline size_t size() const
+            {
+                return mContent.size();
             }
 
      private:
@@ -151,7 +149,55 @@ namespace acmacs::lispmds
                     }, *this);
             }
 
+        inline const value& operator[](size_t aIndex) const
+            {
+                return std::visit([aIndex](const auto& arg) -> const value& {
+                    using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, list>)
+                        return arg[aIndex];
+                    else
+                        throw type_mismatch{"not a lispmds::list, cannot use [index]"};
+                    }, *this);
+            }
+
+        inline const value& operator[](std::string aKeyword) const
+            {
+                return std::visit([aKeyword](auto&& arg) -> const value& {
+                    using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, list>)
+                        return arg[aKeyword];
+                    else
+                        throw type_mismatch{"not a lispmds::list, cannot use [keyword]"};
+                    }, *this);
+            }
+
+        inline size_t size() const
+            {
+                return std::visit([](auto&& arg) -> size_t {
+                    using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, list>)
+                        return arg.size();
+                    else
+                        throw type_mismatch{"not a lispmds::list, cannot use size()"};
+                    }, *this);
+            }
+
     }; // class value
+
+// ----------------------------------------------------------------------
+
+    inline const value& list::operator[](std::string aKeyword) const
+            {
+                auto p = mContent.begin();
+                while (p != mContent.end() && !std::get_if<keyword>(&*p) && std::get<keyword>(*p) != aKeyword)
+                    ++p;
+                if (p == mContent.end())
+                    throw keyword_no_found{aKeyword};
+                ++p;
+                if (p == mContent.end())
+                    throw keyword_has_no_value{aKeyword};
+                return *p;
+            }
 
 // ----------------------------------------------------------------------
 

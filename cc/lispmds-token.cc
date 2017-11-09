@@ -68,7 +68,7 @@ acmacs::lispmds::value acmacs::lispmds::parse_string(const std::string_view& aDa
     }
     if (!stack.empty())
         throw acmacs::chart::import_error("[lispmds]: unexpected end of input");
-    std::cout << "Lispmds value: " << result << '\n';
+      // std::cout << "Lispmds value: " << result << '\n';
     return result;
 
 } // acmacs::lispmds::parse_string
