@@ -211,6 +211,19 @@ size_t LispmdsTiters::number_of_sera() const
 
 size_t LispmdsTiters::number_of_non_dont_cares() const
 {
+    size_t result = 0;
+    for (const auto& row: std::get<acmacs::lispmds::list>(mData[0][3])) {
+        for (const auto& titer: std::get<acmacs::lispmds::list>(row)) {
+            try {
+                if (static_cast<std::string>(std::get<acmacs::lispmds::symbol>(titer))[0] != '*')
+                    ++result;
+            }
+            catch (std::bad_variant_access&) {
+                ++result;
+            }
+        }
+    }
+    return result;
 
 } // LispmdsTiters::number_of_non_dont_cares
 
@@ -218,6 +231,7 @@ size_t LispmdsTiters::number_of_non_dont_cares() const
 
 double LispmdsForcedColumnBases::column_basis(size_t aSerumNo) const
 {
+    return 0;
 
 } // LispmdsForcedColumnBases::column_basis
 
@@ -225,6 +239,7 @@ double LispmdsForcedColumnBases::column_basis(size_t aSerumNo) const
 
 size_t LispmdsForcedColumnBases::size() const
 {
+    return 0;
 
 } // LispmdsForcedColumnBases::size
 
@@ -313,15 +328,15 @@ bool LispmdsProjections::empty() const
 size_t LispmdsProjections::size() const
 {
     size_t result = 0;
-    try {
-        const auto& starting_coordss = mData[":STARTING-COORDSS"];
-        if (!starting_coordss.empty())
-            ++result;
-        const auto& batch_runs = mData[":BATCH-RUNS"];
-        result += batch_runs.size();
-    }
-    catch (acmacs::lispmds::keyword_no_found&) {
-    }
+    // try {
+    //     const auto& starting_coordss = mData[":STARTING-COORDSS"];
+    //     if (!starting_coordss.empty())
+    //         ++result;
+    //     const auto& batch_runs = mData[":BATCH-RUNS"];
+    //     result += batch_runs.size();
+    // }
+    // catch (acmacs::lispmds::keyword_no_found&) {
+    // }
     return result;
 
 } // LispmdsProjections::size
