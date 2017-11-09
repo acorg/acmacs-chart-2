@@ -3,6 +3,7 @@
 #include "acmacs-chart/factory-import.hh"
 #include "acmacs-chart/ace-import.hh"
 #include "acmacs-chart/acd1-import.hh"
+#include "acmacs-chart/lispmds-import.hh"
 
 // ----------------------------------------------------------------------
 
@@ -16,6 +17,8 @@ std::shared_ptr<acmacs::chart::Chart> acmacs::chart::import_factory(std::string 
         return acmacs::chart::ace_import(data, aVerify);
     if (acmacs::chart::is_acd1(data))
         return acmacs::chart::acd1_import(data, aVerify);
+    if (acmacs::chart::is_lispmds(data))
+        return acmacs::chart::lispmds_import(data, aVerify);
     throw import_error{"[acmacs::chart::import_factory]: unrecognized file content: " + aFilename};
 
 } // acmacs::chart::import_factory

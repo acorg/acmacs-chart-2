@@ -704,7 +704,6 @@ Color Acd1PlotSpec::error_line_negative_color() const
 
 acmacs::PointStyle Acd1PlotSpec::style(size_t aPointNo) const
 {
-    acmacs::PointStyle result;
     try {
         const rjson::array& indices = mData["points"];
         const size_t style_no = indices[aPointNo];

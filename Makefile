@@ -16,7 +16,7 @@ TARGETS = \
     $(DIST)/chart-convert
 
 SOURCES = chart.cc \
-    factory-import.cc ace-import.cc acd1-import.cc \
+    factory-import.cc ace-import.cc acd1-import.cc lispmds-import.cc \
     factory-export.cc ace-export.cc
 
 # ----------------------------------------------------------------------
