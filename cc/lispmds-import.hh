@@ -71,7 +71,7 @@ namespace acmacs::chart
     class LispmdsAntigen : public Antigen
     {
       public:
-        inline LispmdsAntigen(const acmacs::lispmds::value& aData) : mData{aData} {}
+        inline LispmdsAntigen(const acmacs::lispmds::value& aData, size_t aIndex) : mData{aData}, mIndex{aIndex} {}
 
         Name name() const override;
         inline Date date() const override { return {}; }
@@ -85,6 +85,7 @@ namespace acmacs::chart
 
      private:
         const acmacs::lispmds::value& mData;
+        size_t mIndex;
 
     }; // class LispmdsAntigen
 
@@ -93,7 +94,7 @@ namespace acmacs::chart
     class LispmdsSerum : public Serum
     {
       public:
-        inline LispmdsSerum(const acmacs::lispmds::value& aData) : mData{aData} {}
+        inline LispmdsSerum(const acmacs::lispmds::value& aData, size_t aIndex) : mData{aData}, mIndex{aIndex} {}
 
         Name name() const override;
         inline Passage passage() const override { return {}; }
@@ -106,6 +107,7 @@ namespace acmacs::chart
 
      private:
         const acmacs::lispmds::value& mData;
+        size_t mIndex;
 
     }; // class LispmdsSerum
 

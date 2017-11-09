@@ -27,7 +27,7 @@ namespace acmacs::lispmds
     class boolean
     {
      public:
-        inline boolean() = default;
+        inline boolean(bool aValue = false) : mValue{aValue} {}
 
         inline operator bool() const { return mValue; }
 
@@ -177,10 +177,14 @@ namespace acmacs::lispmds
                     using T = std::decay_t<decltype(arg)>;
                     if constexpr (std::is_same_v<T, list>)
                         return arg.size();
+                    else if constexpr (std::is_same_v<T, nil>)
+                        return 0;
                     else
                         throw type_mismatch{"not a lispmds::list, cannot use size()"};
                     }, *this);
             }
+
+        inline bool empty() const { return size() == 0; }
 
     }; // class value
 
@@ -189,7 +193,7 @@ namespace acmacs::lispmds
     inline const value& list::operator[](std::string aKeyword) const
             {
                 auto p = mContent.begin();
-                while (p != mContent.end() && !std::get_if<keyword>(&*p) && std::get<keyword>(*p) != aKeyword)
+                while (p != mContent.end() && (!std::get_if<keyword>(&*p) || std::get<keyword>(*p) != aKeyword))
                     ++p;
                 if (p == mContent.end())
                     throw keyword_no_found{aKeyword};
@@ -211,7 +215,7 @@ namespace acmacs
 {
     inline std::string to_string(const lispmds::nil&)
     {
-        return "NIL";
+        return "nil";
     }
 
     inline std::string to_string(const lispmds::boolean& val)

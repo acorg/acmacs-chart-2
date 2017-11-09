@@ -107,13 +107,14 @@ std::string LispmdsInfo::name(Compute) const
 
 Name LispmdsAntigen::name() const
 {
-    return "?LispmdsAntigen::name";
+    std::cerr << "ref: " << reference() << '\n';
+    return static_cast<std::string>(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]));
 
 } // LispmdsAntigen::name
 
 Name LispmdsSerum::name() const
 {
-    return "?LispmdsSerum::name";
+    return static_cast<std::string>(std::get<acmacs::lispmds::symbol>(mData[0][2][mIndex]));
 
 } // LispmdsSerum::name
 
@@ -121,7 +122,16 @@ Name LispmdsSerum::name() const
 
 bool LispmdsAntigen::reference() const
 {
-      //return false;
+    try {
+        const auto& val = mData[":REFERENCE-ANTIGENS"];
+        if (val.empty())
+            return false;
+        std::cerr << val;
+        return false;
+    }
+    catch (acmacs::lispmds::keyword_no_found&) {
+        return false;
+    }
 
 } // LispmdsAntigen::reference
 
@@ -137,6 +147,7 @@ size_t LispmdsAntigens::size() const
 
 std::shared_ptr<Antigen> LispmdsAntigens::operator[](size_t aIndex) const
 {
+    return std::make_shared<LispmdsAntigen>(mData, aIndex);
 
 } // LispmdsAntigens::operator[]
 
@@ -152,6 +163,7 @@ size_t LispmdsSera::size() const
 
 std::shared_ptr<Serum> LispmdsSera::operator[](size_t aIndex) const
 {
+    return std::make_shared<LispmdsSerum>(mData, aIndex);
 
 } // LispmdsSera::operator[]
 
