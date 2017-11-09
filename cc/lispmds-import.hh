@@ -181,7 +181,7 @@ namespace acmacs::chart
     class LispmdsProjection : public Projection
     {
       public:
-        inline LispmdsProjection(const acmacs::lispmds::value& aData) : mData{aData} {}
+        inline LispmdsProjection(const acmacs::lispmds::value& aData, size_t aIndex) : mData{aData}, mIndex{aIndex} {}
 
         double stress() const override;
         size_t number_of_dimensions() const override;
@@ -199,6 +199,7 @@ namespace acmacs::chart
 
      private:
         const acmacs::lispmds::value& mData;
+        size_t mIndex;
 
     }; // class LispmdsProjections
 

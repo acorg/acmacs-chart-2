@@ -99,7 +99,10 @@ std::shared_ptr<PlotSpec> LispmdsChart::plot_spec() const
 
 std::string LispmdsInfo::name(Compute) const
 {
-    return "?LispmdsInfo::name";
+    if (mData[0].size() >= 5)
+        return std::get<acmacs::lispmds::symbol>(mData[0][4]);
+    else
+        return {};
 
 } // LispmdsInfo::name
 
@@ -107,7 +110,6 @@ std::string LispmdsInfo::name(Compute) const
 
 Name LispmdsAntigen::name() const
 {
-    std::cerr << "ref: " << reference() << '\n';
     return static_cast<std::string>(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]));
 
 } // LispmdsAntigen::name
@@ -214,6 +216,10 @@ size_t LispmdsForcedColumnBases::size() const
 
 double LispmdsProjection::stress() const
 {
+    if (mIndex == 0)
+        return 0;
+    const auto& batch_runs = mData[":BATCH-RUNS"];
+    return std::get<acmacs::lispmds::number>(batch_runs[mIndex - 1][1]);
 
 } // LispmdsProjection::stress
 
@@ -228,6 +234,8 @@ size_t LispmdsProjection::number_of_points() const
 
 size_t LispmdsProjection::number_of_dimensions() const
 {
+    const auto& point0 = mIndex == 0 ? mData[":STARTING-COORDSS"][0] : mData[":BATCH-RUNS"][mIndex - 1][0];
+    return point0.size();
 
 } // LispmdsProjection::number_of_dimensions
 
@@ -274,6 +282,13 @@ PointIndexList LispmdsProjection::disconnected() const
 
 bool LispmdsProjections::empty() const
 {
+    try {
+        const auto& val = mData[":STARTING-COORDSS"];
+        return val.empty();
+    }
+    catch (acmacs::lispmds::keyword_no_found&) {
+        return true;
+    }
 
 } // LispmdsProjections::empty
 
@@ -281,6 +296,17 @@ bool LispmdsProjections::empty() const
 
 size_t LispmdsProjections::size() const
 {
+    size_t result = 0;
+    try {
+        const auto& starting_coordss = mData[":STARTING-COORDSS"];
+        if (!starting_coordss.empty())
+            ++result;
+        const auto& batch_runs = mData[":BATCH-RUNS"];
+        result += batch_runs.size();
+    }
+    catch (acmacs::lispmds::keyword_no_found&) {
+    }
+    return result;
 
 } // LispmdsProjections::size
 
@@ -288,6 +314,7 @@ size_t LispmdsProjections::size() const
 
 std::shared_ptr<Projection> LispmdsProjections::operator[](size_t aIndex) const
 {
+    return std::make_shared<LispmdsProjection>(mData, aIndex);
 
 } // LispmdsProjections::operator[]
 
