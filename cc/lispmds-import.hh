@@ -209,7 +209,7 @@ namespace acmacs::chart
         size_t number_of_points() const override;
         double coordinate(size_t aPointNo, size_t aDimensionNo) const override;
         inline std::string comment() const override { return {}; }
-        inline MinimumColumnBasis minimum_column_basis() const override { return {}; }
+        MinimumColumnBasis minimum_column_basis() const override;
         std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
         acmacs::Transformation transformation() const override;
         inline bool dodgy_titer_is_regular() const override { return false; }

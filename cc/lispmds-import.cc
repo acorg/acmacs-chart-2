@@ -18,7 +18,7 @@ constexpr const double NS_SCALE{0.5};
 
 static std::vector<double> native_column_bases(const acmacs::lispmds::value& aData);
 static std::vector<double> column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo);
-static std::shared_ptr<acmacs::chart::ForcedColumnBases> forced_column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo);
+static std::pair<std::shared_ptr<acmacs::chart::ForcedColumnBases>, acmacs::chart::MinimumColumnBasis> forced_column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo);
 
 // ----------------------------------------------------------------------
 
@@ -90,21 +90,29 @@ std::vector<double> column_bases(const acmacs::lispmds::value& aData, size_t aPr
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::chart::ForcedColumnBases> forced_column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo)
+std::pair<std::shared_ptr<acmacs::chart::ForcedColumnBases>, acmacs::chart::MinimumColumnBasis> forced_column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo)
 {
     try {
         const auto native_cb = native_column_bases(aData);
         const auto cb = column_bases(aData, aProjectionNo);
-        std::cerr << "WARNING: LispmdsChart forced_column_bases vs. minimum_column_basis\n";
-        std::cerr << "INFO: native: " << native_cb << '\n';
-        std::cerr << "INFO: forced: " << cb << '\n';
-        if (native_cb == cb)
-            return std::make_shared<LispmdsNoColumnBases>();
-        else
-            return std::make_shared<LispmdsForcedColumnBases>(cb);
+        if (native_cb == cb) {
+            return {std::make_shared<LispmdsNoColumnBases>(), acmacs::chart::MinimumColumnBasis()};
+        }
+        else {
+            const double min_forced = *std::min_element(cb.begin(), cb.end());
+            std::decay_t<decltype(native_cb)> native_upgraded(native_cb.size());
+            std::transform(native_cb.begin(), native_cb.end(), native_upgraded.begin(), [min_forced](double b) -> double { return std::max(b, min_forced); });
+            // std::cerr << "INFO: native: " << native_cb << '\n';
+            // std::cerr << "INFO: forced: " << cb << '\n';
+            // std::cerr << "INFO: upgrad: " << native_upgraded << '\n';
+            if (native_upgraded == cb)
+                return {std::make_shared<LispmdsNoColumnBases>(), acmacs::chart::MinimumColumnBasis(min_forced)};
+            else
+                return {std::make_shared<LispmdsForcedColumnBases>(cb), acmacs::chart::MinimumColumnBasis()};
+        }
     }
     catch (acmacs::lispmds::keyword_no_found&) {
-        return std::make_shared<LispmdsNoColumnBases>();
+        return {std::make_shared<LispmdsNoColumnBases>(), acmacs::chart::MinimumColumnBasis()};
     }
 
 } // forced_column_bases
@@ -173,7 +181,7 @@ std::shared_ptr<Titers> LispmdsChart::titers() const
 
 std::shared_ptr<ForcedColumnBases> LispmdsChart::forced_column_bases() const
 {
-    return ::forced_column_bases(mData, 0);
+    return ::forced_column_bases(mData, 0).first;
 
 } // LispmdsChart::forced_column_bases
 
@@ -403,9 +411,17 @@ double LispmdsProjection::coordinate(size_t aPointNo, size_t aDimensionNo) const
 
 std::shared_ptr<ForcedColumnBases> LispmdsProjection::forced_column_bases() const
 {
-    return ::forced_column_bases(mData, mIndex);
+    return ::forced_column_bases(mData, mIndex).first;
 
 } // LispmdsProjection::forced_column_bases
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::MinimumColumnBasis LispmdsProjection::minimum_column_basis() const
+{
+    return ::forced_column_bases(mData, mIndex).second;
+
+} // LispmdsProjection::minimum_column_basis
 
 // ----------------------------------------------------------------------
 
