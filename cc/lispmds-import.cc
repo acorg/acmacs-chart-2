@@ -309,8 +309,33 @@ std::shared_ptr<ForcedColumnBases> LispmdsProjection::forced_column_bases() cons
 
 acmacs::Transformation LispmdsProjection::transformation() const
 {
-    std::cerr << "WARNING: LispmdsProjection::transformation not implemented\n";
     acmacs::Transformation result;
+    if (const auto& coord_tr = mData[":CANVAS-COORD-TRANSFORMATIONS"]; !coord_tr.empty()) {
+        if (const auto& v0 = coord_tr[":CANVAS-BASIS-VECTOR-0"]; !v0.empty()) {
+            result.a = std::get<acmacs::lispmds::number>(v0[0]);
+            result.c = std::get<acmacs::lispmds::number>(v0[1]);
+        }
+        if (const auto& v1 = coord_tr[":CANVAS-BASIS-VECTOR-1"]; !v1.empty()) {
+            result.b = std::get<acmacs::lispmds::number>(v1[0]);
+            result.d = std::get<acmacs::lispmds::number>(v1[1]);
+        }
+        try {
+            if (static_cast<double>(std::get<acmacs::lispmds::number>(coord_tr[":CANVAS-X-COORD-SCALE"])) < 0) {
+                result.a = - result.a;
+                result.b = - result.b;
+            }
+        }
+        catch (std::exception&) {
+        }
+        try {
+            if (static_cast<double>(std::get<acmacs::lispmds::number>(coord_tr[":CANVAS-Y-COORD-SCALE"])) < 0) {
+                result.c = - result.c;
+                result.d = - result.d;
+            }
+        }
+        catch (std::exception&) {
+        }
+    }
     return result;
 
 } // LispmdsProjection::transformation
@@ -319,6 +344,8 @@ acmacs::Transformation LispmdsProjection::transformation() const
 
 PointIndexList LispmdsProjection::unmovable() const
 {
+      // :MOVEABLE-COORDS 'ALL
+      // :UNMOVEABLE-COORDS 'NIL
     std::cerr << "WARNING: LispmdsProjection::unmovable  not implemented\n";
     return {};
 
