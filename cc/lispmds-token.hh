@@ -167,56 +167,6 @@ namespace acmacs::lispmds
 
     value parse_string(const std::string_view& aData);
 
-      // ----------------------------------------------------------------------
-
-      // gcc 7.2 wants the following functions to be defined here (not inside the class
-
-    inline value& value::append(value&& to_add)
-    {
-        return std::visit([&](auto&& arg) -> value& {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, list>)
-                                 return arg.append(std::move(to_add));
-            else
-                throw type_mismatch{"not a lispmds::list, cannot append value"};
-        }, *this);
-    }
-
-    inline const value& value::operator[](size_t aIndex) const
-    {
-        return std::visit([aIndex](const auto& arg) -> const value& {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, list>)
-                                 return arg[aIndex];
-            else
-                throw type_mismatch{"not a lispmds::list, cannot use [index]"};
-        }, *this);
-    }
-
-    inline const value& value::operator[](std::string aKeyword) const
-    {
-        return std::visit([aKeyword](auto&& arg) -> const value& {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, list>)
-                                 return arg[aKeyword];
-            else
-                throw type_mismatch{"not a lispmds::list, cannot use [keyword]"};
-        }, *this);
-    }
-
-    inline size_t value::size() const
-    {
-        return std::visit([](auto&& arg) -> size_t {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, list>)
-                                 return arg.size();
-            else if constexpr (std::is_same_v<T, nil>)
-                                      return 0;
-            else
-                throw type_mismatch{"not a lispmds::list, cannot use size()"};
-        }, *this);
-    }
-
 } // namespace acmacs::lispmds
 
 // ----------------------------------------------------------------------
@@ -233,6 +183,60 @@ namespace std
     template<size_t _Np> struct variant_alternative<_Np, acmacs::lispmds::value> : variant_alternative<_Np, acmacs::lispmds::value_base> {};
 }
 #endif
+
+// ----------------------------------------------------------------------
+
+namespace acmacs::lispmds
+{
+      // gcc 7.2 wants the following functions to be defined here (not inside the class
+
+    inline value& value::append(value&& to_add)
+    {
+        return std::visit([&](auto&& arg) -> value& {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, list>)
+                return arg.append(std::move(to_add));
+            else
+                throw type_mismatch{"not a lispmds::list, cannot append value"};
+        }, *this);
+    }
+
+    inline const value& value::operator[](size_t aIndex) const
+    {
+        return std::visit([aIndex](const auto& arg) -> const value& {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, list>)
+                return arg[aIndex];
+            else
+                throw type_mismatch{"not a lispmds::list, cannot use [index]"};
+        }, *this);
+    }
+
+    inline const value& value::operator[](std::string aKeyword) const
+    {
+        return std::visit([aKeyword](auto&& arg) -> const value& {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, list>)
+                return arg[aKeyword];
+            else
+                throw type_mismatch{"not a lispmds::list, cannot use [keyword]"};
+        }, *this);
+    }
+
+    inline size_t value::size() const
+    {
+        return std::visit([](auto&& arg) -> size_t {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, list>)
+                return arg.size();
+            else if constexpr (std::is_same_v<T, nil>)
+                return 0;
+            else
+                throw type_mismatch{"not a lispmds::list, cannot use size()"};
+        }, *this);
+    }
+
+} // namespace acmacs::lispmds
 
 // ----------------------------------------------------------------------
 
