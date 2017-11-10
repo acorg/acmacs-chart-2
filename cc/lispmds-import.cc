@@ -11,8 +11,103 @@
 using namespace std::string_literals;
 using namespace acmacs::chart;
 
+// ----------------------------------------------------------------------
+
 constexpr const double DS_SCALE{3.0};
 constexpr const double NS_SCALE{0.5};
+
+static std::vector<double> native_column_bases(const acmacs::lispmds::value& aData);
+static std::vector<double> column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo);
+static std::shared_ptr<acmacs::chart::ForcedColumnBases> forced_column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo);
+
+// ----------------------------------------------------------------------
+
+static inline size_t number_of_antigens(const acmacs::lispmds::value& aData)
+{
+    return aData[0][1].size();
+
+} // number_of_antigens
+
+static inline size_t number_of_sera(const acmacs::lispmds::value& aData)
+{
+    return aData[0][2].size();
+
+} // number_of_sera
+
+// ----------------------------------------------------------------------
+
+std::vector<double> native_column_bases(const acmacs::lispmds::value& aData)
+{
+    std::vector<double> cb(number_of_sera(aData), 0);
+    for (const auto& row: std::get<acmacs::lispmds::list>(aData[0][3])) {
+        for (auto [sr_no, titer_v]: acmacs::enumerate(std::get<acmacs::lispmds::list>(row))) {
+            try {
+                const double titer = std::get<acmacs::lispmds::number>(titer_v);
+                if (titer > cb[sr_no])
+                    cb[sr_no] = titer;
+            }
+            catch (std::bad_variant_access&) {
+                if (const std::string titer_s = titer_v; !titer_s.empty()) {
+                    double titer;
+                    switch (titer_s[0]) {
+                      case '<':
+                          titer = std::stod(titer_s.substr(1));
+                          if (titer > cb[sr_no])
+                              cb[sr_no] = titer;
+                          break;
+                      case '>':
+                          titer = std::stod(titer_s.substr(1)) + 1;
+                          if (titer > cb[sr_no])
+                              cb[sr_no] = titer;
+                          break;
+                      default:
+                          break;
+                    }
+                }
+            }
+        }
+    }
+    return cb;
+
+} // native_column_bases
+
+// ----------------------------------------------------------------------
+
+std::vector<double> column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo)
+{
+    const auto num_antigens = number_of_antigens(aData);
+    const auto num_sera = number_of_sera(aData);
+    const auto number_of_points = num_antigens + num_sera;
+    const acmacs::lispmds::list& cb = aProjectionNo == 0
+            ? aData[":STARTING-COORDSS"][number_of_points][0][1]
+            : aData[":BATCH-RUNS"][aProjectionNo - 1][0][number_of_points][0][1];
+    std::vector<double> result(num_sera);
+    using diff_t = decltype(cb.end() - cb.begin());
+    std::transform(cb.begin() + static_cast<diff_t>(num_antigens), cb.begin() + static_cast<diff_t>(number_of_points), result.begin(), [](const auto& val) -> double { return std::get<acmacs::lispmds::number>(val); });
+    return result;
+
+} // column_bases
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<acmacs::chart::ForcedColumnBases> forced_column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo)
+{
+    try {
+        const auto native_cb = native_column_bases(aData);
+        const auto cb = column_bases(aData, aProjectionNo);
+        std::cerr << "WARNING: LispmdsChart forced_column_bases vs. minimum_column_basis\n";
+        std::cerr << "INFO: native: " << native_cb << '\n';
+        std::cerr << "INFO: forced: " << cb << '\n';
+        if (native_cb == cb)
+            return std::make_shared<LispmdsNoColumnBases>();
+        else
+            return std::make_shared<LispmdsForcedColumnBases>(cb);
+    }
+    catch (acmacs::lispmds::keyword_no_found&) {
+        return std::make_shared<LispmdsNoColumnBases>();
+    }
+
+} // forced_column_bases
 
 // ----------------------------------------------------------------------
 
@@ -78,15 +173,7 @@ std::shared_ptr<Titers> LispmdsChart::titers() const
 
 std::shared_ptr<ForcedColumnBases> LispmdsChart::forced_column_bases() const
 {
-    try {
-        const auto number_of_antigens = mData[0][1].size();
-        const auto number_of_sera = mData[0][2].size();
-        std::cerr << "WARNING: LispmdsChart::forced_column_bases not implemented\n";
-        return std::make_shared<LispmdsForcedColumnBases>(mData[":STARTING-COORDSS"][number_of_antigens + number_of_sera][0][1], number_of_antigens, number_of_sera);
-    }
-    catch (acmacs::lispmds::keyword_no_found&) {
-        return std::make_shared<LispmdsNoColumnBases>();
-    }
+    return ::forced_column_bases(mData, 0);
 
 } // LispmdsChart::forced_column_bases
 
@@ -105,6 +192,22 @@ std::shared_ptr<PlotSpec> LispmdsChart::plot_spec() const
     return std::make_shared<LispmdsPlotSpec>(mData);
 
 } // LispmdsChart::plot_spec
+
+// ----------------------------------------------------------------------
+
+size_t LispmdsChart::number_of_antigens() const
+{
+    return ::number_of_antigens(mData);
+
+} // LispmdsChart::number_of_antigens
+
+// ----------------------------------------------------------------------
+
+size_t LispmdsChart::number_of_sera() const
+{
+    return ::number_of_sera(mData);
+
+} // LispmdsChart::number_of_sera
 
 // ----------------------------------------------------------------------
 
@@ -153,7 +256,7 @@ bool LispmdsAntigen::reference() const
 
 size_t LispmdsAntigens::size() const
 {
-    return mData[0][1].size();
+    return number_of_antigens(mData);
 
 } // LispmdsAntigens::size
 
@@ -169,7 +272,7 @@ std::shared_ptr<Antigen> LispmdsAntigens::operator[](size_t aIndex) const
 
 size_t LispmdsSera::size() const
 {
-    return mData[0][2].size();
+    return number_of_sera(mData);
 
 } // LispmdsSera::size
 
@@ -240,11 +343,11 @@ size_t LispmdsTiters::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
-double LispmdsForcedColumnBases::column_basis(size_t aSerumNo) const
-{
-    return std::get<acmacs::lispmds::number>(mData[mNumberOfAntigens + aSerumNo]);
+// double LispmdsForcedColumnBases::column_basis(size_t aSerumNo) const
+// {
+//     return std::get<acmacs::lispmds::number>(mData[mNumberOfAntigens + aSerumNo]);
 
-} // LispmdsForcedColumnBases::column_basis
+// } // LispmdsForcedColumnBases::column_basis
 
 // ----------------------------------------------------------------------
 
@@ -300,8 +403,7 @@ double LispmdsProjection::coordinate(size_t aPointNo, size_t aDimensionNo) const
 
 std::shared_ptr<ForcedColumnBases> LispmdsProjection::forced_column_bases() const
 {
-    std::cerr << "WARNING: LispmdsProjection::forced_column_bases not implemented\n";
-    return std::make_shared<LispmdsForcedColumnBases>(layout()[mNumberOfAntigens + mNumberOfSera][0][1] , mNumberOfAntigens, mNumberOfSera);
+    return ::forced_column_bases(mData, mIndex);
 
 } // LispmdsProjection::forced_column_bases
 
@@ -396,10 +498,7 @@ size_t LispmdsProjections::size() const
 
 std::shared_ptr<Projection> LispmdsProjections::operator[](size_t aIndex) const
 {
-    const auto number_of_antigens = mData[0][1].size();
-    const auto number_of_sera = mData[0][2].size();
-    // std::cerr << "projection " << aIndex << " ag:" << number_of_antigens << " sr:" << number_of_sera << '\n';
-    return std::make_shared<LispmdsProjection>(mData, aIndex, number_of_antigens, number_of_sera);
+    return std::make_shared<LispmdsProjection>(mData, aIndex, number_of_antigens(mData), number_of_sera(mData));
 
 } // LispmdsProjections::operator[]
 
@@ -472,10 +571,9 @@ std::vector<acmacs::PointStyle> LispmdsPlotSpec::all_styles() const
 
 void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, size_t aPointNo) const
 {
-    const auto number_of_antigens = mData[0][1].size();
-    std::string name = aPointNo < number_of_antigens
+    std::string name = aPointNo < number_of_antigens(mData)
                                   ? static_cast<std::string>(std::get<acmacs::lispmds::symbol>(mData[0][1][aPointNo])) + "-AG"
-                                  : static_cast<std::string>(std::get<acmacs::lispmds::symbol>(mData[0][2][aPointNo - number_of_antigens])) + "-SR";
+                                  : static_cast<std::string>(std::get<acmacs::lispmds::symbol>(mData[0][2][aPointNo - number_of_antigens(mData)])) + "-SR";
     const acmacs::lispmds::list& plot_spec = mData[":PLOT-SPEC"];
     for (const acmacs::lispmds::list& pstyle: plot_spec) {
         if (std::get<acmacs::lispmds::symbol>(pstyle[0]) == name) {

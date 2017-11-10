@@ -21,6 +21,9 @@ namespace acmacs::chart
         std::shared_ptr<Projections> projections() const override;
         std::shared_ptr<PlotSpec> plot_spec() const override;
 
+        size_t number_of_antigens() const override;
+        size_t number_of_sera() const override;
+
         void verify_data(Verify aVerify) const;
 
      private:
@@ -165,16 +168,20 @@ namespace acmacs::chart
     class LispmdsForcedColumnBases : public ForcedColumnBases
     {
       public:
-        inline LispmdsForcedColumnBases(const acmacs::lispmds::value& aData, size_t aNumberOfAntigens, size_t aNumberOfSera)
-            : mData{aData}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} {}
+        // inline LispmdsForcedColumnBases(const acmacs::lispmds::value& aData, size_t aNumberOfAntigens, size_t aNumberOfSera)
+        //     : mData{aData}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} {}
+        inline LispmdsForcedColumnBases(const std::vector<double>& aData) : mData{aData} {}
 
         inline bool exists() const override { return true; }
-        double column_basis(size_t aSerumNo) const override;
-        inline size_t size() const override { return mNumberOfSera; }
+        inline double column_basis(size_t aSerumNo) const override { return mData.at(aSerumNo); }
+        inline size_t size() const override { return mData.size(); }
+        // double column_basis(size_t aSerumNo) const override;
+        // inline size_t size() const override { return mNumberOfSera; }
 
      private:
-        const acmacs::lispmds::value& mData;
-        size_t mNumberOfAntigens, mNumberOfSera;
+        std::vector<double> mData;
+        // const acmacs::lispmds::value& mData;
+        // size_t mNumberOfAntigens, mNumberOfSera;
 
     }; // class LispmdsForcedColumnBases
 
