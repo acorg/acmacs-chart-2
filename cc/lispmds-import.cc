@@ -538,8 +538,12 @@ std::shared_ptr<Projection> LispmdsProjections::operator[](size_t aIndex) const
 
 bool LispmdsPlotSpec::empty() const
 {
-    const auto& plot_spec = mData[":PLOT-SPEC"];
-    return plot_spec.empty();
+    try {
+        return mData[":PLOT-SPEC"].empty();
+    }
+    catch (std::exception&) {
+        return true;
+    }
 
 } // LispmdsPlotSpec::empty
 
