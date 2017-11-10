@@ -141,43 +141,10 @@ namespace acmacs::lispmds
           // inline ~value() { std::cerr << "DEBUG: ~value " << to_json() << DEBUG_LINE_FUNC << '\n'; }
 
         value& append(value&& to_add);
-
-        inline const value& operator[](size_t aIndex) const
-            {
-                return std::visit([aIndex](const auto& arg) -> const value& {
-                    using T = std::decay_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<T, list>)
-                        return arg[aIndex];
-                    else
-                        throw type_mismatch{"not a lispmds::list, cannot use [index]"};
-                    }, *this);
-            }
-
-        inline const value& operator[](std::string aKeyword) const
-            {
-                return std::visit([aKeyword](auto&& arg) -> const value& {
-                    using T = std::decay_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<T, list>)
-                        return arg[aKeyword];
-                    else
-                        throw type_mismatch{"not a lispmds::list, cannot use [keyword]"};
-                    }, *this);
-            }
-
-        inline size_t size() const
-            {
-                return std::visit([](auto&& arg) -> size_t {
-                    using T = std::decay_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<T, list>)
-                        return arg.size();
-                    else if constexpr (std::is_same_v<T, nil>)
-                        return 0;
-                    else
-                        throw type_mismatch{"not a lispmds::list, cannot use size()"};
-                    }, *this);
-            }
-
-        inline bool empty() const { return size() == 0; }
+        const value& operator[](size_t aIndex) const;
+        const value& operator[](std::string aKeyword) const;
+        size_t size() const;
+        bool empty() const { return size() == 0; }
 
     }; // class value
 
@@ -212,6 +179,41 @@ namespace acmacs::lispmds
                                  return arg.append(std::move(to_add));
             else
                 throw type_mismatch{"not a lispmds::list, cannot append value"};
+        }, *this);
+    }
+
+    inline const value& value::operator[](size_t aIndex) const
+    {
+        return std::visit([aIndex](const auto& arg) -> const value& {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, list>)
+                                 return arg[aIndex];
+            else
+                throw type_mismatch{"not a lispmds::list, cannot use [index]"};
+        }, *this);
+    }
+
+    inline const value& value::operator[](std::string aKeyword) const
+    {
+        return std::visit([aKeyword](auto&& arg) -> const value& {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, list>)
+                                 return arg[aKeyword];
+            else
+                throw type_mismatch{"not a lispmds::list, cannot use [keyword]"};
+        }, *this);
+    }
+
+    inline size_t value::size() const
+    {
+        return std::visit([](auto&& arg) -> size_t {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, list>)
+                                 return arg.size();
+            else if constexpr (std::is_same_v<T, nil>)
+                                      return 0;
+            else
+                throw type_mismatch{"not a lispmds::list, cannot use size()"};
         }, *this);
     }
 
