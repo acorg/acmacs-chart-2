@@ -140,16 +140,7 @@ namespace acmacs::lispmds
         inline value& operator=(value&&) = default;
           // inline ~value() { std::cerr << "DEBUG: ~value " << to_json() << DEBUG_LINE_FUNC << '\n'; }
 
-        inline value& append(value&& to_add)
-            {
-                return std::visit([&](auto&& arg) -> value& {
-                    using T = std::decay_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<T, list>)
-                        return arg.append(std::move(to_add));
-                    else
-                        throw type_mismatch{"not a lispmds::list, cannot append value"};
-                    }, *this);
-            }
+        value& append(value&& to_add);
 
         inline const value& operator[](size_t aIndex) const
             {
@@ -209,7 +200,37 @@ namespace acmacs::lispmds
 
     value parse_string(const std::string_view& aData);
 
+      // ----------------------------------------------------------------------
+
+      // gcc 7.2 wants the following functions to be defined here (not inside the class
+
+    inline value& value::append(value&& to_add)
+    {
+        return std::visit([&](auto&& arg) -> value& {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, list>)
+                                 return arg.append(std::move(to_add));
+            else
+                throw type_mismatch{"not a lispmds::list, cannot append value"};
+        }, *this);
+    }
+
 } // namespace acmacs::lispmds
+
+// ----------------------------------------------------------------------
+
+// ----------------------------------------------------------------------
+// gcc-7 support
+// ----------------------------------------------------------------------
+
+#if __GNUC__ == 7
+namespace std
+{
+      // gcc 7.2 wants those, if we derive from std::variant
+    template<> struct variant_size<acmacs::lispmds::value> : variant_size<acmacs::lispmds::value_base> {};
+    template<size_t _Np> struct variant_alternative<_Np, acmacs::lispmds::value> : variant_alternative<_Np, acmacs::lispmds::value_base> {};
+}
+#endif
 
 // ----------------------------------------------------------------------
 
