@@ -428,31 +428,43 @@ acmacs::chart::MinimumColumnBasis LispmdsProjection::minimum_column_basis() cons
 acmacs::Transformation LispmdsProjection::transformation() const
 {
     acmacs::Transformation result;
-    if (const auto& coord_tr = mData[":CANVAS-COORD-TRANSFORMATIONS"]; !coord_tr.empty()) {
-        if (const auto& v0 = coord_tr[":CANVAS-BASIS-VECTOR-0"]; !v0.empty()) {
-            result.a = std::get<acmacs::lispmds::number>(v0[0]);
-            result.c = std::get<acmacs::lispmds::number>(v0[1]);
-        }
-        if (const auto& v1 = coord_tr[":CANVAS-BASIS-VECTOR-1"]; !v1.empty()) {
-            result.b = std::get<acmacs::lispmds::number>(v1[0]);
-            result.d = std::get<acmacs::lispmds::number>(v1[1]);
-        }
-        try {
-            if (static_cast<double>(std::get<acmacs::lispmds::number>(coord_tr[":CANVAS-X-COORD-SCALE"])) < 0) {
-                result.a = - result.a;
-                result.b = - result.b;
+    try {
+        if (const auto& coord_tr = mData[":CANVAS-COORD-TRANSFORMATIONS"]; !coord_tr.empty()) {
+            try {
+                if (const auto& v0 = coord_tr[":CANVAS-BASIS-VECTOR-0"]; !v0.empty()) {
+                    result.a = std::get<acmacs::lispmds::number>(v0[0]);
+                    result.c = std::get<acmacs::lispmds::number>(v0[1]);
+                }
+            }
+            catch (std::exception&) {
+            }
+            try {
+                if (const auto& v1 = coord_tr[":CANVAS-BASIS-VECTOR-1"]; !v1.empty()) {
+                    result.b = std::get<acmacs::lispmds::number>(v1[0]);
+                    result.d = std::get<acmacs::lispmds::number>(v1[1]);
+                }
+            }
+            catch (std::exception&) {
+            }
+            try {
+                if (static_cast<double>(std::get<acmacs::lispmds::number>(coord_tr[":CANVAS-X-COORD-SCALE"])) < 0) {
+                    result.a = - result.a;
+                    result.b = - result.b;
+                }
+            }
+            catch (std::exception&) {
+            }
+            try {
+                if (static_cast<double>(std::get<acmacs::lispmds::number>(coord_tr[":CANVAS-Y-COORD-SCALE"])) < 0) {
+                    result.c = - result.c;
+                    result.d = - result.d;
+                }
+            }
+            catch (std::exception&) {
             }
         }
-        catch (std::exception&) {
-        }
-        try {
-            if (static_cast<double>(std::get<acmacs::lispmds::number>(coord_tr[":CANVAS-Y-COORD-SCALE"])) < 0) {
-                result.c = - result.c;
-                result.d = - result.d;
-            }
-        }
-        catch (std::exception&) {
-        }
+    }
+    catch (acmacs::lispmds::keyword_no_found&) {
     }
     return result;
 
@@ -462,10 +474,14 @@ acmacs::Transformation LispmdsProjection::transformation() const
 
 PointIndexList LispmdsProjection::unmovable() const
 {
-      // :MOVEABLE-COORDS 'ALL
-      // :UNMOVEABLE-COORDS 'NIL
-    std::cerr << "WARNING: LispmdsProjection::unmovable  not implemented\n";
-    return {};
+      //   :UNMOVEABLE-COORDS '(87 86 85 83 82 80 81)
+    try {
+        const acmacs::lispmds::list& val = mData[":UNMOVEABLE-COORDS"];
+        return {val.begin(), val.end(), [](const auto& v) -> size_t { return std::get<acmacs::lispmds::number>(v); }};
+    }
+    catch (std::exception&) {
+        return {};
+    }
 
 } // LispmdsProjection::unmovable
 
@@ -473,7 +489,7 @@ PointIndexList LispmdsProjection::unmovable() const
 
 PointIndexList LispmdsProjection::disconnected() const
 {
-    std::cerr << "WARNING: LispmdsProjection::disconnected not implemented\n";
+      // std::cerr << "WARNING: LispmdsProjection::disconnected not implemented\n";
     return {};
 
 } // LispmdsProjection::disconnected
@@ -605,7 +621,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, size_t aPointNo
 void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::lispmds::list& aSource) const
 {
     try {
-        aTarget.size = std::get<acmacs::lispmds::number>(aSource[":DS"]) / DS_SCALE;
+        aTarget.size = static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":DS"])) / DS_SCALE;
           // if antigen also divide size by 2 ?
     }
     catch (std::exception&) {
@@ -625,7 +641,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
     }
 
     try {
-        aTarget.label.size = std::get<acmacs::lispmds::number>(aSource[":NS"]) / NS_SCALE;
+        aTarget.label.size = static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":NS"])) / NS_SCALE;
     }
     catch (std::exception&) {
     }

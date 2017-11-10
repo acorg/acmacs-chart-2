@@ -37,15 +37,21 @@ namespace acmacs::chart
         {
          public:
             inline T_list_data() = default;
+            inline T_list_data(size_t aSize) : mData(aSize) {}
             inline T_list_data(const rjson::array& aSrc) : mData(aSrc.begin(), aSrc.end()) {}
             inline T_list_data(const rjson::value& aSrc) : T_list_data(static_cast<const rjson::array&>(aSrc)) {}
+            inline T_list_data(const std::vector<T>& aSrc) : mData(aSrc) {}
+            template <typename Iter> inline T_list_data(Iter first, Iter last) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), [](const auto& src) -> T { return src; }); }
+            template <typename Iter> inline T_list_data(Iter first, Iter last, std::function<T (const typename Iter::value_type&)> convert) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), convert); }
 
             inline bool empty() const { return mData.empty(); }
             inline size_t size() const { return mData.size(); }
             inline const std::vector<T>& data() const noexcept { return mData; }
             inline operator const std::vector<T>&() const noexcept { return mData; }
-            inline auto begin() const { return mData.begin(); }
-            inline auto end() const { return mData.end(); }
+            inline auto begin() const { return mData.cbegin(); }
+            inline auto end() const { return mData.cend(); }
+            inline auto begin() { return mData.begin(); }
+            inline auto end() { return mData.end(); }
 
             inline void push_back(const T& val) { mData.push_back(val); }
             inline void push_back(T&& val) { mData.push_back(std::forward<T>(val)); }
