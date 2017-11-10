@@ -377,8 +377,8 @@ std::shared_ptr<Projection> LispmdsProjections::operator[](size_t aIndex) const
 
 bool LispmdsPlotSpec::empty() const
 {
-    std::cerr << "WARNING: LispmdsPlotSpec::empty not implemented\n";
-    return true;
+    const auto& plot_spec = mData[":PLOT-SPEC"];
+    return plot_spec.empty();
 
 } // LispmdsPlotSpec::empty
 
@@ -386,9 +386,8 @@ bool LispmdsPlotSpec::empty() const
 
 DrawingOrder LispmdsPlotSpec::drawing_order() const
 {
-    std::cerr << "WARNING: LispmdsPlotSpec::drawing_order not implemented\n";
-    DrawingOrder result;
-    return result;
+      // don't know how drawing order is stored
+    return {};
 
 } // LispmdsPlotSpec::drawing_order
 
@@ -412,8 +411,8 @@ Color LispmdsPlotSpec::error_line_negative_color() const
 
 acmacs::PointStyle LispmdsPlotSpec::style(size_t aPointNo) const
 {
-    std::cerr << "WARNING: LispmdsPlotSpec::style not implemented\n";
     acmacs::PointStyle result;
+    extract_style(result, aPointNo);
     return result;
 
 } // LispmdsPlotSpec::style
@@ -422,10 +421,45 @@ acmacs::PointStyle LispmdsPlotSpec::style(size_t aPointNo) const
 
 std::vector<acmacs::PointStyle> LispmdsPlotSpec::all_styles() const
 {
-    std::cerr << "WARNING: LispmdsPlotSpec::all_styles not implemented\n";
+    try {
+        const auto number_of_points = mData[0][1].size() + mData[0][2].size();
+        std::vector<acmacs::PointStyle> result(number_of_points);
+        for (size_t point_no = 0; point_no < number_of_points; ++point_no) {
+            extract_style(result[point_no], point_no);
+        }
+        return result;
+    }
+    catch (std::exception& err) {
+        std::cerr << "WARNING: [lispmds]: cannot get point styles: " << err.what() << '\n';
+    }
     return {};
 
 } // LispmdsPlotSpec::all_styles
+
+// ----------------------------------------------------------------------
+
+void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, size_t aPointNo) const
+{
+    const auto number_of_antigens = mData[0][1].size();
+    std::string name = aPointNo < number_of_antigens
+                                  ? static_cast<std::string>(std::get<acmacs::lispmds::symbol>(mData[0][1][aPointNo])) + "-AG"
+                                  : static_cast<std::string>(std::get<acmacs::lispmds::symbol>(mData[0][2][aPointNo - number_of_antigens])) + "-SR";
+    const acmacs::lispmds::list& plot_spec = mData[":PLOT-SPEC"];
+    for (const acmacs::lispmds::list& pstyle: plot_spec) {
+        if (std::get<acmacs::lispmds::symbol>(pstyle[0]) == name) {
+            extract_style(aTarget, pstyle);
+            break;
+        }
+    }
+
+} // LispmdsPlotSpec::extract_style
+
+// ----------------------------------------------------------------------
+
+void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::lispmds::list& aSource) const
+{
+
+} // LispmdsPlotSpec::extract_style
 
 // ----------------------------------------------------------------------
 /// Local Variables:

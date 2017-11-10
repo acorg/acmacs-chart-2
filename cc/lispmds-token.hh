@@ -146,6 +146,8 @@ namespace acmacs::lispmds
         size_t size() const;
         bool empty() const { return size() == 0; }
 
+        inline operator const list&() const { return std::get<list>(*this); }
+
     }; // class value
 
 // ----------------------------------------------------------------------

@@ -254,6 +254,9 @@ namespace acmacs::chart
      private:
         const acmacs::lispmds::value& mData;
 
+        void extract_style(acmacs::PointStyle& aTarget, size_t aPointNo) const;
+        void extract_style(acmacs::PointStyle& aTarget, const acmacs::lispmds::list& aSource) const;
+
     }; // class LispmdsPlotSpec
 
 // ----------------------------------------------------------------------
