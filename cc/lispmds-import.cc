@@ -78,6 +78,7 @@ std::shared_ptr<ForcedColumnBases> LispmdsChart::forced_column_bases() const
     try {
         const auto number_of_antigens = mData[0][1].size();
         const auto number_of_sera = mData[0][2].size();
+        std::cerr << "WARNING: LispmdsChart::forced_column_bases not implemented\n";
         return std::make_shared<LispmdsForcedColumnBases>(mData[":STARTING-COORDSS"][number_of_antigens + number_of_sera][0][1], number_of_antigens, number_of_sera);
     }
     catch (acmacs::lispmds::keyword_no_found&) {
@@ -238,8 +239,6 @@ size_t LispmdsTiters::number_of_non_dont_cares() const
 
 double LispmdsForcedColumnBases::column_basis(size_t aSerumNo) const
 {
-    std::cerr << "column_basis: " << mData << '\n';
-
     return std::get<acmacs::lispmds::number>(mData[mNumberOfAntigens + aSerumNo]);
 
 } // LispmdsForcedColumnBases::column_basis
@@ -290,6 +289,7 @@ size_t LispmdsProjection::number_of_dimensions() const
 
 double LispmdsProjection::coordinate(size_t aPointNo, size_t aDimensionNo) const
 {
+    return std::get<acmacs::lispmds::number>(layout()[aPointNo][aDimensionNo]);
 
 } // LispmdsProjection::coordinate
 
@@ -297,6 +297,7 @@ double LispmdsProjection::coordinate(size_t aPointNo, size_t aDimensionNo) const
 
 std::shared_ptr<ForcedColumnBases> LispmdsProjection::forced_column_bases() const
 {
+    std::cerr << "WARNING: LispmdsProjection::forced_column_bases not implemented\n";
     return std::make_shared<LispmdsForcedColumnBases>(layout()[mNumberOfAntigens + mNumberOfSera][0][1] , mNumberOfAntigens, mNumberOfSera);
 
 } // LispmdsProjection::forced_column_bases
@@ -305,6 +306,7 @@ std::shared_ptr<ForcedColumnBases> LispmdsProjection::forced_column_bases() cons
 
 acmacs::Transformation LispmdsProjection::transformation() const
 {
+    std::cerr << "WARNING: LispmdsProjection::transformation not implemented\n";
     acmacs::Transformation result;
     return result;
 
@@ -314,6 +316,7 @@ acmacs::Transformation LispmdsProjection::transformation() const
 
 PointIndexList LispmdsProjection::unmovable() const
 {
+    std::cerr << "WARNING: LispmdsProjection::unmovable  not implemented\n";
     return {};
 
 } // LispmdsProjection::unmovable
@@ -322,6 +325,7 @@ PointIndexList LispmdsProjection::unmovable() const
 
 PointIndexList LispmdsProjection::disconnected() const
 {
+    std::cerr << "WARNING: LispmdsProjection::disconnected not implemented\n";
     return {};
 
 } // LispmdsProjection::disconnected
@@ -364,6 +368,7 @@ std::shared_ptr<Projection> LispmdsProjections::operator[](size_t aIndex) const
 {
     const auto number_of_antigens = mData[0][1].size();
     const auto number_of_sera = mData[0][2].size();
+    // std::cerr << "projection " << aIndex << " ag:" << number_of_antigens << " sr:" << number_of_sera << '\n';
     return std::make_shared<LispmdsProjection>(mData, aIndex, number_of_antigens, number_of_sera);
 
 } // LispmdsProjections::operator[]
@@ -372,6 +377,7 @@ std::shared_ptr<Projection> LispmdsProjections::operator[](size_t aIndex) const
 
 bool LispmdsPlotSpec::empty() const
 {
+    std::cerr << "WARNING: LispmdsPlotSpec::empty not implemented\n";
     return true;
 
 } // LispmdsPlotSpec::empty
@@ -380,6 +386,7 @@ bool LispmdsPlotSpec::empty() const
 
 DrawingOrder LispmdsPlotSpec::drawing_order() const
 {
+    std::cerr << "WARNING: LispmdsPlotSpec::drawing_order not implemented\n";
     DrawingOrder result;
     return result;
 
@@ -405,6 +412,7 @@ Color LispmdsPlotSpec::error_line_negative_color() const
 
 acmacs::PointStyle LispmdsPlotSpec::style(size_t aPointNo) const
 {
+    std::cerr << "WARNING: LispmdsPlotSpec::style not implemented\n";
     acmacs::PointStyle result;
     return result;
 
@@ -414,6 +422,7 @@ acmacs::PointStyle LispmdsPlotSpec::style(size_t aPointNo) const
 
 std::vector<acmacs::PointStyle> LispmdsPlotSpec::all_styles() const
 {
+    std::cerr << "WARNING: LispmdsPlotSpec::all_styles not implemented\n";
     return {};
 
 } // LispmdsPlotSpec::all_styles
