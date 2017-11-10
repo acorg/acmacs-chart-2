@@ -147,23 +147,33 @@ namespace acmacs::lispmds
         bool empty() const { return size() == 0; }
 
         inline operator const list&() const { return std::get<list>(*this); }
+          // inline operator const number&() const { return std::get<number>(*this); } // leads to ambiguity for operator[]: bug in llvm 5.0?
+        inline operator std::string() const
+            {
+                try {
+                    return std::get<string>(*this);
+                }
+                catch (std::bad_variant_access&) {
+                    return std::get<symbol>(*this);
+                }
+            }
 
     }; // class value
 
 // ----------------------------------------------------------------------
 
     inline const value& list::operator[](std::string aKeyword) const
-            {
-                auto p = mContent.begin();
-                while (p != mContent.end() && (!std::get_if<keyword>(&*p) || std::get<keyword>(*p) != aKeyword))
-                    ++p;
-                if (p == mContent.end())
-                    throw keyword_no_found{aKeyword};
-                ++p;
-                if (p == mContent.end())
-                    throw keyword_has_no_value{aKeyword};
-                return *p;
-            }
+    {
+        auto p = mContent.begin();
+        while (p != mContent.end() && (!std::get_if<keyword>(&*p) || std::get<keyword>(*p) != aKeyword))
+            ++p;
+        if (p == mContent.end())
+            throw keyword_no_found{aKeyword};
+        ++p;
+        if (p == mContent.end())
+            throw keyword_has_no_value{aKeyword};
+        return *p;
+    }
 
 // ----------------------------------------------------------------------
 

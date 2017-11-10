@@ -11,6 +11,9 @@
 using namespace std::string_literals;
 using namespace acmacs::chart;
 
+constexpr const double DS_SCALE{3.0};
+constexpr const double NS_SCALE{0.5};
+
 // ----------------------------------------------------------------------
 
 std::shared_ptr<Chart> acmacs::chart::lispmds_import(const std::string_view& aData, Verify aVerify)
@@ -386,6 +389,8 @@ bool LispmdsPlotSpec::empty() const
 
 DrawingOrder LispmdsPlotSpec::drawing_order() const
 {
+      // :RAISE-POINTS 'NIL
+      // :LOWER-POINTS 'NIL
       // don't know how drawing order is stored
     return {};
 
@@ -458,6 +463,64 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, size_t aPointNo
 
 void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::lispmds::list& aSource) const
 {
+    try {
+        aTarget.size = std::get<acmacs::lispmds::number>(aSource[":DS"]) / DS_SCALE;
+          // if antigen also divide size by 2 ?
+    }
+    catch (std::exception&) {
+    }
+
+    try {
+        aTarget.label_text = aSource[":WN"];
+        aTarget.label.shown = !aTarget.label_text->empty();
+    }
+    catch (std::exception&) {
+    }
+
+    try {
+        aTarget.shape = static_cast<std::string>(aSource[":SH"]);
+    }
+    catch (std::exception&) {
+    }
+
+    try {
+        aTarget.label.size = std::get<acmacs::lispmds::number>(aSource[":NS"]) / NS_SCALE;
+    }
+    catch (std::exception&) {
+    }
+
+    try {
+        if (const std::string label_color = aSource[":NC"]; label_color != "{}")
+            aTarget.label.color = label_color;
+    }
+    catch (std::exception&) {
+    }
+
+    try {
+        if (const std::string fill_color = aSource[":CO"]; fill_color != "{}")
+            aTarget.fill = fill_color;
+        else
+            aTarget.fill = TRANSPARENT;
+    }
+    catch (std::exception&) {
+    }
+
+    try {
+        if (const std::string outline_color = aSource[":CO"]; outline_color != "{}")
+            aTarget.outline = outline_color;
+        else
+            aTarget.outline = BLACK;
+    }
+    catch (std::exception&) {
+    }
+
+    try {
+        Color fill = aTarget.fill;
+        fill.set_transparency(std::get<acmacs::lispmds::number>(aSource[":TR"]));
+        aTarget.fill = fill;
+    }
+    catch (std::exception&) {
+    }
 
 } // LispmdsPlotSpec::extract_style
 
