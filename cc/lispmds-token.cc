@@ -140,6 +140,10 @@ Tokenizer::Result Tokenizer::next()
               case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
                   return extract_number();
               case '\'':
+                  ++mPos;
+                  if (mPos < mData.size() && mData[mPos] != '(')
+                      return extract_symbol(Symbol);
+                  break;
               case '`':
                   ++mPos;
                   break;
