@@ -121,7 +121,7 @@ std::string batch_runs(std::shared_ptr<acmacs::chart::Chart> aChart)
         if (projection_no > 1)
             result.append("\n                ");
         result.append("((" + coordinates(projection, projection->number_of_points(), projection->number_of_dimensions(), 18) + col_and_row_adjusts(aChart, projection, 18) + ')');
-        result.append("\n                 stress MULTIPLE-END-CONDITIONS NIL)");
+        result.append("\n                 " + acmacs::to_string(projection->stress()) + " MULTIPLE-END-CONDITIONS NIL)");
     }
     result.append(1, ')');
     return result;
