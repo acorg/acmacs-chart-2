@@ -125,6 +125,7 @@ namespace acmacs::chart
 
         inline bool is_dont_care() const { return data() == "*"; }
         std::string logged_as_string() const;
+        double logged_for_column_bases() const;
 
     }; // class Titer
 

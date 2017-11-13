@@ -44,6 +44,7 @@ std::string acmacs::chart::Titer::logged_as_string() const
 
     switch (data()[0]) {
       case '*':
+      case '~':
           return data();
       case '<':
       case '>':
@@ -52,6 +53,30 @@ std::string acmacs::chart::Titer::logged_as_string() const
     return log_titer(data());
 
 } // acmacs::chart::Titer::logged_as_string
+
+// ----------------------------------------------------------------------
+
+double acmacs::chart::Titer::logged_for_column_bases() const
+{
+    if (data().empty())
+        throw std::runtime_error("internal: titer is empty");
+
+    auto log_titer = [](std::string source) -> double {
+        return std::log2(std::stod(source) / 10.0);
+    };
+
+    switch (data()[0]) {
+      case '*':
+      case '~':
+          return -1;
+      case '<':
+          return log_titer(data().substr(1));
+      case '>':
+          return log_titer(data().substr(1)) + 1;
+    }
+    return log_titer(data());
+
+} // acmacs::chart::Titer::logged_for_column_bases
 
 // ----------------------------------------------------------------------
 
@@ -74,7 +99,10 @@ class ComputedColumnBases : public acmacs::chart::ColumnBases
 std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Chart::computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const
 {
     auto cb = std::make_shared<ComputedColumnBases>(number_of_sera());
-
+    auto tts = titers();
+    for (size_t ag_no = 0; ag_no < number_of_antigens(); ++ag_no)
+        for (size_t sr_no = 0; sr_no < number_of_sera(); ++sr_no)
+            cb->update(sr_no, tts->titer(ag_no, sr_no).logged_for_column_bases());
     for (size_t sr_no = 0; sr_no < number_of_sera(); ++sr_no)
         cb->update(sr_no, aMinimumColumnBasis);
     return cb;
