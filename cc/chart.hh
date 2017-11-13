@@ -141,6 +141,11 @@ namespace acmacs::chart
      public:
         using internal::double_list_data::double_list_data;
 
+        inline bool empty() const
+            {
+                return internal::double_list_data::empty() || std::all_of(begin(), end(), [](double val) -> bool { return float_equal(val, 1.0); });
+            }
+
     }; // class AvidityAdjusts
 
     class MinimumColumnBasis
