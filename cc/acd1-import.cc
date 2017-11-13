@@ -664,6 +664,18 @@ PointIndexList Acd1Projection::unmovable_in_the_last_dimension() const
 
 AvidityAdjusts Acd1Projection::avidity_adjusts() const
 {
+    if (const rjson::object& titer_multipliers = mData.get_or_empty_object("stress_evaluator_parameters").get_or_empty_object("antigens_sera_titers_multipliers"); !titer_multipliers.empty()) {
+        const rjson::array& antigens = titer_multipliers.get_or_empty_array("antigens");
+        const rjson::array& sera = titer_multipliers.get_or_empty_array("sera");
+        AvidityAdjusts aa(antigens.size() + sera.size());
+        for (size_t ag_no = 0; ag_no < antigens.size(); ++ag_no)
+            aa[ag_no] = antigens[ag_no];
+        for (size_t sr_no = 0; sr_no < sera.size(); ++sr_no)
+            aa[sr_no + antigens.size()] = sera[sr_no];
+        return aa;
+    }
+    else
+        return {};
 
 } // Acd1Projection::avidity_adjusts
 
