@@ -199,7 +199,6 @@ namespace acmacs::chart
         inline std::string comment() const override { return mData.get_or_default("c", ""); }
         inline MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_default("m", "none"); }
         std::shared_ptr<ColumnBases> forced_column_bases() const override;
-        std::shared_ptr<ColumnBases> computed_column_bases() const override;
         acmacs::Transformation transformation() const override;
         inline bool dodgy_titer_is_regular() const override { return mData.get_or_default("d", false); }
         inline double stress_diff_to_stop() const override { return mData.get_or_default("d", 0.0); }

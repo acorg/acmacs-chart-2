@@ -609,13 +609,6 @@ std::shared_ptr<ColumnBases> Acd1Projection::forced_column_bases() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ColumnBases> Acd1Projection::computed_column_bases() const
-{
-
-} // Acd1Projection::computed_column_bases
-
-// ----------------------------------------------------------------------
-
 acmacs::Transformation Acd1Projection::transformation() const
 {
     acmacs::Transformation result;

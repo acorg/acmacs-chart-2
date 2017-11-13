@@ -292,13 +292,6 @@ std::shared_ptr<ColumnBases> AceProjection::forced_column_bases() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ColumnBases> AceProjection::computed_column_bases() const
-{
-
-} // AceProjection::computed_column_bases
-
-// ----------------------------------------------------------------------
-
 acmacs::Transformation AceProjection::transformation() const
 {
     acmacs::Transformation result;

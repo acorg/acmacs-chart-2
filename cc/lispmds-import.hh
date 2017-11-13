@@ -206,7 +206,7 @@ namespace acmacs::chart
         inline std::string comment() const override { return {}; }
         MinimumColumnBasis minimum_column_basis() const override;
         std::shared_ptr<ColumnBases> forced_column_bases() const override;
-        std::shared_ptr<ColumnBases> computed_column_bases() const override;
+        std::shared_ptr<ColumnBases> computed_column_bases(size_t aNumberOfSera) const override;
         acmacs::Transformation transformation() const override;
         inline bool dodgy_titer_is_regular() const override { return false; }
         inline double stress_diff_to_stop() const override { return 0.0; }

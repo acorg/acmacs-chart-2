@@ -55,6 +55,32 @@ std::string acmacs::chart::Titer::logged_as_string() const
 
 // ----------------------------------------------------------------------
 
+class ComputedColumnBases : public acmacs::chart::ColumnBases
+{
+ public:
+    inline ComputedColumnBases(size_t aNumberOfSera) : mData(aNumberOfSera) {}
+
+    inline bool exists() const override { return true; }
+    inline double column_basis(size_t aSerumNo) const override { return mData.at(aSerumNo); }
+    inline size_t size() const override { return mData.size(); }
+
+    inline void update(size_t aSerumNo, double aValue) { if (aValue > mData[aSerumNo]) mData[aSerumNo] = aValue; }
+
+ private:
+    std::vector<double> mData;
+
+}; // class ComputedColumnBases
+
+std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Projection::computed_column_bases(size_t aNumberOfSera) const
+{
+    const auto min_cb = minimum_column_basis();
+    auto cb = std::make_shared<ComputedColumnBases>(aNumberOfSera);
+    return cb;
+
+} // acmacs::chart::Projection::computed_column_bases
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Projection::make_info() const
 {
     return std::to_string(stress()) + " " + std::to_string(number_of_dimensions()) + "d";

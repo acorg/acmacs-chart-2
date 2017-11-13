@@ -161,7 +161,7 @@ std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Projection> aProj
     result.append(1, '\n').append(aIndent + 3, ' ');
     auto cb = aProjection->forced_column_bases();
     if (!cb->exists())
-        cb = aProjection->computed_column_bases();
+        cb = aProjection->computed_column_bases(number_of_sera);
     for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
         if (sr_no)
             result.append(1, ' ');
