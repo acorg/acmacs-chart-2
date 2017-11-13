@@ -116,6 +116,13 @@ std::string batch_runs(std::shared_ptr<acmacs::chart::Chart> aChart)
     if (projections->size() < 2)
         return {};
     std::string result = "  :BATCH-RUNS '(";
+    for (size_t projection_no = 1; projection_no < projections->size(); ++projection_no) {
+        auto projection = (*projections)[projection_no];
+        if (projection_no > 1)
+            result.append("\n                ");
+        result.append("((" + coordinates(projection, projection->number_of_points(), projection->number_of_dimensions(), 18) + col_and_row_adjusts(aChart, projection, 18) + ')');
+        result.append("\n                 stress MULTIPLE-END-CONDITIONS NIL)");
+    }
     result.append(1, ')');
     return result;
 
