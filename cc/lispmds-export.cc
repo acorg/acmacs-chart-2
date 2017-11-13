@@ -223,6 +223,28 @@ std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Chart> aChart, st
 std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart)
 {
     std::string result;
+    if (auto plot_spec = aChart->plot_spec(); !plot_spec->empty()) {
+        result.append("  :PLOT-SPEC '(");
+        auto antigens = aChart->antigens();
+        const auto number_of_antigens = antigens->size();
+        auto sera = aChart->sera();
+        const auto number_of_sera = sera->size();
+        for (size_t point_no = 0; point_no < (number_of_antigens + number_of_sera); ++point_no) {
+            if (point_no)
+                result.append("\n               ");
+            std::string name;
+            if (point_no < number_of_antigens) {
+                auto antigen = (*antigens)[point_no];
+                name = lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations()) + "-AG";
+            }
+            else {
+                auto serum = (*sera)[point_no - number_of_antigens];
+                name = lispmds_serum_name_encode(serum->name(), serum->reassortant(), serum->annotations(), serum->serum_id()) + "-SR";
+            }
+            result.append("(" + name + ")");
+        }
+        result.append(")");
+    }
     return result;
 
   // :RAISE-POINTS 'NIL
