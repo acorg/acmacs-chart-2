@@ -272,17 +272,17 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class ForcedColumnBases
+    class ColumnBases
     {
       public:
-        virtual ~ForcedColumnBases();
+        virtual ~ColumnBases();
 
         virtual bool exists() const = 0;
         inline operator bool() const { return exists(); }
         virtual double column_basis(size_t aSerumNo) const = 0;
         virtual size_t size() const = 0;
 
-    }; // class ForcedColumnBases
+    }; // class ColumnBases
 
 // ----------------------------------------------------------------------
 
@@ -298,7 +298,8 @@ namespace acmacs::chart
         virtual std::string comment() const = 0;
         virtual double coordinate(size_t aPointNo, size_t aDimensionNo) const = 0;
         virtual MinimumColumnBasis minimum_column_basis() const = 0;
-        virtual std::shared_ptr<ForcedColumnBases> forced_column_bases() const = 0;
+        virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0;
+        virtual std::shared_ptr<ColumnBases> computed_column_bases() const = 0;
         virtual acmacs::Transformation transformation() const = 0;
         virtual bool dodgy_titer_is_regular() const = 0;
         virtual double stress_diff_to_stop() const = 0;
@@ -355,7 +356,7 @@ namespace acmacs::chart
         virtual std::shared_ptr<Antigens> antigens() const = 0;
         virtual std::shared_ptr<Sera> sera() const = 0;
         virtual std::shared_ptr<Titers> titers() const = 0;
-        virtual std::shared_ptr<ForcedColumnBases> forced_column_bases() const = 0;
+        virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0;
         virtual std::shared_ptr<Projections> projections() const = 0;
         virtual std::shared_ptr<PlotSpec> plot_spec() const = 0;
 

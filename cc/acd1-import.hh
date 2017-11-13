@@ -17,7 +17,7 @@ namespace acmacs::chart
         std::shared_ptr<Antigens> antigens() const override;
         std::shared_ptr<Sera> sera() const override;
         std::shared_ptr<Titers> titers() const override;
-        std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
+        std::shared_ptr<ColumnBases> forced_column_bases() const override;
         std::shared_ptr<Projections> projections() const override;
         std::shared_ptr<PlotSpec> plot_spec() const override;
 
@@ -179,10 +179,10 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class Acd1ForcedColumnBases : public ForcedColumnBases
+    class Acd1ColumnBases : public ColumnBases
     {
       public:
-        inline Acd1ForcedColumnBases(const rjson::array& aData) : mData{aData} {}
+        inline Acd1ColumnBases(const rjson::array& aData) : mData{aData} {}
 
         inline bool exists() const override { return !mData.empty(); }
         inline double column_basis(size_t aSerumNo) const override { return mData[aSerumNo]; }
@@ -191,7 +191,7 @@ namespace acmacs::chart
      private:
         const rjson::array& mData;
 
-    }; // class Acd1ForcedColumnBases
+    }; // class Acd1ColumnBases
 
 // ----------------------------------------------------------------------
 
@@ -206,7 +206,8 @@ namespace acmacs::chart
         double coordinate(size_t aPointNo, size_t aDimensionNo) const override;
         std::string comment() const override;
         inline MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("minimum_column_basis", "none"); }
-        std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
+        std::shared_ptr<ColumnBases> forced_column_bases() const override;
+        std::shared_ptr<ColumnBases> computed_column_bases() const override;
         acmacs::Transformation transformation() const override;
         inline bool dodgy_titer_is_regular() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("dodgy_titer_is_regular", false); }
         inline double stress_diff_to_stop() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("stress_diff_to_stop", 0.0); }

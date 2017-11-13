@@ -17,7 +17,7 @@ namespace acmacs::chart
         std::shared_ptr<Antigens> antigens() const override;
         std::shared_ptr<Sera> sera() const override;
         std::shared_ptr<Titers> titers() const override;
-        std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
+        std::shared_ptr<ColumnBases> forced_column_bases() const override;
         std::shared_ptr<Projections> projections() const override;
         std::shared_ptr<PlotSpec> plot_spec() const override;
 
@@ -166,10 +166,10 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class LispmdsForcedColumnBases : public ForcedColumnBases
+    class LispmdsColumnBases : public ColumnBases
     {
       public:
-        inline LispmdsForcedColumnBases(const std::vector<double>& aData) : mData{aData} {}
+        inline LispmdsColumnBases(const std::vector<double>& aData) : mData{aData} {}
 
         inline bool exists() const override { return true; }
         inline double column_basis(size_t aSerumNo) const override { return mData.at(aSerumNo); }
@@ -178,9 +178,9 @@ namespace acmacs::chart
      private:
         std::vector<double> mData;
 
-    }; // class LispmdsForcedColumnBases
+    }; // class LispmdsColumnBases
 
-    class LispmdsNoColumnBases : public ForcedColumnBases
+    class LispmdsNoColumnBases : public ColumnBases
     {
       public:
         inline LispmdsNoColumnBases() = default;
@@ -189,7 +189,7 @@ namespace acmacs::chart
         double column_basis(size_t) const override { return 0; }
         inline size_t size() const override { return 0; }
 
-    }; // class LispmdsForcedColumnBases
+    }; // class LispmdsColumnBases
 
 // ----------------------------------------------------------------------
 
@@ -205,7 +205,8 @@ namespace acmacs::chart
         double coordinate(size_t aPointNo, size_t aDimensionNo) const override;
         inline std::string comment() const override { return {}; }
         MinimumColumnBasis minimum_column_basis() const override;
-        std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
+        std::shared_ptr<ColumnBases> forced_column_bases() const override;
+        std::shared_ptr<ColumnBases> computed_column_bases() const override;
         acmacs::Transformation transformation() const override;
         inline bool dodgy_titer_is_regular() const override { return false; }
         inline double stress_diff_to_stop() const override { return 0.0; }

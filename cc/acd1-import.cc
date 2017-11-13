@@ -238,9 +238,9 @@ std::shared_ptr<Titers> Acd1Chart::titers() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ForcedColumnBases> Acd1Chart::forced_column_bases() const
+std::shared_ptr<ColumnBases> Acd1Chart::forced_column_bases() const
 {
-    return std::make_shared<Acd1ForcedColumnBases>(mData["table"].get_or_empty_array("column_bases"));
+    return std::make_shared<Acd1ColumnBases>(mData["table"].get_or_empty_array("column_bases"));
 
 } // Acd1Chart::forced_column_bases
 
@@ -598,14 +598,21 @@ double Acd1Projection::coordinate(size_t aPointNo, size_t aDimensionNo) const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ForcedColumnBases> Acd1Projection::forced_column_bases() const
+std::shared_ptr<ColumnBases> Acd1Projection::forced_column_bases() const
 {
     const rjson::object& sep = mData.get_or_empty_object("stress_evaluator_parameters");
     if (const rjson::array& cb = sep.get_or_empty_array("column_bases"); !cb.empty())
-        return std::make_shared<Acd1ForcedColumnBases>(cb);
-    return std::make_shared<Acd1ForcedColumnBases>(sep.get_or_empty_array("columns_bases"));
+        return std::make_shared<Acd1ColumnBases>(cb);
+    return std::make_shared<Acd1ColumnBases>(sep.get_or_empty_array("columns_bases"));
 
 } // Acd1Projection::forced_column_bases
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<ColumnBases> Acd1Projection::computed_column_bases() const
+{
+
+} // Acd1Projection::computed_column_bases
 
 // ----------------------------------------------------------------------
 

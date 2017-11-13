@@ -10,6 +10,10 @@
 static std::string antigen_names(std::shared_ptr<acmacs::chart::Antigens> aAntigens);
 static std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera);
 static std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters);
+static std::string starting_coordss(std::shared_ptr<acmacs::chart::Projections> aProjections, size_t number_of_antigens, size_t number_of_sera);
+static std::string batch_runs(std::shared_ptr<acmacs::chart::Projections> aProjections, size_t number_of_antigens, size_t number_of_sera);
+static std::string coordinates(std::shared_ptr<acmacs::chart::Projection> aProjection, size_t number_of_points, size_t number_of_dimensions, size_t aIndent);
+static std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Projection> aProjection, size_t number_of_antigens, size_t number_of_sera, size_t aIndent);
 
 // static void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aInfo);
 // static void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections);
@@ -29,40 +33,23 @@ std::string acmacs::chart::lispmds_export(std::shared_ptr<acmacs::chart::Chart> 
           '()" + serum_names(aChart->sera()) + R"()
           '()" + titers(aChart->titers()) + R"()
           ')" + lispmds_encode(aChart->info()->name_non_empty()) + R"()
+  )" + starting_coordss(aChart->projections(), aChart->number_of_antigens(), aChart->number_of_sera()) + R"(
+  )" + batch_runs(aChart->projections(), aChart->number_of_antigens(), aChart->number_of_sera()) + R"(
 )";
     return result;
 
-    // rjson::value ace{rjson::object{{
-    //             {"  version", rjson::string{"acmacs-ace-v1"}},
-    //             {"?created", rjson::string{aProgramName + " on " + acmacs::time_format()}},
-    //             {"c", rjson::object{{
-    //                         {"i", rjson::object{}},
-    //                         {"a", rjson::array{}},
-    //                         {"s", rjson::array{}},
-    //                         {"t", rjson::object{}},
-    //                     }}}
-    //         }}};
-    // // Timeit ti_info("export info ");
-    // export_info(ace["c"]["i"], aChart->info());
-    // // ti_info.report();
-    // // Timeit ti_antigens("export antigens ");
-    // export_antigens(ace["c"]["a"], aChart->antigens());
-    // // ti_antigens.report();
-    // // Timeit ti_sera("export sera ");
-    // export_sera(ace["c"]["s"], aChart->sera());
-    // // ti_sera.report();
-    // // Timeit ti_titers("export titers ");
-    // export_titers(ace["c"]["t"], aChart->titers());
-    // // ti_titers.report();
-    // // Timeit ti_projections("export projections ");
-    // if (auto projections = aChart->projections(); !projections->empty())
-    //     export_projections(ace["c"].set_field("P", rjson::array{}), projections);
-    // // ti_projections.report();
-    // // Timeit ti_plot_spec("export plot_spec ");
-    // if (auto plot_spec = aChart->plot_spec(); !plot_spec->empty())
-    //     export_plot_spec(ace["c"].set_field("p", rjson::object{}), plot_spec);
-    // // ti_plot_spec.report();
-    // return ace.to_json_pp(1);
+  // :MDS-DIMENSIONS '2
+  // :MOVEABLE-COORDS 'ALL
+  // :UNMOVEABLE-COORDS 'NIL
+  // :CANVAS-COORD-TRANSFORMATIONS '(:CANVAS-WIDTH 530 :CANVAS-HEIGHT 450 :CANVAS-X-COORD-TRANSLATION 284.0 :CANVAS-Y-COORD-TRANSLATION -4.0 :CANVAS-X-COORD-SCALE 32.94357699173962d0 :CANVAS-Y-COORD-SCALE
+  //                                 32.94357699173962d0 :CANVAS-BASIS-VECTOR-0 (0.48512267784748486d0 -0.8744461032208247d0) :CANVAS-BASIS-VECTOR-1 (0.8744461032208257d0 0.48512267784748314d0) :FIRST-DIMENSION
+  //                                 0 :SECOND-DIMENSION 1 :BASIS-VECTOR-POINT-INDICES (0 1 2) :BASIS-VECTOR-POINT-INDICES-BACKUP NIL :BASIS-VECTOR-X-COORD-TRANSLATION 0 :BASIS-VECTOR-Y-COORD-TRANSLATION 0
+  //                                 :BASIS-VECTOR-X-COORD-SCALE 1 :BASIS-VECTOR-Y-COORD-SCALE 1 :TRANSLATE-TO-FIT-MDS-WINDOW T :SCALE-TO-FIT-MDS-WINDOW T)
+  // :REFERENCE-ANTIGENS 'NIL
+  // :RAISE-POINTS 'NIL
+  // :LOWER-POINTS 'NIL
+              // :PLOT-SPEC '((BI/16190/68-AG :CO "#ffdba5" :DS 4 :TR 0.0 :NM "BI/16190/68" :WN "BI/16190/68" :NS 10 :NC "#ffdba5" :SH "CIRCLE")
+
 
 } // acmacs::chart::lispmds_export
 
@@ -108,6 +95,87 @@ std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters)
 
 // ----------------------------------------------------------------------
 
+std::string starting_coordss(std::shared_ptr<acmacs::chart::Projections> aProjections, size_t number_of_antigens, size_t number_of_sera)
+{
+    if (aProjections->empty())
+        return {};
+    auto projection = (*aProjections)[0];
+    if (const auto number_of_points = projection->number_of_points(), number_of_dimensions = projection->number_of_dimensions(); number_of_points && number_of_dimensions)
+        return "  :STARTING-COORDSS '(" + coordinates(projection, number_of_points, number_of_dimensions, 22) + col_and_row_adjusts(projection, number_of_antigens, number_of_sera, 22) + ')';
+    else
+        return {};
+
+} // starting_coordss
+
+// ----------------------------------------------------------------------
+
+std::string batch_runs(std::shared_ptr<acmacs::chart::Projections> aProjections, size_t number_of_antigens, size_t number_of_sera)
+{
+    if (aProjections->size() < 2)
+        return {};
+    std::string result = "  :BATCH-RUNS '(";
+    result.append(1, ')');
+    return result;
+
+} // batch_runs
+
+// ----------------------------------------------------------------------
+
+std::string coordinates(std::shared_ptr<acmacs::chart::Projection> aProjection, size_t number_of_points, size_t number_of_dimensions, size_t aIndent)
+{
+    std::string result;
+    for (size_t point_no = 0; point_no < number_of_points; ++point_no) {
+        if (point_no)
+            result.append(1, '\n').append(aIndent, ' ');
+        result.append(1, '(');
+        for (size_t dim = 0; dim < number_of_dimensions; ++dim) {
+            if (dim)
+                result.append(1, ' ');
+            const auto c = aProjection->coordinate(point_no, dim);
+            if (std::isnan(c))
+                result.append("-1000"); // disconnected point
+            else
+                result.append(acmacs::to_string(c));
+        }
+        result.append(1, ')');
+    }
+    return result;
+
+} // coordinates
+
+// ----------------------------------------------------------------------
+
+std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Projection> aProjection, size_t number_of_antigens, size_t number_of_sera, size_t aIndent)
+{
+    std::string result{"\n"};
+    result
+            .append(aIndent, ' ')
+            .append("((COL-AND-ROW-ADJUSTS\n")
+            .append(aIndent + 2, ' ')
+            .append(1, '(');
+    for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
+        if (ag_no)
+            result.append(1, ' ');
+        result.append("-1.0d+7");
+    }
+    result.append(1, '\n').append(aIndent + 3, ' ');
+    auto cb = aProjection->forced_column_bases();
+    if (!cb->exists())
+        cb = aProjection->computed_column_bases();
+    for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
+        if (sr_no)
+            result.append(1, ' ');
+        result.append(acmacs::to_string(cb->column_basis(sr_no)));
+    }
+    result.append(1, '\n').append(aIndent + 3, ' ');
+      // avidity adjusts
+    result.append(")))");
+    return result;
+
+} // col_and_row_adjusts
+
+// ----------------------------------------------------------------------
+
 // void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aInfo)
 // {
 //     aTarget.set_field_if_not_empty("v", aInfo->virus());
@@ -129,88 +197,6 @@ std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters)
 //     }
 
 // } // export_info
-
-// // ----------------------------------------------------------------------
-
-// void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters)
-// {
-//       // std::cerr << "number_of_non_dont_cares: " << aTiters->number_of_non_dont_cares() << '\n';
-//       // std::cerr << "percent_of_non_dont_cares: " << aTiters->percent_of_non_dont_cares() << '\n';
-//     const size_t number_of_antigens = aTiters->number_of_antigens();
-//     const size_t number_of_sera = aTiters->number_of_sera();
-
-//     auto fill_d = [number_of_antigens, number_of_sera](rjson::array& aLayer, std::function<acmacs::chart::Titer (size_t, size_t)> aGetTiter) {
-//         for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
-//             rjson::object& row = aLayer.insert(rjson::object{});
-//             for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
-//                 const auto titer = aGetTiter(ag_no, sr_no);
-//                 if (!titer.is_dont_care())
-//                     row.set_field(acmacs::to_string(sr_no), rjson::string{titer});
-//             }
-//         }
-//     };
-
-//       // --------------------------------------------------
-
-//       // Timeit ti_titers("export titers ");
-//     bool titers_exported = false;
-//     try {
-//         aTarget.set_field("d", aTiters->rjson_list_dict());
-//         titers_exported = true;
-//     }
-//     catch (acmacs::chart::data_not_available&) {
-//     }
-
-//     if (!titers_exported) {
-//         try {
-//             aTarget.set_field("l", aTiters->rjson_list_list());
-//             titers_exported = true;
-//         }
-//         catch (acmacs::chart::data_not_available&) {
-//         }
-//     }
-
-//     if (!titers_exported) {
-//           // slow method
-//         if (const double percent_of_non_dont_cares = static_cast<double>(aTiters->number_of_non_dont_cares()) / (number_of_antigens * number_of_sera); percent_of_non_dont_cares > 0.7) {
-//             rjson::array& list = aTarget.set_field("l", rjson::array{});
-//             for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
-//                 rjson::array& row = list.insert(rjson::array{});
-//                 for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
-//                     row.insert(rjson::string{aTiters->titer(ag_no, sr_no)});
-//                 }
-//             }
-//         }
-//         else {
-//             fill_d(aTarget.set_field("d", rjson::array{}), [aTiters](size_t ag_no, size_t sr_no) { return aTiters->titer(ag_no, sr_no); });
-//         }
-//     }
-//       // ti_titers.report();
-
-//       // --------------------------------------------------
-//       // layers
-
-//       // Timeit ti_layers("export layers ");
-//     bool layers_exported = false;
-//     try {
-//         aTarget.set_field("L", aTiters->rjson_layers());
-//         layers_exported = true;
-//     }
-//     catch (acmacs::chart::data_not_available&) {
-//     }
-
-//     if (!layers_exported) {
-//           // slow method
-//         if (const size_t number_of_layers = aTiters->number_of_layers(); number_of_layers) {
-//             rjson::array& layers = aTarget.set_field("L", rjson::array{});
-//             for (size_t layer_no = 0; layer_no < number_of_layers; ++layer_no) {
-//                 fill_d(layers.insert(rjson::array{}), [aTiters, layer_no](size_t ag_no, size_t sr_no) { return aTiters->titer_of_layer(layer_no, ag_no, sr_no); });
-//             }
-//         }
-//     }
-//       // ti_layers.report();
-
-// } // export_titers
 
 // // ----------------------------------------------------------------------
 

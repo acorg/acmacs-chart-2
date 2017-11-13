@@ -17,7 +17,7 @@ namespace acmacs::chart
         std::shared_ptr<Antigens> antigens() const override;
         std::shared_ptr<Sera> sera() const override;
         std::shared_ptr<Titers> titers() const override;
-        std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
+        std::shared_ptr<ColumnBases> forced_column_bases() const override;
         std::shared_ptr<Projections> projections() const override;
         std::shared_ptr<PlotSpec> plot_spec() const override;
 
@@ -171,10 +171,10 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class AceForcedColumnBases : public ForcedColumnBases
+    class AceColumnBases : public ColumnBases
     {
       public:
-        inline AceForcedColumnBases(const rjson::array& aData) : mData{aData} {}
+        inline AceColumnBases(const rjson::array& aData) : mData{aData} {}
 
         inline bool exists() const override { return !mData.empty(); }
         inline double column_basis(size_t aSerumNo) const override { return mData[aSerumNo]; }
@@ -183,7 +183,7 @@ namespace acmacs::chart
      private:
         const rjson::array& mData;
 
-    }; // class AceForcedColumnBases
+    }; // class AceColumnBases
 
 // ----------------------------------------------------------------------
 
@@ -198,7 +198,8 @@ namespace acmacs::chart
         double coordinate(size_t aPointNo, size_t aDimensionNo) const override;
         inline std::string comment() const override { return mData.get_or_default("c", ""); }
         inline MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_default("m", "none"); }
-        std::shared_ptr<ForcedColumnBases> forced_column_bases() const override;
+        std::shared_ptr<ColumnBases> forced_column_bases() const override;
+        std::shared_ptr<ColumnBases> computed_column_bases() const override;
         acmacs::Transformation transformation() const override;
         inline bool dodgy_titer_is_regular() const override { return mData.get_or_default("d", false); }
         inline double stress_diff_to_stop() const override { return mData.get_or_default("d", 0.0); }

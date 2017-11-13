@@ -116,9 +116,9 @@ acmacs::chart::Titers::~Titers()
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::ForcedColumnBases::~ForcedColumnBases()
+acmacs::chart::ColumnBases::~ColumnBases()
 {
-} // acmacs::chart::ForcedColumnBases::~ForcedColumnBases
+} // acmacs::chart::ColumnBases::~ColumnBases
 
 // ----------------------------------------------------------------------
 

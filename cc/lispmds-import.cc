@@ -18,7 +18,7 @@ constexpr const double NS_SCALE{0.5};
 
 static std::vector<double> native_column_bases(const acmacs::lispmds::value& aData);
 static std::vector<double> column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo);
-static std::pair<std::shared_ptr<acmacs::chart::ForcedColumnBases>, acmacs::chart::MinimumColumnBasis> forced_column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo);
+static std::pair<std::shared_ptr<acmacs::chart::ColumnBases>, acmacs::chart::MinimumColumnBasis> forced_column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo);
 
 // ----------------------------------------------------------------------
 
@@ -110,7 +110,7 @@ std::vector<double> column_bases(const acmacs::lispmds::value& aData, size_t aPr
 
 // ----------------------------------------------------------------------
 
-std::pair<std::shared_ptr<acmacs::chart::ForcedColumnBases>, acmacs::chart::MinimumColumnBasis> forced_column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo)
+std::pair<std::shared_ptr<acmacs::chart::ColumnBases>, acmacs::chart::MinimumColumnBasis> forced_column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo)
 {
     try {
         const auto native_cb = native_column_bases(aData);
@@ -128,7 +128,7 @@ std::pair<std::shared_ptr<acmacs::chart::ForcedColumnBases>, acmacs::chart::Mini
             if (native_upgraded == cb)
                 return {std::make_shared<LispmdsNoColumnBases>(), acmacs::chart::MinimumColumnBasis(min_forced)};
             else
-                return {std::make_shared<LispmdsForcedColumnBases>(cb), acmacs::chart::MinimumColumnBasis()};
+                return {std::make_shared<LispmdsColumnBases>(cb), acmacs::chart::MinimumColumnBasis()};
         }
     }
     catch (acmacs::lispmds::keyword_no_found&) {
@@ -203,7 +203,7 @@ std::shared_ptr<Titers> LispmdsChart::titers() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ForcedColumnBases> LispmdsChart::forced_column_bases() const
+std::shared_ptr<ColumnBases> LispmdsChart::forced_column_bases() const
 {
     return ::forced_column_bases(mData, 0).first;
 
@@ -417,11 +417,19 @@ double LispmdsProjection::coordinate(size_t aPointNo, size_t aDimensionNo) const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ForcedColumnBases> LispmdsProjection::forced_column_bases() const
+std::shared_ptr<ColumnBases> LispmdsProjection::forced_column_bases() const
 {
     return ::forced_column_bases(mData, mIndex).first;
 
 } // LispmdsProjection::forced_column_bases
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<ColumnBases> LispmdsProjection::computed_column_bases() const
+{
+    return std::make_shared<LispmdsColumnBases>(::native_column_bases(mData));
+
+} // LispmdsProjection::computed_column_bases
 
 // ----------------------------------------------------------------------
 

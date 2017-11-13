@@ -88,9 +88,9 @@ std::shared_ptr<Titers> AceChart::titers() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ForcedColumnBases> AceChart::forced_column_bases() const
+std::shared_ptr<ColumnBases> AceChart::forced_column_bases() const
 {
-    return std::make_shared<AceForcedColumnBases>(mData["c"].get_or_empty_array("C"));
+    return std::make_shared<AceColumnBases>(mData["c"].get_or_empty_array("C"));
 
 } // AceChart::forced_column_bases
 
@@ -284,11 +284,18 @@ double AceProjection::coordinate(size_t aPointNo, size_t aDimensionNo) const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ForcedColumnBases> AceProjection::forced_column_bases() const
+std::shared_ptr<ColumnBases> AceProjection::forced_column_bases() const
 {
-    return std::make_shared<AceForcedColumnBases>(mData.get_or_empty_array("C"));
+    return std::make_shared<AceColumnBases>(mData.get_or_empty_array("C"));
 
 } // AceProjection::forced_column_bases
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<ColumnBases> AceProjection::computed_column_bases() const
+{
+
+} // AceProjection::computed_column_bases
 
 // ----------------------------------------------------------------------
 
