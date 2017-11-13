@@ -141,15 +141,15 @@ std::pair<std::shared_ptr<acmacs::chart::ForcedColumnBases>, acmacs::chart::Mini
 
 std::shared_ptr<Chart> acmacs::chart::lispmds_import(const std::string_view& aData, Verify aVerify)
 {
-    try {
+    // try {
         auto chart = std::make_shared<LispmdsChart>(acmacs::lispmds::parse_string(aData));
         chart->verify_data(aVerify);
         return chart;
-    }
-    catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
-        throw;
-    }
+    // }
+    // catch (std::exception& err) {
+    //     std::cerr << "ERROR: " << err.what() << '\n';
+    //     throw;
+    // }
 
 } // acmacs::chart::lispmds_import
 
@@ -158,6 +158,10 @@ std::shared_ptr<Chart> acmacs::chart::lispmds_import(const std::string_view& aDa
 void LispmdsChart::verify_data(Verify) const
 {
     try {
+        if (number_of_antigens() == 0)
+            throw import_error("no antigens");
+        if (number_of_sera() == 0)
+            throw import_error("no sera (genetic tables are not supported)");
     }
     catch (std::exception& err) {
         throw import_error("[lispmds]: structure verification failed: "s + err.what());
