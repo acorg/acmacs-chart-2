@@ -375,30 +375,6 @@ size_t LispmdsTiters::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
-// double LispmdsForcedColumnBases::column_basis(size_t aSerumNo) const
-// {
-//     return std::get<acmacs::lispmds::number>(mData[mNumberOfAntigens + aSerumNo]);
-
-// } // LispmdsForcedColumnBases::column_basis
-
-// ----------------------------------------------------------------------
-
-// inline const acmacs::lispmds::value& LispmdsProjection::data() const
-// {
-//     return projection_data(mData, mIndex);
-
-// } // LispmdsProjection::data
-
-// // ----------------------------------------------------------------------
-
-// inline const acmacs::lispmds::value& LispmdsProjection::layout() const
-// {
-//     return projection_layout(mData, mIndex);
-
-// } // LispmdsProjection::layout
-
-// ----------------------------------------------------------------------
-
 double LispmdsProjection::stress() const
 {
     return std::visit([](auto&& arg) -> double {

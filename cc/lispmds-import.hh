@@ -169,20 +169,14 @@ namespace acmacs::chart
     class LispmdsForcedColumnBases : public ForcedColumnBases
     {
       public:
-        // inline LispmdsForcedColumnBases(const acmacs::lispmds::value& aData, size_t aNumberOfAntigens, size_t aNumberOfSera)
-        //     : mData{aData}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} {}
         inline LispmdsForcedColumnBases(const std::vector<double>& aData) : mData{aData} {}
 
         inline bool exists() const override { return true; }
         inline double column_basis(size_t aSerumNo) const override { return mData.at(aSerumNo); }
         inline size_t size() const override { return mData.size(); }
-        // double column_basis(size_t aSerumNo) const override;
-        // inline size_t size() const override { return mNumberOfSera; }
 
      private:
         std::vector<double> mData;
-        // const acmacs::lispmds::value& mData;
-        // size_t mNumberOfAntigens, mNumberOfSera;
 
     }; // class LispmdsForcedColumnBases
 
@@ -223,9 +217,6 @@ namespace acmacs::chart
         const acmacs::lispmds::value& mData;
         size_t mIndex;
         size_t mNumberOfAntigens, mNumberOfSera;
-
-        // const acmacs::lispmds::value& data() const;
-        // const acmacs::lispmds::value& layout() const;
 
     }; // class LispmdsProjections
 
