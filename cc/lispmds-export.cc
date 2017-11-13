@@ -10,10 +10,10 @@
 static std::string antigen_names(std::shared_ptr<acmacs::chart::Antigens> aAntigens);
 static std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera);
 static std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters);
-static std::string starting_coordss(std::shared_ptr<acmacs::chart::Projections> aProjections, size_t number_of_antigens, size_t number_of_sera);
-static std::string batch_runs(std::shared_ptr<acmacs::chart::Projections> aProjections, size_t number_of_antigens, size_t number_of_sera);
+static std::string starting_coordss(std::shared_ptr<acmacs::chart::Chart> aChart);
+static std::string batch_runs(std::shared_ptr<acmacs::chart::Chart> aChart);
 static std::string coordinates(std::shared_ptr<acmacs::chart::Projection> aProjection, size_t number_of_points, size_t number_of_dimensions, size_t aIndent);
-static std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Projection> aProjection, size_t number_of_antigens, size_t number_of_sera, size_t aIndent);
+static std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Chart> aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent);
 
 // static void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aInfo);
 // static void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections);
@@ -33,8 +33,8 @@ std::string acmacs::chart::lispmds_export(std::shared_ptr<acmacs::chart::Chart> 
           '()" + serum_names(aChart->sera()) + R"()
           '()" + titers(aChart->titers()) + R"()
           ')" + lispmds_encode(aChart->info()->name_non_empty()) + R"()
-  )" + starting_coordss(aChart->projections(), aChart->number_of_antigens(), aChart->number_of_sera()) + R"(
-  )" + batch_runs(aChart->projections(), aChart->number_of_antigens(), aChart->number_of_sera()) + R"(
+  )" + starting_coordss(aChart) + R"(
+  )" + batch_runs(aChart) + R"(
 )";
     return result;
 
@@ -95,13 +95,14 @@ std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters)
 
 // ----------------------------------------------------------------------
 
-std::string starting_coordss(std::shared_ptr<acmacs::chart::Projections> aProjections, size_t number_of_antigens, size_t number_of_sera)
+std::string starting_coordss(std::shared_ptr<acmacs::chart::Chart> aChart)
 {
-    if (aProjections->empty())
+    auto projections = aChart->projections();
+    if (projections->empty())
         return {};
-    auto projection = (*aProjections)[0];
+    auto projection = (*projections)[0];
     if (const auto number_of_points = projection->number_of_points(), number_of_dimensions = projection->number_of_dimensions(); number_of_points && number_of_dimensions)
-        return "  :STARTING-COORDSS '(" + coordinates(projection, number_of_points, number_of_dimensions, 22) + col_and_row_adjusts(projection, number_of_antigens, number_of_sera, 22) + ')';
+        return "  :STARTING-COORDSS '(" + coordinates(projection, number_of_points, number_of_dimensions, 22) + col_and_row_adjusts(aChart, projection, 22) + ')';
     else
         return {};
 
@@ -109,9 +110,10 @@ std::string starting_coordss(std::shared_ptr<acmacs::chart::Projections> aProjec
 
 // ----------------------------------------------------------------------
 
-std::string batch_runs(std::shared_ptr<acmacs::chart::Projections> aProjections, size_t number_of_antigens, size_t number_of_sera)
+std::string batch_runs(std::shared_ptr<acmacs::chart::Chart> aChart)
 {
-    if (aProjections->size() < 2)
+    auto projections = aChart->projections();
+    if (projections->size() < 2)
         return {};
     std::string result = "  :BATCH-RUNS '(";
     result.append(1, ')');
@@ -145,7 +147,7 @@ std::string coordinates(std::shared_ptr<acmacs::chart::Projection> aProjection, 
 
 // ----------------------------------------------------------------------
 
-std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Projection> aProjection, size_t number_of_antigens, size_t number_of_sera, size_t aIndent)
+std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Chart> aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent)
 {
     std::string result{"\n"};
     result
@@ -153,6 +155,8 @@ std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Projection> aProj
             .append("((COL-AND-ROW-ADJUSTS\n")
             .append(aIndent + 2, ' ')
             .append(1, '(');
+    const auto number_of_antigens = aChart->number_of_antigens();
+    const auto number_of_sera = aChart->number_of_sera();
     for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
         if (ag_no)
             result.append(1, ' ');
@@ -161,7 +165,7 @@ std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Projection> aProj
     result.append(1, '\n').append(aIndent + 3, ' ');
     auto cb = aProjection->forced_column_bases();
     if (!cb->exists())
-        cb = aProjection->computed_column_bases(number_of_sera);
+        cb = aChart->computed_column_bases(aProjection->minimum_column_basis());
     for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
         if (sr_no)
             result.append(1, ' ');

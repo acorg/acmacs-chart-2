@@ -58,7 +58,7 @@ std::string acmacs::chart::Titer::logged_as_string() const
 class ComputedColumnBases : public acmacs::chart::ColumnBases
 {
  public:
-    inline ComputedColumnBases(size_t aNumberOfSera) : mData(aNumberOfSera) {}
+    inline ComputedColumnBases(size_t aNumberOfSera) : mData(aNumberOfSera, 0) {}
 
     inline bool exists() const override { return true; }
     inline double column_basis(size_t aSerumNo) const override { return mData.at(aSerumNo); }
@@ -71,13 +71,15 @@ class ComputedColumnBases : public acmacs::chart::ColumnBases
 
 }; // class ComputedColumnBases
 
-std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Projection::computed_column_bases(size_t aNumberOfSera) const
+std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Chart::computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const
 {
-    const auto min_cb = minimum_column_basis();
-    auto cb = std::make_shared<ComputedColumnBases>(aNumberOfSera);
+    auto cb = std::make_shared<ComputedColumnBases>(number_of_sera());
+
+    for (size_t sr_no = 0; sr_no < number_of_sera(); ++sr_no)
+        cb->update(sr_no, aMinimumColumnBasis);
     return cb;
 
-} // acmacs::chart::Projection::computed_column_bases
+} // acmacs::chart::Chart::computed_column_bases
 
 // ----------------------------------------------------------------------
 

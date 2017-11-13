@@ -145,7 +145,9 @@ namespace acmacs::chart
         inline MinimumColumnBasis& operator=(const MinimumColumnBasis&) = default;
         inline MinimumColumnBasis& operator=(std::string aValue) { from(aValue); return *this; }
 
-        inline bool is_none() const { return float_zero(mValue); }
+        inline constexpr bool is_none() const { return float_zero(mValue); }
+
+        inline constexpr operator double() const noexcept { return mValue; }
 
         inline operator std::string() const noexcept
             {
@@ -154,7 +156,7 @@ namespace acmacs::chart
                 else if (float_equal(mValue, 7.0))
                     return "1280";
                 else
-                    return std::to_string(mValue);
+                    return acmacs::to_string(mValue);
             }
 
      private:
@@ -299,7 +301,6 @@ namespace acmacs::chart
         virtual double coordinate(size_t aPointNo, size_t aDimensionNo) const = 0;
         virtual MinimumColumnBasis minimum_column_basis() const = 0;
         virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0;
-        virtual std::shared_ptr<ColumnBases> computed_column_bases(size_t aNumberOfSera) const;
         virtual acmacs::Transformation transformation() const = 0;
         virtual bool dodgy_titer_is_regular() const = 0;
         virtual double stress_diff_to_stop() const = 0;
@@ -357,6 +358,7 @@ namespace acmacs::chart
         virtual std::shared_ptr<Sera> sera() const = 0;
         virtual std::shared_ptr<Titers> titers() const = 0;
         virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0;
+        virtual std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
         virtual std::shared_ptr<Projections> projections() const = 0;
         virtual std::shared_ptr<PlotSpec> plot_spec() const = 0;
 

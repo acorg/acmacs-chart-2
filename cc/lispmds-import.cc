@@ -425,14 +425,6 @@ std::shared_ptr<ColumnBases> LispmdsProjection::forced_column_bases() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ColumnBases> LispmdsProjection::computed_column_bases(size_t /*aNumberOfSera*/) const
-{
-    return std::make_shared<LispmdsColumnBases>(::column_bases(mData, mIndex));
-
-} // LispmdsProjection::computed_column_bases
-
-// ----------------------------------------------------------------------
-
 acmacs::chart::MinimumColumnBasis LispmdsProjection::minimum_column_basis() const
 {
     return ::forced_column_bases(mData, mIndex).second;
