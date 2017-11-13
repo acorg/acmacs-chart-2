@@ -171,8 +171,16 @@ std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Chart> aChart, st
             result.append(1, ' ');
         result.append(acmacs::to_string(cb->column_basis(sr_no)));
     }
+    result.append(1, '\n').append(aIndent + 2, ' ');
+    if (auto avidity_adjusts = aProjection->avidity_adjusts(); !avidity_adjusts.empty()) {
+        for (double aa: avidity_adjusts)
+            result.append(1, ' ').append(acmacs::to_string(std::log2(aa)));
+    }
+    else {
+        for (size_t point_no = 0; point_no < (number_of_antigens + number_of_sera); ++point_no)
+            result.append(" 0");
+    }
     result.append(1, '\n').append(aIndent + 3, ' ');
-      // avidity adjusts
     result.append(")))");
     return result;
 
