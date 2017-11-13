@@ -14,6 +14,15 @@ namespace acmacs::chart
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------
+
+namespace acmacs::lispmds
+{
+    constexpr const double DS_SCALE{3.0};
+    constexpr const double NS_SCALE{0.5};
+
+} // namespace acmacs::lispmds
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

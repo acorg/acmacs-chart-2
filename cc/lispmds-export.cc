@@ -16,11 +16,7 @@ static std::string coordinates(std::shared_ptr<acmacs::chart::Projection> aProje
 static std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Chart> aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent);
 static std::string reference_antigens(std::shared_ptr<acmacs::chart::Chart> aChart);
 static std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart);
-
-// static void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aInfo);
-// static void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec);
-// static void compact_styles(const std::vector<acmacs::PointStyle>& aAllStyles, std::vector<acmacs::PointStyle>& aCompacted, std::vector<size_t>& aIndex);
-// static void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle);
+static std::string point_style(const acmacs::PointStyle& aStyle);
 
 // ----------------------------------------------------------------------
 
@@ -241,7 +237,7 @@ std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart)
                 auto serum = (*sera)[point_no - number_of_antigens];
                 name = lispmds_serum_name_encode(serum->name(), serum->reassortant(), serum->annotations(), serum->serum_id()) + "-SR";
             }
-            result.append("(" + name + ")");
+            result.append('(' + name + point_style(plot_spec->style(point_no)) + ')');
         }
         result.append(")");
     }
@@ -255,117 +251,24 @@ std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart)
 
 // ----------------------------------------------------------------------
 
-// void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aInfo)
-// {
-//     aTarget.set_field_if_not_empty("v", aInfo->virus());
-//     aTarget.set_field_if_not_empty("V", aInfo->virus_type());
-//     aTarget.set_field_if_not_empty("A", aInfo->assay());
-//     aTarget.set_field_if_not_empty("D", aInfo->date());
-//     aTarget.set_field_if_not_empty("N", aInfo->name());
-//     aTarget.set_field_if_not_empty("l", aInfo->lab());
-//     aTarget.set_field_if_not_empty("r", aInfo->rbc_species());
-//     aTarget.set_field_if_not_empty("s", aInfo->subset());
-//       //aTarget.set_field_if_not_empty("T", aInfo->table_type());
+std::string point_style(const acmacs::PointStyle& aStyle)
+{
+    std::string result;
+    result.append(" :DS " + acmacs::to_string(aStyle.size * acmacs::lispmds::DS_SCALE));
+    if (aStyle.label.shown) {
+        if (aStyle.label_text.not_default())
+            result.append(" :WN \"" + static_cast<std::string>(*aStyle.label_text) + "\"");
+    }
+    else
+        result.append(" :WN \"\"");
+    result.append(" :SH " + static_cast<std::string>(*aStyle.shape));
 
-//     const auto number_of_sources = aInfo->number_of_sources();
-//     if (number_of_sources) {
-//         rjson::array& array = aTarget.set_field("S", rjson::array{});
-//         for (size_t source_no = 0; source_no < number_of_sources; ++source_no) {
-//             export_info(array.insert(rjson::object{}), aInfo->source(source_no));
-//         }
-//     }
+    return result;
 
-// } // export_info
+} // point_style
 
-// // ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 
-// void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections)
-// {
-//     for (const auto projection: *aProjections) {
-//         rjson::object& target = aTarget.insert(rjson::object{});
-
-//         if (const auto number_of_points = projection->number_of_points(), number_of_dimensions = projection->number_of_dimensions(); number_of_points && number_of_dimensions) {
-//             rjson::array& ar = target.set_field("l", rjson::array{});
-//             for (size_t p_no = 0; p_no < number_of_points; ++p_no) {
-//                 rjson::array& p = ar.insert(rjson::array{});
-//                 for (size_t dim = 0; dim < number_of_dimensions; ++dim) {
-//                     const auto c = projection->coordinate(p_no, dim);
-//                     if (std::isnan(c))
-//                         break;
-//                     p.insert(rjson::to_value(c));
-//                 }
-//             }
-//         }
-
-//         target.set_field_if_not_empty("c", static_cast<const std::string&>(projection->comment()));
-//         target.set_field_if_not_default("s", projection->stress(), 0.0);
-//         if (const auto minimum_column_basis = projection->minimum_column_basis(); !minimum_column_basis.is_none())
-//             target.set_field("m", rjson::string{minimum_column_basis});
-//         if (const auto forced_column_bases = projection->forced_column_bases(); forced_column_bases->exists()) {
-//             rjson::array& ar = target.set_field("C", rjson::array{});
-//             for (size_t sr_no = 0; sr_no < forced_column_bases->size(); ++sr_no)
-//                 ar.insert(rjson::to_value(forced_column_bases->column_basis(sr_no)));
-//         }
-//         if (const auto transformation = projection->transformation(); transformation != acmacs::Transformation{})
-//             target.set_field("t", rjson::array{transformation.a, transformation.b, transformation.c, transformation.d});
-//         target.set_field_if_not_default("d", projection->dodgy_titer_is_regular(), false);
-//         target.set_field_if_not_default("e", projection->stress_diff_to_stop(), 0.0);
-//         if (const auto unmovable = projection->unmovable(); ! unmovable.empty())
-//             target.set_field("U", rjson::array(rjson::array::use_iterator, unmovable.begin(), unmovable.end()));
-//         if (const auto disconnected = projection->disconnected(); ! disconnected.empty())
-//             target.set_field("D", rjson::array(rjson::array::use_iterator, disconnected.begin(), disconnected.end()));
-//         if (const auto unmovable_in_the_last_dimension = projection->unmovable_in_the_last_dimension(); ! unmovable_in_the_last_dimension.empty())
-//             target.set_field("u", rjson::array(rjson::array::use_iterator, unmovable_in_the_last_dimension.begin(), unmovable_in_the_last_dimension.end()));
-
-//         // "i": 600,               // number of iterations?
-//         // "g": [],            // antigens_sera_gradient_multipliers, double for each point
-//         // "f": [],            // antigens_sera_titers_multipliers, double for each point
-//     }
-
-// } // export_projections
-
-// // ----------------------------------------------------------------------
-
-// void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec)
-// {
-//     if (const auto drawing_order = aPlotSpec->drawing_order(); ! drawing_order.empty())
-//         aTarget.set_field("d", rjson::array(rjson::array::use_iterator, drawing_order.begin(), drawing_order.end()));
-//     if (const auto color = aPlotSpec->error_line_positive_color(); color != RED)
-//         aTarget.set_field("E", rjson::object{{{"c", rjson::string{color}}}});
-//     if (const auto color = aPlotSpec->error_line_negative_color(); color != BLUE)
-//         aTarget.set_field("e", rjson::object{{{"c", rjson::string{color}}}});
-
-//     std::vector<acmacs::PointStyle> compacted;
-//     std::vector<size_t> p_index;
-//     compact_styles(aPlotSpec->all_styles(), compacted, p_index);
-//     aTarget.set_field("p", rjson::array(rjson::array::use_iterator, p_index.begin(), p_index.end()));
-//     rjson::array& target_styles = aTarget.set_field("P", rjson::array{});
-//     for (const auto& style: compacted)
-//         export_style(target_styles, style);
-
-//       // "g": {},                  // ? grid data
-//       // "l": [],                  // ? for each procrustes line, index in the "L" list
-//       // "L": []                    // ? list of procrustes lines styles
-//       // "s": [],                  // list of point indices for point shown on all maps in the time series
-//       // "t": {}                    // title style?
-
-// } // export_plot_spec
-
-// // ----------------------------------------------------------------------
-
-// void compact_styles(const std::vector<acmacs::PointStyle>& aAllStyles, std::vector<acmacs::PointStyle>& aCompacted, std::vector<size_t>& aIndex)
-// {
-//     for (const auto& style: aAllStyles) {
-//         if (auto found = std::find(aCompacted.begin(), aCompacted.end(), style); found == aCompacted.end()) {
-//             aCompacted.push_back(style);
-//             aIndex.push_back(aCompacted.size() - 1);
-//         }
-//         else {
-//             aIndex.push_back(static_cast<size_t>(found - aCompacted.begin()));
-//         }
-//     }
-
-// } // compact_styles
 
 // // ----------------------------------------------------------------------
 

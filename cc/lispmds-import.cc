@@ -8,14 +8,13 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-chart/lispmds-import.hh"
+#include "acmacs-chart/lispmds-encode.hh"
 
 using namespace std::string_literals;
 using namespace acmacs::chart;
 
 // ----------------------------------------------------------------------
 
-constexpr const double DS_SCALE{3.0};
-constexpr const double NS_SCALE{0.5};
 
 static std::vector<double> native_column_bases(const acmacs::lispmds::value& aData);
 static std::vector<double> column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo);
@@ -639,7 +638,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, size_t aPointNo
 void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::lispmds::list& aSource) const
 {
     try {
-        aTarget.size = static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":DS"])) / DS_SCALE;
+        aTarget.size = static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":DS"])) / acmacs::lispmds::DS_SCALE;
           // if antigen also divide size by 2 ?
     }
     catch (std::exception&) {
@@ -659,7 +658,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
     }
 
     try {
-        aTarget.label.size = static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":NS"])) / NS_SCALE;
+        aTarget.label.size = static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":NS"])) / acmacs::lispmds::NS_SCALE;
     }
     catch (std::exception&) {
     }
