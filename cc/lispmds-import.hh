@@ -212,6 +212,7 @@ namespace acmacs::chart
         PointIndexList unmovable() const override;
         PointIndexList disconnected() const override;
         inline PointIndexList unmovable_in_the_last_dimension() const override { return {}; }
+        AvidityAdjusts avidity_adjusts() const override;
 
      private:
         const acmacs::lispmds::value& mData;

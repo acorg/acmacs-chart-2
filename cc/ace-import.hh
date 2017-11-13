@@ -205,6 +205,7 @@ namespace acmacs::chart
         inline PointIndexList unmovable() const override { return mData.get_or_empty_array("U"); }
         inline PointIndexList disconnected() const override { return mData.get_or_empty_array("D"); }
         inline PointIndexList unmovable_in_the_last_dimension() const override { return mData.get_or_empty_array("u"); }
+        inline AvidityAdjusts avidity_adjusts() const override { return mData.get_or_empty_array("f"); }
 
      private:
         const rjson::object& mData;

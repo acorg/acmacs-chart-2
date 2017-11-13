@@ -2,6 +2,7 @@
 #include <vector>
 #include <limits>
 #include <regex>
+#include <cmath>
 
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
@@ -501,6 +502,19 @@ PointIndexList LispmdsProjection::disconnected() const
     return {};
 
 } // LispmdsProjection::disconnected
+
+// ----------------------------------------------------------------------
+
+AvidityAdjusts LispmdsProjection::avidity_adjusts() const
+{
+    const auto num_points = number_of_points();
+    const acmacs::lispmds::list& cb = projection_layout(mData, mIndex)[num_points][0][1];
+    AvidityAdjusts result(num_points);
+    for (size_t i = 0; i < num_points; ++i)
+        result[i] = std::exp2(static_cast<double>(std::get<acmacs::lispmds::number>(cb[num_points + i])));
+    return result;
+
+} // LispmdsProjection::avidity_adjusts
 
 // ----------------------------------------------------------------------
 

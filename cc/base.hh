@@ -48,6 +48,7 @@ namespace acmacs::chart
             inline size_t size() const { return mData.size(); }
             inline const std::vector<T>& data() const noexcept { return mData; }
             inline operator const std::vector<T>&() const noexcept { return mData; }
+            inline T& operator[](size_t aIndex) { return mData.at(aIndex); }
             inline auto begin() const { return mData.cbegin(); }
             inline auto end() const { return mData.cend(); }
             inline auto begin() { return mData.begin(); }
@@ -73,6 +74,7 @@ namespace acmacs::chart
         }; // class string_list_data
 
         using index_list_data = T_list_data<size_t>;
+        using double_list_data = T_list_data<double>;
 
     } // namespace internal
 

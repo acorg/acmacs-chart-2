@@ -213,6 +213,7 @@ namespace acmacs::chart
         PointIndexList unmovable() const override;
         PointIndexList disconnected() const override;
         PointIndexList unmovable_in_the_last_dimension() const override;
+        AvidityAdjusts avidity_adjusts() const override;
 
      private:
         const rjson::object& mData;

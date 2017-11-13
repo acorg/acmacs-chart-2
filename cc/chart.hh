@@ -136,6 +136,13 @@ namespace acmacs::chart
 
     }; // class PointIndexList
 
+    class AvidityAdjusts : public internal::double_list_data
+    {
+     public:
+        using internal::double_list_data::double_list_data;
+
+    }; // class AvidityAdjusts
+
     class MinimumColumnBasis
     {
      public:
@@ -308,8 +315,8 @@ namespace acmacs::chart
         virtual PointIndexList unmovable() const = 0;
         virtual PointIndexList disconnected() const = 0;
         virtual PointIndexList unmovable_in_the_last_dimension() const = 0;
+        virtual AvidityAdjusts avidity_adjusts() const = 0; // antigens_sera_titers_multipliers, double for each point
           // antigens_sera_gradient_multipliers, double for each point
-          // antigens_sera_titers_multipliers, double for each point
 
     }; // class Projection
 

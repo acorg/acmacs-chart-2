@@ -662,6 +662,13 @@ PointIndexList Acd1Projection::unmovable_in_the_last_dimension() const
 
 // ----------------------------------------------------------------------
 
+AvidityAdjusts Acd1Projection::avidity_adjusts() const
+{
+
+} // Acd1Projection::avidity_adjusts
+
+// ----------------------------------------------------------------------
+
 DrawingOrder Acd1PlotSpec::drawing_order() const
 {
     DrawingOrder result;

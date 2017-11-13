@@ -52,19 +52,19 @@
     "P": [                      // projections
       {
         "c": "comment",
-        "l": [[]],              // layout, list of lists of doubles, if point is disconnected: emtpy list or ?[NaN, NaN]
-        "i": 600,               // number of iterations?
-        "s": 100.1001           // stress
-        "m": "1280",            // minimum column basis, "none" (default), "1280"
-        "C": [6.0, 7.0],        // forced column bases
+        "l": [[]],                 // layout, list of lists of doubles, if point is disconnected: emtpy list or ?[NaN, NaN]
+        "i": 600,                  // number of iterations?
+        "s": 100.1001              // stress
+        "m": "1280",               // minimum column basis, "none" (default), "1280"
+        "C": [6.0, 7.0],           // forced column bases
         "t": [1.0, 0.0, 0.0, 1.0], // transformation matrix, 2D only
-        "g": [],            // antigens_sera_gradient_multipliers, double for each point
-        "f": [],            // antigens_sera_titers_multipliers, double for each point
-        "d": false              // dodgy_titer_is_regular, false is default
-        "e": 0.0,                // stress_diff_to_stop
-        "U": [],                 // list of indices of unmovable points (antigen/serum attribute for stress evaluation)
-        "D": [],                 // list of indices of disconnected points (antigen/serum attribute for stress evaluation)
-        "u": [],                 // list of indices of points unmovable in the last dimension (antigen/serum attribute for stress evaluation)
+        "g": [],                   // antigens_sera_gradient_multipliers, double for each point
+        "f": [],                   // avidity adjusts (antigens_sera_titers_multipliers), double for each point
+        "d": false                 // dodgy_titer_is_regular, false is default
+        "e": 0.0,                  // stress_diff_to_stop
+        "U": [],                   // list of indices of unmovable points (antigen/serum attribute for stress evaluation)
+        "D": [],                   // list of indices of disconnected points (antigen/serum attribute for stress evaluation)
+        "u": [],                   // list of indices of points unmovable in the last dimension (antigen/serum attribute for stress evaluation)
       }
     ],
     "p": {                      // plot spec

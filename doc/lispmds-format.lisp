@@ -10,10 +10,14 @@
           )
   :STARTING-COORDSS '(([float] ... *num-dimensions) ... *num-points  ; no closing )!
                       ((COL-AND-ROW-ADJUSTS
-                        ([float] ... *num-points))))
+                        (-1.0d+7 ... *num-antigens
+                         [column-basis: float] ... *num-sera
+                         [avidity-adjust} ... *num-points))))
   :BATCH-RUNS '(((([float] ... *num-dimensions) ... *num-points  ; no closing )!
                   ((COL-AND-ROW-ADJUSTS
-                    ([float] ... *num-points))))
+                    (-1.0d+7 ... *num-antigens
+                     [column-basis: float] ... *num-sera
+                     [avidity-adjust} ... *num-points))))
                  [stress:float] MULTIPLE-END-CONDITIONS NIL) ... *num-projections
                 )
   :MDS-DIMENSIONS '2
