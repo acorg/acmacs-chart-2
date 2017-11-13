@@ -52,6 +52,7 @@ namespace acmacs::chart
         virtual std::string make_info() const;
 
         virtual std::string name(Compute = Compute::No) const = 0;
+        inline std::string name_non_empty() const { const auto result = name(Compute::Yes); return result.empty() ? std::string{"UNKNOWN"} : result; }
         virtual std::string virus(Compute = Compute::No) const = 0;
         virtual std::string virus_type(Compute = Compute::No) const = 0;
         virtual std::string subset(Compute = Compute::No) const = 0;
@@ -123,6 +124,7 @@ namespace acmacs::chart
         using internal::string_data::string_data;
 
         inline bool is_dont_care() const { return data() == "*"; }
+        std::string logged_as_string() const;
 
     }; // class Titer
 

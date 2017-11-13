@@ -1,15 +1,17 @@
 #include "acmacs-base/rjson.hh"
 #include "acmacs-base/time.hh"
-#include "acmacs-base/timeit.hh"
+#include "acmacs-base/string.hh"
 #include "acmacs-chart/lispmds-export.hh"
+#include "acmacs-chart/lispmds-encode.hh"
 #include "acmacs-chart/chart.hh"
 
 // ----------------------------------------------------------------------
 
+static std::string antigen_names(std::shared_ptr<acmacs::chart::Antigens> aAntigens);
+static std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera);
+static std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters);
+
 // static void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aInfo);
-// static void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens);
-// static void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera);
-// static void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters);
 // static void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections);
 // static void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec);
 // static void compact_styles(const std::vector<acmacs::PointStyle>& aAllStyles, std::vector<acmacs::PointStyle>& aCompacted, std::vector<size_t>& aIndex);
@@ -19,7 +21,15 @@
 
 std::string acmacs::chart::lispmds_export(std::shared_ptr<acmacs::chart::Chart> aChart, std::string aProgramName)
 {
-    std::string result = "";
+    std::string result = R"(;; MDS configuration file (version acmacs-d-1).
+;; Created on )" + acmacs::time_format() + R"(
+
+(MAKE-MASTER-MDS-WINDOW
+   (HI-IN '()" + antigen_names(aChart->antigens()) + R"()
+          '()" + serum_names(aChart->sera()) + R"()
+          '()" + titers(aChart->titers()) + R"()
+          ')" + lispmds_encode(aChart->info()->name_non_empty()) + R"()
+)";
     return result;
 
     // rjson::value ace{rjson::object{{
@@ -58,6 +68,46 @@ std::string acmacs::chart::lispmds_export(std::shared_ptr<acmacs::chart::Chart> 
 
 // ----------------------------------------------------------------------
 
+std::string antigen_names(std::shared_ptr<acmacs::chart::Antigens> aAntigens)
+{
+    return string::join(" ", aAntigens->begin(), aAntigens->end(), [](auto antigen) { return lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations()); });
+
+} // antigen_names
+
+// ----------------------------------------------------------------------
+
+std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera)
+{
+    return string::join(" ", aSera->begin(), aSera->end(), [](auto serum) { return lispmds_serum_name_encode(serum->name(), serum->reassortant(), serum->annotations(), serum->serum_id()); });
+
+} // serum_names
+
+// ----------------------------------------------------------------------
+
+std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters)
+{
+    std::string result;
+    const size_t number_of_antigens = aTiters->number_of_antigens();
+    const size_t number_of_sera = aTiters->number_of_sera();
+
+    for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
+        if (ag_no)
+            result.append(1, '\n').append(12, ' ');
+        result.append(1, '(');
+        for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
+            if (sr_no)
+                result.append(1, ' ');
+            result.append(aTiters->titer(ag_no, sr_no).logged_as_string());
+        }
+        result.append(1, ')');
+    }
+
+    return result;
+
+} // titers
+
+// ----------------------------------------------------------------------
+
 // void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aInfo)
 // {
 //     aTarget.set_field_if_not_empty("v", aInfo->virus());
@@ -79,66 +129,6 @@ std::string acmacs::chart::lispmds_export(std::shared_ptr<acmacs::chart::Chart> 
 //     }
 
 // } // export_info
-
-// // ----------------------------------------------------------------------
-
-// void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens)
-// {
-//     for (auto antigen: *aAntigens) {
-//         rjson::object& object = aTarget.insert(rjson::object{});
-
-//         object.set_field("N", rjson::string{antigen->name()});
-//         object.set_field_if_not_empty("D", static_cast<const std::string&>(antigen->date()));
-//         object.set_field_if_not_empty("P", static_cast<const std::string&>(antigen->passage()));
-//         object.set_field_if_not_empty("R", static_cast<const std::string&>(antigen->reassortant()));
-//         object.set_array_field_if_not_empty("l", antigen->lab_ids());
-//         if (antigen->reference())
-//             object.set_field("S", rjson::string{"R"});
-//         object.set_array_field_if_not_empty("a", antigen->annotations());
-//         object.set_array_field_if_not_empty("c", antigen->clades());
-
-//         switch (antigen->lineage()) {
-//           case acmacs::chart::BLineage::Victoria:
-//               object.set_field("L", rjson::string{"V"});
-//               break;
-//           case acmacs::chart::BLineage::Yamagata:
-//               object.set_field("L", rjson::string{"Y"});
-//               break;
-//           case acmacs::chart::BLineage::Unknown:
-//               break;
-//         }
-//     }
-
-// } // export_antigens
-
-// // ----------------------------------------------------------------------
-
-// void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera)
-// {
-//     for (auto serum: *aSera) {
-//         rjson::object& object = aTarget.insert(rjson::object{});
-
-//         object.set_field("N", rjson::string{serum->name()});
-//         object.set_field_if_not_empty("P", static_cast<const std::string&>(serum->passage()));
-//         object.set_field_if_not_empty("R", static_cast<const std::string&>(serum->reassortant()));
-//         object.set_field_if_not_empty("I", static_cast<const std::string&>(serum->serum_id()));
-//         object.set_array_field_if_not_empty("a", serum->annotations());
-//         object.set_field_if_not_empty("s", static_cast<const std::string&>(serum->serum_species()));
-//         object.set_array_field_if_not_empty("h", serum->homologous_antigens());
-
-//         switch (serum->lineage()) {
-//           case acmacs::chart::BLineage::Victoria:
-//               object.set_field("L", rjson::string{"V"});
-//               break;
-//           case acmacs::chart::BLineage::Yamagata:
-//               object.set_field("L", rjson::string{"Y"});
-//               break;
-//           case acmacs::chart::BLineage::Unknown:
-//               break;
-//         }
-//     }
-
-// } // export_sera
 
 // // ----------------------------------------------------------------------
 

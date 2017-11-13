@@ -32,6 +32,29 @@ std::string acmacs::chart::Info::make_info() const
 
 // ----------------------------------------------------------------------
 
+std::string acmacs::chart::Titer::logged_as_string() const
+{
+    if (data().empty())
+        throw std::runtime_error("internal: titer is empty");
+
+    auto log_titer = [](std::string source) -> std::string {
+        const double val = std::stod(source);
+        return acmacs::to_string(std::log2(val / 10.0));
+    };
+
+    switch (data()[0]) {
+      case '*':
+          return data();
+      case '<':
+      case '>':
+          return data()[0] + log_titer(data().substr(1));
+    }
+    return log_titer(data());
+
+} // acmacs::chart::Titer::logged_as_string
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Projection::make_info() const
 {
     return std::to_string(stress()) + " " + std::to_string(number_of_dimensions()) + "d";
