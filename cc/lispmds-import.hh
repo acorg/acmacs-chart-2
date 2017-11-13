@@ -39,6 +39,7 @@ namespace acmacs::chart
         if (start == std::string_view::npos)
             return false;
         const auto hi_in = aData.find("(HI-IN", start + 23);
+          // "(TAB-IN" is not supported, structure is unclear
         if (hi_in == std::string_view::npos)
             return false;
         return true;
@@ -223,8 +224,8 @@ namespace acmacs::chart
         size_t mIndex;
         size_t mNumberOfAntigens, mNumberOfSera;
 
-        const acmacs::lispmds::value& data() const;
-        const acmacs::lispmds::value& layout() const;
+        // const acmacs::lispmds::value& data() const;
+        // const acmacs::lispmds::value& layout() const;
 
     }; // class LispmdsProjections
 

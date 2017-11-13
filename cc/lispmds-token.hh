@@ -11,9 +11,10 @@
 
 namespace acmacs::lispmds
 {
-    class type_mismatch : public std::runtime_error { public: using std::runtime_error::runtime_error; };
-    class keyword_no_found : public std::runtime_error { public: using std::runtime_error::runtime_error; };
-    class keyword_has_no_value : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+    class error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+    class type_mismatch : public error { public: using error::error; };
+    class keyword_no_found : public error { public: using error::error; };
+    class keyword_has_no_value : public error { public: using error::error; };
 
     class value;
 
@@ -73,6 +74,7 @@ namespace acmacs::lispmds
             inline string(const std::string_view& aValue) : mValue(aValue) {}
 
             inline operator std::string() const { return mValue; }
+            inline char operator[](size_t index) const { return mValue.at(index); }
             inline bool operator==(const string& s) const { return mValue == s.mValue; }
             inline bool operator!=(const string& s) const { return mValue != s.mValue; }
             inline bool operator==(std::string s) const { return mValue == s; }
@@ -117,10 +119,8 @@ namespace acmacs::lispmds
 
         const value& operator[](std::string aKeyword) const;
 
-        inline size_t size() const
-            {
-                return mContent.size();
-            }
+        inline size_t size() const { return mContent.size(); }
+        inline bool empty() const { return mContent.empty(); }
 
      private:
         std::vector<value> mContent;
@@ -146,7 +146,8 @@ namespace acmacs::lispmds
         const value& operator[](size_t aIndex) const;
         const value& operator[](std::string aKeyword) const;
         size_t size() const;
-        bool empty() const { return size() == 0; }
+        bool empty() const;
+        bool empty(std::string aKeyword) const;
 
         inline operator const list&() const { return std::get<list>(*this); }
           // inline operator const number&() const { return std::get<number>(*this); } // leads to ambiguity for operator[]: bug in llvm 5.0?
@@ -247,6 +248,35 @@ namespace acmacs::lispmds
                 return 0;
             else
                 throw type_mismatch{"not a lispmds::list, cannot use size()"};
+        }, *this);
+    }
+
+    inline bool value::empty() const
+    {
+        return std::visit([](auto&& arg) -> bool {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, list>)
+                return arg.empty();
+            else if constexpr (std::is_same_v<T, nil>)
+                return true;
+            else
+                throw type_mismatch{"not a lispmds::list, cannot use empty()"};
+        }, *this);
+    }
+
+    inline bool value::empty(std::string aKeyword) const
+    {
+        return std::visit([aKeyword](auto&& arg) -> bool {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, list>)
+                try {
+                    return arg[aKeyword].empty();
+                }
+                catch (error&) {
+                    return true;
+                }
+            else
+                throw type_mismatch{"not a lispmds::list, cannot use empty(keyword)"};
         }, *this);
     }
 

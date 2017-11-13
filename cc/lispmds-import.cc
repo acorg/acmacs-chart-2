@@ -34,6 +34,28 @@ static inline size_t number_of_sera(const acmacs::lispmds::value& aData)
 
 } // number_of_sera
 
+static inline const acmacs::lispmds::value& projection_data(const acmacs::lispmds::value& aData, size_t aProjectionNo)
+{
+    if (aData.empty(":STARTING-COORDSS"))
+        return aData[":BATCH-RUNS"][aProjectionNo];
+    else if (aProjectionNo == 0)
+        return aData[":STARTING-COORDSS"];
+    else
+        return aData[":BATCH-RUNS"][aProjectionNo - 1];
+
+} // LispmdsProjection::data
+
+static inline const acmacs::lispmds::value& projection_layout(const acmacs::lispmds::value& aData, size_t aProjectionNo)
+{
+    if (aData.empty(":STARTING-COORDSS"))
+        return aData[":BATCH-RUNS"][aProjectionNo][0];
+    else if (aProjectionNo == 0)
+        return aData[":STARTING-COORDSS"];
+    else
+        return aData[":BATCH-RUNS"][aProjectionNo - 1][0];
+
+} // LispmdsProjection::data
+
 // ----------------------------------------------------------------------
 
 std::vector<double> native_column_bases(const acmacs::lispmds::value& aData)
@@ -78,9 +100,7 @@ std::vector<double> column_bases(const acmacs::lispmds::value& aData, size_t aPr
     const auto num_antigens = number_of_antigens(aData);
     const auto num_sera = number_of_sera(aData);
     const auto number_of_points = num_antigens + num_sera;
-    const acmacs::lispmds::list& cb = aProjectionNo == 0
-            ? aData[":STARTING-COORDSS"][number_of_points][0][1]
-            : aData[":BATCH-RUNS"][aProjectionNo - 1][0][number_of_points][0][1];
+    const acmacs::lispmds::list& cb = projection_layout(aData, aProjectionNo)[number_of_points][0][1];
     std::vector<double> result(num_sera);
     using diff_t = decltype(cb.end() - cb.begin());
     std::transform(cb.begin() + static_cast<diff_t>(num_antigens), cb.begin() + static_cast<diff_t>(number_of_points), result.begin(), [](const auto& val) -> double { return std::get<acmacs::lispmds::number>(val); });
@@ -336,13 +356,17 @@ size_t LispmdsTiters::number_of_non_dont_cares() const
     size_t result = 0;
     for (const auto& row: std::get<acmacs::lispmds::list>(mData[0][3])) {
         for (const auto& titer: std::get<acmacs::lispmds::list>(row)) {
-            try {
-                if (static_cast<std::string>(std::get<acmacs::lispmds::symbol>(titer))[0] != '*')
+            std::visit([&result](auto&& arg) {
+                using T = std::decay_t<decltype(arg)>;
+                if constexpr (std::is_same_v<T, acmacs::lispmds::symbol>) {
+                    if (arg[0] != '*')
+                        ++result;
+                }
+                else if constexpr (std::is_same_v<T, acmacs::lispmds::number>)
                     ++result;
-            }
-            catch (std::bad_variant_access&) {
-                ++result;
-            }
+                else
+                    throw acmacs::lispmds::type_mismatch("Unexpected titer type: "s + typeid(T).name());
+            }, titer);
         }
     }
     return result;
@@ -359,27 +383,31 @@ size_t LispmdsTiters::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
-inline const acmacs::lispmds::value& LispmdsProjection::data() const
-{
-    return mIndex == 0 ? mData[":STARTING-COORDSS"] : mData[":BATCH-RUNS"][mIndex - 1];
+// inline const acmacs::lispmds::value& LispmdsProjection::data() const
+// {
+//     return projection_data(mData, mIndex);
 
-} // LispmdsProjection::data
+// } // LispmdsProjection::data
 
-// ----------------------------------------------------------------------
+// // ----------------------------------------------------------------------
 
-inline const acmacs::lispmds::value& LispmdsProjection::layout() const
-{
-    return mIndex == 0 ? data() : data()[0];
+// inline const acmacs::lispmds::value& LispmdsProjection::layout() const
+// {
+//     return projection_layout(mData, mIndex);
 
-} // LispmdsProjection::layout
+// } // LispmdsProjection::layout
 
 // ----------------------------------------------------------------------
 
 double LispmdsProjection::stress() const
 {
-    if (mIndex == 0)
-        return 0;
-    return std::get<acmacs::lispmds::number>(data()[1]);
+    return std::visit([](auto&& arg) -> double {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, acmacs::lispmds::number>)
+            return arg;
+        else
+            return 0;
+    }, projection_data(mData, mIndex)[1]);
 
 } // LispmdsProjection::stress
 
@@ -395,7 +423,7 @@ size_t LispmdsProjection::number_of_points() const
 
 size_t LispmdsProjection::number_of_dimensions() const
 {
-    return layout()[0].size();
+    return projection_layout(mData, mIndex)[0].size();
 
 } // LispmdsProjection::number_of_dimensions
 
@@ -403,7 +431,7 @@ size_t LispmdsProjection::number_of_dimensions() const
 
 double LispmdsProjection::coordinate(size_t aPointNo, size_t aDimensionNo) const
 {
-    return std::get<acmacs::lispmds::number>(layout()[aPointNo][aDimensionNo]);
+    return std::get<acmacs::lispmds::number>(projection_layout(mData, mIndex)[aPointNo][aDimensionNo]);
 
 } // LispmdsProjection::coordinate
 
@@ -498,13 +526,7 @@ PointIndexList LispmdsProjection::disconnected() const
 
 bool LispmdsProjections::empty() const
 {
-    try {
-        const auto& val = mData[":STARTING-COORDSS"];
-        return val.empty();
-    }
-    catch (acmacs::lispmds::keyword_no_found&) {
-        return true;
-    }
+    return mData.empty(":STARTING-COORDSS") && mData.empty(":BATCH-RUNS");
 
 } // LispmdsProjections::empty
 
@@ -513,14 +535,12 @@ bool LispmdsProjections::empty() const
 size_t LispmdsProjections::size() const
 {
     size_t result = 0;
+    if (!mData.empty(":STARTING-COORDSS"))
+        ++result;
     try {
-        const auto& starting_coordss = mData[":STARTING-COORDSS"];
-        if (!starting_coordss.empty())
-            ++result;
-        const auto& batch_runs = mData[":BATCH-RUNS"];
-        result += batch_runs.size();
+        result += mData[":BATCH-RUNS"].size();
     }
-    catch (acmacs::lispmds::keyword_no_found&) {
+    catch (acmacs::lispmds::error&) {
     }
     return result;
 
