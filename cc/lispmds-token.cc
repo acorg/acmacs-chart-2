@@ -100,6 +100,7 @@ acmacs::lispmds::value Tokenizer::to_value(Tokenizer::Token token, const std::st
       case String:
           return acmacs::lispmds::string(aText);
     }
+    throw acmacs::lispmds::type_mismatch{"unexpected token in Tokenizer::to_value"}; // gcc 7.2 wants this
 
 } // Tokenizer::to_value
 
