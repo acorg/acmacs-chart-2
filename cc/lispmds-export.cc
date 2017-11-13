@@ -36,11 +36,22 @@ std::string acmacs::chart::lispmds_export(std::shared_ptr<acmacs::chart::Chart> 
   )" + starting_coordss(aChart) + R"(
   )" + batch_runs(aChart) + R"(
 )";
+    if (auto projections = aChart->projections(); !projections->empty()) {
+        auto projection = (*projections)[0];
+        result.append("  :MDS-DIMENSIONS '" + acmacs::to_string(projection->number_of_dimensions()) + '\n');
+        result.append("  :MOVEABLE-COORDS 'ALL\n  :UNMOVEABLE-COORDS '");
+        if (auto unmovable = projection->unmovable(); !unmovable.empty()) {
+            result
+                    .append(1, '(')
+                    .append(string::join(" ", unmovable.begin(), unmovable.end(), [](auto index) -> std::string { return acmacs::to_string(index); }))
+                    .append(1, ')');
+        }
+        else
+            result.append("NIL");
+        result.append(1, '\n');
+    }
     return result;
 
-  // :MDS-DIMENSIONS '2
-  // :MOVEABLE-COORDS 'ALL
-  // :UNMOVEABLE-COORDS 'NIL
   // :CANVAS-COORD-TRANSFORMATIONS '(:CANVAS-WIDTH 530 :CANVAS-HEIGHT 450 :CANVAS-X-COORD-TRANSLATION 284.0 :CANVAS-Y-COORD-TRANSLATION -4.0 :CANVAS-X-COORD-SCALE 32.94357699173962d0 :CANVAS-Y-COORD-SCALE
   //                                 32.94357699173962d0 :CANVAS-BASIS-VECTOR-0 (0.48512267784748486d0 -0.8744461032208247d0) :CANVAS-BASIS-VECTOR-1 (0.8744461032208257d0 0.48512267784748314d0) :FIRST-DIMENSION
   //                                 0 :SECOND-DIMENSION 1 :BASIS-VECTOR-POINT-INDICES (0 1 2) :BASIS-VECTOR-POINT-INDICES-BACKUP NIL :BASIS-VECTOR-X-COORD-TRANSLATION 0 :BASIS-VECTOR-Y-COORD-TRANSLATION 0
