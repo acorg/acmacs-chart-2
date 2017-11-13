@@ -14,16 +14,17 @@ static std::string starting_coordss(std::shared_ptr<acmacs::chart::Chart> aChart
 static std::string batch_runs(std::shared_ptr<acmacs::chart::Chart> aChart);
 static std::string coordinates(std::shared_ptr<acmacs::chart::Projection> aProjection, size_t number_of_points, size_t number_of_dimensions, size_t aIndent);
 static std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Chart> aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent);
+static std::string reference_antigens(std::shared_ptr<acmacs::chart::Chart> aChart);
+static std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart);
 
 // static void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aInfo);
-// static void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections);
 // static void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec);
 // static void compact_styles(const std::vector<acmacs::PointStyle>& aAllStyles, std::vector<acmacs::PointStyle>& aCompacted, std::vector<size_t>& aIndex);
 // static void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle);
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::lispmds_export(std::shared_ptr<acmacs::chart::Chart> aChart, std::string aProgramName)
+std::string acmacs::chart::lispmds_export(std::shared_ptr<acmacs::chart::Chart> aChart, std::string /*aProgramName*/)
 {
     std::string result = R"(;; MDS configuration file (version acmacs-d-1).
 ;; Created on )" + acmacs::time_format() + R"(
@@ -48,19 +49,21 @@ std::string acmacs::chart::lispmds_export(std::shared_ptr<acmacs::chart::Chart> 
         }
         else
             result.append("NIL");
-        result.append(1, '\n');
+        result.append(R"(
+  :CANVAS-COORD-TRANSFORMATIONS '(:CANVAS-WIDTH 800 :CANVAS-HEIGHT 800 :CANVAS-X-COORD-TRANSLATION 0.0 :CANVAS-Y-COORD-TRANSLATION 0.0
+                                  :CANVAS-X-COORD-SCALE 32.94357699173962d0 :CANVAS-Y-COORD-SCALE 32.94357699173962d0
+                                  :FIRST-DIMENSION 0 :SECOND-DIMENSION 1 :BASIS-VECTOR-POINT-INDICES (0 1 2) :BASIS-VECTOR-POINT-INDICES-BACKUP NIL
+                                  :BASIS-VECTOR-X-COORD-TRANSLATION 0 :BASIS-VECTOR-Y-COORD-TRANSLATION 0
+                                  :TRANSLATE-TO-FIT-MDS-WINDOW T :SCALE-TO-FIT-MDS-WINDOW T
+                                  :BASIS-VECTOR-X-COORD-SCALE 1 :BASIS-VECTOR-Y-COORD-SCALE 1
+)");
+        auto transformation = projection->transformation();
+        result.append("                                  :CANVAS-BASIS-VECTOR-0 (" + acmacs::to_string(transformation.a) + ' ' + acmacs::to_string(transformation.c) + ") :CANVAS-BASIS-VECTOR-1 (" + acmacs::to_string(transformation.b) + ' ' + acmacs::to_string(transformation.d) + "))\n");
     }
+    result.append(reference_antigens(aChart));
+    result.append(plot_spec(aChart));
+    result.append(1, ')');
     return result;
-
-  // :CANVAS-COORD-TRANSFORMATIONS '(:CANVAS-WIDTH 530 :CANVAS-HEIGHT 450 :CANVAS-X-COORD-TRANSLATION 284.0 :CANVAS-Y-COORD-TRANSLATION -4.0 :CANVAS-X-COORD-SCALE 32.94357699173962d0 :CANVAS-Y-COORD-SCALE
-  //                                 32.94357699173962d0 :CANVAS-BASIS-VECTOR-0 (0.48512267784748486d0 -0.8744461032208247d0) :CANVAS-BASIS-VECTOR-1 (0.8744461032208257d0 0.48512267784748314d0) :FIRST-DIMENSION
-  //                                 0 :SECOND-DIMENSION 1 :BASIS-VECTOR-POINT-INDICES (0 1 2) :BASIS-VECTOR-POINT-INDICES-BACKUP NIL :BASIS-VECTOR-X-COORD-TRANSLATION 0 :BASIS-VECTOR-Y-COORD-TRANSLATION 0
-  //                                 :BASIS-VECTOR-X-COORD-SCALE 1 :BASIS-VECTOR-Y-COORD-SCALE 1 :TRANSLATE-TO-FIT-MDS-WINDOW T :SCALE-TO-FIT-MDS-WINDOW T)
-  // :REFERENCE-ANTIGENS 'NIL
-  // :RAISE-POINTS 'NIL
-  // :LOWER-POINTS 'NIL
-              // :PLOT-SPEC '((BI/16190/68-AG :CO "#ffdba5" :DS 4 :TR 0.0 :NM "BI/16190/68" :WN "BI/16190/68" :NS 10 :NC "#ffdba5" :SH "CIRCLE")
-
 
 } // acmacs::chart::lispmds_export
 
@@ -79,6 +82,17 @@ std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera)
     return string::join(" ", aSera->begin(), aSera->end(), [](auto serum) { return lispmds_serum_name_encode(serum->name(), serum->reassortant(), serum->annotations(), serum->serum_id()); });
 
 } // serum_names
+
+// ----------------------------------------------------------------------
+
+std::string reference_antigens(std::shared_ptr<acmacs::chart::Chart> aChart)
+{
+    auto antigens = aChart->antigens();
+    return "  :REFERENCE-ANTIGENS '("
+            + string::join(" ", antigens->begin(), antigens->end(), [](auto antigen) { return antigen->reference() ? lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations()) : std::string{}; })
+            + ")\n";
+
+} // reference_antigens
 
 // ----------------------------------------------------------------------
 
@@ -203,6 +217,19 @@ std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Chart> aChart, st
     return result;
 
 } // col_and_row_adjusts
+
+// ----------------------------------------------------------------------
+
+std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart)
+{
+    std::string result;
+    return result;
+
+  // :RAISE-POINTS 'NIL
+  // :LOWER-POINTS 'NIL
+              // :PLOT-SPEC '((BI/16190/68-AG :CO "#ffdba5" :DS 4 :TR 0.0 :NM "BI/16190/68" :WN "BI/16190/68" :NS 10 :NC "#ffdba5" :SH "CIRCLE")
+
+} // plot_spec
 
 // ----------------------------------------------------------------------
 
