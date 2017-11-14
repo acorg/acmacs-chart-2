@@ -228,16 +228,18 @@ std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart)
         for (size_t point_no = 0; point_no < (number_of_antigens + number_of_sera); ++point_no) {
             if (point_no)
                 result.append("\n               ");
-            std::string name;
+            std::string name, name_ag;
             if (point_no < number_of_antigens) {
                 auto antigen = (*antigens)[point_no];
-                name = lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations()) + "-AG";
+                name = lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations());
+                name_ag = name + "-AG";
             }
             else {
                 auto serum = (*sera)[point_no - number_of_antigens];
-                name = lispmds_serum_name_encode(serum->name(), serum->reassortant(), serum->annotations(), serum->serum_id()) + "-SR";
+                name = lispmds_serum_name_encode(serum->name(), serum->reassortant(), serum->annotations(), serum->serum_id());
+                name_ag = name + "-SR";
             }
-            result.append('(' + name + point_style(plot_spec->style(point_no)) + ')');
+            result.append('(' + name_ag + " :NM \"" + name + '"' + point_style(plot_spec->style(point_no)) + ')');
         }
         result.append(")");
     }
@@ -245,7 +247,6 @@ std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart)
 
   // :RAISE-POINTS 'NIL
   // :LOWER-POINTS 'NIL
-              // :PLOT-SPEC '((BI/16190/68-AG :CO "#ffdba5" :DS 4 :TR 0.0 :NM "BI/16190/68" :WN "BI/16190/68" :NS 10 :NC "#ffdba5" :SH "CIRCLE")
 
 } // plot_spec
 
@@ -278,58 +279,6 @@ std::string point_style(const acmacs::PointStyle& aStyle)
     return result;
 
 } // point_style
-
-// ----------------------------------------------------------------------
-
-
-// // ----------------------------------------------------------------------
-
-// namespace rjson
-// {
-//     template <> struct content_type<Color> { using type = rjson::string; };
-//     template <> struct content_type<acmacs::PointShape> { using type = rjson::string; };
-//     template <> struct content_type<acmacs::FontSlant> { using type = rjson::string; };
-//     template <> struct content_type<acmacs::FontWeight> { using type = rjson::string; };
-
-//     template <char Tag> inline value to_value(_acmacs_base_internal::SizeScale<Tag> aValue) { return to_value(aValue.value()); }
-
-//     inline value to_value(const acmacs::Offset aValue) { return array{aValue.x, aValue.y}; }
-
-// } // namespace rjson
-
-// template <typename T> inline void set_field(rjson::object& target, const char* name, const acmacs::internal::field_optional_with_default<T>& field)
-// {
-//     if (field.not_default())
-//         target.set_field(name, rjson::to_value(*field));
-// }
-
-// void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle)
-// {
-//     rjson::object& st = target_styles.insert(rjson::object{});
-//     set_field(st, "+", aStyle.shown);
-//     set_field(st, "F", aStyle.fill);
-//     set_field(st, "O", aStyle.outline);
-//     set_field(st, "o", aStyle.outline_width);
-//     set_field(st, "s", aStyle.size);
-//     set_field(st, "r", aStyle.rotation);
-//     set_field(st, "a", aStyle.aspect);
-//     set_field(st, "S", aStyle.shape);
-
-//     rjson::object ls;
-//     set_field(ls, "+", aStyle.label.shown);
-//     set_field(ls, "t", aStyle.label_text);
-//     set_field(ls, "f", aStyle.label.style.font_family);
-//     set_field(ls, "S", aStyle.label.style.slant);
-//     set_field(ls, "W", aStyle.label.style.weight);
-//     set_field(ls, "s", aStyle.label.size);
-//     set_field(ls, "c", aStyle.label.color);
-//     set_field(ls, "r", aStyle.label.rotation);
-//     set_field(ls, "i", aStyle.label.interline);
-//     set_field(ls, "p", aStyle.label.offset);
-//     if (!ls.empty())
-//         st.set_field("l", std::move(ls));
-
-// } // export_style
 
 // ----------------------------------------------------------------------
 /// Local Variables:
