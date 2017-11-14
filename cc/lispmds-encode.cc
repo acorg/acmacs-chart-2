@@ -10,6 +10,7 @@ static const char* sEncodedSignature = "/a";
 
 #include "acmacs-base/global-constructors-push.hh"
 static std::regex sFluASubtype{"AH([0-9]+N[0-9]+).*"};
+static std::regex sPassageDate{".+ ([12][90][0-9][0-9]-[0-2][0-9]-[0-3][0-9])"};
 #include "acmacs-base/diagnostics-pop.hh"
 
 // ----------------------------------------------------------------------
@@ -160,6 +161,15 @@ static inline std::vector<size_t> find_sep(std::string source)
 
 // ----------------------------------------------------------------------
 
+static inline std::string fix_passage_date(std::string source)
+{
+    if (std::smatch passage_date; std::regex_match(source, passage_date, sPassageDate)) {
+        source.insert(static_cast<size_t>(passage_date.position(1)), 1, '(');
+        source.append(1, ')');
+    }
+    return source;
+}
+
 void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName, Reassortant& aReassortant, Passage& aPassage, Annotations& aAnnotations)
 {
     if (aSource.size() > 2 && aSource.substr(aSource.size() - 2) == sEncodedSignature) {
@@ -174,7 +184,7 @@ void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName
                       aReassortant = stage1.substr(sep_pos[sep_no] + 2, chunk_len);
                       break;
                   case 'p':
-                      aPassage = stage1.substr(sep_pos[sep_no] + 2, chunk_len);
+                      aPassage = fix_passage_date(stage1.substr(sep_pos[sep_no] + 2, chunk_len));
                       break;
                   case 'a':
                       aAnnotations.push_back(stage1.substr(sep_pos[sep_no] + 2, chunk_len));
