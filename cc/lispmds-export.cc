@@ -17,15 +17,14 @@ static std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Chart> aCh
 static std::string reference_antigens(std::shared_ptr<acmacs::chart::Chart> aChart);
 static std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart);
 static std::string point_style(const acmacs::PointStyle& aStyle);
+static std::string point_shape(const acmacs::PointShape& aShape);
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::lispmds_export(std::shared_ptr<acmacs::chart::Chart> aChart, std::string /*aProgramName*/)
+std::string acmacs::chart::lispmds_export(std::shared_ptr<acmacs::chart::Chart> aChart, std::string aProgramName)
 {
-    std::string result = R"(;; MDS configuration file (version acmacs-d-1).
-;; Created on )" + acmacs::time_format() + R"(
-
-(MAKE-MASTER-MDS-WINDOW
+    std::string result = ";; MDS configuration file (version 0.6).\n;; Created by AD " + aProgramName + " on " + acmacs::time_format() + "\n\n";
+    result += R"((MAKE-MASTER-MDS-WINDOW
    (HI-IN '()" + antigen_names(aChart->antigens()) + R"()
           '()" + serum_names(aChart->sera()) + R"()
           '()" + titers(aChart->titers()) + R"()
@@ -252,6 +251,22 @@ std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart)
 
 // ----------------------------------------------------------------------
 
+std::string point_shape(const acmacs::PointShape& aShape)
+{
+    switch (static_cast<acmacs::PointShape::Shape>(aShape)) {
+      case acmacs::PointShape::Circle:
+          return "CIRCLE";
+      case acmacs::PointShape::Box:
+          return "RECTANGLE";
+      case acmacs::PointShape::Triangle:
+          return "TRIANGLE";
+    }
+    return "CIRCLE"; // gcc 7.2 wants this
+
+} // point_shape
+
+// ----------------------------------------------------------------------
+
 std::string point_style(const acmacs::PointStyle& aStyle)
 {
     std::string result;
@@ -262,7 +277,7 @@ std::string point_style(const acmacs::PointStyle& aStyle)
     }
     else
         result.append(" :WN \"\"");
-    result.append(" :SH " + static_cast<std::string>(*aStyle.shape));
+    result.append(" :SH \"" + point_shape(*aStyle.shape) + '"');
     result.append(" :NS " + acmacs::to_string(aStyle.label.size * acmacs::lispmds::NS_SCALE));
     result.append(" :NC \"" + *aStyle.label.color + '"');
     if (*aStyle.fill == TRANSPARENT)
