@@ -1,9 +1,16 @@
+#include <cctype>
+#include <regex>
+
 #include "acmacs-base/string.hh"
 #include "acmacs-chart/lispmds-encode.hh"
 
 // ----------------------------------------------------------------------
 
 static const char* sEncodedSignature = "/a";
+
+#include "acmacs-base/global-constructors-push.hh"
+static std::regex sFluASubtype{"AH([0-9]+N[0-9]+).*"};
+#include "acmacs-base/diagnostics-pop.hh"
 
 // ----------------------------------------------------------------------
 
@@ -80,7 +87,53 @@ std::string acmacs::chart::lispmds_serum_name_encode(const Name& aName, const Re
 
 std::string acmacs::chart::lispmds_decode(std::string aName)
 {
-    return aName;
+    if (aName.size() > 2 && aName.substr(aName.size() - 2) == sEncodedSignature) {
+        std::string result;
+        bool last_was_space = true;
+        for (size_t pos = 0; pos < (aName.size() - 2); ++pos) {
+            switch (aName[pos]) {
+              case '.':
+                  if (aName[pos + 1] == '.') {
+                      result.append(1, ',');
+                      ++pos;
+                  }
+                  else
+                      result.append(1, aName[pos]);
+                  break;
+              case '_':
+                  result.append(1, ' ');
+                  break;
+              case '%':
+                  if (std::isxdigit(aName[pos + 1]) && std::isxdigit(aName[pos + 2])) {
+                      result.append(1, static_cast<char>(std::stoul(aName.substr(pos + 1, 2), nullptr, 16)));
+                      pos += 2;
+                  }
+                  else
+                      result.append(1, aName[pos]);
+                  break;
+              case 'A':
+                  if (last_was_space && aName[pos + 1] == 'H') {
+                      std::smatch flu_a_match;
+                      if (const std::string text(aName, pos); std::regex_match(text, flu_a_match, sFluASubtype)) {
+                          result.append("A(H").append(flu_a_match.str(1)).append(1, ')');
+                          pos += static_cast<size_t>(flu_a_match.length(1)) + 1;
+                      }
+                      else
+                          result.append(1, aName[pos]);
+                  }
+                  else
+                      result.append(1, aName[pos]);
+                  break;
+              default:
+                  result.append(1, aName[pos]);
+                  break;
+            }
+            last_was_space = result.back() == ' ';
+        }
+        return result;
+    }
+    else
+        return aName;
 
 } // acmacs::chart::lispmds_decode
 

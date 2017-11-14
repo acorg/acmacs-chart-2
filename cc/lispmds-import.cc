@@ -246,7 +246,7 @@ size_t LispmdsChart::number_of_sera() const
 std::string LispmdsInfo::name(Compute) const
 {
     if (mData[0].size() >= 5)
-        return std::get<acmacs::lispmds::symbol>(mData[0][4]);
+        return lispmds_decode(std::get<acmacs::lispmds::symbol>(mData[0][4]));
     else
         return {};
 
@@ -256,13 +256,13 @@ std::string LispmdsInfo::name(Compute) const
 
 Name LispmdsAntigen::name() const
 {
-    return static_cast<std::string>(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]));
+    return lispmds_decode(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]));
 
 } // LispmdsAntigen::name
 
 Name LispmdsSerum::name() const
 {
-    return static_cast<std::string>(std::get<acmacs::lispmds::symbol>(mData[0][2][mIndex]));
+    return lispmds_decode(std::get<acmacs::lispmds::symbol>(mData[0][2][mIndex]));
 
 } // LispmdsSerum::name
 
