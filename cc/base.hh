@@ -23,6 +23,9 @@ namespace acmacs::chart
             inline string_data(const char* aSrc) : mData{aSrc} {}
             inline string_data(const rjson::value& aSrc) : mData{static_cast<std::string>(aSrc)} {}
 
+            inline bool empty() const noexcept { return mData.empty(); }
+            inline bool size() const noexcept { return mData.size(); }
+
             inline const std::string& data() const noexcept { return mData; }
             inline operator const std::string&() const noexcept { return mData; }
 

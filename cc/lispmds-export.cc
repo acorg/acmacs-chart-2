@@ -292,7 +292,7 @@ std::string point_style(const acmacs::PointStyle& aStyle)
     else
         result.append(" :WN \"\"");
     result.append(" :SH \"" + point_shape(*aStyle.shape) + '"');
-    result.append(" :NS " + acmacs::to_string(aStyle.label.size * acmacs::lispmds::NS_SCALE));
+    result.append(" :NS " + acmacs::to_string(std::lround(aStyle.label.size * acmacs::lispmds::NS_SCALE))); // :NS must be integer (otherwise tk complains)
     result.append(" :NC \"" + make_color(*aStyle.label.color) + '"');
     if (*aStyle.fill == TRANSPARENT)
         result.append(" :CO \"{}\"");
