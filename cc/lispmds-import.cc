@@ -680,10 +680,10 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
     }
 
     try {
-        if (const std::string outline_color = aSource[":CO"]; outline_color != "{}")
+        if (const std::string outline_color = aSource[":OC"]; outline_color != "{}")
             aTarget.outline = outline_color;
         else
-            aTarget.outline = BLACK;
+            aTarget.outline = TRANSPARENT;
     }
     catch (std::exception&) {
     }

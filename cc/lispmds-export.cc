@@ -262,6 +262,18 @@ std::string point_style(const acmacs::PointStyle& aStyle)
     else
         result.append(" :WN \"\"");
     result.append(" :SH " + static_cast<std::string>(*aStyle.shape));
+    result.append(" :NS " + acmacs::to_string(aStyle.label.size * acmacs::lispmds::NS_SCALE));
+    result.append(" :NC \"" + *aStyle.label.color + '"');
+    if (*aStyle.fill == TRANSPARENT)
+        result.append(" :CO \"{}\"");
+    else
+        result.append(" :CO \"" + aStyle.fill->without_transparency() + '"');
+    if (*aStyle.outline == TRANSPARENT)
+        result.append(" :OC \"{}\"");
+    else
+        result.append(" :OC \"" + aStyle.outline->without_transparency() + '"');
+    if (const auto alpha = aStyle.fill->alpha(); alpha < 1.0)
+        result.append(" :TR " + acmacs::to_string(1.0 - alpha));
 
     return result;
 
