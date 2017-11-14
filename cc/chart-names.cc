@@ -29,7 +29,7 @@ int main(int argc, char* const argv[])
                 auto sera = chart->sera();
                 const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
                 for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-                    std::cout << "AG " << std::setw(num_digits) << ag_no << " " << string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant(), antigen->passage(), antigen->date(), string::join(" ", antigen->lab_ids())}) << '\n';
+                    std::cout << "AG " << std::setw(num_digits) << ag_no << " " << string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant(), antigen->passage(), antigen->date(), string::join(" ", antigen->lab_ids())}) << (antigen->reference() ? " Ref" : "") << '\n';
                 }
                 for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
                     std::cout << "SR " << std::setw(num_digits) << sr_no << " " << string::join(" ", {serum->name(), string::join(" ", serum->annotations()), serum->reassortant(), serum->passage(), serum->serum_id(), serum->serum_species()}) << '\n';

@@ -254,13 +254,20 @@ std::string LispmdsInfo::name(Compute) const
 
 // ----------------------------------------------------------------------
 
+static inline std::string antigen_name(const acmacs::lispmds::value& aData, size_t aIndex)
+{
+    return std::get<acmacs::lispmds::symbol>(aData[0][1][aIndex]);
+}
+
+// ----------------------------------------------------------------------
+
 Name LispmdsAntigen::name() const
 {
     Name name;
     Reassortant reassortant;
     Passage passage;
     Annotations annotations;
-    lispmds_antigen_name_decode(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]), name, reassortant, passage, annotations);
+    lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
     return name;
 
 } // LispmdsAntigen::name
@@ -273,7 +280,7 @@ Passage LispmdsAntigen::passage() const
     Reassortant reassortant;
     Passage passage;
     Annotations annotations;
-    lispmds_antigen_name_decode(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]), name, reassortant, passage, annotations);
+    lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
     return passage;
 
 } // LispmdsAntigen::passage
@@ -286,7 +293,7 @@ Reassortant LispmdsAntigen::reassortant() const
     Reassortant reassortant;
     Passage passage;
     Annotations annotations;
-    lispmds_antigen_name_decode(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]), name, reassortant, passage, annotations);
+    lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
     return reassortant;
 
 } // LispmdsAntigen::reassortant
@@ -299,7 +306,7 @@ Annotations LispmdsAntigen::annotations() const
     Reassortant reassortant;
     Passage passage;
     Annotations annotations;
-    lispmds_antigen_name_decode(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]), name, reassortant, passage, annotations);
+    lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
     return annotations;
 
 } // LispmdsAntigen::annotations
@@ -312,7 +319,7 @@ bool LispmdsAntigen::reference() const
         const auto& val = mData[":REFERENCE-ANTIGENS"];
         if (val.empty())
             return false;
-        const auto& name = std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]);
+        const auto name = antigen_name(mData, mIndex);
         const auto& val_l = std::get<acmacs::lispmds::list>(val);
         return std::find_if(val_l.begin(), val_l.end(), [&name](const auto& ev) -> bool { return std::get<acmacs::lispmds::symbol>(ev) == name; }) != val_l.end();
     }
@@ -324,13 +331,20 @@ bool LispmdsAntigen::reference() const
 
 // ----------------------------------------------------------------------
 
+static inline std::string serum_name(const acmacs::lispmds::value& aData, size_t aIndex)
+{
+    return std::get<acmacs::lispmds::symbol>(aData[0][2][aIndex]);
+}
+
+// ----------------------------------------------------------------------
+
 Name LispmdsSerum::name() const
 {
     Name name;
     Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
-    lispmds_serum_name_decode(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]), name, reassortant, annotations, serum_id);
+    lispmds_serum_name_decode(serum_name(mData, mIndex), name, reassortant, annotations, serum_id);
     return name;
 
 } // LispmdsSerum::name
@@ -343,7 +357,7 @@ Reassortant LispmdsSerum::reassortant() const
     Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
-    lispmds_serum_name_decode(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]), name, reassortant, annotations, serum_id);
+    lispmds_serum_name_decode(serum_name(mData, mIndex), name, reassortant, annotations, serum_id);
     return reassortant;
 
 } // LispmdsSerum::reassortant
@@ -356,7 +370,7 @@ Annotations LispmdsSerum::annotations() const
     Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
-    lispmds_serum_name_decode(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]), name, reassortant, annotations, serum_id);
+    lispmds_serum_name_decode(serum_name(mData, mIndex), name, reassortant, annotations, serum_id);
     return annotations;
 
 } // LispmdsSerum::annotations
@@ -369,7 +383,7 @@ SerumId LispmdsSerum::serum_id() const
     Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
-    lispmds_serum_name_decode(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]), name, reassortant, annotations, serum_id);
+    lispmds_serum_name_decode(serum_name(mData, mIndex), name, reassortant, annotations, serum_id);
     return serum_id;
 
 } // LispmdsSerum::serum_id
