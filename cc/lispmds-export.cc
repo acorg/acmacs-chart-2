@@ -230,18 +230,18 @@ std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart)
         for (size_t point_no = 0; point_no < (number_of_antigens + number_of_sera); ++point_no) {
             if (point_no)
                 result.append("\n               ");
-            std::string name, name_ag;
+            std::string name, nm;
             if (point_no < number_of_antigens) {
                 auto antigen = (*antigens)[point_no];
-                name = lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations());
-                name_ag = name + "-AG";
+                name = lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations()) + "-AG";
+                nm = string::join(" ", {antigen->name(), antigen->reassortant(), antigen->passage(), string::join(" ", antigen->annotations())});
             }
             else {
                 auto serum = (*sera)[point_no - number_of_antigens];
-                name = lispmds_serum_name_encode(serum->name(), serum->reassortant(), serum->annotations(), serum->serum_id());
-                name_ag = name + "-SR";
+                name = lispmds_serum_name_encode(serum->name(), serum->reassortant(), serum->annotations(), serum->serum_id()) + "-SR";
+                nm = string::join(" ", {serum->name(), serum->reassortant(), string::join(" ", serum->annotations()), serum->serum_id()});
             }
-            result.append('(' + name_ag + " :NM \"" + name + '"' + point_style(plot_spec->style(point_no)) + ')');
+            result.append('(' + name + " :NM \"" + nm + '"' + point_style(plot_spec->style(point_no)) + ')');
         }
         result.append(")");
     }

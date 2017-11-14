@@ -6,9 +6,9 @@
 
 namespace acmacs::chart
 {
-    std::string lispmds_encode(std::string aName);
-    std::string lispmds_antigen_name_encode(const Name& aName, const Reassortant& aReassortant, const Passage& aPassage, const Annotations& aAnnotations);
-    std::string lispmds_serum_name_encode(const Name& aName, const Reassortant& aReassortant, const Annotations& aAnnotations, const SerumId& aSerumId);
+    std::string lispmds_encode(std::string aName, bool add_signature = true);
+    std::string lispmds_antigen_name_encode(const Name& aName, const Reassortant& aReassortant, const Passage& aPassage, const Annotations& aAnnotations, bool add_signature = true);
+    std::string lispmds_serum_name_encode(const Name& aName, const Reassortant& aReassortant, const Annotations& aAnnotations, const SerumId& aSerumId, bool add_signature = true);
     std::string lispmds_decode(std::string aName);
 
 } // namespace acmacs::chart

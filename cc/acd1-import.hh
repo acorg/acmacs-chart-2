@@ -50,7 +50,7 @@ namespace acmacs::chart
       public:
         inline Acd1Info(const rjson::value& aData) : mData{aData} {}
 
-        inline std::string name(Compute aCompute = Compute::No) const override { return make_field("name", " + ", aCompute); }
+        std::string name(Compute aCompute = Compute::No) const override; // { return make_field("name", " + ", aCompute); }
         inline std::string virus(Compute aCompute = Compute::No) const override { return make_field("virus", "+", aCompute); }
         inline std::string virus_type(Compute aCompute = Compute::No) const override { return make_field("virus_type", "+", aCompute); }
         inline std::string subset(Compute aCompute = Compute::No) const override { return make_field("virus_subset", "+", aCompute); }
