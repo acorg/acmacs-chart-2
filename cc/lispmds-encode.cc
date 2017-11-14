@@ -138,6 +138,66 @@ std::string acmacs::chart::lispmds_decode(std::string aName)
 } // acmacs::chart::lispmds_decode
 
 // ----------------------------------------------------------------------
+
+static inline std::vector<size_t> find_sep(std::string source)
+{
+    std::vector<size_t> sep_pos;
+    for (size_t pos = 0; pos < (source.size() - 1); ++pos) {
+        if (source[pos] == ' ') {
+            switch (source[pos + 1]) {
+              case 'r':
+              case 'p':
+              case 'a':
+              case 'i':
+                  sep_pos.push_back(pos);
+                  ++pos;
+                  break;
+            }
+        }
+    }
+    return sep_pos;
+}
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName, Reassortant& aReassortant, Passage& aPassage, Annotations& aAnnotations)
+{
+    if (aSource.size() > 2 && aSource.substr(aName.size() - 2) == sEncodedSignature) {
+        const std::string stage1 = lispmds_decode(aSource);
+        auto sep_pos = find_sep(stage1);
+        if (!sep_pos.empty()) {
+            aName = stage1.substr(0, sep_pos[0]);
+            for (size_t sep_no = 0; sep_no < sep_pos.size(); ++sep_no) {
+                const size_t chunk_len = (sep_no + 1) < sep_pos.size() ? (sep_pos[sep_no + 1] - sep_pos[sep_no] - 2) : std::string::npos;
+                switch (stage1[sep_pos[sep_no] + 1]) {
+                  case 'r':
+                      aReassortant = stage1.substr(sep_pos[sep_no] + 2, chunk_len);
+                      break;
+                  case 'p':
+                      aPassage = stage1.substr(sep_pos[sep_no] + 2, chunk_len);
+                      break;
+                  case 'a':
+                      aAnnotations.push_back(stage1.substr(sep_pos[sep_no] + 2, chunk_len));
+                      break;
+                }
+            }
+        }
+        else
+            aName = stage1;
+    }
+    else
+        aName = aSource;
+
+} // acmacs::chart::lispmds_antigen_name_decode
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::lispmds_serum_name_decode(std::string aSource, Name& aName, Reassortant& aReassortant, Annotations& aAnnotations, SerumId& aSerumId)
+{
+
+} // acmacs::chart::lispmds_serum_name_decode
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

@@ -256,7 +256,13 @@ std::string LispmdsInfo::name(Compute) const
 
 Name LispmdsAntigen::name() const
 {
-    return lispmds_decode(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]));
+    Name name;
+    Reassortant reassortant;
+    Passage passage;
+    Annotations annotations;
+    lispmds_antigen_name_decode(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]), name, reassortant, passage, annotations);
+    return name;
+      //return lispmds_decode(std::get<acmacs::lispmds::symbol>(mData[0][1][mIndex]));
 
 } // LispmdsAntigen::name
 
