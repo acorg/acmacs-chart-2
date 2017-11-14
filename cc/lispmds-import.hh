@@ -79,12 +79,12 @@ namespace acmacs::chart
 
         Name name() const override;
         inline Date date() const override { return {}; }
-        inline Passage passage() const override { return {}; }
+        Passage passage() const override;
         inline BLineage lineage() const override { return {}; }
-        inline Reassortant reassortant() const override { return {}; }
+        Reassortant reassortant() const override;
         inline LabIds lab_ids() const override { return {}; }
         inline Clades clades() const override { return {}; }
-        inline Annotations annotations() const override { return {}; }
+        Annotations annotations() const override;
         bool reference() const override;
 
      private:
@@ -103,9 +103,9 @@ namespace acmacs::chart
         Name name() const override;
         inline Passage passage() const override { return {}; }
         inline BLineage lineage() const override { return {}; }
-        inline Reassortant reassortant() const override { return {}; }
-        inline Annotations annotations() const override { return {}; }
-        inline SerumId serum_id() const override { return {}; }
+        Reassortant reassortant() const override;
+        Annotations annotations() const override;
+        SerumId serum_id() const override;
         inline SerumSpecies serum_species() const override { return {}; }
         inline PointIndexList homologous_antigens() const override { return {}; }
 
