@@ -457,14 +457,14 @@ acmacs::Transformation LispmdsProjection::transformation() const
             try {
                 if (static_cast<double>(std::get<acmacs::lispmds::number>(coord_tr[":CANVAS-X-COORD-SCALE"])) < 0) {
                     result.a = - result.a;
-                    result.b = - result.b;
+                    result.c = - result.c;
                 }
             }
             catch (std::exception&) {
             }
             try {
                 if (static_cast<double>(std::get<acmacs::lispmds::number>(coord_tr[":CANVAS-Y-COORD-SCALE"])) < 0) {
-                    result.c = - result.c;
+                    result.b = - result.b;
                     result.d = - result.d;
                 }
             }

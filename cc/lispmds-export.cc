@@ -18,6 +18,7 @@ static std::string reference_antigens(std::shared_ptr<acmacs::chart::Chart> aCha
 static std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart);
 static std::string point_style(const acmacs::PointStyle& aStyle);
 static std::string point_shape(const acmacs::PointShape& aShape);
+static std::string make_color(Color aColor);
 
 // ----------------------------------------------------------------------
 
@@ -45,9 +46,11 @@ std::string acmacs::chart::lispmds_export(std::shared_ptr<acmacs::chart::Chart> 
         else
             result.append("NIL");
         result.append(R"(
-  :CANVAS-COORD-TRANSFORMATIONS '(:CANVAS-WIDTH 800 :CANVAS-HEIGHT 800 :CANVAS-X-COORD-TRANSLATION 0.0 :CANVAS-Y-COORD-TRANSLATION 0.0
-                                  :CANVAS-X-COORD-SCALE 32.94357699173962d0 :CANVAS-Y-COORD-SCALE 32.94357699173962d0
-                                  :FIRST-DIMENSION 0 :SECOND-DIMENSION 1 :BASIS-VECTOR-POINT-INDICES (0 1 2) :BASIS-VECTOR-POINT-INDICES-BACKUP NIL
+  :CANVAS-COORD-TRANSFORMATIONS '(:CANVAS-WIDTH 800 :CANVAS-HEIGHT 800
+                                  :CANVAS-X-COORD-TRANSLATION 0.0 :CANVAS-Y-COORD-TRANSLATION 0.0
+                                  :CANVAS-X-COORD-SCALE 1 :CANVAS-Y-COORD-SCALE 1
+                                  :FIRST-DIMENSION 0 :SECOND-DIMENSION 1
+                                  :BASIS-VECTOR-POINT-INDICES NIL :BASIS-VECTOR-POINT-INDICES-BACKUP NIL
                                   :BASIS-VECTOR-X-COORD-TRANSLATION 0 :BASIS-VECTOR-Y-COORD-TRANSLATION 0
                                   :TRANSLATE-TO-FIT-MDS-WINDOW T :SCALE-TO-FIT-MDS-WINDOW T
                                   :BASIS-VECTOR-X-COORD-SCALE 1 :BASIS-VECTOR-Y-COORD-SCALE 1
@@ -267,6 +270,17 @@ std::string point_shape(const acmacs::PointShape& aShape)
 
 // ----------------------------------------------------------------------
 
+std::string make_color(Color aColor)
+{
+    const std::string source = aColor.without_transparency();
+    std::string result;
+    std::copy_if(source.begin(), source.end(), std::back_inserter(result), [](auto c) -> bool { return c != ' '; });
+    return result;
+
+} // make_color
+
+// ----------------------------------------------------------------------
+
 std::string point_style(const acmacs::PointStyle& aStyle)
 {
     std::string result;
@@ -279,15 +293,15 @@ std::string point_style(const acmacs::PointStyle& aStyle)
         result.append(" :WN \"\"");
     result.append(" :SH \"" + point_shape(*aStyle.shape) + '"');
     result.append(" :NS " + acmacs::to_string(aStyle.label.size * acmacs::lispmds::NS_SCALE));
-    result.append(" :NC \"" + *aStyle.label.color + '"');
+    result.append(" :NC \"" + make_color(*aStyle.label.color) + '"');
     if (*aStyle.fill == TRANSPARENT)
         result.append(" :CO \"{}\"");
     else
-        result.append(" :CO \"" + aStyle.fill->without_transparency() + '"');
+        result.append(" :CO \"" + make_color(*aStyle.fill) + '"');
     if (*aStyle.outline == TRANSPARENT)
         result.append(" :OC \"{}\"");
     else
-        result.append(" :OC \"" + aStyle.outline->without_transparency() + '"');
+        result.append(" :OC \"" + make_color(*aStyle.outline) + '"');
     if (const auto alpha = aStyle.fill->alpha(); alpha < 1.0)
         result.append(" :TR " + acmacs::to_string(1.0 - alpha));
 
