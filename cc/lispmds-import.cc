@@ -483,6 +483,20 @@ size_t LispmdsTiters::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
+void LispmdsProjection::check() const
+{
+    try {
+        if (auto nd = number_of_dimensions(); nd > 5)
+            throw import_error("[lispmds] projection " + acmacs::to_string(mIndex) + " has unsupported number of dimensions: " + acmacs::to_string(nd));
+    }
+    catch (std::exception& err) {
+        throw import_error("[lispmds] projection " + acmacs::to_string(mIndex) + " reading error: " + err.what());
+    }
+
+} // LispmdsProjection::check
+
+// ----------------------------------------------------------------------
+
 double LispmdsProjection::stress() const
 {
     return std::visit([](auto&& arg) -> double {

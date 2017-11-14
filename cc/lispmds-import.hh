@@ -197,8 +197,9 @@ namespace acmacs::chart
     {
       public:
         inline LispmdsProjection(const acmacs::lispmds::value& aData, size_t aIndex, size_t aNumberOfAntigens, size_t aNumberOfSera)
-            : mData{aData}, mIndex{aIndex}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} {}
+            : mData{aData}, mIndex{aIndex}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} { check(); }
 
+        void check() const;
         double stress() const override;
         size_t number_of_dimensions() const override;
         size_t number_of_points() const override;
