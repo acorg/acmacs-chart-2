@@ -112,12 +112,30 @@ std::shared_ptr<PlotSpec> AceChart::plot_spec() const
 
 // ----------------------------------------------------------------------
 
+std::string AceInfo::name(Compute aCompute) const
+{
+    std::string result{mData.get_or_default("N", "")};
+    if (result.empty()) {
+        if (const auto& sources{mData.get_or_empty_array("S")}; !sources.empty()) {
+            std::vector<std::string> composition;
+            std::transform(std::begin(sources), std::end(sources), std::back_inserter(composition), [](const auto& sinfo) { return sinfo.get_or_default("N", ""); });
+            result = string::join(" + ", composition);
+        }
+    }
+    if (result.empty()) {
+        result = string::join(" ", {virus_not_influenza(aCompute), virus_type(aCompute), subset(aCompute), assay(aCompute), lab(aCompute), rbc_species(aCompute), date(aCompute)});
+    }
+    return result;
+
+} // AceInfo::name
+
+// ----------------------------------------------------------------------
+
 std::string AceInfo::make_field(const char* aField, const char* aSeparator, Compute aCompute) const
 {
     std::string result{mData.get_or_default(aField, "")};
     if (result.empty() && aCompute == Compute::Yes) {
-        const auto& sources{mData.get_or_empty_array("S")};
-        if (!sources.empty()) {
+        if (const auto& sources{mData.get_or_empty_array("S")}; !sources.empty()) {
             std::set<std::string> composition;
             std::transform(std::begin(sources), std::end(sources), std::inserter(composition, composition.begin()), [aField](const auto& sinfo) { return sinfo.get_or_default(aField, ""); });
             result = string::join(aSeparator, composition);

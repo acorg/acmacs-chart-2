@@ -50,7 +50,7 @@ namespace acmacs::chart
       public:
         inline Acd1Info(const rjson::value& aData) : mData{aData} {}
 
-        std::string name(Compute aCompute = Compute::No) const override; // { return make_field("name", " + ", aCompute); }
+        std::string name(Compute aCompute = Compute::No) const override;
         inline std::string virus(Compute aCompute = Compute::No) const override { return make_field("virus", "+", aCompute); }
         inline std::string virus_type(Compute aCompute = Compute::No) const override { return make_field("virus_type", "+", aCompute); }
         inline std::string subset(Compute aCompute = Compute::No) const override { return make_field("virus_subset", "+", aCompute); }
@@ -150,15 +150,15 @@ namespace acmacs::chart
 
         Titer titer(size_t aAntigenNo, size_t aSerumNo) const override;
         Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override;
-        inline size_t number_of_layers() const override { return rjson_layers().size(); }
+        inline size_t number_of_layers() const override { return mData.get_or_empty_array("layers_dict_for_antigen").size(); }
         size_t number_of_antigens() const override;
         size_t number_of_sera() const override;
         size_t number_of_non_dont_cares() const override;
 
           // support for fast exporting into ace, if source was ace or acd1
-        inline const rjson::array& rjson_list_list() const override { return mData.get_or_empty_array("titers_list_of_list"); }
-        inline const rjson::array& rjson_list_dict() const override { return mData.get_or_empty_array("titers_list_of_dict"); }
-        inline const rjson::array& rjson_layers() const override { return mData.get_or_empty_array("layers_dict_for_antigen"); }
+        inline const rjson::array& rjson_list_list() const override { const rjson::array& r = mData.get_or_empty_array("titers_list_of_list"); if (r.empty()) throw data_not_available{"no titers_list_of_list"}; return r; }
+        inline const rjson::array& rjson_list_dict() const override { const rjson::array& r =  mData.get_or_empty_array("titers_list_of_dict"); if (r.empty()) throw data_not_available{"no titers_list_of_dict"}; return r; }
+        inline const rjson::array& rjson_layers() const override {const rjson::array& r = mData.get_or_empty_array("layers_dict_for_antigen"); if (r.empty()) throw data_not_available{"no layers_dict_for_antigen"}; return r; }
 
      private:
         const rjson::object& mData;
