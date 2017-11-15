@@ -25,11 +25,12 @@ namespace acmacs::chart
             inline string_data& operator=(const std::string& aSrc) { mData = aSrc; return *this; }
             inline string_data& operator=(std::string&& aSrc) { mData = std::move(aSrc); return *this; }
 
-            inline bool empty() const noexcept { return mData.empty(); }
-            inline bool size() const noexcept { return mData.size(); }
+            constexpr inline bool empty() const noexcept { return mData.empty(); }
+            constexpr inline bool size() const noexcept { return mData.size(); }
+            constexpr inline char operator[](size_t index) const noexcept { return mData[index]; }
 
-            inline const std::string& data() const noexcept { return mData; }
-            inline operator const std::string&() const noexcept { return mData; }
+            constexpr inline const std::string& data() const noexcept { return mData; }
+            constexpr inline operator const std::string&() const noexcept { return mData; }
 
          private:
             std::string mData;
@@ -49,18 +50,18 @@ namespace acmacs::chart
             template <typename Iter> inline T_list_data(Iter first, Iter last) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), [](const auto& src) -> T { return src; }); }
             template <typename Iter> inline T_list_data(Iter first, Iter last, std::function<T (const typename Iter::value_type&)> convert) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), convert); }
 
-            inline bool empty() const { return mData.empty(); }
-            inline size_t size() const { return mData.size(); }
-            inline const std::vector<T>& data() const noexcept { return mData; }
-            inline operator const std::vector<T>&() const noexcept { return mData; }
-            inline T& operator[](size_t aIndex) { return mData.at(aIndex); }
-            inline auto begin() const { return mData.cbegin(); }
-            inline auto end() const { return mData.cend(); }
-            inline auto begin() { return mData.begin(); }
-            inline auto end() { return mData.end(); }
+            constexpr inline bool empty() const { return mData.empty(); }
+            constexpr inline size_t size() const { return mData.size(); }
+            constexpr inline const std::vector<T>& data() const noexcept { return mData; }
+            constexpr inline operator const std::vector<T>&() const noexcept { return mData; }
+            constexpr inline T& operator[](size_t aIndex) { return mData.at(aIndex); }
+            constexpr inline auto begin() const { return mData.cbegin(); }
+            constexpr inline auto end() const { return mData.cend(); }
+            constexpr inline auto begin() { return mData.begin(); }
+            constexpr inline auto end() { return mData.end(); }
 
-            inline void push_back(const T& val) { mData.push_back(val); }
-            inline void push_back(T&& val) { mData.push_back(std::forward<T>(val)); }
+            constexpr inline void push_back(const T& val) { mData.push_back(val); }
+            constexpr inline void push_back(T&& val) { mData.push_back(std::forward<T>(val)); }
 
          private:
             std::vector<T> mData;
@@ -73,8 +74,8 @@ namespace acmacs::chart
             using T_list_data<std::string>::T_list_data;
 
             inline std::string join() const { return string::join(" ", begin(), end()); }
-            inline void push_back(const std::string& val) { if (!val.empty()) T_list_data<std::string>::push_back(val); }
-            inline void push_back(std::string&& val) { if (!val.empty()) T_list_data<std::string>::push_back(std::move(val)); }
+            constexpr inline void push_back(const std::string& val) { if (!val.empty()) T_list_data<std::string>::push_back(val); }
+            constexpr inline void push_back(std::string&& val) { if (!val.empty()) T_list_data<std::string>::push_back(std::move(val)); }
 
         }; // class string_list_data
 

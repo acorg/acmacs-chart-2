@@ -32,25 +32,43 @@ std::string acmacs::chart::Info::make_info() const
 
 // ----------------------------------------------------------------------
 
+double acmacs::chart::Titer::logged() const
+{
+    constexpr auto log_titer = [](std::string source) -> double { return std::log2(std::stod(source) / 10.0); };
+
+    switch (type()) {
+      case Invalid:
+          throw invalid_titer(data());
+      case Regular:
+          return log_titer(data());
+      case DontCare:
+          throw invalid_titer(data());
+      case LessTnan:
+      case MoreThan:
+      case Dodgy:
+          return log_titer(data().substr(1));
+    }
+    throw invalid_titer(data()); // for gcc 7.2
+
+} // acmacs::chart::Titer::logged
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Titer::logged_as_string() const
 {
-    if (data().empty())
-        throw std::runtime_error("internal: titer is empty");
-
-    auto log_titer = [](std::string source) -> std::string {
-        const double val = std::stod(source);
-        return acmacs::to_string(std::log2(val / 10.0));
-    };
-
-    switch (data()[0]) {
-      case '*':
-      case '~':
+    switch (type()) {
+      case Invalid:
+          throw invalid_titer(data());
+      case Regular:
+          return acmacs::to_string(logged());
+      case DontCare:
           return data();
-      case '<':
-      case '>':
-          return data()[0] + log_titer(data().substr(1));
+      case LessTnan:
+      case MoreThan:
+      case Dodgy:
+          return data()[0] + acmacs::to_string(logged());
     }
-    return log_titer(data());
+    throw invalid_titer(data()); // for gcc 7.2
 
 } // acmacs::chart::Titer::logged_as_string
 
@@ -58,23 +76,19 @@ std::string acmacs::chart::Titer::logged_as_string() const
 
 double acmacs::chart::Titer::logged_for_column_bases() const
 {
-    if (data().empty())
-        throw std::runtime_error("internal: titer is empty");
-
-    auto log_titer = [](std::string source) -> double {
-        return std::log2(std::stod(source) / 10.0);
-    };
-
-    switch (data()[0]) {
-      case '*':
-      case '~':
+    switch (type()) {
+      case Invalid:
+          throw invalid_titer(data());
+      case Regular:
+      case LessTnan:
+          return logged();
+      case MoreThan:
+          return logged() + 1;
+      case DontCare:
+      case Dodgy:
           return -1;
-      case '<':
-          return log_titer(data().substr(1));
-      case '>':
-          return log_titer(data().substr(1)) + 1;
     }
-    return log_titer(data());
+    throw invalid_titer(data()); // for gcc 7.2
 
 } // acmacs::chart::Titer::logged_for_column_bases
 

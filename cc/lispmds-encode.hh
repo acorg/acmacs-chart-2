@@ -19,8 +19,8 @@ namespace acmacs::chart
 
 namespace acmacs::lispmds
 {
-    constexpr const double DS_SCALE{3.0};
-    constexpr const double NS_SCALE{0.5};
+    constexpr const double DS_SCALE{1.0}; // 3.0
+    constexpr const double NS_SCALE{1.0}; // 0.5
 
 } // namespace acmacs::lispmds
 

@@ -21,9 +21,9 @@ namespace acmacs::chart
          public:
             using reference = Reference;
 
-            inline iterator& operator++() { ++mIndex; return *this; }
-            inline bool operator!=(const iterator& other) const { return &mParent != &other.mParent || mIndex != other.mIndex; }
-            inline reference operator*() { return mParent[mIndex]; }
+            constexpr inline iterator& operator++() { ++mIndex; return *this; }
+            constexpr inline bool operator!=(const iterator& other) const { return &mParent != &other.mParent || mIndex != other.mIndex; }
+            constexpr inline reference operator*() { return mParent[mIndex]; }
 
          private:
             inline iterator(const Parent& aParent, size_t aIndex) : mParent{aParent}, mIndex{aIndex} {}
@@ -39,6 +39,7 @@ namespace acmacs::chart
 // ----------------------------------------------------------------------
 
     class data_not_available : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+    class invalid_titer : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
 // ----------------------------------------------------------------------
 
@@ -124,7 +125,33 @@ namespace acmacs::chart
      public:
         using internal::string_data::string_data;
 
-        inline bool is_dont_care() const { return data() == "*"; }
+        enum Type { Invalid, Regular, DontCare, LessTnan, MoreThan, Dodgy };
+
+        constexpr inline Type type() const
+            {
+                if (data().empty())
+                    return Invalid;
+                switch (data()[0]) {
+                  case '*':
+                      return DontCare;
+                  case '<':
+                      return LessTnan;
+                  case '>':
+                      return MoreThan;
+                  case '~':
+                      return Dodgy;
+                  case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+                      return Regular;
+                  default:
+                      return Invalid;
+                }
+                return Invalid;
+            }
+
+        constexpr inline bool is_dont_care() const { return type() == DontCare; }
+        constexpr inline bool is_regular() const { return type() == Regular; }
+
+        double logged() const;
         std::string logged_as_string() const;
         double logged_for_column_bases() const;
 
@@ -142,7 +169,7 @@ namespace acmacs::chart
      public:
         using internal::double_list_data::double_list_data;
 
-        inline bool empty() const
+        constexpr inline bool empty() const
             {
                 return internal::double_list_data::empty() || std::all_of(begin(), end(), [](double val) -> bool { return float_equal(val, 1.0); });
             }
