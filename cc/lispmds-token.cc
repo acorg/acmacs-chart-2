@@ -31,7 +31,7 @@ class Tokenizer
     void skip_until_eol();
     Result extract_number();
     Result extract_until(char ending, Token result);
-    Result extract_symbol(Token result);
+    Result extract_symbol(Token result = Symbol);
 
 }; // class Tokenizer
 
@@ -170,16 +170,44 @@ Tokenizer::Result Tokenizer::next()
 Tokenizer::Result Tokenizer::extract_number()
 {
     const size_t first = mPos++;
+    bool exp = false, dot = false, sign = true; // no sign is possible now
     for (bool cont = true; cont && mPos < mData.size(); ) {
         switch (mData[mPos]) {
-          case '+': case '-':
           case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-          case '.': case 'E': case 'e': case 'D': case 'd':
               ++mPos;
               break;
-          default:
+          case '.':
+              if (dot) {        // second dot -> not a number
+                  mPos = first;
+                  return extract_symbol();
+              }
+              dot = true;
+              ++mPos;
+              break;
+          case '+': case '-':
+              if (!exp || sign) {       // unexpected sign
+                  mPos = first;
+                  return extract_symbol();
+              }
+              sign = true;
+              ++mPos;
+              break;
+          case 'E': case 'e': case 'D': case 'd':
+              if (exp) {        // unexpected exp
+                  mPos = first;
+                  return extract_symbol();
+              }
+              exp = true;
+              sign = false;     // now sign and dot are possible
+              dot = false;
+              ++mPos;
+              break;
+          case ' ': case '\r': case '\n': case ')': // end of number
               cont = false;
               break;
+          default:              // unexpected symbol -> not a number
+              mPos = first;
+              return extract_symbol();
         }
     }
     return {Number, mData.substr(first, mPos - first)};
