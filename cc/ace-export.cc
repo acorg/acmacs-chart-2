@@ -21,7 +21,7 @@ std::string acmacs::chart::ace_export(std::shared_ptr<acmacs::chart::Chart> aCha
 {
     rjson::value ace{rjson::object{{
                 {"  version", rjson::string{"acmacs-ace-v1"}},
-                {"?created", rjson::string{aProgramName + " on " + acmacs::time_format()}},
+                {"?created", rjson::string{"AD " + aProgramName + " on " + acmacs::time_format()}},
                 {"c", rjson::object{{
                             {"i", rjson::object{}},
                             {"a", rjson::array{}},

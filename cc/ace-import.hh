@@ -236,7 +236,7 @@ namespace acmacs::chart
         inline AcePlotSpec(const rjson::object& aData) : mData{aData} {}
 
         inline bool empty() const override { return mData.empty(); }
-        inline DrawingOrder drawing_order() const override { return mData["d"]; }
+        inline DrawingOrder drawing_order() const override { return mData.get_or_empty_array("d"); }
         Color error_line_positive_color() const override;
         Color error_line_negative_color() const override;
         PointStyle style(size_t aPointNo) const override;
