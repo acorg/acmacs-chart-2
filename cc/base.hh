@@ -25,9 +25,9 @@ namespace acmacs::chart
             inline string_data& operator=(const std::string& aSrc) { mData = aSrc; return *this; }
             inline string_data& operator=(std::string&& aSrc) { mData = std::move(aSrc); return *this; }
 
-            constexpr inline bool empty() const noexcept { return mData.empty(); }
-            constexpr inline bool size() const noexcept { return mData.size(); }
-            constexpr inline char operator[](size_t index) const noexcept { return mData[index]; }
+            inline bool empty() const noexcept { return mData.empty(); }
+            inline bool size() const noexcept { return mData.size(); }
+            inline char operator[](size_t index) const noexcept { return mData[index]; }
 
             constexpr inline const std::string& data() const noexcept { return mData; }
             constexpr inline operator const std::string&() const noexcept { return mData; }
@@ -74,8 +74,8 @@ namespace acmacs::chart
             using T_list_data<std::string>::T_list_data;
 
             inline std::string join() const { return string::join(" ", begin(), end()); }
-            constexpr inline void push_back(const std::string& val) { if (!val.empty()) T_list_data<std::string>::push_back(val); }
-            constexpr inline void push_back(std::string&& val) { if (!val.empty()) T_list_data<std::string>::push_back(std::move(val)); }
+            inline void push_back(const std::string& val) { if (!val.empty()) T_list_data<std::string>::push_back(val); }
+            inline void push_back(std::string&& val) { if (!val.empty()) T_list_data<std::string>::push_back(std::move(val)); }
 
         }; // class string_list_data
 
