@@ -148,8 +148,8 @@ namespace acmacs::chart
                 return Invalid;
             }
 
-        constexpr inline bool is_dont_care() const { return type() == DontCare; }
-        constexpr inline bool is_regular() const { return type() == Regular; }
+        inline bool is_dont_care() const { return type() == DontCare; }
+        inline bool is_regular() const { return type() == Regular; }
 
         double logged() const;
         std::string logged_as_string() const;
