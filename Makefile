@@ -6,8 +6,6 @@ MAKEFLAGS = -w
 
 # ----------------------------------------------------------------------
 
-N=_n
-
 TARGETS = \
     $(ACMACS_CHART_LIB) \
     $(DIST)/chart-info \
@@ -24,11 +22,13 @@ SOURCES = chart.cc \
 include $(ACMACSD_ROOT)/share/makefiles/Makefile.g++
 include $(ACMACSD_ROOT)/share/makefiles/Makefile.dist-build.vars
 
-ACMACS_CHART_LIB = $(DIST)/libacmacschart$(N).so
+ACMACS_CHART_LIB_MAJOR = 2
+ACMACS_CHART_LIB_MINOR = 0
+ACMACS_CHART_LIB = $(DIST)/$(call shared_lib_name,libacmacschart,$(ACMACS_CHART_LIB_MAJOR),$(ACMACS_CHART_LIB_MINOR))
 
-CXXFLAGS = -g -MMD $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WEVERYTHING) $(WARNINGS) -Icc -I$(AD_INCLUDE) $(PKG_INCLUDES)
+CXXFLAGS = -g -MMD $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WARNINGS) -Icc -I$(AD_INCLUDE) $(PKG_INCLUDES)
 LDFLAGS = $(OPTIMIZATION) $(PROFILE)
-LDLIBS = -L$(AD_LIB) -lacmacsbase -llocationdb $$(pkg-config --libs liblzma) $(CXX_LIB)
+LDLIBS = $(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) -L$(AD_LIB) -llocationdb $$(pkg-config --libs liblzma) $(CXX_LIB)
 
 PKG_INCLUDES = $(shell pkg-config --cflags liblzma)
 
@@ -54,11 +54,11 @@ include $(ACMACSD_ROOT)/share/makefiles/Makefile.rtags
 # ----------------------------------------------------------------------
 
 $(ACMACS_CHART_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SOURCES)) | $(DIST) $(LOCATION_DB_LIB)
-	@echo "SHARED     " $@ # '<--' $^
-	@$(CXX) -shared $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@printf "%-16s %s\n" "SHARED" $@
+	@$(call make_shared,libacmacschart,$(ACMACS_CHART_LIB_MAJOR),$(ACMACS_CHART_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 $(DIST)/%: $(BUILD)/%.o | $(ACMACS_CHART_LIB)
-	@echo "LINK       " $@
+	@printf "%-16s %s\n" "LINK" $@
 	@$(CXX) $(LDFLAGS) -o $@ $^ $(ACMACS_CHART_LIB) $(LDLIBS)
 
 # ======================================================================
