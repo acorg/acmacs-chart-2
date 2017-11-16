@@ -243,6 +243,9 @@ namespace acmacs::chart
         virtual Annotations annotations() const = 0;
         virtual bool reference() const = 0;
 
+        inline std::string full_name() const { return string::join(" ", {name(), reassortant(), string::join(" ", annotations()), passage()}); }
+        inline std::string full_name_without_passage() const { return string::join(" ", {name(), reassortant(), string::join(" ", annotations())}); }
+
     }; // class Antigen
 
 // ----------------------------------------------------------------------
@@ -260,6 +263,9 @@ namespace acmacs::chart
         virtual SerumId serum_id() const = 0;
         virtual SerumSpecies serum_species() const = 0;
         virtual PointIndexList homologous_antigens() const = 0;
+
+        inline std::string full_name() const { return string::join(" ", {name(), reassortant(), serum_id(), string::join(" ", annotations())}); }
+        inline std::string full_name_without_passage() const { return full_name(); }
 
     }; // class Serum
 
@@ -429,6 +435,9 @@ namespace acmacs::chart
         virtual inline size_t number_of_sera() const { return sera()->size(); }
         inline size_t number_of_points() const { return number_of_antigens() + number_of_sera(); }
         virtual inline size_t number_of_projections() const { return projections()->size(); }
+
+        inline std::shared_ptr<Antigen> antigen(size_t aAntigenNo) const { return antigens()->operator[](aAntigenNo); }
+        inline std::shared_ptr<Serum> serum(size_t aSerumNo) const { return sera()->operator[](aSerumNo); }
 
         std::string make_info() const;
 
