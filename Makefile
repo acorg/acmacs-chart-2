@@ -28,7 +28,10 @@ ACMACS_CHART_LIB = $(DIST)/$(call shared_lib_name,libacmacschart,$(ACMACS_CHART_
 
 CXXFLAGS = -g -MMD $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WARNINGS) -Icc -I$(AD_INCLUDE) $(PKG_INCLUDES)
 LDFLAGS = $(OPTIMIZATION) $(PROFILE)
-LDLIBS = $(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) -L$(AD_LIB) -llocationdb $$(pkg-config --libs liblzma) $(CXX_LIB)
+LDLIBS = \
+	$(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
+	$(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
+	$$(pkg-config --libs liblzma) $(CXX_LIB)
 
 PKG_INCLUDES = $(shell pkg-config --cflags liblzma)
 
