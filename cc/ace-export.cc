@@ -1,8 +1,8 @@
 #include "acmacs-base/rjson.hh"
 #include "acmacs-base/time.hh"
 #include "acmacs-base/timeit.hh"
-#include "acmacs-chart/ace-export.hh"
-#include "acmacs-chart/chart.hh"
+#include "acmacs-chart-2/ace-export.hh"
+#include "acmacs-chart-2/chart.hh"
 
 // ----------------------------------------------------------------------
 

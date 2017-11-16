@@ -6,7 +6,7 @@
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-chart/acd1-import.hh"
+#include "acmacs-chart-2/acd1-import.hh"
 
 using namespace std::string_literals;
 using namespace acmacs::chart;

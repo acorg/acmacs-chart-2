@@ -5,8 +5,8 @@
 using namespace std::string_literals;
 
 #include "acmacs-base/string.hh"
-#include "acmacs-chart/verify.hh"
-#include "acmacs-chart/lispmds-token.hh"
+#include "acmacs-chart-2/verify.hh"
+#include "acmacs-chart-2/lispmds-token.hh"
 
 // ----------------------------------------------------------------------
 

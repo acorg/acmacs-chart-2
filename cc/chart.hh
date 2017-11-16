@@ -5,8 +5,8 @@
 #include "acmacs-base/color.hh"
 #include "acmacs-base/point-style.hh"
 #include "acmacs-base/transformation.hh"
-#include "acmacs-chart/base.hh"
-#include "acmacs-chart/passage.hh"
+#include "acmacs-chart-2/base.hh"
+#include "acmacs-chart-2/passage.hh"
 
 // ----------------------------------------------------------------------
 

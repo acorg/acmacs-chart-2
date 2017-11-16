@@ -1,9 +1,9 @@
 #include "acmacs-base/rjson.hh"
 #include "acmacs-base/time.hh"
 #include "acmacs-base/string.hh"
-#include "acmacs-chart/lispmds-export.hh"
-#include "acmacs-chart/lispmds-encode.hh"
-#include "acmacs-chart/chart.hh"
+#include "acmacs-chart-2/lispmds-export.hh"
+#include "acmacs-chart-2/lispmds-encode.hh"
+#include "acmacs-chart-2/chart.hh"
 
 // ----------------------------------------------------------------------
 

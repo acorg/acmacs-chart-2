@@ -1,9 +1,9 @@
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/timeit.hh"
-#include "acmacs-chart/factory-import.hh"
-#include "acmacs-chart/ace-import.hh"
-#include "acmacs-chart/acd1-import.hh"
-#include "acmacs-chart/lispmds-import.hh"
+#include "acmacs-chart-2/factory-import.hh"
+#include "acmacs-chart-2/ace-import.hh"
+#include "acmacs-chart-2/acd1-import.hh"
+#include "acmacs-chart-2/lispmds-import.hh"
 
 // ----------------------------------------------------------------------
 

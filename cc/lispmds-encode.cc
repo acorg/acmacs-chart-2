@@ -2,7 +2,7 @@
 #include <regex>
 
 #include "acmacs-base/string.hh"
-#include "acmacs-chart/lispmds-encode.hh"
+#include "acmacs-chart-2/lispmds-encode.hh"
 
 // ----------------------------------------------------------------------
 

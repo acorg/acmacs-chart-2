@@ -7,8 +7,8 @@
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-chart/lispmds-import.hh"
-#include "acmacs-chart/lispmds-encode.hh"
+#include "acmacs-chart-2/lispmds-import.hh"
+#include "acmacs-chart-2/lispmds-encode.hh"
 
 using namespace std::string_literals;
 using namespace acmacs::chart;

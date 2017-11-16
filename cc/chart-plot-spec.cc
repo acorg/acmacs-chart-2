@@ -8,8 +8,8 @@
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/range.hh"
-#include "acmacs-chart/factory-import.hh"
-#include "acmacs-chart/chart.hh"
+#include "acmacs-chart-2/factory-import.hh"
+#include "acmacs-chart-2/chart.hh"
 
 // ----------------------------------------------------------------------
 

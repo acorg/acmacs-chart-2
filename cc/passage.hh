@@ -1,6 +1,6 @@
 #pragma once
 
-#include "acmacs-chart/base.hh"
+#include "acmacs-chart-2/base.hh"
 
 // ----------------------------------------------------------------------
 

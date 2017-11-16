@@ -1,8 +1,8 @@
 #pragma once
 
-#include "acmacs-chart/chart.hh"
-#include "acmacs-chart/verify.hh"
-#include "acmacs-chart/lispmds-token.hh"
+#include "acmacs-chart-2/chart.hh"
+#include "acmacs-chart-2/verify.hh"
+#include "acmacs-chart-2/lispmds-token.hh"
 
 // ----------------------------------------------------------------------
 
