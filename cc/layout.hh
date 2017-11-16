@@ -18,6 +18,11 @@ namespace acmacs::chart
                 return {x, y};
             }
 
+        inline bool not_nan() const
+            {
+                return std::all_of(begin(), end(), [](double value) -> bool { return ! std::isnan(value); });
+            }
+
     }; // class Coordinates
 
 // ----------------------------------------------------------------------
