@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "acmacs-base/range.hh"
 #include "acmacs-base/color.hh"
 #include "acmacs-base/point-style.hh"
 #include "acmacs-base/transformation.hh"
@@ -43,6 +44,8 @@ namespace acmacs::chart
     class invalid_titer : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
 // ----------------------------------------------------------------------
+
+    using Indexes = std::vector<size_t>;
 
     class Info
     {
@@ -275,6 +278,22 @@ namespace acmacs::chart
         inline iterator begin() const { return {*this, 0}; }
         inline iterator end() const { return {*this, size()}; }
 
+        inline Indexes all_indexes() const { return acmacs::filled_with_indexes(size()); }
+        inline Indexes reference_indexes() const { return make_indexes([](const Antigen& ag) { return ag.reference(); }); }
+        inline Indexes test_indexes() const { return make_indexes([](const Antigen& ag) { return !ag.reference(); }); }
+        inline Indexes egg_indexes() const { return make_indexes([](const Antigen& ag) { return ag.passage().is_egg() || !ag.reassortant().empty(); }); }
+        inline Indexes reassortant_indexes() const { return make_indexes([](const Antigen& ag) { return !ag.reassortant().empty(); }); }
+
+     private:
+        inline Indexes make_indexes(std::function<bool (const Antigen& ag)> test) const
+            {
+                Indexes result;
+                for (size_t no = 0; no < size(); ++no)
+                    if (test(*operator[](no)))
+                        result.push_back(no);
+                return result;
+            }
+
     }; // class Antigens
 
 // ----------------------------------------------------------------------
@@ -289,6 +308,11 @@ namespace acmacs::chart
         using iterator = internal::iterator<Sera, std::shared_ptr<Serum>>;
         inline iterator begin() const { return {*this, 0}; }
         inline iterator end() const { return {*this, size()}; }
+
+        inline Indexes all_indexes() const
+            {
+                return acmacs::filled_with_indexes(size());
+            }
 
     }; // class Sera
 
