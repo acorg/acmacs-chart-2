@@ -8,7 +8,7 @@ namespace acmacs::chart
 {
     class Chart;
 
-    std::string lispmds_export(std::shared_ptr<Chart> aChart, std::string aProgramName);
+    std::string lispmds_export(const Chart& aChart, std::string aProgramName);
 
 } // namespace acmacs::chart
 

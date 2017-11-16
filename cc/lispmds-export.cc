@@ -10,30 +10,30 @@
 static std::string antigen_names(std::shared_ptr<acmacs::chart::Antigens> aAntigens);
 static std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera);
 static std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters);
-static std::string starting_coordss(std::shared_ptr<acmacs::chart::Chart> aChart);
-static std::string batch_runs(std::shared_ptr<acmacs::chart::Chart> aChart);
+static std::string starting_coordss(const acmacs::chart::Chart& aChart);
+static std::string batch_runs(const acmacs::chart::Chart& aChart);
 static std::string coordinates(std::shared_ptr<acmacs::chart::Projection> aProjection, size_t number_of_points, size_t number_of_dimensions, size_t aIndent);
-static std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Chart> aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent);
-static std::string reference_antigens(std::shared_ptr<acmacs::chart::Chart> aChart);
-static std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart);
+static std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent);
+static std::string reference_antigens(const acmacs::chart::Chart& aChart);
+static std::string plot_spec(const acmacs::chart::Chart& aChart);
 static std::string point_style(const acmacs::PointStyle& aStyle);
 static std::string point_shape(const acmacs::PointShape& aShape);
 static std::string make_color(Color aColor);
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::lispmds_export(std::shared_ptr<acmacs::chart::Chart> aChart, std::string aProgramName)
+std::string acmacs::chart::lispmds_export(const acmacs::chart::Chart& aChart, std::string aProgramName)
 {
     std::string result = ";; MDS configuration file (version 0.6).\n;; Created by AD " + aProgramName + " on " + acmacs::time_format() + "\n\n";
     result += R"((MAKE-MASTER-MDS-WINDOW
-   (HI-IN '()" + antigen_names(aChart->antigens()) + R"()
-          '()" + serum_names(aChart->sera()) + R"()
-          '()" + titers(aChart->titers()) + R"()
-          ')" + lispmds_encode(aChart->info()->name_non_empty()) + R"()
+   (HI-IN '()" + antigen_names(aChart.antigens()) + R"()
+          '()" + serum_names(aChart.sera()) + R"()
+          '()" + titers(aChart.titers()) + R"()
+          ')" + lispmds_encode(aChart.info()->name_non_empty()) + R"()
   )" + starting_coordss(aChart) + R"(
   )" + batch_runs(aChart) + R"(
 )";
-    if (auto projections = aChart->projections(); !projections->empty()) {
+    if (auto projections = aChart.projections(); !projections->empty()) {
         auto projection = (*projections)[0];
         result.append("  :MDS-DIMENSIONS '" + acmacs::to_string(projection->number_of_dimensions()) + '\n');
         result.append("  :MOVEABLE-COORDS 'ALL\n  :UNMOVEABLE-COORDS '");
@@ -83,9 +83,9 @@ std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera)
 
 // ----------------------------------------------------------------------
 
-std::string reference_antigens(std::shared_ptr<acmacs::chart::Chart> aChart)
+std::string reference_antigens(const acmacs::chart::Chart& aChart)
 {
-    auto antigens = aChart->antigens();
+    auto antigens = aChart.antigens();
     return "  :REFERENCE-ANTIGENS '("
             + string::join(" ", antigens->begin(), antigens->end(), [](auto antigen) { return antigen->reference() ? lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations()) : std::string{}; })
             + ")\n";
@@ -118,9 +118,9 @@ std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters)
 
 // ----------------------------------------------------------------------
 
-std::string starting_coordss(std::shared_ptr<acmacs::chart::Chart> aChart)
+std::string starting_coordss(const acmacs::chart::Chart& aChart)
 {
-    auto projections = aChart->projections();
+    auto projections = aChart.projections();
     if (projections->empty())
         return {};
     auto projection = (*projections)[0];
@@ -133,9 +133,9 @@ std::string starting_coordss(std::shared_ptr<acmacs::chart::Chart> aChart)
 
 // ----------------------------------------------------------------------
 
-std::string batch_runs(std::shared_ptr<acmacs::chart::Chart> aChart)
+std::string batch_runs(const acmacs::chart::Chart& aChart)
 {
-    auto projections = aChart->projections();
+    auto projections = aChart.projections();
     if (projections->size() < 2)
         return {};
     std::string result = "  :BATCH-RUNS '(";
@@ -177,7 +177,7 @@ std::string coordinates(std::shared_ptr<acmacs::chart::Projection> aProjection, 
 
 // ----------------------------------------------------------------------
 
-std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Chart> aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent)
+std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent)
 {
     std::string result{"\n"};
     result
@@ -185,8 +185,8 @@ std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Chart> aChart, st
             .append("((COL-AND-ROW-ADJUSTS\n")
             .append(aIndent + 2, ' ')
             .append(1, '(');
-    const auto number_of_antigens = aChart->number_of_antigens();
-    const auto number_of_sera = aChart->number_of_sera();
+    const auto number_of_antigens = aChart.number_of_antigens();
+    const auto number_of_sera = aChart.number_of_sera();
     for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
         if (ag_no)
             result.append(1, ' ');
@@ -195,7 +195,7 @@ std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Chart> aChart, st
     result.append(1, '\n').append(aIndent + 3, ' ');
     auto cb = aProjection->forced_column_bases();
     if (!cb->exists())
-        cb = aChart->computed_column_bases(aProjection->minimum_column_basis());
+        cb = aChart.computed_column_bases(aProjection->minimum_column_basis());
     for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
         if (sr_no)
             result.append(1, ' ');
@@ -218,14 +218,14 @@ std::string col_and_row_adjusts(std::shared_ptr<acmacs::chart::Chart> aChart, st
 
 // ----------------------------------------------------------------------
 
-std::string plot_spec(std::shared_ptr<acmacs::chart::Chart> aChart)
+std::string plot_spec(const acmacs::chart::Chart& aChart)
 {
     std::string result;
-    if (auto plot_spec = aChart->plot_spec(); !plot_spec->empty()) {
+    if (auto plot_spec = aChart.plot_spec(); !plot_spec->empty()) {
         result.append("  :PLOT-SPEC '(");
-        auto antigens = aChart->antigens();
+        auto antigens = aChart.antigens();
         const auto number_of_antigens = antigens->size();
-        auto sera = aChart->sera();
+        auto sera = aChart.sera();
         const auto number_of_sera = sera->size();
         for (size_t point_no = 0; point_no < (number_of_antigens + number_of_sera); ++point_no) {
             if (point_no)

@@ -7,7 +7,7 @@
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::export_factory(std::shared_ptr<acmacs::chart::Chart> aChart, std::string aFilename, std::string aProgramName)
+void acmacs::chart::export_factory(const Chart& aChart, std::string aFilename, std::string aProgramName)
 {
     Timeit ti("writing chart to " + aFilename + ": ");
     auto force_compression = acmacs_base::ForceCompression::No;

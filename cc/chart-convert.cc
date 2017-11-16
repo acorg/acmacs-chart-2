@@ -25,7 +25,7 @@ int main(int argc, char* const argv[])
         else {
             auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::All);
             std::cout << chart->make_info() << '\n';
-            acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename());
+            acmacs::chart::export_factory(*chart, args[1], fs::path(args.program()).filename());
         }
     }
     catch (std::exception& err) {

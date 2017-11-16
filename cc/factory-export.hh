@@ -11,7 +11,7 @@ namespace acmacs::chart
 {
     class Chart;
 
-    void export_factory(std::shared_ptr<Chart> aChart, std::string aFilename, std::string aProgramName);
+    void export_factory(const Chart& aChart, std::string aFilename, std::string aProgramName);
 
 } // namespace acmacs::chart
 

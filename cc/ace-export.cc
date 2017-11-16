@@ -17,7 +17,7 @@ static void export_style(rjson::array& target_styles, const acmacs::PointStyle& 
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::ace_export(std::shared_ptr<acmacs::chart::Chart> aChart, std::string aProgramName)
+std::string acmacs::chart::ace_export(const Chart& aChart, std::string aProgramName)
 {
     rjson::value ace{rjson::object{{
                 {"  version", rjson::string{"acmacs-ace-v1"}},
@@ -30,23 +30,23 @@ std::string acmacs::chart::ace_export(std::shared_ptr<acmacs::chart::Chart> aCha
                         }}}
             }}};
     // Timeit ti_info("export info ");
-    export_info(ace["c"]["i"], aChart->info());
+    export_info(ace["c"]["i"], aChart.info());
     // ti_info.report();
     // Timeit ti_antigens("export antigens ");
-    export_antigens(ace["c"]["a"], aChart->antigens());
+    export_antigens(ace["c"]["a"], aChart.antigens());
     // ti_antigens.report();
     // Timeit ti_sera("export sera ");
-    export_sera(ace["c"]["s"], aChart->sera());
+    export_sera(ace["c"]["s"], aChart.sera());
     // ti_sera.report();
     // Timeit ti_titers("export titers ");
-    export_titers(ace["c"]["t"], aChart->titers());
+    export_titers(ace["c"]["t"], aChart.titers());
     // ti_titers.report();
     // Timeit ti_projections("export projections ");
-    if (auto projections = aChart->projections(); !projections->empty())
+    if (auto projections = aChart.projections(); !projections->empty())
         export_projections(ace["c"].set_field("P", rjson::array{}), projections);
     // ti_projections.report();
     // Timeit ti_plot_spec("export plot_spec ");
-    if (auto plot_spec = aChart->plot_spec(); !plot_spec->empty())
+    if (auto plot_spec = aChart.plot_spec(); !plot_spec->empty())
         export_plot_spec(ace["c"].set_field("p", rjson::object{}), plot_spec);
     // ti_plot_spec.report();
     return ace.to_json_pp(1);
