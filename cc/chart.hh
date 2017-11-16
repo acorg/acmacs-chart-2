@@ -45,8 +45,6 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    using Indexes = std::vector<size_t>;
-
     class Info
     {
      public:

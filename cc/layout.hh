@@ -5,8 +5,20 @@
 
 // ----------------------------------------------------------------------
 
+namespace acmacs
+{
+    class BoundingBall;
+
+} // namespace acmacs
+
+// ----------------------------------------------------------------------
+
 namespace acmacs::chart
 {
+    using Indexes = std::vector<size_t>;
+
+// ----------------------------------------------------------------------
+
     class Coordinates : public Vector
     {
      public:
@@ -38,6 +50,11 @@ namespace acmacs::chart
         virtual double coordinate(size_t aPointNo, size_t aDimensionNo) const = 0;
 
         Layout* transform(const Transformation& aTransformation) const;
+        acmacs::BoundingBall* minimum_bounding_ball() const;
+        void min_max_points(Indexes& aMin, Indexes& aMax) const;
+
+     private:
+        void bounding_ball_extend(BoundingBall& aBoundingBall) const;
 
     }; // class Layout
 
