@@ -12,7 +12,7 @@ static std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera);
 static std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters);
 static std::string starting_coordss(const acmacs::chart::Chart& aChart);
 static std::string batch_runs(const acmacs::chart::Chart& aChart);
-static std::string coordinates(std::shared_ptr<acmacs::chart::Projection> aProjection, size_t number_of_points, size_t number_of_dimensions, size_t aIndent);
+static std::string coordinates(std::shared_ptr<acmacs::chart::Layout> aLayout, size_t number_of_points, size_t number_of_dimensions, size_t aIndent);
 static std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent);
 static std::string reference_antigens(const acmacs::chart::Chart& aChart);
 static std::string plot_spec(const acmacs::chart::Chart& aChart);
@@ -35,7 +35,7 @@ std::string acmacs::chart::lispmds_export(const acmacs::chart::Chart& aChart, st
 )";
     if (auto projections = aChart.projections(); !projections->empty()) {
         auto projection = (*projections)[0];
-        result.append("  :MDS-DIMENSIONS '" + acmacs::to_string(projection->number_of_dimensions()) + '\n');
+        result.append("  :MDS-DIMENSIONS '" + acmacs::to_string(projection->layout()->number_of_dimensions()) + '\n');
         result.append("  :MOVEABLE-COORDS 'ALL\n  :UNMOVEABLE-COORDS '");
         if (auto unmovable = projection->unmovable(); !unmovable.empty()) {
             result
@@ -124,8 +124,9 @@ std::string starting_coordss(const acmacs::chart::Chart& aChart)
     if (projections->empty())
         return {};
     auto projection = (*projections)[0];
-    if (const auto number_of_points = projection->number_of_points(), number_of_dimensions = projection->number_of_dimensions(); number_of_points && number_of_dimensions)
-        return "  :STARTING-COORDSS '(" + coordinates(projection, number_of_points, number_of_dimensions, 22) + col_and_row_adjusts(aChart, projection, 22) + ')';
+    auto layout = projection->layout();
+    if (const auto number_of_points = layout->number_of_points(), number_of_dimensions = layout->number_of_dimensions(); number_of_points && number_of_dimensions)
+        return "  :STARTING-COORDSS '(" + coordinates(layout, number_of_points, number_of_dimensions, 22) + col_and_row_adjusts(aChart, projection, 22) + ')';
     else
         return {};
 
@@ -141,9 +142,10 @@ std::string batch_runs(const acmacs::chart::Chart& aChart)
     std::string result = "  :BATCH-RUNS '(";
     for (size_t projection_no = 1; projection_no < projections->size(); ++projection_no) {
         auto projection = (*projections)[projection_no];
+        auto layout = projection->layout();
         if (projection_no > 1)
             result.append("\n                ");
-        result.append("((" + coordinates(projection, projection->number_of_points(), projection->number_of_dimensions(), 18) + col_and_row_adjusts(aChart, projection, 18) + ')');
+        result.append("((" + coordinates(layout, layout->number_of_points(), layout->number_of_dimensions(), 18) + col_and_row_adjusts(aChart, projection, 18) + ')');
         result.append("\n                 " + acmacs::to_string(projection->stress()) + " MULTIPLE-END-CONDITIONS NIL)");
     }
     result.append(1, ')');
@@ -153,7 +155,7 @@ std::string batch_runs(const acmacs::chart::Chart& aChart)
 
 // ----------------------------------------------------------------------
 
-std::string coordinates(std::shared_ptr<acmacs::chart::Projection> aProjection, size_t number_of_points, size_t number_of_dimensions, size_t aIndent)
+std::string coordinates(std::shared_ptr<acmacs::chart::Layout> aLayout, size_t number_of_points, size_t number_of_dimensions, size_t aIndent)
 {
     std::string result;
     for (size_t point_no = 0; point_no < number_of_points; ++point_no) {
@@ -163,7 +165,7 @@ std::string coordinates(std::shared_ptr<acmacs::chart::Projection> aProjection, 
         for (size_t dim = 0; dim < number_of_dimensions; ++dim) {
             if (dim)
                 result.append(1, ' ');
-            const auto c = aProjection->coordinate(point_no, dim);
+            const auto c = aLayout->coordinate(point_no, dim);
             if (std::isnan(c))
                 result.append("-1000"); // disconnected point
             else

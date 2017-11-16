@@ -7,6 +7,7 @@
 #include "acmacs-base/transformation.hh"
 #include "acmacs-chart-2/base.hh"
 #include "acmacs-chart-2/passage.hh"
+#include "acmacs-chart-2/layout.hh"
 
 // ----------------------------------------------------------------------
 
@@ -336,10 +337,8 @@ namespace acmacs::chart
 
         virtual std::string make_info() const;
         virtual double stress() const = 0;
-        virtual size_t number_of_dimensions() const = 0;
-        virtual size_t number_of_points() const = 0;
         virtual std::string comment() const = 0;
-        virtual double coordinate(size_t aPointNo, size_t aDimensionNo) const = 0;
+        virtual std::shared_ptr<Layout> layout() const = 0;
         virtual MinimumColumnBasis minimum_column_basis() const = 0;
         virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0;
         virtual acmacs::Transformation transformation() const = 0;

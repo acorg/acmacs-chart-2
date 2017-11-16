@@ -201,9 +201,7 @@ namespace acmacs::chart
 
         void check() const;
         double stress() const override;
-        size_t number_of_dimensions() const override;
-        size_t number_of_points() const override;
-        double coordinate(size_t aPointNo, size_t aDimensionNo) const override;
+        std::shared_ptr<Layout> layout() const override;
         inline std::string comment() const override { return {}; }
         MinimumColumnBasis minimum_column_basis() const override;
         std::shared_ptr<ColumnBases> forced_column_bases() const override;

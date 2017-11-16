@@ -269,36 +269,62 @@ size_t AceTiters::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
-size_t AceProjection::number_of_dimensions() const
+class AceLayout : public acmacs::chart::Layout
 {
-    try {
-        for (const rjson::array& row: static_cast<const rjson::array&>(mData["l"])) {
-            if (!row.empty())
-                return row.size();
-        }
-    }
-    catch (rjson::field_not_found&) {
-    }
-    catch (std::bad_variant_access&) {
-    }
-    return 0;
+ public:
+    inline AceLayout(const rjson::object& aData) : mData{aData} {}
 
-} // AceProjection::number_of_dimensions
+    size_t number_of_points() const override
+        {
+            return mData.get_or_empty_array("l").size();
+        }
+
+    inline size_t number_of_dimensions() const override
+        {
+            try {
+                for (const rjson::array& row: static_cast<const rjson::array&>(mData["l"])) {
+                    if (!row.empty())
+                        return row.size();
+                }
+            }
+            catch (rjson::field_not_found&) {
+            }
+            catch (std::bad_variant_access&) {
+            }
+            return 0;
+        }
+
+    Coordinates operator[](size_t aPointNo) const override
+        {
+            const rjson::array& point = mData.get_or_empty_array("l")[aPointNo];
+            Coordinates result(number_of_dimensions(), std::numeric_limits<double>::quiet_NaN());
+            std::transform(point.begin(), point.end(), result.begin(), [](const auto& coord) -> double { return coord; });
+            return result;
+        }
+
+    double coordinate(size_t aPointNo, size_t aDimensionNo) const override
+        {
+            const auto& point = mData.get_or_empty_array("l")[aPointNo];
+            try {
+                return point[aDimensionNo];
+            }
+            catch (std::exception&) {
+                return std::numeric_limits<double>::quiet_NaN();
+            }
+        }
+
+ private:
+    const rjson::object& mData;
+
+}; // class AceLayout
 
 // ----------------------------------------------------------------------
 
-double AceProjection::coordinate(size_t aPointNo, size_t aDimensionNo) const
+std::shared_ptr<Layout> AceProjection::layout() const
 {
-    const auto& layout = mData.get_or_empty_array("l");
-    const auto& point = layout[aPointNo];
-    try {
-        return point[aDimensionNo];
-    }
-    catch (std::exception&) {
-        return std::numeric_limits<double>::quiet_NaN();
-    }
+    return std::make_shared<AceLayout>(mData);
 
-} // AceProjection::coordinate
+} // AceProjection::layout
 
 // ----------------------------------------------------------------------
 

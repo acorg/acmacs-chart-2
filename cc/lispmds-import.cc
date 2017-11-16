@@ -486,7 +486,7 @@ size_t LispmdsTiters::number_of_non_dont_cares() const
 void LispmdsProjection::check() const
 {
     try {
-        if (auto nd = number_of_dimensions(); nd > 5)
+        if (auto nd = layout()->number_of_dimensions(); nd > 5)
             throw import_error("[lispmds] projection " + acmacs::to_string(mIndex) + " has unsupported number of dimensions: " + acmacs::to_string(nd));
     }
     catch (std::exception& err) {
@@ -511,27 +511,49 @@ double LispmdsProjection::stress() const
 
 // ----------------------------------------------------------------------
 
-size_t LispmdsProjection::number_of_points() const
+class LispmdsLayout : public acmacs::chart::Layout
 {
-    return mNumberOfAntigens + mNumberOfSera;
+ public:
+    inline LispmdsLayout(const acmacs::lispmds::value& aData, size_t aNumberOfAntigens, size_t aNumberOfSera)
+        : mData{aData}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} {}
 
-} // LispmdsProjection::number_of_points
+    size_t number_of_points() const override
+        {
+            return mNumberOfAntigens + mNumberOfSera;
+        }
+
+    inline size_t number_of_dimensions() const override
+        {
+            return mData[0].size();
+        }
+
+    Coordinates operator[](size_t aPointNo) const override
+        {
+            const auto& point = mData[aPointNo];
+            Coordinates result(point.size());
+            for (size_t dim = 0; dim < point.size(); ++dim)
+                result[dim] = std::get<acmacs::lispmds::number>(point[dim]);
+            return result;
+        }
+
+    double coordinate(size_t aPointNo, size_t aDimensionNo) const override
+        {
+            return std::get<acmacs::lispmds::number>(mData[aPointNo][aDimensionNo]);
+        }
+
+ private:
+    const acmacs::lispmds::value& mData;
+    size_t mNumberOfAntigens, mNumberOfSera;
+
+}; // class LispmdsLayout
 
 // ----------------------------------------------------------------------
 
-size_t LispmdsProjection::number_of_dimensions() const
+std::shared_ptr<Layout> LispmdsProjection::layout() const
 {
-    return projection_layout(mData, mIndex)[0].size();
+    return std::make_shared<LispmdsLayout>(projection_layout(mData, mIndex), mNumberOfAntigens, mNumberOfSera);
 
-} // LispmdsProjection::number_of_dimensions
-
-// ----------------------------------------------------------------------
-
-double LispmdsProjection::coordinate(size_t aPointNo, size_t aDimensionNo) const
-{
-    return std::get<acmacs::lispmds::number>(projection_layout(mData, mIndex)[aPointNo][aDimensionNo]);
-
-} // LispmdsProjection::coordinate
+} // LispmdsProjection::layout
 
 // ----------------------------------------------------------------------
 
@@ -624,7 +646,7 @@ PointIndexList LispmdsProjection::disconnected() const
 
 AvidityAdjusts LispmdsProjection::avidity_adjusts() const
 {
-    const auto num_points = number_of_points();
+    const auto num_points = layout()->number_of_points();
     const acmacs::lispmds::list& cb = projection_layout(mData, mIndex)[num_points][0][1];
     AvidityAdjusts result(num_points);
     for (size_t i = 0; i < num_points; ++i)

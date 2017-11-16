@@ -201,9 +201,7 @@ namespace acmacs::chart
         inline Acd1Projection(const rjson::object& aData) : mData{aData} {}
 
         inline double stress() const override { return mData.get_or_default("stress", 0.0); }
-        size_t number_of_dimensions() const override;
-        inline size_t number_of_points() const override { return mData.get_or_empty_array("layout").size(); }
-        double coordinate(size_t aPointNo, size_t aDimensionNo) const override;
+        std::shared_ptr<Layout> layout() const override;
         std::string comment() const override;
         inline MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("minimum_column_basis", "none"); }
         std::shared_ptr<ColumnBases> forced_column_bases() const override;

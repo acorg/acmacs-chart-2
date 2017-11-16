@@ -226,12 +226,13 @@ void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Pr
     for (const auto projection: *aProjections) {
         rjson::object& target = aTarget.insert(rjson::object{});
 
-        if (const auto number_of_points = projection->number_of_points(), number_of_dimensions = projection->number_of_dimensions(); number_of_points && number_of_dimensions) {
+        auto layout = projection->layout();
+        if (const auto number_of_points = layout->number_of_points(), number_of_dimensions = layout->number_of_dimensions(); number_of_points && number_of_dimensions) {
             rjson::array& ar = target.set_field("l", rjson::array{});
             for (size_t p_no = 0; p_no < number_of_points; ++p_no) {
                 rjson::array& p = ar.insert(rjson::array{});
                 for (size_t dim = 0; dim < number_of_dimensions; ++dim) {
-                    const auto c = projection->coordinate(p_no, dim);
+                    const auto c = layout->coordinate(p_no, dim);
                     if (std::isnan(c))
                         break;
                     p.insert(rjson::to_value(c));

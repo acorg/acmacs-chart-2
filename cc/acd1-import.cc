@@ -583,36 +583,62 @@ std::string Acd1Projection::comment() const
 
 // ----------------------------------------------------------------------
 
-size_t Acd1Projection::number_of_dimensions() const
+class Acd1Layout : public acmacs::chart::Layout
 {
-    try {
-        for (const rjson::array& row: static_cast<const rjson::array&>(mData["layout"])) {
-            if (!row.empty())
-                return row.size();
-        }
-    }
-    catch (rjson::field_not_found&) {
-    }
-    catch (std::bad_variant_access&) {
-    }
-    return 0;
+ public:
+    inline Acd1Layout(const rjson::object& aData) : mData{aData} {}
 
-} // Acd1Projection::number_of_dimensions
+    size_t number_of_points() const override
+        {
+            return mData.get_or_empty_array("layout").size();
+        }
+
+    inline size_t number_of_dimensions() const override
+        {
+            try {
+                for (const rjson::array& row: static_cast<const rjson::array&>(mData["layout"])) {
+                    if (!row.empty())
+                        return row.size();
+                }
+            }
+            catch (rjson::field_not_found&) {
+            }
+            catch (std::bad_variant_access&) {
+            }
+            return 0;
+        }
+
+    Coordinates operator[](size_t aPointNo) const override
+        {
+            const rjson::array& point = mData.get_or_empty_array("layout")[aPointNo];
+            Coordinates result(number_of_dimensions(), std::numeric_limits<double>::quiet_NaN());
+            std::transform(point.begin(), point.end(), result.begin(), [](const auto& coord) -> double { return coord; });
+            return result;
+        }
+
+    double coordinate(size_t aPointNo, size_t aDimensionNo) const override
+        {
+            const auto& point = mData.get_or_empty_array("layout")[aPointNo];
+            try {
+                return point[aDimensionNo];
+            }
+            catch (std::exception&) {
+                return std::numeric_limits<double>::quiet_NaN();
+            }
+        }
+
+ private:
+    const rjson::object& mData;
+
+}; // class Acd1Layout
 
 // ----------------------------------------------------------------------
 
-double Acd1Projection::coordinate(size_t aPointNo, size_t aDimensionNo) const
+std::shared_ptr<acmacs::chart::Layout> Acd1Projection::layout() const
 {
-    const auto& layout = mData.get_or_empty_array("layout");
-    const auto& point = layout[aPointNo];
-    try {
-        return point[aDimensionNo];
-    }
-    catch (std::exception&) {
-        return std::numeric_limits<double>::quiet_NaN();
-    }
+    return std::make_shared<Acd1Layout>(mData);
 
-} // Acd1Projection::coordinate
+} // Acd1Projection::layout
 
 // ----------------------------------------------------------------------
 

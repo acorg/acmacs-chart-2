@@ -127,7 +127,8 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Chart::computed_colum
 
 std::string acmacs::chart::Projection::make_info() const
 {
-    return std::to_string(stress()) + " " + std::to_string(number_of_dimensions()) + "d";
+    auto lt = layout();
+    return std::to_string(stress()) + " " + std::to_string(lt->number_of_dimensions()) + "d";
 
 } // acmacs::chart::Projection::make_info
 
