@@ -517,12 +517,12 @@ class LispmdsLayout : public acmacs::chart::Layout
     inline LispmdsLayout(const acmacs::lispmds::value& aData, size_t aNumberOfAntigens, size_t aNumberOfSera)
         : mData{aData}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} {}
 
-    size_t number_of_points() const override
+    size_t number_of_points() const noexcept override
         {
             return mNumberOfAntigens + mNumberOfSera;
         }
 
-    inline size_t number_of_dimensions() const override
+    inline size_t number_of_dimensions() const noexcept override
         {
             return mData[0].size();
         }

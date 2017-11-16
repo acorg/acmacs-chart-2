@@ -274,12 +274,12 @@ class AceLayout : public acmacs::chart::Layout
  public:
     inline AceLayout(const rjson::object& aData) : mData{aData} {}
 
-    size_t number_of_points() const override
+    size_t number_of_points() const noexcept override
         {
             return mData.get_or_empty_array("l").size();
         }
 
-    inline size_t number_of_dimensions() const override
+    inline size_t number_of_dimensions() const noexcept override
         {
             try {
                 for (const rjson::array& row: static_cast<const rjson::array&>(mData["l"])) {

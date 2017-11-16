@@ -400,10 +400,12 @@ namespace acmacs::chart
         virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0;
         virtual std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
         virtual std::shared_ptr<Projections> projections() const = 0;
+        inline std::shared_ptr<Projection> projection(size_t aProjectionNo) const { return (*projections())[aProjectionNo]; }
         virtual std::shared_ptr<PlotSpec> plot_spec() const = 0;
 
         virtual inline size_t number_of_antigens() const { return antigens()->size(); }
         virtual inline size_t number_of_sera() const { return sera()->size(); }
+        inline size_t number_of_points() const { return number_of_antigens() + number_of_sera(); }
         virtual inline size_t number_of_projections() const { return projections()->size(); }
 
         std::string make_info() const;
