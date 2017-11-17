@@ -316,13 +316,23 @@ namespace acmacs::chart
         inline void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }
         inline void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); }); }
 
-        inline std::optional<size_t> find_by_full_name(std::string aFullName) const
+        virtual inline std::optional<size_t> find_by_full_name(std::string aFullName) const
             {
                 const auto found = std::find_if(begin(), end(), [aFullName](auto antigen) -> bool { return antigen->full_name() == aFullName; });
                 if (found == end())
                     return {};
                 else
                     return found.index();
+            }
+
+        virtual inline Indexes find_by_name(std::string aName) const
+            {
+                Indexes indexes;
+                for (auto iter = begin(); iter != end(); ++iter) {
+                    if ((*iter)->name() == aName)
+                        indexes.push_back(iter.index());
+                }
+                return indexes;
             }
 
      private:
@@ -366,13 +376,23 @@ namespace acmacs::chart
         inline void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }
         inline void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); }); }
 
-        inline std::optional<size_t> find_by_full_name(std::string aFullName) const
+        virtual inline std::optional<size_t> find_by_full_name(std::string aFullName) const
             {
                 const auto found = std::find_if(begin(), end(), [aFullName](auto serum) -> bool { return serum->full_name() == aFullName; });
                 if (found == end())
                     return {};
                 else
                     return found.index();
+            }
+
+        virtual inline Indexes find_by_name(std::string aName) const
+            {
+                Indexes indexes;
+                for (auto iter = begin(); iter != end(); ++iter) {
+                    if ((*iter)->name() == aName)
+                        indexes.push_back(iter.index());
+                }
+                return indexes;
             }
 
      private:
