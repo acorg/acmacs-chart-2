@@ -53,6 +53,154 @@ std::string acmacs::chart::Chart::lineage() const
 
 // ----------------------------------------------------------------------
 
+class TiterDistance
+{
+ public:
+    inline TiterDistance(acmacs::chart::Titer aTiter, double aColumnBase, double aDistance)
+        : titer(aTiter), similarity(aTiter.is_dont_care() ? 0.0 : aTiter.logged_for_column_bases()),
+          final_similarity(std::min(aColumnBase, similarity)), distance(aDistance) {}
+    inline TiterDistance() : similarity(0), final_similarity(0), distance(std::numeric_limits<double>::quiet_NaN()) {}
+    inline operator bool() const { return !titer.is_dont_care(); }
+
+    acmacs::chart::Titer titer;
+    double similarity;
+    double final_similarity;
+    double distance;
+};
+
+inline std::ostream& operator << (std::ostream& out, const TiterDistance& td)
+{
+    if (td)
+        return out << "t:" << td.titer << " s:" << td.similarity << " f:" << td.final_similarity << " d:" << td.distance << std::endl;
+    else
+        return out << "dont-care" << std::endl;
+}
+
+class SerumCircleRadiusCalculationError : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+
+double acmacs::chart::Chart::serum_circle_radius(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool aVerbose) const
+{
+    if (aVerbose)
+        std::cerr << "DEBUG: serum_circle_radius for [sr:" << aSerumNo << ' ' << serum(aSerumNo)->full_name() << "] [ag:" << aAntigenNo << ' ' << antigen(aAntigenNo)->full_name() << ']' << std::endl;
+    try {
+        auto prj = projection(aProjectionNo);
+        auto layout = prj->layout();
+        auto tts = titers();
+        double cb;
+        if (auto forced = prj->forced_column_bases(); forced->exists())
+            cb = forced->column_basis(aSerumNo);
+        else
+            cb = computed_column_bases(prj->minimum_column_basis())->column_basis(aSerumNo);
+        std::vector<TiterDistance> titers_and_distances(number_of_antigens());
+        size_t max_titer_for_serum_ag_no = 0;
+        for (size_t ag_no = 0; ag_no < number_of_antigens(); ++ag_no) {
+            const auto titer = tts->titer(ag_no, aSerumNo);
+            if (!titer.is_dont_care()) {
+                  // TODO: antigensSeraTitersMultipliers (acmacs/plot/serum_circle.py:113)
+                titers_and_distances[ag_no] = TiterDistance(titer, cb, layout->distance(ag_no, aSerumNo + number_of_antigens()));
+                if (max_titer_for_serum_ag_no != ag_no && titers_and_distances[max_titer_for_serum_ag_no].final_similarity < titers_and_distances[ag_no].final_similarity)
+                    max_titer_for_serum_ag_no = ag_no;
+            }
+            else if (ag_no == aAntigenNo)
+                throw SerumCircleRadiusCalculationError("no homologous titer");
+        }
+        const double protection_boundary_titer = titers_and_distances[aAntigenNo].final_similarity - 2.0;
+        if (protection_boundary_titer < 1.0)
+            throw SerumCircleRadiusCalculationError("titer is too low, protects everything");
+        // if (aVerbose) std::cerr << "DEBUG: titers_and_distances: " << titers_and_distances << std::endl;
+        if (aVerbose) std::cerr << "DEBUG: serum_circle_radius protection_boundary_titer: " << protection_boundary_titer << std::endl;
+
+          // sort antigen indices by antigen distance from serum, closest first
+        auto antigens_by_distances_sorting = [&titers_and_distances](size_t a, size_t b) -> bool {
+            const auto& aa = titers_and_distances[a];
+            if (aa) {
+                const auto& bb = titers_and_distances[b];
+                return bb ? aa.distance < bb.distance : true;
+            }
+            else
+                return false;
+        };
+        Indexes antigens_by_distances(acmacs::incrementer<size_t>::begin(0), acmacs::incrementer<size_t>::end(number_of_antigens()));
+        std::sort(antigens_by_distances.begin(), antigens_by_distances.end(), antigens_by_distances_sorting);
+          //if (aVerbose) std::cerr << "DEBUG: antigens_by_distances " << antigens_by_distances << std::endl;
+
+        constexpr const size_t None = static_cast<size_t>(-1);
+        size_t best_sum = None;
+        size_t previous = None;
+        double sum_radii = 0;
+        size_t num_radii = 0;
+        for (size_t ag_no: antigens_by_distances) {
+            if (!titers_and_distances[ag_no])
+                break;
+            if (!std::isnan(titers_and_distances[ag_no].distance)) {
+                const double radius = previous == None ? titers_and_distances[ag_no].distance : (titers_and_distances[ag_no].distance + titers_and_distances[previous].distance) / 2.0;
+                size_t protected_outside = 0, not_protected_inside = 0; // , protected_inside = 0, not_protected_outside = 0;
+                for (const auto& protection_data: titers_and_distances) {
+                    if (protection_data) {
+                        const bool inside = protection_data.distance <= radius;
+                        const bool protectd = protection_data.titer.is_regular() ? protection_data.final_similarity >= protection_boundary_titer : protection_data.final_similarity > protection_boundary_titer;
+                        if (protectd && !inside)
+                            ++protected_outside;
+                        else if (!protectd && inside)
+                            ++not_protected_inside;
+                    }
+                }
+                const size_t summa = protected_outside + not_protected_inside;
+                if (best_sum == None || best_sum >= summa) { // if sums are the same, choose the smaller radius (found earlier)
+                    if (best_sum == summa) {
+                        if (aVerbose)
+                            std::cerr << "DEBUG: AG " << ag_no << " radius:" << radius << " distance:" << titers_and_distances[ag_no].distance << " prev:" << static_cast<int>(previous) << " protected_outside:" << protected_outside << " not_protected_inside:" << not_protected_inside << " best_sum:" << best_sum << std::endl;
+                        sum_radii += radius;
+                        ++num_radii;
+                    }
+                    else {
+                        if (aVerbose)
+                            std::cerr << "======================================================================" << std::endl
+                                      << "DEBUG: AG " << ag_no << " radius:" << radius << " distance:" << titers_and_distances[ag_no].distance << " prev:" << static_cast<int>(previous) << " protected_outside:" << protected_outside << " not_protected_inside:" << not_protected_inside << " best_sum:" << best_sum << std::endl;
+                        sum_radii = radius;
+                        num_radii = 1;
+                        best_sum = summa;
+                    }
+                }
+                  // std::cerr << "AG " << ag_no << " radius:" << radius << " protected_outside:" << protected_outside << " not_protected_inside:" << not_protected_inside << " best_sum:" << best_sum << std::endl;
+                previous = ag_no;
+            }
+        }
+        return sum_radii / num_radii;
+    }
+    catch (SerumCircleRadiusCalculationError& err) {
+        std::cerr << "WARNING: " << "Cannot calculate serum projection radius for sr " << aSerumNo << " ag " << aAntigenNo << ": " << err.what() << std::endl;
+        return -1;
+    }
+
+} // acmacs::chart::Chart::serum_circle_radius
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const
+{
+    auto tts = titers();
+    const Titer homologous_titer = tts->titer(aAntigenNo, aSerumNo);
+    if (!homologous_titer.is_regular())
+        throw std::runtime_error("serum_coverage: cannot handle non-regular homologous titer: " + homologous_titer.data());
+    const double titer_threshold = homologous_titer.logged() - 2;
+    if (titer_threshold <= 0)
+        throw std::runtime_error("serum_coverage: homologous titer is too low: " + homologous_titer.data());
+    for (size_t ag_no = 0; ag_no < number_of_antigens(); ++ag_no) {
+        const Titer titer = tts->titer(ag_no, aSerumNo);
+        const double value = titer.is_dont_care() ? -1 : titer.logged_for_column_bases();
+        if (value >= titer_threshold)
+            aWithin4Fold.push_back(ag_no);
+        else if (value >= 0 && value < titer_threshold)
+            aOutside4Fold.push_back(ag_no);
+    }
+    if (aWithin4Fold.empty())
+        throw std::runtime_error("serum_coverage: no antigens within 4fold from homologous titer (for serum coverage)"); // BUG? at least homologous antigen must be there!
+
+} // acmacs::chart::Chart::serum_coverage
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Info::make_info() const
 {
     const auto n_sources = number_of_sources();

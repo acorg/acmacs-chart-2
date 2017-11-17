@@ -502,7 +502,7 @@ namespace acmacs::chart
 
     class Chart
     {
-      public:
+     public:
         virtual ~Chart();
 
         virtual std::shared_ptr<Info> info() const = 0;
@@ -526,6 +526,12 @@ namespace acmacs::chart
 
         std::string make_info() const;
         std::string make_name(std::optional<size_t> aProjectionNo = {}) const;
+
+          // Negative radius means calculation failed (e.g. no homologous titer)
+        double serum_circle_radius(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool aVerbose = false) const;
+          // aWithin4Fold: indices of antigens within 4fold from homologous titer
+          // aOutside4Fold: indices of antigens with titers against aSerumNo outside 4fold distance from homologous titer
+        void serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const;
 
     }; // class Chart
 

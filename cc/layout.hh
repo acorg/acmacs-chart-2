@@ -54,6 +54,13 @@ namespace acmacs::chart
         acmacs::BoundingBall* minimum_bounding_ball() const;
         void min_max_points(Indexes& aMin, Indexes& aMax) const;
 
+        inline double distance(size_t p1, size_t p2, double no_distance = std::numeric_limits<double>::quiet_NaN()) const
+        {
+            auto c1 = operator[](p1);
+            auto c2 = operator[](p2);
+            return (c1.not_nan() && c2.not_nan()) ? c1.distance(c2) : no_distance;
+        }
+
      private:
         void bounding_ball_extend(BoundingBall& aBoundingBall) const;
 
