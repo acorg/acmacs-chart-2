@@ -24,8 +24,10 @@ namespace acmacs::chart
             using reference = Reference;
 
             constexpr inline iterator& operator++() { ++mIndex; return *this; }
+            constexpr inline bool operator==(const iterator& other) const { return &mParent == &other.mParent && mIndex == other.mIndex; }
             constexpr inline bool operator!=(const iterator& other) const { return &mParent != &other.mParent || mIndex != other.mIndex; }
             constexpr inline reference operator*() { return mParent[mIndex]; }
+            constexpr inline size_t index() const { return mIndex; }
 
          private:
             inline iterator(const Parent& aParent, size_t aIndex) : mParent{aParent}, mIndex{aIndex} {}
@@ -311,8 +313,17 @@ namespace acmacs::chart
         inline void filter_date_range(Indexes& aIndexes, std::string first_date, std::string after_last_date) const { remove(aIndexes, [=](const auto& entry) -> bool { return !entry.date().within_range(first_date, after_last_date); }); }
         void filter_country(Indexes& aIndexes, std::string aCountry) const;
         void filter_continent(Indexes& aIndexes, std::string aContinent) const;
-        // inline void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }
-        // inline void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); }); }
+        inline void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }
+        inline void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); }); }
+
+        inline std::optional<size_t> find_by_full_name(std::string aFullName) const
+            {
+                const auto found = std::find_if(begin(), end(), [aFullName](auto antigen) -> bool { return antigen->full_name() == aFullName; });
+                if (found == end())
+                    return {};
+                else
+                    return found.index();
+            }
 
      private:
         inline Indexes make_indexes(std::function<bool (const Antigen& ag)> test) const
@@ -352,6 +363,17 @@ namespace acmacs::chart
         inline void filter_serum_id(Indexes& aIndexes, std::string aSerumId) const { remove(aIndexes, [&aSerumId](const auto& entry) -> bool { return entry.serum_id() != aSerumId; }); }
         void filter_country(Indexes& aIndexes, std::string aCountry) const;
         void filter_continent(Indexes& aIndexes, std::string aContinent) const;
+        inline void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }
+        inline void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); }); }
+
+        inline std::optional<size_t> find_by_full_name(std::string aFullName) const
+            {
+                const auto found = std::find_if(begin(), end(), [aFullName](auto serum) -> bool { return serum->full_name() == aFullName; });
+                if (found == end())
+                    return {};
+                else
+                    return found.index();
+            }
 
      private:
         inline void remove(Indexes& aIndexes, std::function<bool (const Serum&)> aFilter) const
