@@ -29,6 +29,30 @@ std::string acmacs::chart::Chart::make_name() const
 
 // ----------------------------------------------------------------------
 
+std::string acmacs::chart::Chart::lineage() const
+{
+    std::set<BLineage> lineages;
+    auto ags = antigens();
+    for (auto antigen: *ags) {
+        if (const auto lineage = antigen->lineage(); lineage != BLineage::Unknown)
+            lineages.insert(lineage);
+    }
+    switch (lineages.size()) {
+      case 0:
+          return {};
+      case 1:
+          return *lineages.begin() == BLineage::Victoria ? "VICTORIA" : "YAMAGATA";
+      case 2:
+          return "VICTORIA+YAMAGATA";
+      default:
+          return "VICTORIA+YAMAGATA+";
+    }
+    // return {};
+
+} // acmacs::chart::Chart::lineage
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Info::make_info() const
 {
     const auto n_sources = number_of_sources();

@@ -501,6 +501,7 @@ namespace acmacs::chart
 
         inline std::shared_ptr<Antigen> antigen(size_t aAntigenNo) const { return antigens()->operator[](aAntigenNo); }
         inline std::shared_ptr<Serum> serum(size_t aSerumNo) const { return sera()->operator[](aSerumNo); }
+        std::string lineage() const;
 
         std::string make_info() const;
         std::string make_name() const;
