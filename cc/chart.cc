@@ -41,7 +41,7 @@ std::string acmacs::chart::Chart::lineage() const
       case 0:
           return {};
       case 1:
-          return *lineages.begin() == BLineage::Victoria ? "VICTORIA" : "YAMAGATA";
+          return *lineages.begin();
       case 2:
           return "VICTORIA+YAMAGATA";
       default:
@@ -198,6 +198,22 @@ void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, In
         throw std::runtime_error("serum_coverage: no antigens within 4fold from homologous titer (for serum coverage)"); // BUG? at least homologous antigen must be there!
 
 } // acmacs::chart::Chart::serum_coverage
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::BLineage::Lineage acmacs::chart::BLineage::from(std::string aSource)
+{
+    if (!aSource.empty()) {
+        switch (aSource[0]) {
+          case 'Y':
+              return Yamagata;
+          case 'V':
+              return Victoria;
+        }
+    }
+    return Unknown;
+
+} // acmacs::chart::BLineage::from
 
 // ----------------------------------------------------------------------
 

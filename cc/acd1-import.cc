@@ -449,28 +449,15 @@ Annotations Acd1Serum::annotations() const
 
 // ----------------------------------------------------------------------
 
-static inline BLineage b_lineage(std::string aLin)
-{
-    if (!aLin.empty()) {
-        switch (aLin[0]) {
-          case 'Y':
-              return BLineage::Yamagata;
-          case 'V':
-              return BLineage::Victoria;
-        }
-    }
-    return BLineage::Unknown;
-}
-
 BLineage Acd1Antigen::lineage() const
 {
-    return b_lineage(mData.get_or_default("lineage", ""));
+    return mData.get_or_default("lineage", "");
 
 } // Acd1Antigen::lineage
 
 BLineage Acd1Serum::lineage() const
 {
-    return b_lineage(mData.get_or_default("lineage", ""));
+    return mData.get_or_default("lineage", "");
 
 } // Acd1Serum::lineage
 

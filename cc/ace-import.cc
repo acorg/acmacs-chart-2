@@ -165,28 +165,15 @@ std::string AceInfo::date(Compute aCompute) const
 
 // ----------------------------------------------------------------------
 
-static inline BLineage b_lineage(std::string aLin)
-{
-    if (!aLin.empty()) {
-        switch (aLin[0]) {
-          case 'Y':
-              return BLineage::Yamagata;
-          case 'V':
-              return BLineage::Victoria;
-        }
-    }
-    return BLineage::Unknown;
-}
-
 BLineage AceAntigen::lineage() const
 {
-    return b_lineage(mData.get_or_default("L", ""));
+    return mData.get_or_default("L", "");
 
 } // AceAntigen::lineage
 
 BLineage AceSerum::lineage() const
 {
-    return b_lineage(mData.get_or_default("L", ""));
+    return mData.get_or_default("L", "");
 
 } // AceSerum::lineage
 

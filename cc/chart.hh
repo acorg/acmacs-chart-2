@@ -91,7 +91,39 @@ namespace acmacs::chart
 
     }; // class Date
 
-    enum class BLineage { Unknown, Victoria, Yamagata };
+    class BLineage
+    {
+     public:
+        enum Lineage { Unknown, Victoria, Yamagata };
+
+        inline BLineage() = default;
+        inline BLineage(Lineage lineage) : mLineage{lineage} {}
+        inline BLineage(const BLineage&) = default;
+        inline BLineage(std::string lineage) : mLineage{from(lineage)} {}
+        inline BLineage& operator=(Lineage lineage) { mLineage = lineage; return *this; }
+        inline BLineage& operator=(const BLineage&) = default;
+        inline BLineage& operator=(std::string lineage) { mLineage = from(lineage); return *this; }
+
+        inline operator std::string() const
+            {
+                switch (mLineage) {
+                  case Victoria:
+                      return "VICTORIA";
+                  case Yamagata:
+                      return "YAMAGATA";
+                  case BLineage::Unknown:
+                      return "UNKNOWN";
+                }
+            }
+
+        inline operator Lineage() const { return mLineage; }
+
+     private:
+        Lineage mLineage{Unknown};
+
+        static Lineage from(std::string aSource);
+
+    }; // class BLineage
 
     class LabIds : public internal::string_list_data
     {
@@ -545,15 +577,13 @@ template <> struct std::iterator_traits<acmacs::chart::Projections::iterator> { 
 
 // ----------------------------------------------------------------------
 
-inline std::ostream& operator<<(std::ostream& s, const acmacs::chart::BLineage lineage)
+inline std::ostream& operator<<(std::ostream& s, const acmacs::chart::BLineage& lineage)
 {
     using namespace acmacs::chart;
-    switch (lineage) {
+    switch (static_cast<BLineage::Lineage>(lineage)) {
       case BLineage::Victoria:
-          s << "VICTORIA";
-          break;
       case BLineage::Yamagata:
-          s << "Yamagata";
+          s << static_cast<std::string>(lineage);
           break;
       case BLineage::Unknown:
           break;

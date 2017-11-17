@@ -79,6 +79,23 @@ void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aI
 
 // ----------------------------------------------------------------------
 
+static inline void export_lineage(rjson::object& object, acmacs::chart::BLineage lineage)
+{
+    switch (static_cast<acmacs::chart::BLineage::Lineage>(lineage)) {
+      case acmacs::chart::BLineage::Victoria:
+          object.set_field("L", rjson::string{"V"});
+          break;
+      case acmacs::chart::BLineage::Yamagata:
+          object.set_field("L", rjson::string{"Y"});
+          break;
+      case acmacs::chart::BLineage::Unknown:
+          break;
+    }
+
+} // export_lineage
+
+// ----------------------------------------------------------------------
+
 void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens)
 {
     for (auto antigen: *aAntigens) {
@@ -93,17 +110,7 @@ void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antig
             object.set_field("S", rjson::string{"R"});
         object.set_array_field_if_not_empty("a", antigen->annotations());
         object.set_array_field_if_not_empty("c", antigen->clades());
-
-        switch (antigen->lineage()) {
-          case acmacs::chart::BLineage::Victoria:
-              object.set_field("L", rjson::string{"V"});
-              break;
-          case acmacs::chart::BLineage::Yamagata:
-              object.set_field("L", rjson::string{"Y"});
-              break;
-          case acmacs::chart::BLineage::Unknown:
-              break;
-        }
+        export_lineage(object, antigen->lineage());
     }
 
 } // export_antigens
@@ -122,17 +129,7 @@ void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSe
         object.set_array_field_if_not_empty("a", serum->annotations());
         object.set_field_if_not_empty("s", static_cast<const std::string&>(serum->serum_species()));
         object.set_array_field_if_not_empty("h", serum->homologous_antigens());
-
-        switch (serum->lineage()) {
-          case acmacs::chart::BLineage::Victoria:
-              object.set_field("L", rjson::string{"V"});
-              break;
-          case acmacs::chart::BLineage::Yamagata:
-              object.set_field("L", rjson::string{"Y"});
-              break;
-          case acmacs::chart::BLineage::Unknown:
-              break;
-        }
+        export_lineage(object, serum->lineage());
     }
 
 } // export_sera
