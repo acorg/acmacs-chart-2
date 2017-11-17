@@ -432,7 +432,7 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::object& aSrc, size_t aPoint
                       result.outline_width = Pixels{field_value};
                       break;
                   case 's':
-                      result.size = field_value;
+                      result.size = Pixels{field_value};
                       break;
                   case 'r':
                       result.rotation = Rotation{field_value};

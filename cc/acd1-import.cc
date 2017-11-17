@@ -820,7 +820,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::object& aSrc, size_t aPoin
             else if (field_name == "shape")
                 result.shape = static_cast<std::string>(field_value);
             else if (field_name == "size")
-                result.size = field_value;
+                result.size = Pixels{field_value};
             else if (field_name == "rotation")
                 result.rotation = Rotation{field_value};
             else if (field_name == "aspect")

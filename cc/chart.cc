@@ -1,4 +1,6 @@
 #include "acmacs-base/string.hh"
+#include "acmacs-base/virus-name.hh"
+#include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart.hh"
 
 // ----------------------------------------------------------------------
@@ -142,6 +144,53 @@ std::string acmacs::chart::Projections::make_info() const
     return result;
 
 } // acmacs::chart::Projections::make_info
+
+// ----------------------------------------------------------------------
+
+static inline std::string name_abbreviated(std::string aName)
+{
+    try {
+        std::string virus_type, host, location, isolation, year, passage;
+        virus_name::split(aName, virus_type, host, location, isolation, year, passage);
+        return string::join("/", {get_locdb().abbreviation(location), isolation, year.substr(2)});
+    }
+    catch (virus_name::Unrecognized&) {
+        return aName;
+    }
+
+} // name_abbreviated
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::Antigen::name_abbreviated() const
+{
+    return ::name_abbreviated(name());
+
+} // acmacs::chart::Antigen::name_abbreviated
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::Antigen::location_abbreviated() const
+{
+    return get_locdb().abbreviation(virus_name::location(name()));
+
+} // acmacs::chart::Antigen::location_abbreviated
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::Serum::name_abbreviated() const
+{
+    return ::name_abbreviated(name());
+
+} // acmacs::chart::Serum::name_abbreviated
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::Serum::location_abbreviated() const
+{
+    return get_locdb().abbreviation(virus_name::location(name()));
+
+} // acmacs::chart::Serum::location_abbreviated
 
 // ----------------------------------------------------------------------
 

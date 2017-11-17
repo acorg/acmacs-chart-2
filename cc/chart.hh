@@ -245,6 +245,13 @@ namespace acmacs::chart
 
         inline std::string full_name() const { return string::join(" ", {name(), reassortant(), string::join(" ", annotations()), passage()}); }
         inline std::string full_name_without_passage() const { return string::join(" ", {name(), reassortant(), string::join(" ", annotations())}); }
+        inline std::string abbreviated_name() const { return string::join(" ", {name_abbreviated(), reassortant(), string::join(" ", annotations())}); }
+        inline std::string abbreviated_name_with_passage_type() const { return string::join("-", {name_abbreviated(), reassortant(), string::join(" ", annotations()), passage_type()}); }
+        inline std::string abbreviated_location_with_passage_type() const { return string::join(" ", {location_abbreviated(), passage_type()}); }
+
+        std::string name_abbreviated() const;
+        std::string location_abbreviated() const;
+        inline std::string passage_type() const { return passage().passage_type(); }
 
     }; // class Antigen
 
@@ -266,6 +273,11 @@ namespace acmacs::chart
 
         inline std::string full_name() const { return string::join(" ", {name(), reassortant(), serum_id(), string::join(" ", annotations())}); }
         inline std::string full_name_without_passage() const { return full_name(); }
+        inline std::string abbreviated_name() const { return string::join(" ", {name_abbreviated(), reassortant(), string::join(" ", annotations())}); }
+        inline std::string abbreviated_name_with_passage_type() const { return abbreviated_name(); }
+
+        std::string name_abbreviated() const;
+        std::string location_abbreviated() const;
 
     }; // class Serum
 

@@ -286,7 +286,7 @@ std::string make_color(Color aColor)
 std::string point_style(const acmacs::PointStyle& aStyle)
 {
     std::string result;
-    result.append(" :DS " + acmacs::to_string(aStyle.size * acmacs::lispmds::DS_SCALE));
+    result.append(" :DS " + acmacs::to_string(aStyle.size->value() * acmacs::lispmds::DS_SCALE));
     if (aStyle.label.shown) {
         if (aStyle.label_text.not_default())
             result.append(" :WN \"" + static_cast<std::string>(*aStyle.label_text) + "\"");

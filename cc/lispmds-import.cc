@@ -778,7 +778,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, size_t aPointNo
 void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::lispmds::list& aSource) const
 {
     try {
-        aTarget.size = static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":DS"])) / acmacs::lispmds::DS_SCALE;
+        aTarget.size = Pixels{std::get<acmacs::lispmds::number>(aSource[":DS"])} / acmacs::lispmds::DS_SCALE;
           // if antigen also divide size by 2 ?
     }
     catch (std::exception&) {
