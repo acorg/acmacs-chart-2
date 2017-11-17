@@ -28,6 +28,10 @@ namespace acmacs::chart
             inline bool empty() const noexcept { return mData.empty(); }
             inline bool size() const noexcept { return mData.size(); }
             inline char operator[](size_t index) const noexcept { return mData[index]; }
+            inline bool operator == (const string_data& other) const { return data() == other.data(); }
+            inline bool operator != (const string_data& other) const { return !operator==(other); }
+            inline bool operator == (std::string other) const { return data() == other; }
+            inline bool operator != (std::string other) const { return !operator==(other); }
 
             constexpr inline const std::string& data() const noexcept { return mData; }
             constexpr inline operator const std::string&() const noexcept { return mData; }

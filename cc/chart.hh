@@ -84,6 +84,8 @@ namespace acmacs::chart
      public:
         using internal::string_data::string_data;
 
+        inline bool within_range(std::string first_date, std::string after_last_date) const { return !data().empty() && (first_date.empty() || data() >= first_date) && (after_last_date.empty() || data() < after_last_date); }
+
     }; // class Date
 
     enum class BLineage { Unknown, Victoria, Yamagata };
@@ -286,7 +288,7 @@ namespace acmacs::chart
 
     class Antigens
     {
-      public:
+     public:
         virtual ~Antigens();
 
         virtual size_t size() const = 0;
@@ -301,6 +303,17 @@ namespace acmacs::chart
         inline Indexes egg_indexes() const { return make_indexes([](const Antigen& ag) { return ag.passage().is_egg() || !ag.reassortant().empty(); }); }
         inline Indexes reassortant_indexes() const { return make_indexes([](const Antigen& ag) { return !ag.reassortant().empty(); }); }
 
+        inline void filter_reference(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.reference(); }); }
+        inline void filter_test(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return entry.reference(); }); }
+        inline void filter_egg(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.passage().is_egg(); }); }
+        inline void filter_cell(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.passage().is_cell(); }); }
+        inline void filter_reassortant(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); }); }
+        inline void filter_date_range(Indexes& aIndexes, std::string first_date, std::string after_last_date) const { remove(aIndexes, [=](const auto& entry) -> bool { return !entry.date().within_range(first_date, after_last_date); }); }
+        void filter_country(Indexes& aIndexes, std::string aCountry) const;
+        void filter_continent(Indexes& aIndexes, std::string aContinent) const;
+        // inline void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }
+        // inline void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); }); }
+
      private:
         inline Indexes make_indexes(std::function<bool (const Antigen& ag)> test) const
             {
@@ -310,6 +323,11 @@ namespace acmacs::chart
                         result.push_back(no);
                 return result;
             }
+
+        inline void remove(Indexes& aIndexes, std::function<bool (const Antigen&)> aFilter) const
+        {
+            aIndexes.erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
+        }
 
     }; // class Antigens
 
@@ -330,6 +348,16 @@ namespace acmacs::chart
             {
                 return acmacs::filled_with_indexes(size());
             }
+
+        inline void filter_serum_id(Indexes& aIndexes, std::string aSerumId) const { remove(aIndexes, [&aSerumId](const auto& entry) -> bool { return entry.serum_id() != aSerumId; }); }
+        void filter_country(Indexes& aIndexes, std::string aCountry) const;
+        void filter_continent(Indexes& aIndexes, std::string aContinent) const;
+
+     private:
+        inline void remove(Indexes& aIndexes, std::function<bool (const Serum&)> aFilter) const
+        {
+            aIndexes.erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
+        }
 
     }; // class Sera
 

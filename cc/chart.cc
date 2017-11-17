@@ -218,6 +218,68 @@ std::string acmacs::chart::Serum::location_abbreviated() const
 
 // ----------------------------------------------------------------------
 
+static inline bool not_in_country(std::string aName, std::string aCountry)
+{
+    try {
+        return get_locdb().country(virus_name::location(aName)) != aCountry;
+    }
+    catch (virus_name::Unrecognized&) {
+    }
+    catch (LocationNotFound&) {
+    }
+    return true;
+
+} // AntigensSera<AgSr>::filter_country
+
+// ----------------------------------------------------------------------
+
+static inline bool not_in_continent(std::string aName, std::string aContinent)
+{
+    try {
+        return get_locdb().continent(virus_name::location(aName)) != aContinent;
+    }
+    catch (virus_name::Unrecognized&) {
+    }
+    catch (LocationNotFound&) {
+    }
+    return true;
+
+} // AntigensSera<AgSr>::filter_continent
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Antigens::filter_country(Indexes& aIndexes, std::string aCountry) const
+{
+    remove(aIndexes, [aCountry](const auto& entry) { return not_in_country(entry.name(), aCountry); });
+
+} // acmacs::chart::Antigens::filter_country
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Antigens::filter_continent(Indexes& aIndexes, std::string aContinent) const
+{
+    remove(aIndexes, [aContinent](const auto& entry) { return not_in_continent(entry.name(), aContinent); });
+
+} // acmacs::chart::Antigens::filter_continent
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Sera::filter_country(Indexes& aIndexes, std::string aCountry) const
+{
+    remove(aIndexes, [aCountry](const auto& entry) { return not_in_country(entry.name(), aCountry); });
+
+} // acmacs::chart::Sera::filter_country
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Sera::filter_continent(Indexes& aIndexes, std::string aContinent) const
+{
+    remove(aIndexes, [aContinent](const auto& entry) { return not_in_continent(entry.name(), aContinent); });
+
+} // acmacs::chart::Sera::filter_continent
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::Chart::~Chart()
 {
 } // acmacs::chart::Chart::~Chart
