@@ -320,7 +320,7 @@ namespace rjson
     template <> struct content_type<acmacs::FontSlant> { using type = rjson::string; };
     template <> struct content_type<acmacs::FontWeight> { using type = rjson::string; };
 
-    template <char Tag> inline value to_value(_acmacs_base_internal::SizeScale<Tag> aValue) { return to_value(aValue.value()); }
+    template <char Tag> inline value to_value(acmacs::internal::SizeScale<Tag> aValue) { return to_value(aValue.value()); }
 
     inline value to_value(const acmacs::Offset aValue) { return array{aValue.x, aValue.y}; }
 

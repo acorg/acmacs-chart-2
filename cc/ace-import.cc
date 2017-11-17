@@ -382,6 +382,7 @@ acmacs::PointStyle AcePlotSpec::style(size_t aPointNo) const
     try {
         const rjson::array& indices = mData["p"];
         const size_t style_no = indices[aPointNo];
+        // std::cerr << "style " << aPointNo << ' ' << style_no << ' ' << mData["P"][style_no].to_json() << '\n';
         return extract(mData["P"][style_no], aPointNo, style_no);
     }
     catch (std::exception& err) {
