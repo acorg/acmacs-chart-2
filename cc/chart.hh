@@ -544,6 +544,24 @@ template <> struct std::iterator_traits<acmacs::chart::Sera::iterator> { using r
 template <> struct std::iterator_traits<acmacs::chart::Projections::iterator> { using reference = typename acmacs::chart::Projections::iterator::reference; };
 
 // ----------------------------------------------------------------------
+
+inline std::ostream& operator<<(std::ostream& s, const acmacs::chart::BLineage lineage)
+{
+    using namespace acmacs::chart;
+    switch (lineage) {
+      case BLineage::Victoria:
+          s << "VICTORIA";
+          break;
+      case BLineage::Yamagata:
+          s << "Yamagata";
+          break;
+      case BLineage::Unknown:
+          break;
+    }
+    return s;
+}
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
