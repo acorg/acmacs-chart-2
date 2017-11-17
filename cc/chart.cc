@@ -16,11 +16,11 @@ std::string acmacs::chart::Chart::make_info() const
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::Chart::make_name() const
+std::string acmacs::chart::Chart::make_name(std::optional<size_t> aProjectionNo) const
 {
     std::string n = info()->make_name();
-    if (auto prjs = projections(); !prjs->empty()) {
-        auto prj = (*prjs)[0];
+    if (auto prjs = projections(); !prjs->empty() && (!aProjectionNo || *aProjectionNo < prjs->size())) {
+        auto prj = (*prjs)[aProjectionNo ? *aProjectionNo : 0];
         n += " >=" + static_cast<std::string>(prj->minimum_column_basis()) + " " + std::to_string(prj->stress());
     }
     return n;

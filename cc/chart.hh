@@ -525,7 +525,7 @@ namespace acmacs::chart
         std::string lineage() const;
 
         std::string make_info() const;
-        std::string make_name() const;
+        std::string make_name(std::optional<size_t> aProjectionNo = {}) const;
 
     }; // class Chart
 
