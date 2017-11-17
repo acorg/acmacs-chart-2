@@ -627,6 +627,8 @@ class Acd1Layout : public acmacs::chart::Layout
             }
         }
 
+    void set(size_t /*aPointNo*/, const Coordinates& /*aCoordinates*/) override { throw acmacs::chart::chart_is_read_only{"Acd1Layout::set: cannot modify"}; }
+
  private:
     const rjson::object& mData;
 

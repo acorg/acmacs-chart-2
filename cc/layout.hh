@@ -48,6 +48,7 @@ namespace acmacs::chart
         virtual size_t number_of_dimensions() const noexcept = 0;
         virtual Coordinates operator[](size_t aPointNo) const = 0;
         virtual double coordinate(size_t aPointNo, size_t aDimensionNo) const = 0;
+        virtual void set(size_t aPointNo, const Coordinates& aCoordinates) = 0;
 
         Layout* transform(const Transformation& aTransformation) const;
         acmacs::BoundingBall* minimum_bounding_ball() const;
@@ -71,6 +72,7 @@ namespace acmacs::chart
             inline size_t number_of_dimensions() const noexcept override { return mData.empty() ? 0 : mData[0].size(); }
             inline Coordinates operator[](size_t aPointNo) const override { return mData[aPointNo]; }
             inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override { return mData[aPointNo][aDimensionNo]; }
+            inline void set(size_t aPointNo, const Coordinates& aCoordinates) override { mData[aPointNo] = aCoordinates; }
 
             inline Coordinates& operator[](size_t aPointNo) { return mData[aPointNo]; }
 

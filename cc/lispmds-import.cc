@@ -541,6 +541,8 @@ class LispmdsLayout : public acmacs::chart::Layout
             return std::get<acmacs::lispmds::number>(mData[aPointNo][aDimensionNo]);
         }
 
+    void set(size_t /*aPointNo*/, const Coordinates& /*aCoordinates*/) override { throw acmacs::chart::chart_is_read_only{"LispmdsLayout::set: cannot modify"}; }
+
  private:
     const acmacs::lispmds::value& mData;
     size_t mNumberOfAntigens, mNumberOfSera;

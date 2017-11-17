@@ -44,6 +44,7 @@ namespace acmacs::chart
 
     class data_not_available : public std::runtime_error { public: using std::runtime_error::runtime_error; };
     class invalid_titer : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+    class chart_is_read_only : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
 // ----------------------------------------------------------------------
 
