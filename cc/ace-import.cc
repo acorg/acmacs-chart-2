@@ -12,6 +12,14 @@ using namespace acmacs::chart;
 
 // ----------------------------------------------------------------------
 
+bool acmacs::chart::is_ace(const std::string_view& aData)
+{
+    return aData.size() > 35 && aData.front() == '{' && aData.find("\"acmacs-ace-v1\"") != std::string_view::npos;
+
+} // acmacs::chart::is_ace
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<Chart> acmacs::chart::ace_import(const std::string_view& aData, Verify aVerify)
 {
     auto chart = std::make_shared<AceChart>(rjson::parse_string(aData));

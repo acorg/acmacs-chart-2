@@ -28,11 +28,7 @@ namespace acmacs::chart
 
     }; // class Chart
 
-    inline bool is_ace(const std::string_view& aData)
-    {
-        return aData.size() > 35 && aData.front() == '{' && aData.find("\"acmacs-ace-v1\"") != std::string_view::npos;
-    }
-
+    bool is_ace(const std::string_view& aData);
     std::shared_ptr<Chart> ace_import(const std::string_view& aData, Verify aVerify);
 
 // ----------------------------------------------------------------------
