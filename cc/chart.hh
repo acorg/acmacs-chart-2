@@ -53,6 +53,7 @@ namespace acmacs::chart
         virtual ~Info();
 
         virtual std::string make_info() const;
+        std::string make_name() const;
 
         virtual std::string name(Compute = Compute::No) const = 0;
         inline std::string name_non_empty() const { const auto result = name(Compute::Yes); return result.empty() ? std::string{"UNKNOWN"} : result; }
@@ -452,6 +453,7 @@ namespace acmacs::chart
         inline std::shared_ptr<Serum> serum(size_t aSerumNo) const { return sera()->operator[](aSerumNo); }
 
         std::string make_info() const;
+        std::string make_name() const;
 
     }; // class Chart
 
