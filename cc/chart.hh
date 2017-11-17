@@ -283,6 +283,7 @@ namespace acmacs::chart
 
         inline std::string full_name() const { return string::join(" ", {name(), reassortant(), string::join(" ", annotations()), passage()}); }
         inline std::string full_name_without_passage() const { return string::join(" ", {name(), reassortant(), string::join(" ", annotations())}); }
+        inline std::string full_name_for_seqdb_matching() const { return string::join(" ", {name(), reassortant(), passage(), string::join(" ", annotations())}); } // annotations may part of the passage in seqdb (NIMR ISOLATE 1)
         inline std::string abbreviated_name() const { return string::join(" ", {name_abbreviated(), reassortant(), string::join(" ", annotations())}); }
         inline std::string abbreviated_name_with_passage_type() const { return string::join("-", {name_abbreviated(), reassortant(), string::join(" ", annotations()), passage_type()}); }
         inline std::string abbreviated_location_with_passage_type() const { return string::join(" ", {location_abbreviated(), passage_type()}); }
