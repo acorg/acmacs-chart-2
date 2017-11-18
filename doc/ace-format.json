@@ -5,7 +5,7 @@
     "i": {
       "v": "virus, e.g. INFLUENZA (default, if omitted), HPV, generic, DENGE",
       "V": "virus type and subtype, e.g. B or A(H3N2) or serotype"
-      "A": "assay: HI, FOCUST REDUTION, PRNT",
+      "A": "assay: HI, FOCUST REDUCTION, PRNT",
       "D": "table/assay date, e.g. 20160602.002",
       "N": "user supplied name",
       "l": "lab",
