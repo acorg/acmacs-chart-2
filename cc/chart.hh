@@ -29,6 +29,8 @@ namespace acmacs::chart
             constexpr inline iterator& operator++() { ++mIndex; return *this; }
             constexpr inline iterator& operator+=(difference_type n) { mIndex += n; return *this; }
             constexpr inline iterator& operator-=(difference_type n) { mIndex -= n; return *this; }
+            constexpr inline iterator operator-(difference_type n) { iterator temp = *this; return temp -= n; }
+            constexpr inline difference_type operator-(const iterator& rhs) { return mIndex - rhs.mIndex; }
             constexpr inline bool operator==(const iterator& other) const { return &mParent == &other.mParent && mIndex == other.mIndex; }
             constexpr inline bool operator!=(const iterator& other) const { return &mParent != &other.mParent || mIndex != other.mIndex; }
             constexpr inline reference operator*() { return mParent[mIndex]; }
@@ -123,6 +125,9 @@ namespace acmacs::chart
                   case BLineage::Unknown:
                       return "UNKNOWN";
                 }
+#if __GNUC__ == 7
+                return "UNKNOWN";
+#endif
             }
 
         inline operator Lineage() const { return mLineage; }
@@ -359,24 +364,8 @@ namespace acmacs::chart
         inline void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }
         inline void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); }); }
 
-        virtual inline std::optional<size_t> find_by_full_name(std::string aFullName) const
-            {
-                const auto found = std::find_if(begin(), end(), [aFullName](auto antigen) -> bool { return antigen->full_name() == aFullName; });
-                if (found == end())
-                    return {};
-                else
-                    return found.index();
-            }
-
-        virtual inline Indexes find_by_name(std::string aName) const
-            {
-                Indexes indexes;
-                for (auto iter = begin(); iter != end(); ++iter) {
-                    if ((*iter)->name() == aName)
-                        indexes.push_back(iter.index());
-                }
-                return indexes;
-            }
+        virtual std::optional<size_t> find_by_full_name(std::string aFullName) const;
+        virtual Indexes find_by_name(std::string aName) const;
 
      private:
         inline Indexes make_indexes(std::function<bool (const Antigen& ag)> test) const
@@ -419,24 +408,8 @@ namespace acmacs::chart
         inline void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }
         inline void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); }); }
 
-        virtual inline std::optional<size_t> find_by_full_name(std::string aFullName) const
-            {
-                const auto found = std::find_if(begin(), end(), [aFullName](auto serum) -> bool { return serum->full_name() == aFullName; });
-                if (found == end())
-                    return {};
-                else
-                    return found.index();
-            }
-
-        virtual inline Indexes find_by_name(std::string aName) const
-            {
-                Indexes indexes;
-                for (auto iter = begin(); iter != end(); ++iter) {
-                    if ((*iter)->name() == aName)
-                        indexes.push_back(iter.index());
-                }
-                return indexes;
-            }
+        virtual std::optional<size_t> find_by_full_name(std::string aFullName) const;
+        virtual Indexes find_by_name(std::string aName) const;
 
      private:
         inline void remove(Indexes& aIndexes, std::function<bool (const Serum&)> aFilter) const
@@ -581,9 +554,30 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-// template <> struct std::iterator_traits<acmacs::chart::Antigens::iterator> { using reference = typename acmacs::chart::Antigens::iterator::reference; using iterator_category = std::random_access_iterator_tag; };
-// template <> struct std::iterator_traits<acmacs::chart::Sera::iterator> { using reference = typename acmacs::chart::Sera::iterator::reference; using iterator_category = std::random_access_iterator_tag; };
-// template <> struct std::iterator_traits<acmacs::chart::Projections::iterator> { using reference = typename acmacs::chart::Projections::iterator::reference; using iterator_category = std::random_access_iterator_tag; };
+#if __GNUC__ == 7
+
+template <> struct std::iterator_traits<acmacs::chart::Antigens::iterator>
+{
+    using reference = typename acmacs::chart::Antigens::iterator::reference;
+    using iterator_category = typename acmacs::chart::Antigens::iterator::iterator_category;
+    using difference_type = typename acmacs::chart::Antigens::iterator::difference_type;
+};
+
+template <> struct std::iterator_traits<acmacs::chart::Sera::iterator>
+{
+    using reference = typename acmacs::chart::Sera::iterator::reference;
+    using iterator_category = typename acmacs::chart::Sera::iterator::iterator_category;
+    using difference_type = typename acmacs::chart::Sera::iterator::difference_type;
+};
+
+template <> struct std::iterator_traits<acmacs::chart::Projections::iterator>
+{
+    using reference = typename acmacs::chart::Projections::iterator::reference;
+    using iterator_category = typename acmacs::chart::Projections::iterator::iterator_category;
+    using difference_type = typename acmacs::chart::Projections::iterator::difference_type;
+};
+
+#endif
 
 // ----------------------------------------------------------------------
 

@@ -436,6 +436,31 @@ static inline bool not_in_continent(std::string aName, std::string aContinent)
 
 // ----------------------------------------------------------------------
 
+std::optional<size_t> acmacs::chart::Antigens::find_by_full_name(std::string aFullName) const
+{
+    const auto found = std::find_if(begin(), end(), [aFullName](auto antigen) -> bool { return antigen->full_name() == aFullName; });
+    if (found == end())
+        return {};
+    else
+        return found.index();
+
+} // acmacs::chart::Antigens::find_by_full_name
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string aName) const
+{
+    Indexes indexes;
+    for (auto iter = begin(); iter != end(); ++iter) {
+        if ((*iter)->name() == aName)
+            indexes.push_back(iter.index());
+    }
+    return indexes;
+
+} // acmacs::chart::Antigens::find_by_name
+
+// ----------------------------------------------------------------------
+
 void acmacs::chart::Antigens::filter_country(Indexes& aIndexes, std::string aCountry) const
 {
     remove(aIndexes, [aCountry](const auto& entry) { return not_in_country(entry.name(), aCountry); });
@@ -449,6 +474,31 @@ void acmacs::chart::Antigens::filter_continent(Indexes& aIndexes, std::string aC
     remove(aIndexes, [aContinent](const auto& entry) { return not_in_continent(entry.name(), aContinent); });
 
 } // acmacs::chart::Antigens::filter_continent
+
+// ----------------------------------------------------------------------
+
+std::optional<size_t> acmacs::chart::Sera::find_by_full_name(std::string aFullName) const
+{
+    const auto found = std::find_if(begin(), end(), [aFullName](auto serum) -> bool { return serum->full_name() == aFullName; });
+    if (found == end())
+        return {};
+    else
+        return found.index();
+
+} // acmacs::chart::Sera::find_by_full_name
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Indexes acmacs::chart::Sera::find_by_name(std::string aName) const
+{
+    Indexes indexes;
+    for (auto iter = begin(); iter != end(); ++iter) {
+        if ((*iter)->name() == aName)
+            indexes.push_back(iter.index());
+    }
+    return indexes;
+
+} // acmacs::chart::Sera::find_by_name
 
 // ----------------------------------------------------------------------
 

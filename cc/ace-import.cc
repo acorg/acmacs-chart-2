@@ -230,8 +230,8 @@ size_t AceTiters::number_of_sera() const
         const rjson::array& d = mData["d"];
         auto max_index = [](const rjson::object& obj) -> size_t {
                              size_t result = 0;
-                             for (auto [key, value]: obj) {
-                                 if (const size_t ind = std::stoul(key); ind > result)
+                             for (auto key_value: obj) {
+                                 if (const size_t ind = std::stoul(key_value.first); ind > result)
                                      result = ind;
                              }
                              return result;
