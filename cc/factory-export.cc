@@ -10,18 +10,18 @@
 void acmacs::chart::export_factory(const Chart& aChart, std::string aFilename, std::string aProgramName)
 {
     Timeit ti("writing chart to " + aFilename + ": ");
-    auto force_compression = acmacs_base::ForceCompression::No;
+    auto force_compression = acmacs::file::ForceCompression::No;
     std::string data;
     if (fs::path(aFilename).extension() == ".ace") {
-        force_compression = acmacs_base::ForceCompression::Yes;
+        force_compression = acmacs::file::ForceCompression::Yes;
         data = ace_export(aChart, aProgramName);
     }
     else if (fs::path(aFilename).extension() == ".save") {
-        force_compression = acmacs_base::ForceCompression::No;
+        force_compression = acmacs::file::ForceCompression::No;
         data = lispmds_export(aChart, aProgramName);
     }
     else if (aFilename.size() > 8 && aFilename.substr(aFilename.size() - 8) == ".save.xz") {
-        force_compression = acmacs_base::ForceCompression::Yes;
+        force_compression = acmacs::file::ForceCompression::Yes;
         data = lispmds_export(aChart, aProgramName);
     }
     else
@@ -31,7 +31,7 @@ void acmacs::chart::export_factory(const Chart& aChart, std::string aFilename, s
         throw export_error("No data to write to " + aFilename);
 
     Timeit ti_file("writing " + aFilename + ": ");
-    acmacs_base::write_file(aFilename, data, force_compression);
+    acmacs::file::write(aFilename, data, force_compression);
 
 } // acmacs::chart::import_factory
 
