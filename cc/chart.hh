@@ -22,7 +22,8 @@ namespace acmacs::chart
         {
          public:
             using reference = Reference;
-            using value_type = Reference;
+            using pointer = typename std::add_pointer<Reference>::type;
+            using value_type = typename std::remove_reference<Reference>::type;
             using difference_type = ssize_t;
             using iterator_category = std::random_access_iterator_tag;
 
