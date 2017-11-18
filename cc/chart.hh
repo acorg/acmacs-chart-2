@@ -22,7 +22,9 @@ namespace acmacs::chart
         {
          public:
             using reference = Reference;
+            using value_type = Reference;
             using difference_type = ssize_t;
+            using iterator_category = std::random_access_iterator_tag;
 
             constexpr inline iterator& operator++() { ++mIndex; return *this; }
             constexpr inline iterator& operator+=(difference_type n) { mIndex += n; return *this; }
@@ -579,9 +581,9 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-template <> struct std::iterator_traits<acmacs::chart::Antigens::iterator> { using reference = typename acmacs::chart::Antigens::iterator::reference; using iterator_category = std::random_access_iterator_tag; };
-template <> struct std::iterator_traits<acmacs::chart::Sera::iterator> { using reference = typename acmacs::chart::Sera::iterator::reference; using iterator_category = std::random_access_iterator_tag; };
-template <> struct std::iterator_traits<acmacs::chart::Projections::iterator> { using reference = typename acmacs::chart::Projections::iterator::reference; using iterator_category = std::random_access_iterator_tag; };
+// template <> struct std::iterator_traits<acmacs::chart::Antigens::iterator> { using reference = typename acmacs::chart::Antigens::iterator::reference; using iterator_category = std::random_access_iterator_tag; };
+// template <> struct std::iterator_traits<acmacs::chart::Sera::iterator> { using reference = typename acmacs::chart::Sera::iterator::reference; using iterator_category = std::random_access_iterator_tag; };
+// template <> struct std::iterator_traits<acmacs::chart::Projections::iterator> { using reference = typename acmacs::chart::Projections::iterator::reference; using iterator_category = std::random_access_iterator_tag; };
 
 // ----------------------------------------------------------------------
 
