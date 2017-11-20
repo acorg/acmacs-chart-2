@@ -145,6 +145,31 @@ std::string convert_to_json(const std::string_view& aData)
               else
                   result.append(1, aData[input]);
               break;
+          case '#':             // possible comment
+          {
+              bool comment = true, search_done = false;
+              for (auto ri = result.rbegin(); !search_done && ri != result.rend(); ++ri) {
+                  switch (*ri) {
+                    case ' ':
+                        break;
+                    case '\n':
+                        search_done = true;
+                        break;
+                    default:
+                        search_done = true;
+                        comment = false;
+                        break;
+                  }
+              }
+              if (comment) {
+                    // skip until eol
+                  ++input;
+                  for (++input; aData[input] != '\n' && input < aData.size(); ++input);
+              }
+              else
+                  result.append(1, aData[input]);
+          }
+          break;
           default:
               result.append(1, aData[input]);
               break;
@@ -327,6 +352,9 @@ static inline Name make_name(const rjson::object& aData)
         if (host == "HUMAN")
             host.clear();
         return string::join("/", {aData.get_or_default("virus_type", ""), host, aData.get_or_empty_object("location").get_or_default("name", ""), isolation_number, aData.get_or_default("year", "")});
+    }
+    else if (auto raw_name = aData.get_or_default("raw_name", ""); !raw_name.empty()) {
+        return raw_name;
     }
     else {
         const std::string cdc_abbreviation = aData.get_or_empty_object("location").get_or_default("cdc_abbreviation", "");
