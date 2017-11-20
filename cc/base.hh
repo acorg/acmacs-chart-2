@@ -32,6 +32,7 @@ namespace acmacs::chart
             inline bool operator != (const string_data& other) const { return !operator==(other); }
             inline bool operator == (std::string other) const { return data() == other; }
             inline bool operator != (std::string other) const { return !operator==(other); }
+            inline auto find(const char* s) const noexcept { return mData.find(s); }
 
             constexpr inline const std::string& data() const noexcept { return mData; }
             constexpr inline operator const std::string&() const noexcept { return mData; }
@@ -97,7 +98,7 @@ inline std::ostream& operator << (std::ostream& out, const acmacs::chart::intern
     return out << a.data();
 }
 
-inline std::ostream& operator << (std::ostream& out, const acmacs::chart::internal::string_list_data& a)
+template <typename T> inline std::ostream& operator << (std::ostream& out, const acmacs::chart::internal::T_list_data<T>& a)
 {
     return out << a.data();
 }

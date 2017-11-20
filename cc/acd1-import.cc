@@ -1,4 +1,5 @@
 #include <set>
+#include <map>
 #include <vector>
 #include <limits>
 #include <regex>
@@ -224,7 +225,9 @@ std::shared_ptr<Antigens> Acd1Chart::antigens() const
 
 std::shared_ptr<Sera> Acd1Chart::sera() const
 {
-    return std::make_shared<Acd1Sera>(mData["table"].get_or_empty_array("sera"));
+    auto sera = std::make_shared<Acd1Sera>(mData["table"].get_or_empty_array("sera"));
+    sera->set_homologous(*antigens());
+    return sera;
 
 } // Acd1Chart::sera
 
@@ -475,6 +478,43 @@ SerumId Acd1Serum::serum_id() const
         return {};
 
 } // Acd1Serum::serum_id
+
+// ----------------------------------------------------------------------
+
+void Acd1Sera::set_homologous(const Antigens& aAntigens)
+{
+    std::map<std::string, std::vector<size_t>> antigen_name_index;
+    for (auto [ag_no, antigen]: acmacs::enumerate(aAntigens))
+        antigen_name_index.emplace(antigen->name(), std::vector<size_t>{}).first->second.push_back(ag_no);
+
+    for (auto serum: *this) {
+        std::vector<size_t> homologous;
+        // std::cerr << "DEBUG: " << serum->full_name() << ' ' << serum->passage() << '\n';
+        if (auto ags = antigen_name_index.find(serum->name()); ags != antigen_name_index.end()) {
+            for (auto ag_no: ags->second) {
+                auto antigen = aAntigens[ag_no];
+                if (antigen->reassortant() == serum->reassortant()) {
+                    if (!serum->passage().empty()) {
+                        if (antigen->passage().is_egg() == serum->passage().is_egg()) {
+                            homologous.push_back(ag_no);
+                            // std::cerr << "       " << antigen->full_name() << '\n';
+                        }
+                    }
+                    else {      // niid has passage type data in serum_id
+                        const bool egg = serum->serum_id().find("EGG") != std::string::npos;
+                        if (antigen->passage().is_egg() == egg) {
+                            homologous.push_back(ag_no);
+                            // std::cerr << "       " << antigen->full_name() << '\n';
+                        }
+                    }
+                }
+            }
+        }
+        // std::cerr << "DEBUG: " << serum->full_name() << ' ' << serum->passage() << ' ' << homologous << '\n';
+        dynamic_cast<Acd1Serum&>(*serum).set_homologous(homologous);
+    }
+
+} // Acd1Sera::set_homologous
 
 // ----------------------------------------------------------------------
 

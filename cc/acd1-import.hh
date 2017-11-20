@@ -104,10 +104,13 @@ namespace acmacs::chart
         Annotations annotations() const override;
         SerumId serum_id() const override;
         inline SerumSpecies serum_species() const override { return mData.get_or_default("serum_species", ""); }
-        inline PointIndexList homologous_antigens() const override { return {}; }
+        inline PointIndexList homologous_antigens() const override { return mData.get_or_empty_array("*homologous"); }
+
+        inline void set_homologous(const std::vector<size_t>& ags) const { const_cast<rjson::object&>(mData).set_field("*homologous", rjson::array(rjson::array::use_iterator, ags.begin(), ags.end())); }
 
      private:
         const rjson::object& mData;
+        // PointIndexList mHomologous;
 
     }; // class Acd1Serum
 
@@ -135,6 +138,8 @@ namespace acmacs::chart
 
         inline size_t size() const override { return mData.size(); }
         inline std::shared_ptr<Serum> operator[](size_t aIndex) const override { return std::make_shared<Acd1Serum>(mData[aIndex]); }
+
+        void set_homologous(const Antigens& aAntigens);
 
      private:
         const rjson::array& mData;
