@@ -152,6 +152,8 @@ namespace acmacs::chart
      public:
         using internal::string_list_data::string_list_data;
 
+        inline bool distinct() const { return std::find(begin(), end(), "DISTINCT") != end(); }
+
     }; // class Annotations
 
     class Clades : public internal::string_list_data
