@@ -11,6 +11,7 @@ TARGETS = \
     $(DIST)/chart-info \
     $(DIST)/chart-names \
     $(DIST)/chart-plot-spec \
+    $(DIST)/chart-layout \
     $(DIST)/chart-convert
 
 SOURCES = chart.cc layout.cc bounding-ball.cc \
