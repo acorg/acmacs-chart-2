@@ -112,6 +112,7 @@ namespace acmacs::chart
         inline BLineage(Lineage lineage) : mLineage{lineage} {}
         inline BLineage(const BLineage&) = default;
         inline BLineage(std::string lineage) : mLineage{from(lineage)} {}
+        inline BLineage(char lineage) : mLineage{from({lineage})} {}
         inline BLineage& operator=(Lineage lineage) { mLineage = lineage; return *this; }
         inline BLineage& operator=(const BLineage&) = default;
         inline BLineage& operator=(std::string lineage) { mLineage = from(lineage); return *this; }
