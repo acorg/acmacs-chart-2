@@ -32,21 +32,19 @@ std::string acmacs::chart::Chart::make_name(std::optional<size_t> aProjectionNo)
 
 std::string acmacs::chart::Chart::lineage() const
 {
-    std::set<BLineage> lineages;
+    std::map<BLineage, size_t> lineages;
     auto ags = antigens();
     for (auto antigen: *ags) {
         if (const auto lineage = antigen->lineage(); lineage != BLineage::Unknown)
-            lineages.insert(lineage);
+            ++lineages[lineage];
     }
     switch (lineages.size()) {
       case 0:
           return {};
       case 1:
-          return *lineages.begin();
-      case 2:
-          return "VICTORIA+YAMAGATA";
+          return lineages.begin()->first;
       default:
-          return "VICTORIA+YAMAGATA+";
+          return std::max_element(lineages.begin(), lineages.end(), [](const auto& a, const auto& b) -> bool { return a.second < b.second; })->first;
     }
     // return {};
 
