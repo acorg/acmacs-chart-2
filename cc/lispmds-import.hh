@@ -20,6 +20,7 @@ namespace acmacs::chart
         std::shared_ptr<ColumnBases> forced_column_bases() const override;
         std::shared_ptr<Projections> projections() const override;
         std::shared_ptr<PlotSpec> plot_spec() const override;
+        inline bool is_merge() const override { return false; }
 
         size_t number_of_antigens() const override;
         size_t number_of_sera() const override;

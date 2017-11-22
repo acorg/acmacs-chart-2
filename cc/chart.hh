@@ -327,6 +327,7 @@ namespace acmacs::chart
         virtual SerumId serum_id() const = 0;
         virtual SerumSpecies serum_species() const = 0;
         virtual PointIndexList homologous_antigens() const = 0;
+        virtual inline void set_homologous(const std::vector<size_t>&) const {}
 
         inline std::string full_name() const { return string::join(" ", {name(), reassortant(), serum_id(), string::join(" ", annotations())}); }
         inline std::string full_name_without_passage() const { return full_name(); }
@@ -414,6 +415,8 @@ namespace acmacs::chart
 
         virtual std::optional<size_t> find_by_full_name(std::string aFullName) const;
         virtual Indexes find_by_name(std::string aName) const;
+
+        void set_homologous(const Antigens& aAntigens);
 
      private:
         inline void remove(Indexes& aIndexes, std::function<bool (const Serum&)> aFilter) const
@@ -533,6 +536,7 @@ namespace acmacs::chart
         virtual std::shared_ptr<Projections> projections() const = 0;
         inline std::shared_ptr<Projection> projection(size_t aProjectionNo) const { return (*projections())[aProjectionNo]; }
         virtual std::shared_ptr<PlotSpec> plot_spec() const = 0;
+        virtual bool is_merge() const = 0;
 
         virtual inline size_t number_of_antigens() const { return antigens()->size(); }
         virtual inline size_t number_of_sera() const { return sera()->size(); }

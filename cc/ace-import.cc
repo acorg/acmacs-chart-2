@@ -82,7 +82,10 @@ std::shared_ptr<Antigens> AceChart::antigens() const
 
 std::shared_ptr<Sera> AceChart::sera() const
 {
-    return std::make_shared<AceSera>(mData["c"].get_or_empty_array("s"));
+    auto sera = std::make_shared<AceSera>(mData["c"].get_or_empty_array("s"));
+    if (!is_merge())
+        sera->set_homologous(*antigens());
+    return sera;
 
 } // AceChart::sera
 
@@ -117,6 +120,14 @@ std::shared_ptr<PlotSpec> AceChart::plot_spec() const
     return std::make_shared<AcePlotSpec>(mData["c"].get_or_empty_object("p"));
 
 } // AceChart::plot_spec
+
+// ----------------------------------------------------------------------
+
+bool AceChart::is_merge() const
+{
+    return !mData["c"].get_or_empty_object("t").get_or_empty_array("L").empty();
+
+} // AceChart::is_merge
 
 // ----------------------------------------------------------------------
 

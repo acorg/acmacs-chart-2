@@ -20,6 +20,7 @@ namespace acmacs::chart
         std::shared_ptr<ColumnBases> forced_column_bases() const override;
         std::shared_ptr<Projections> projections() const override;
         std::shared_ptr<PlotSpec> plot_spec() const override;
+        bool is_merge() const override;
 
         void verify_data(Verify aVerify) const;
 
@@ -93,6 +94,7 @@ namespace acmacs::chart
         inline SerumId serum_id() const override { return mData.get_or_default("I", ""); }
         inline SerumSpecies serum_species() const override { return mData.get_or_default("s", ""); }
         inline PointIndexList homologous_antigens() const override { return mData.get_or_empty_array("h"); }
+        inline void set_homologous(const std::vector<size_t>& ags) const override { const_cast<rjson::object&>(mData).set_field("h", rjson::array(rjson::array::use_iterator, ags.begin(), ags.end())); }
 
      private:
         const rjson::object& mData;

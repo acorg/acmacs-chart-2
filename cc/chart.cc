@@ -1,5 +1,6 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/virus-name.hh"
+#include "acmacs-base/enumerate.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -474,6 +475,45 @@ void acmacs::chart::Antigens::filter_continent(Indexes& aIndexes, std::string aC
     remove(aIndexes, [aContinent](const auto& entry) { return not_in_continent(entry.name(), aContinent); });
 
 } // acmacs::chart::Antigens::filter_continent
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Sera::set_homologous(const Antigens& aAntigens)
+{
+    std::map<std::string, std::vector<size_t>> antigen_name_index;
+    for (auto [ag_no, antigen]: acmacs::enumerate(aAntigens))
+        antigen_name_index.emplace(antigen->name(), std::vector<size_t>{}).first->second.push_back(ag_no);
+
+    for (auto serum: *this) {
+        if (serum->homologous_antigens().empty()) {
+            std::vector<size_t> homologous;
+              // std::cerr << "DEBUG: " << serum->full_name() << ' ' << serum->passage() << '\n';
+            if (auto ags = antigen_name_index.find(serum->name()); ags != antigen_name_index.end()) {
+                for (auto ag_no: ags->second) {
+                    auto antigen = aAntigens[ag_no];
+                    if (antigen->reassortant() == serum->reassortant()) {
+                        if (!serum->passage().empty()) {
+                            if (antigen->passage().is_egg() == serum->passage().is_egg()) {
+                                homologous.push_back(ag_no);
+                                  // std::cerr << "       " << antigen->full_name() << '\n';
+                            }
+                        }
+                        else {      // niid has passage type data in serum_id
+                            const bool egg = serum->serum_id().find("EGG") != std::string::npos;
+                            if (antigen->passage().is_egg() == egg) {
+                                homologous.push_back(ag_no);
+                                  // std::cerr << "       " << antigen->full_name() << '\n';
+                            }
+                        }
+                    }
+                }
+            }
+              // std::cerr << "DEBUG: " << serum->full_name() << ' ' << serum->passage() << ' ' << homologous << '\n';
+            serum->set_homologous(homologous);
+        }
+    }
+
+} // acmacs::chart::Sera::set_homologous
 
 // ----------------------------------------------------------------------
 
