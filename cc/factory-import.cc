@@ -11,7 +11,7 @@ std::shared_ptr<acmacs::chart::Chart> acmacs::chart::import_factory(std::string 
 {
     Timeit ti("reading chart from " + aFilename + ": ");
     Timeit ti_file("reading " + aFilename + ": ");
-    const auto data = acmacs::file::read(aFilename);
+    const std::string data = acmacs::file::read(aFilename);
     const std::string_view data_view(data);
     ti_file.report();
     if (acmacs::chart::is_ace(data_view))
