@@ -125,7 +125,7 @@ namespace acmacs::chart
                   case Yamagata:
                       return "YAMAGATA";
                   case BLineage::Unknown:
-                      return "UNKNOWN";
+                      return "";
                 }
 #if __GNUC__ == 7
                 return "UNKNOWN";
