@@ -61,10 +61,23 @@ namespace acmacs::chart
             constexpr inline const std::vector<T>& data() const noexcept { return mData; }
             constexpr inline operator const std::vector<T>&() const noexcept { return mData; }
             constexpr inline T& operator[](size_t aIndex) { return mData.at(aIndex); }
+            constexpr inline const T& operator[](size_t aIndex) const { return mData.at(aIndex); }
             constexpr inline auto begin() const { return mData.cbegin(); }
             constexpr inline auto end() const { return mData.cend(); }
             constexpr inline auto begin() { return mData.begin(); }
             constexpr inline auto end() { return mData.end(); }
+
+            inline bool operator==(const T_list_data<T>& other) const
+                {
+                    if (size() != other.size())
+                        return false;
+                    for (size_t i = 0; i < size(); ++i) {
+                        if (!(operator[](i) == other[i]))
+                            return false;
+                    }
+                    return true;
+                }
+            inline bool operator!=(const T_list_data<T>& other) const { return ! operator==(other); }
 
             constexpr inline void push_back(const T& val) { mData.push_back(val); }
             constexpr inline void push_back(T&& val) { mData.push_back(std::forward<T>(val)); }
