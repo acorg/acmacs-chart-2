@@ -27,7 +27,7 @@ namespace acmacs::chart
             inline string_data& operator=(std::string&& aSrc) { mData = std::move(aSrc); return *this; }
 
             inline bool empty() const noexcept { return mData.empty(); }
-            inline bool size() const noexcept { return mData.size(); }
+            inline size_t size() const noexcept { return mData.size(); }
             inline char operator[](size_t index) const noexcept { return mData[index]; }
             inline bool operator == (const string_data& other) const { return data() == other.data(); }
             inline bool operator != (const string_data& other) const { return !operator==(other); }
