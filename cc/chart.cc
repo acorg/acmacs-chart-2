@@ -482,6 +482,7 @@ void acmacs::chart::Sera::set_homologous(const Antigens& aAntigens)
     for (auto [ag_no, antigen]: acmacs::enumerate(aAntigens))
         antigen_name_index.emplace(antigen->name(), std::vector<size_t>{}).first->second.push_back(ag_no);
 
+      // std::cerr << "DEBUG: set_homologous " << size() << '\n';
     for (auto serum: *this) {
         if (serum->homologous_antigens().empty()) {
             std::vector<size_t> homologous;
@@ -505,6 +506,7 @@ void acmacs::chart::Sera::set_homologous(const Antigens& aAntigens)
                         }
                     }
                 }
+                  // std::cerr << "DEBUG: " << serum->full_name() << ' ' << serum->passage() << ' ' << homologous << ' ' << ags->second.size() << '\n';
             }
               // std::cerr << "DEBUG: " << serum->full_name() << ' ' << serum->passage() << ' ' << homologous << '\n';
             serum->set_homologous(homologous);

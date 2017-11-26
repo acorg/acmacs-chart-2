@@ -5,6 +5,7 @@
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
+#include "acmacs-base/timeit.hh"
 #include "acmacs-chart-2/ace-import.hh"
 
 using namespace std::string_literals;
@@ -83,8 +84,11 @@ std::shared_ptr<Antigens> AceChart::antigens() const
 std::shared_ptr<Sera> AceChart::sera() const
 {
     auto sera = std::make_shared<AceSera>(mData["c"].get_or_empty_array("s"));
-    if (!is_merge())
+    if (!mHomologousFound && !is_merge()) {
+        Timeit ti("set homologous for sera: ");
         sera->set_homologous(*antigens());
+        mHomologousFound = true;
+    }
     return sera;
 
 } // AceChart::sera
