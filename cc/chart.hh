@@ -124,7 +124,7 @@ namespace acmacs::chart
                       return "VICTORIA";
                   case Yamagata:
                       return "YAMAGATA";
-                  case BLineage::Unknown:
+                  case Unknown:
                       return "";
                 }
 #if __GNUC__ == 7
