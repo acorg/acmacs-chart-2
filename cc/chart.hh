@@ -563,6 +563,8 @@ namespace acmacs::chart
 
     }; // class Chart
 
+    using ChartP = std::shared_ptr<Chart>;
+
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------
