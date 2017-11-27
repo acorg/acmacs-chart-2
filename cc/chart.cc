@@ -200,6 +200,20 @@ void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, In
 
 // ----------------------------------------------------------------------
 
+void acmacs::chart::Chart::set_homologous(bool force, std::shared_ptr<Sera> aSera) const
+{
+    if (!mHomologousFound && (force || (!is_merge() && number_of_antigens() < 200))) {
+        Timeit ti("set homologous for sera: ");
+        if (!aSera)
+            aSera = sera();
+        aSera->set_homologous(*antigens());
+        mHomologousFound = true;
+    }
+
+} // acmacs::chart::Chart::set_homologous
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::BLineage::Lineage acmacs::chart::BLineage::from(std::string aSource)
 {
     if (!aSource.empty()) {

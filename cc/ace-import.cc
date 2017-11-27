@@ -84,11 +84,7 @@ std::shared_ptr<Antigens> AceChart::antigens() const
 std::shared_ptr<Sera> AceChart::sera() const
 {
     auto sera = std::make_shared<AceSera>(mData["c"].get_or_empty_array("s"));
-    if (!mHomologousFound && !is_merge()) {
-        Timeit ti("set homologous for sera: ");
-        sera->set_homologous(*antigens());
-        mHomologousFound = true;
-    }
+    set_homologous(false, sera);
     return sera;
 
 } // AceChart::sera

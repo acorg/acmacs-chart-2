@@ -251,10 +251,7 @@ std::shared_ptr<Antigens> Acd1Chart::antigens() const
 std::shared_ptr<Sera> Acd1Chart::sera() const
 {
     auto sera = std::make_shared<Acd1Sera>(mData["table"].get_or_empty_array("sera"));
-    if (!mHomologousFound && !is_merge()) {
-        sera->set_homologous(*antigens());
-        mHomologousFound = true;
-    }
+    set_homologous(false, sera);
     return sera;
 
 } // Acd1Chart::sera

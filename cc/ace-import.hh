@@ -26,7 +26,6 @@ namespace acmacs::chart
 
      private:
         rjson::value mData;
-        mutable bool mHomologousFound = false;
 
     }; // class Chart
 
