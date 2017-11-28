@@ -7,6 +7,7 @@
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
+#include "acmacs-base/virus-name.hh"
 #include "acmacs-chart-2/acd1-import.hh"
 
 using namespace std::string_literals;
@@ -242,7 +243,7 @@ std::shared_ptr<Info> Acd1Chart::info() const
 
 std::shared_ptr<Antigens> Acd1Chart::antigens() const
 {
-    return std::make_shared<Acd1Antigens>(mData["table"].get_or_empty_array("antigens"));
+    return std::make_shared<Acd1Antigens>(mData["table"].get_or_empty_array("antigens"), mAntigenNameIndex);
 
 } // Acd1Chart::antigens
 
@@ -452,7 +453,7 @@ LabIds Acd1Antigen::lab_ids() const
     LabIds result;
     if (auto [li_present, li] = mData.get_array_if("lab_id"); li_present) {
         for(const auto& entry: li)
-            result.push_back(static_cast<std::string>(entry[0]) + '#' + static_cast<std::string>(entry[1]));
+            result.push_back(entry[0].str() + '#' + entry[1].str());
     }
     return result;
 
@@ -514,6 +515,33 @@ SerumId Acd1Serum::serum_id() const
         return {};
 
 } // Acd1Serum::serum_id
+
+// ----------------------------------------------------------------------
+
+std::optional<size_t> Acd1Antigens::find_by_full_name(std::string aFullName) const
+{
+    if (mAntigenNameIndex.empty())
+        make_name_index();
+    const std::string name{virus_name::name(aFullName)};
+    if (const auto found = mAntigenNameIndex.find(name); found != mAntigenNameIndex.end()) {
+        for (auto index: found->second) {
+            if (Acd1Antigen(mData[index]).full_name() == aFullName)
+                return index;
+        }
+    }
+    return {};
+
+} // Acd1Antigens::find_by_full_name
+
+// ----------------------------------------------------------------------
+
+void Acd1Antigens::make_name_index() const
+{
+    for (auto iter = mData.begin(); iter != mData.end(); ++iter) {
+        mAntigenNameIndex[make_name(*iter)].push_back(static_cast<size_t>(iter - mData.begin()));
+    }
+
+} // Acd1Antigens::make_name_index
 
 // ----------------------------------------------------------------------
 
@@ -770,7 +798,7 @@ DrawingOrder Acd1PlotSpec::drawing_order() const
 Color Acd1PlotSpec::error_line_positive_color() const
 {
     try {
-        return static_cast<std::string>(mData["error_line_positive"]["color"]);
+        return static_cast<std::string_view>(mData["error_line_positive"]["color"]);
     }
     catch (std::exception&) {
         return "red";
@@ -783,7 +811,7 @@ Color Acd1PlotSpec::error_line_positive_color() const
 Color Acd1PlotSpec::error_line_negative_color() const
 {
     try {
-        return static_cast<std::string>(mData["error_line_negative"]["color"]);
+        return static_cast<std::string_view>(mData["error_line_negative"]["color"]);
     }
     catch (std::exception&) {
         return "blue";
@@ -833,7 +861,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::object& aSrc, size_t aPoin
 {
     acmacs::PointStyle result;
     for (auto [field_name_v, field_value]: aSrc) {
-        const std::string field_name(field_name_v);
+        const std::string_view field_name(field_name_v);
         try {
             if (field_name == "shown")
                 result.shown = field_value;
@@ -846,7 +874,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::object& aSrc, size_t aPoin
             else if (field_name == "line_width") // acmacs-b3
                 result.outline_width = Pixels{field_value};
             else if (field_name == "shape")
-                result.shape = static_cast<std::string>(field_value);
+                result.shape = field_value.str();
             else if (field_name == "size")
                 result.size = Pixels{static_cast<double>(field_value) * 5.0};
             else if (field_name == "rotation")
@@ -860,7 +888,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::object& aSrc, size_t aPoin
             else if (field_name == "label_position_y")
                 result.label.offset.set().y = field_value;
             else if (field_name == "label")
-                result.label_text = static_cast<std::string>(field_value);
+                result.label_text = field_value.str();
             else if (field_name == "label_size")
                 result.label.size = Pixels{static_cast<double>(field_value) * 10.0};
             else if (field_name == "label_color")
@@ -868,11 +896,11 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::object& aSrc, size_t aPoin
             else if (field_name == "label_rotation")
                 result.label.rotation = Rotation{field_value};
             else if (field_name == "label_font_face")
-                result.label.style.font_family = static_cast<std::string>(field_value);
+                result.label.style.font_family = field_value.str();
             else if (field_name == "label_font_slant")
-                result.label.style.slant = static_cast<std::string>(field_value);
+                result.label.style.slant = field_value.str();
             else if (field_name == "label_font_weight")
-                result.label.style.weight = static_cast<std::string>(field_value);
+                result.label.style.weight = field_value.str();
         }
         catch (std::exception& err) {
             std::cerr << "WARNING: [acd1]: point " << aPointNo << " style " << aStyleNo << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << field_value.to_json() << '\n';

@@ -22,7 +22,7 @@ namespace acmacs::chart
             inline string_data(const std::string_view& aSrc) : mData{aSrc} {}
             inline string_data(std::string&& aSrc) : mData{std::move(aSrc)} {}
             inline string_data(const char* aSrc) : mData{aSrc} {}
-            inline string_data(const rjson::value& aSrc) : mData{static_cast<std::string>(aSrc)} {}
+            inline string_data(const rjson::value& aSrc) : mData{aSrc.str()} {}
             inline string_data& operator=(const std::string& aSrc) { mData = aSrc; return *this; }
             inline string_data& operator=(std::string&& aSrc) { mData = std::move(aSrc); return *this; }
 
@@ -84,6 +84,12 @@ namespace acmacs::chart
             std::vector<T> mData;
 
         }; // T_list_data<>
+
+        template <> inline T_list_data<std::string>::T_list_data(const rjson::array& aSrc)
+            : mData(aSrc.size())
+        {
+            std::transform(aSrc.begin(), aSrc.end(), mData.begin(), [](const auto& src) -> std::string { return src; });
+        }
 
         class string_list_data : public T_list_data<std::string>
         {

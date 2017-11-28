@@ -76,7 +76,7 @@ std::shared_ptr<Info> AceChart::info() const
 
 std::shared_ptr<Antigens> AceChart::antigens() const
 {
-    return std::make_shared<AceAntigens>(mData["c"].get_or_empty_array("a"));
+    return std::make_shared<AceAntigens>(mData["c"].get_or_empty_array("a"), mAntigenNameIndex);
 
 } // AceChart::antigens
 
@@ -201,15 +201,41 @@ BLineage AceSerum::lineage() const
 
 std::optional<size_t> AceAntigens::find_by_full_name(std::string aFullName) const
 {
+    if (mAntigenNameIndex.empty())
+        make_name_index();
     const std::string_view name{virus_name::name(aFullName)};
-    for (auto iter = mData.begin(); iter != mData.end(); ++iter) {
-        if ((*iter)["N"] == name && AceAntigen(*iter).full_name() == aFullName) {
-            return static_cast<size_t>(iter - mData.begin());
+    if (const auto found = mAntigenNameIndex.find(name); found != mAntigenNameIndex.end()) {
+        for (auto index: found->second) {
+            if (AceAntigen(mData[index]).full_name() == aFullName)
+                return index;
         }
     }
     return {};
 
 } // AceAntigens::find_by_full_name
+
+// std::optional<size_t> AceAntigens::find_by_full_name(std::string aFullName) const
+// {
+//     const std::string_view name{virus_name::name(aFullName)};
+//     for (auto iter = mData.begin(); iter != mData.end(); ++iter) {
+//         if ((*iter)["N"] == name && AceAntigen(*iter).full_name() == aFullName) {
+//             return static_cast<size_t>(iter - mData.begin());
+//         }
+//     }
+//     return {};
+
+// } // AceAntigens::find_by_full_name
+
+// ----------------------------------------------------------------------
+
+void AceAntigens::make_name_index() const
+{
+    // Timeit ti("make_name_index: ");
+    for (auto iter = mData.begin(); iter != mData.end(); ++iter) {
+        mAntigenNameIndex[(*iter)["N"]].push_back(static_cast<size_t>(iter - mData.begin()));
+    }
+
+} // AceAntigens::make_name_index
 
 // ----------------------------------------------------------------------
 
@@ -374,7 +400,7 @@ acmacs::Transformation AceProjection::transformation() const
 Color AcePlotSpec::error_line_positive_color() const
 {
     try {
-        return static_cast<std::string>(mData["E"]["c"]);
+        return static_cast<std::string_view>(mData["E"]["c"]);
     }
     catch (rjson::field_not_found&) {
         return "red";
@@ -387,7 +413,7 @@ Color AcePlotSpec::error_line_positive_color() const
 Color AcePlotSpec::error_line_negative_color() const
 {
     try {
-        return static_cast<std::string>(mData["e"]["c"]);
+        return static_cast<std::string_view>(mData["e"]["c"]);
     }
     catch (rjson::field_not_found&) {
         return "blue";
@@ -439,7 +465,7 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::object& aSrc, size_t aPoint
 {
     acmacs::PointStyle result;
     for (auto [field_name_v, field_value]: aSrc) {
-        const std::string field_name(field_name_v);
+        const std::string_view field_name(field_name_v);
         if (!field_name.empty()) {
             try {
                 switch (field_name[0]) {
@@ -447,10 +473,10 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::object& aSrc, size_t aPoint
                       result.shown = field_value;
                       break;
                   case 'F':
-                      result.fill = Color(field_value);
+                      result.fill = static_cast<std::string_view>(field_value);
                       break;
                   case 'O':
-                      result.outline = Color(field_value);
+                      result.outline = static_cast<std::string_view>(field_value);
                       break;
                   case 'o':
                       result.outline_width = Pixels{field_value};
@@ -465,7 +491,7 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::object& aSrc, size_t aPoint
                       result.aspect = Aspect{field_value};
                       break;
                   case 'S':
-                      result.shape = static_cast<std::string>(field_value);
+                      result.shape = field_value.str();
                       break;
                   case 'l':
                       label_style(result, field_value);
@@ -487,7 +513,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::object& a
 {
     auto& label_style = aStyle.label;
     for (auto [field_name_v, field_value]: aData) {
-        const std::string field_name(field_name_v);
+        const std::string_view field_name(field_name_v);
         if (!field_name.empty()) {
             try {
                 switch (field_name[0]) {
@@ -501,7 +527,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::object& a
                       label_style.size = Pixels{field_value};
                       break;
                   case 'c':
-                      label_style.color = Color(field_value);
+                      label_style.color = static_cast<std::string_view>(field_value);
                       break;
                   case 'r':
                       label_style.rotation = Rotation{field_value};
@@ -510,16 +536,16 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::object& a
                       label_style.interline = field_value;
                       break;
                   case 'f':
-                      label_style.style.font_family = static_cast<std::string>(field_value);
+                      label_style.style.font_family = field_value.str();
                       break;
                   case 'S':
-                      label_style.style.slant = static_cast<std::string>(field_value);
+                      label_style.style.slant = field_value.str();
                       break;
                   case 'W':
-                      label_style.style.weight = static_cast<std::string>(field_value);
+                      label_style.style.weight = field_value.str();
                       break;
                   case 't':
-                      aStyle.label_text = static_cast<std::string>(field_value);
+                      aStyle.label_text = field_value.str();
                       break;
                 }
             }

@@ -8,6 +8,11 @@
 
 namespace acmacs::chart
 {
+    namespace acd1
+    {
+        using name_index_t = std::map<std::string, std::vector<size_t>>;
+    }
+
     class Acd1Chart : public Chart
     {
       public:
@@ -26,6 +31,7 @@ namespace acmacs::chart
 
      private:
         rjson::value mData;
+        mutable acd1::name_index_t mAntigenNameIndex;
 
     }; // class Chart
 
@@ -119,13 +125,17 @@ namespace acmacs::chart
     class Acd1Antigens : public Antigens
     {
      public:
-        inline Acd1Antigens(const rjson::array& aData) : mData{aData} {}
+        inline Acd1Antigens(const rjson::array& aData, acd1::name_index_t& aAntigenNameIndex) : mData{aData}, mAntigenNameIndex{aAntigenNameIndex} {}
 
         inline size_t size() const override { return mData.size(); }
         inline std::shared_ptr<Antigen> operator[](size_t aIndex) const override { return std::make_shared<Acd1Antigen>(mData[aIndex]); }
+        std::optional<size_t> find_by_full_name(std::string aFullName) const override;
 
      private:
         const rjson::array& mData;
+        acd1::name_index_t& mAntigenNameIndex;
+
+        void make_name_index() const;
 
     }; // class Acd1Antigens
 
