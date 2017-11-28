@@ -6,6 +6,7 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/timeit.hh"
+#include "acmacs-base/virus-name.hh"
 #include "acmacs-chart-2/ace-import.hh"
 
 using namespace std::string_literals;
@@ -195,6 +196,20 @@ BLineage AceSerum::lineage() const
     return mData.get_or_default("L", "");
 
 } // AceSerum::lineage
+
+// ----------------------------------------------------------------------
+
+std::optional<size_t> AceAntigens::find_by_full_name(std::string aFullName) const
+{
+    const std::string_view name{virus_name::name(aFullName)};
+    for (auto iter = mData.begin(); iter != mData.end(); ++iter) {
+        if ((*iter)["N"] == name && AceAntigen(*iter).full_name() == aFullName) {
+            return static_cast<size_t>(iter - mData.begin());
+        }
+    }
+    return {};
+
+} // AceAntigens::find_by_full_name
 
 // ----------------------------------------------------------------------
 
