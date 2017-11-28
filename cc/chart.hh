@@ -74,7 +74,7 @@ namespace acmacs::chart
         inline std::string name_non_empty() const { const auto result = name(Compute::Yes); return result.empty() ? std::string{"UNKNOWN"} : result; }
         virtual std::string virus(Compute = Compute::No) const = 0;
         inline std::string virus_not_influenza(Compute aCompute = Compute::No) const { const auto v = virus(aCompute); return string::lower(v) == "influenza" ? std::string{} : v; }
-        virtual std::string virus_type(Compute = Compute::No) const = 0;
+        virtual std::string virus_type(Compute = Compute::Yes) const = 0;
         virtual std::string subset(Compute = Compute::No) const = 0;
         virtual std::string assay(Compute = Compute::No) const = 0;
         virtual std::string lab(Compute = Compute::No) const = 0;

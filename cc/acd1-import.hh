@@ -53,7 +53,7 @@ namespace acmacs::chart
 
         std::string name(Compute aCompute = Compute::No) const override;
         inline std::string virus(Compute aCompute = Compute::No) const override { return make_field("virus", "+", aCompute); }
-        inline std::string virus_type(Compute aCompute = Compute::No) const override { return make_field("virus_type", "+", aCompute); }
+        inline std::string virus_type(Compute aCompute = Compute::Yes) const override { return make_field("virus_type", "+", aCompute); }
         inline std::string subset(Compute aCompute = Compute::No) const override { return make_field("virus_subset", "+", aCompute); }
         inline std::string assay(Compute aCompute = Compute::No) const override { return make_field("assay", "+", aCompute); }
         inline std::string lab(Compute aCompute = Compute::No) const override { return make_field("lab", "+", aCompute); }
