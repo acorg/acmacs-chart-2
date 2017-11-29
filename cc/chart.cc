@@ -270,7 +270,7 @@ double acmacs::chart::Titer::logged() const
           return log_titer(data());
       case DontCare:
           throw invalid_titer(data());
-      case LessTnan:
+      case LessThan:
       case MoreThan:
       case Dodgy:
           return log_titer(data().substr(1));
@@ -290,7 +290,7 @@ std::string acmacs::chart::Titer::logged_as_string() const
           return acmacs::to_string(logged());
       case DontCare:
           return data();
-      case LessTnan:
+      case LessThan:
       case MoreThan:
       case Dodgy:
           return data()[0] + acmacs::to_string(logged());
@@ -307,7 +307,7 @@ double acmacs::chart::Titer::logged_for_column_bases() const
       case Invalid:
           throw invalid_titer(data());
       case Regular:
-      case LessTnan:
+      case LessThan:
           return logged();
       case MoreThan:
           return logged() + 1;

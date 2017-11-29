@@ -183,7 +183,7 @@ namespace acmacs::chart
      public:
         using internal::string_data::string_data;
 
-        enum Type { Invalid, Regular, DontCare, LessTnan, MoreThan, Dodgy };
+        enum Type { Invalid, Regular, DontCare, LessThan, MoreThan, Dodgy };
 
         inline Type type() const
             {
@@ -193,7 +193,7 @@ namespace acmacs::chart
                   case '*':
                       return DontCare;
                   case '<':
-                      return LessTnan;
+                      return LessThan;
                   case '>':
                       return MoreThan;
                   case '~':
@@ -208,6 +208,8 @@ namespace acmacs::chart
 
         inline bool is_dont_care() const { return type() == DontCare; }
         inline bool is_regular() const { return type() == Regular; }
+        inline bool is_less_than() const { return type() == LessThan; }
+        inline bool is_more_than() const { return type() == MoreThan; }
 
         double logged() const;
         std::string logged_as_string() const;
@@ -563,6 +565,8 @@ namespace acmacs::chart
 
     }; // class Chart
 
+    using AntigenP = std::shared_ptr<Antigen>;
+    using SerumP = std::shared_ptr<Serum>;
     using ChartP = std::shared_ptr<Chart>;
 
 } // namespace acmacs::chart
