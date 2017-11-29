@@ -211,12 +211,19 @@ namespace acmacs::chart
         inline bool is_less_than() const { return type() == LessThan; }
         inline bool is_more_than() const { return type() == MoreThan; }
 
+        inline bool operator<(const Titer& other) const { return value_for_sorting() < other.value_for_sorting(); }
+        inline bool operator==(const Titer& other) const { return data() == other.data(); }
+        inline bool operator!=(const Titer& other) const { return ! operator==(other); }
+
         double logged() const;
         double logged_with_thresholded() const;
         std::string logged_as_string() const;
         double logged_for_column_bases() const;
+        size_t value_for_sorting() const;
 
     }; // class Titer
+
+    inline std::ostream& operator<<(std::ostream& s, const Titer& aTiter) { return s << aTiter.data(); } // needed in this namespace too
 
     class PointIndexList : public internal::index_list_data
     {

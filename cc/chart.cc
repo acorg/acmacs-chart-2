@@ -259,6 +259,27 @@ std::string acmacs::chart::Info::make_name() const
 
 // ----------------------------------------------------------------------
 
+size_t acmacs::chart::Titer::value_for_sorting() const
+{
+    switch (type()) {
+      case Invalid:
+      case DontCare:
+          return 0;
+      case Regular:
+          return std::stoul(data());
+      case LessThan:
+          return std::stoul(data().substr(1)) - 1;
+      case MoreThan:
+          return std::stoul(data().substr(1)) + 1;
+      case Dodgy:
+          return std::stoul(data().substr(1));
+    }
+    return 0;
+
+} // acmacs::chart::Titer::value_for_sorting
+
+// ----------------------------------------------------------------------
+
 double acmacs::chart::Titer::logged() const
 {
     constexpr auto log_titer = [](std::string source) -> double { return std::log2(std::stod(source) / 10.0); };
