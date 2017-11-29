@@ -281,6 +281,25 @@ double acmacs::chart::Titer::logged() const
 
 // ----------------------------------------------------------------------
 
+double acmacs::chart::Titer::logged_with_thresholded() const
+{
+    switch (type()) {
+      case Invalid:
+      case Regular:
+      case DontCare:
+      case Dodgy:
+          return logged();
+      case LessThan:
+          return logged() + 1;
+      case MoreThan:
+          return logged() - 1;
+    }
+    throw invalid_titer(data()); // for gcc 7.2
+
+} // acmacs::chart::Titer::logged_with_thresholded
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Titer::logged_as_string() const
 {
     switch (type()) {

@@ -212,6 +212,7 @@ namespace acmacs::chart
         inline bool is_more_than() const { return type() == MoreThan; }
 
         double logged() const;
+        double logged_with_thresholded() const;
         std::string logged_as_string() const;
         double logged_for_column_bases() const;
 
