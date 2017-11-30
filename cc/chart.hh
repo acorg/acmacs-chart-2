@@ -573,9 +573,17 @@ namespace acmacs::chart
 
     }; // class Chart
 
+    using ChartP = std::shared_ptr<Chart>;
     using AntigenP = std::shared_ptr<Antigen>;
     using SerumP = std::shared_ptr<Serum>;
-    using ChartP = std::shared_ptr<Chart>;
+    using AntigensP = std::shared_ptr<Antigens>;
+    using SeraP = std::shared_ptr<Sera>;
+    using InfoP = std::shared_ptr<Info>;
+    using TitersP = std::shared_ptr<Titers>;
+    using ColumnBasesP = std::shared_ptr<ColumnBases>;
+    using ProjectionP = std::shared_ptr<Projection>;
+    using ProjectionsP = std::shared_ptr<Projections>;
+    using PlotSpecP = std::shared_ptr<PlotSpec>;
 
 } // namespace acmacs::chart
 

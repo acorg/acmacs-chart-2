@@ -13,13 +13,13 @@ namespace acmacs::chart
       public:
         inline LispmdsChart(acmacs::lispmds::value&& aSrc) : mData{std::move(aSrc)} {}
 
-        std::shared_ptr<Info> info() const override;
-        std::shared_ptr<Antigens> antigens() const override;
-        std::shared_ptr<Sera> sera() const override;
-        std::shared_ptr<Titers> titers() const override;
-        std::shared_ptr<ColumnBases> forced_column_bases() const override;
-        std::shared_ptr<Projections> projections() const override;
-        std::shared_ptr<PlotSpec> plot_spec() const override;
+        InfoP info() const override;
+        AntigensP antigens() const override;
+        SeraP sera() const override;
+        TitersP titers() const override;
+        ColumnBasesP forced_column_bases() const override;
+        ProjectionsP projections() const override;
+        PlotSpecP plot_spec() const override;
         inline bool is_merge() const override { return false; }
 
         size_t number_of_antigens() const override;
@@ -46,7 +46,7 @@ namespace acmacs::chart
         return true;
     }
 
-    std::shared_ptr<Chart> lispmds_import(const std::string_view& aData, Verify aVerify);
+    ChartP lispmds_import(const std::string_view& aData, Verify aVerify);
 
 // ----------------------------------------------------------------------
 
@@ -64,7 +64,7 @@ namespace acmacs::chart
         inline std::string rbc_species(Compute = Compute::No) const override { return{}; }
         inline std::string date(Compute = Compute::No) const override { return {}; }
         inline size_t number_of_sources() const override { return 0; }
-        inline std::shared_ptr<Info> source(size_t) const override { return nullptr; }
+        inline InfoP source(size_t) const override { return nullptr; }
 
      private:
         const acmacs::lispmds::value& mData;
@@ -124,7 +124,7 @@ namespace acmacs::chart
         inline LispmdsAntigens(const acmacs::lispmds::value& aData) : mData{aData} {}
 
         size_t size() const override;
-        std::shared_ptr<Antigen> operator[](size_t aIndex) const override;
+        AntigenP operator[](size_t aIndex) const override;
 
      private:
         const acmacs::lispmds::value& mData;
@@ -139,7 +139,7 @@ namespace acmacs::chart
         inline LispmdsSera(const acmacs::lispmds::value& aData) : mData{aData} {}
 
         size_t size() const override;
-        std::shared_ptr<Serum> operator[](size_t aIndex) const override;
+        SerumP operator[](size_t aIndex) const override;
 
      private:
         const acmacs::lispmds::value& mData;
@@ -205,7 +205,7 @@ namespace acmacs::chart
         std::shared_ptr<Layout> layout() const override;
         inline std::string comment() const override { return {}; }
         MinimumColumnBasis minimum_column_basis() const override;
-        std::shared_ptr<ColumnBases> forced_column_bases() const override;
+        ColumnBasesP forced_column_bases() const override;
         acmacs::Transformation transformation() const override;
         inline bool dodgy_titer_is_regular() const override { return false; }
         inline double stress_diff_to_stop() const override { return 0.0; }
@@ -230,7 +230,7 @@ namespace acmacs::chart
 
         bool empty() const override;
         size_t size() const override;
-        std::shared_ptr<Projection> operator[](size_t aIndex) const override;
+        ProjectionP operator[](size_t aIndex) const override;
 
      private:
         const acmacs::lispmds::value& mData;

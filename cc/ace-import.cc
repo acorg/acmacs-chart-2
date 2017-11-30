@@ -22,7 +22,7 @@ bool acmacs::chart::is_ace(const std::string_view& aData)
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Chart> acmacs::chart::ace_import(const std::string_view& aData, Verify aVerify)
+ChartP acmacs::chart::ace_import(const std::string_view& aData, Verify aVerify)
 {
     auto chart = std::make_shared<AceChart>(rjson::parse_string(aData));
     chart->verify_data(aVerify);
@@ -66,7 +66,7 @@ void AceChart::verify_data(Verify aVerify) const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Info> AceChart::info() const
+InfoP AceChart::info() const
 {
     return std::make_shared<AceInfo>(mData["c"]["i"]);
 
@@ -74,7 +74,7 @@ std::shared_ptr<Info> AceChart::info() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Antigens> AceChart::antigens() const
+AntigensP AceChart::antigens() const
 {
     return std::make_shared<AceAntigens>(mData["c"].get_or_empty_array("a"), mAntigenNameIndex);
 
@@ -82,7 +82,7 @@ std::shared_ptr<Antigens> AceChart::antigens() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Sera> AceChart::sera() const
+SeraP AceChart::sera() const
 {
     auto sera = std::make_shared<AceSera>(mData["c"].get_or_empty_array("s"));
     set_homologous(false, sera);
@@ -92,7 +92,7 @@ std::shared_ptr<Sera> AceChart::sera() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Titers> AceChart::titers() const
+TitersP AceChart::titers() const
 {
     return std::make_shared<AceTiters>(mData["c"].get_or_empty_object("t"));
 
@@ -100,7 +100,7 @@ std::shared_ptr<Titers> AceChart::titers() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ColumnBases> AceChart::forced_column_bases() const
+ColumnBasesP AceChart::forced_column_bases() const
 {
     return std::make_shared<AceColumnBases>(mData["c"].get_or_empty_array("C"));
 
@@ -108,7 +108,7 @@ std::shared_ptr<ColumnBases> AceChart::forced_column_bases() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Projections> AceChart::projections() const
+ProjectionsP AceChart::projections() const
 {
     return std::make_shared<AceProjections>(mData["c"].get_or_empty_array("P"));
 
@@ -116,7 +116,7 @@ std::shared_ptr<Projections> AceChart::projections() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<PlotSpec> AceChart::plot_spec() const
+PlotSpecP AceChart::plot_spec() const
 {
     return std::make_shared<AcePlotSpec>(mData["c"].get_or_empty_object("p"));
 
@@ -377,7 +377,7 @@ std::shared_ptr<Layout> AceProjection::layout() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ColumnBases> AceProjection::forced_column_bases() const
+ColumnBasesP AceProjection::forced_column_bases() const
 {
     return std::make_shared<AceColumnBases>(mData.get_or_empty_array("C"));
 

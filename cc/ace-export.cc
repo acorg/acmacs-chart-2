@@ -6,7 +6,7 @@
 
 // ----------------------------------------------------------------------
 
-static void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aInfo);
+static void export_info(rjson::object& aTarget, acmacs::chart::InfoP aInfo);
 static void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens);
 static void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera);
 static void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters);
@@ -55,7 +55,7 @@ std::string acmacs::chart::ace_export(const Chart& aChart, std::string aProgramN
 
 // ----------------------------------------------------------------------
 
-void export_info(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Info> aInfo)
+void export_info(rjson::object& aTarget, acmacs::chart::InfoP aInfo)
 {
     aTarget.set_field_if_not_empty("v", aInfo->virus());
     aTarget.set_field_if_not_empty("V", aInfo->virus_type());

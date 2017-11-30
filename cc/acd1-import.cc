@@ -18,7 +18,7 @@ static void convert_set_of_one_string(std::string& aData);
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Chart> acmacs::chart::acd1_import(const std::string_view& aData, Verify aVerify)
+ChartP acmacs::chart::acd1_import(const std::string_view& aData, Verify aVerify)
 {
     const std::string json = convert_to_json(aData);
     try {
@@ -233,7 +233,7 @@ void Acd1Chart::verify_data(Verify aVerify) const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Info> Acd1Chart::info() const
+InfoP Acd1Chart::info() const
 {
     return std::make_shared<Acd1Info>(mData["chart_info"]);
 
@@ -241,7 +241,7 @@ std::shared_ptr<Info> Acd1Chart::info() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Antigens> Acd1Chart::antigens() const
+AntigensP Acd1Chart::antigens() const
 {
     return std::make_shared<Acd1Antigens>(mData["table"].get_or_empty_array("antigens"), mAntigenNameIndex);
 
@@ -249,7 +249,7 @@ std::shared_ptr<Antigens> Acd1Chart::antigens() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Sera> Acd1Chart::sera() const
+SeraP Acd1Chart::sera() const
 {
     auto sera = std::make_shared<Acd1Sera>(mData["table"].get_or_empty_array("sera"));
     set_homologous(false, sera);
@@ -259,7 +259,7 @@ std::shared_ptr<Sera> Acd1Chart::sera() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Titers> Acd1Chart::titers() const
+TitersP Acd1Chart::titers() const
 {
     return std::make_shared<Acd1Titers>(mData["table"].get_or_empty_object("titers"));
 
@@ -267,7 +267,7 @@ std::shared_ptr<Titers> Acd1Chart::titers() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ColumnBases> Acd1Chart::forced_column_bases() const
+ColumnBasesP Acd1Chart::forced_column_bases() const
 {
     return std::make_shared<Acd1ColumnBases>(mData["table"].get_or_empty_array("column_bases"));
 
@@ -275,7 +275,7 @@ std::shared_ptr<ColumnBases> Acd1Chart::forced_column_bases() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Projections> Acd1Chart::projections() const
+ProjectionsP Acd1Chart::projections() const
 {
     return std::make_shared<Acd1Projections>(mData.get_or_empty_array("projections"));
 
@@ -283,7 +283,7 @@ std::shared_ptr<Projections> Acd1Chart::projections() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<PlotSpec> Acd1Chart::plot_spec() const
+PlotSpecP Acd1Chart::plot_spec() const
 {
     return std::make_shared<Acd1PlotSpec>(mData.get_or_empty_object("plot_spec"));
 
@@ -698,7 +698,7 @@ std::shared_ptr<acmacs::chart::Layout> Acd1Projection::layout() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ColumnBases> Acd1Projection::forced_column_bases() const
+ColumnBasesP Acd1Projection::forced_column_bases() const
 {
     const rjson::object& sep = mData.get_or_empty_object("stress_evaluator_parameters");
     if (const rjson::array& cb = sep.get_or_empty_array("column_bases"); !cb.empty())
