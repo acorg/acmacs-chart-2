@@ -13,7 +13,7 @@ TARGETS = \
     $(DIST)/chart-plot-spec \
     $(DIST)/chart-layout \
     $(DIST)/chart-convert \
-    $(DIST)/chart-move-antigens
+    $(DIST)/chart-move-points
 
 SOURCES = chart.cc layout.cc bounding-ball.cc \
     factory-import.cc ace-import.cc acd1-import.cc lispmds-import.cc lispmds-token.cc \

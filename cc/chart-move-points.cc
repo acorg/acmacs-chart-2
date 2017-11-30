@@ -19,13 +19,14 @@ int main(int argc, char* const argv[])
                 {"--verbose", false}
         });
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 4) {
-            std::cerr << "Usage: " << args.program() << " [options] <comma-sep-antigen-numbers> <comma-sep-target-coords> <input-chart-file> <output-chart-file>\n" << args.usage_options() << '\n';
+            std::cerr << "Usage: " << args.program() << " [options] <comma-sep-point-numbers> <comma-sep-target-coords> <input-chart-file> <output-chart-file>\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {
             auto chart = acmacs::chart::import_factory(args[2], acmacs::chart::Verify::All);
             std::cout << chart->make_info() << '\n';
-            acmacs::chart::export_factory(*chart, args[3], fs::path(args.program()).filename());
+            acmacs::chart::ChartModify chart_modify(chart);
+            acmacs::chart::export_factory(chart_modify, args[3], fs::path(args.program()).filename());
         }
     }
     catch (std::exception& err) {

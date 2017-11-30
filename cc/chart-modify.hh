@@ -6,9 +6,25 @@
 
 namespace acmacs::chart
 {
+    class InfoModify;
+    class AntigensModify;
+    class SeraModify;
+    class TitersModify;
+    class ColumnBasesModify;
+    class ProjectionsModify;
+    class PlotSpecModify;
+
+    using InfoModifyP = std::shared_ptr<InfoModify>;
+    using AntigensModifyP = std::shared_ptr<AntigensModify>;
+    using SeraModifyP = std::shared_ptr<SeraModify>;
+    using TitersModifyP = std::shared_ptr<TitersModify>;
+    using ColumnBasesModifyP = std::shared_ptr<ColumnBasesModify>;
+    using ProjectionsModifyP = std::shared_ptr<ProjectionsModify>;
+    using PlotSpecModifyP = std::shared_ptr<PlotSpecModify>;
+
     class ChartModify : public Chart
     {
-      public:
+     public:
         inline ChartModify(ChartP aMain) : mMain{aMain} {}
 
         InfoP info() const override;
@@ -20,6 +36,14 @@ namespace acmacs::chart
         PlotSpecP plot_spec() const override;
         inline bool is_merge() const override { return mMain->is_merge(); }
 
+        InfoModifyP info_modify() const;
+        AntigensModifyP antigens_modify() const;
+        SeraModifyP sera_modify() const;
+        TitersModifyP titers_modify() const;
+        ColumnBasesModifyP forced_column_bases_modify() const;
+        ProjectionsModifyP projections_modify() const;
+        PlotSpecModifyP plot_spec_modify() const;
+
      private:
         ChartP mMain;
 
@@ -29,7 +53,7 @@ namespace acmacs::chart
 
     class InfoModify : public Info
     {
-      public:
+     public:
         inline InfoModify(InfoP aMain) : mMain{aMain} {}
 
         inline std::string name(Compute aCompute = Compute::No) const override { return mMain->name(aCompute); }
@@ -52,7 +76,7 @@ namespace acmacs::chart
 
     class AntigenModify : public Antigen
     {
-      public:
+     public:
         inline AntigenModify(AntigenP aMain) : mMain{aMain} {}
 
         inline Name name() const override  { return mMain->name(); }
@@ -74,7 +98,7 @@ namespace acmacs::chart
 
     class SerumModify : public Serum
     {
-      public:
+     public:
         inline SerumModify(SerumP aMain) : mMain{aMain} {}
 
         inline Name name() const override { return mMain->name(); }
@@ -112,7 +136,7 @@ namespace acmacs::chart
 
     class SeraModify : public Sera
     {
-      public:
+     public:
         inline SeraModify(SeraP aMain) : mMain{aMain} {}
 
         inline size_t size() const override { return mMain->size(); }
@@ -127,7 +151,7 @@ namespace acmacs::chart
 
     class TitersModify : public Titers
     {
-      public:
+     public:
         inline TitersModify(TitersP aMain) : mMain{aMain} {}
 
         inline Titer titer(size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titer(aAntigenNo, aSerumNo); }
@@ -151,7 +175,7 @@ namespace acmacs::chart
 
     class ColumnBasesModify : public ColumnBases
     {
-      public:
+     public:
         inline ColumnBasesModify(ColumnBasesP aMain) : mMain{aMain} {}
 
         inline bool exists() const override { return mMain->exists(); }
@@ -167,7 +191,7 @@ namespace acmacs::chart
 
     class ProjectionModify : public Projection
     {
-      public:
+     public:
         inline ProjectionModify(ProjectionP aMain) : mMain{aMain} {}
 
         inline double stress() const override { return mMain->stress(); }
@@ -192,7 +216,7 @@ namespace acmacs::chart
 
     class ProjectionsModify : public Projections
     {
-      public:
+     public:
         inline ProjectionsModify(ProjectionsP aMain) : mMain{aMain} {}
 
         inline bool empty() const override { return mMain->empty(); }
@@ -208,7 +232,7 @@ namespace acmacs::chart
 
     class PlotSpecModify : public PlotSpec
     {
-      public:
+     public:
         inline PlotSpecModify(PlotSpecP aMain) : mMain{aMain} {}
 
         inline bool empty() const override { return mMain->empty(); }
