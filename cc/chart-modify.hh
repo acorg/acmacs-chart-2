@@ -32,16 +32,16 @@ namespace acmacs::chart
       public:
         inline InfoModify(InfoP aMain) : mMain{aMain} {}
 
-        // std::string name(Compute aCompute = Compute::No) const override;
-        // inline std::string virus(Compute aCompute = Compute::No) const override { return make_field("v", "+", aCompute); }
-        // inline std::string virus_type(Compute aCompute = Compute::Yes) const override { return make_field("V", "+", aCompute); }
-        // inline std::string subset(Compute aCompute = Compute::No) const override { return make_field("s", "+", aCompute); }
-        // inline std::string assay(Compute aCompute = Compute::No) const override { return make_field("A", "+", aCompute); }
-        // inline std::string lab(Compute aCompute = Compute::No) const override { return make_field("l", "+", aCompute); }
-        // inline std::string rbc_species(Compute aCompute = Compute::No) const override { return make_field("r", "+", aCompute); }
-        // std::string date(Compute aCompute = Compute::No) const override;
-        // inline size_t number_of_sources() const override { return mData.get_or_empty_array("S").size(); }
-        // inline InfoP source(size_t aSourceNo) const override { return std::make_shared<InfoModify>(mData.get_or_empty_array("S")[aSourceNo]); }
+        inline std::string name(Compute aCompute = Compute::No) const override { return mMain->name(aCompute); }
+        inline std::string virus(Compute aCompute = Compute::No) const override { return mMain->virus(aCompute); }
+        inline std::string virus_type(Compute aCompute = Compute::Yes) const override { return mMain->virus_type(aCompute); }
+        inline std::string subset(Compute aCompute = Compute::No) const override { return mMain->subset(aCompute); }
+        inline std::string assay(Compute aCompute = Compute::No) const override { return mMain->assay(aCompute); }
+        inline std::string lab(Compute aCompute = Compute::No) const override { return mMain->lab(aCompute); }
+        inline std::string rbc_species(Compute aCompute = Compute::No) const override { return mMain->rbc_species(aCompute); }
+        inline std::string date(Compute aCompute = Compute::No) const override { return mMain->date(aCompute); }
+        inline size_t number_of_sources() const override { return mMain->number_of_sources(); }
+        inline InfoP source(size_t aSourceNo) const override { return mMain->source(aSourceNo); }
 
      private:
         InfoP mMain;
