@@ -55,15 +55,15 @@ namespace acmacs::chart
       public:
         inline AntigenModify(AntigenP aMain) : mMain{aMain} {}
 
-        // inline Name name() const override { return mData["N"]; }
-        // inline Date date() const override { return mData.get_or_default("D", ""); }
-        // inline Passage passage() const override { return mData.get_or_default("P", ""); }
-        // BLineage lineage() const override;
-        // inline Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
-        // inline LabIds lab_ids() const override { return mData.get_or_empty_array("l"); }
-        // inline Clades clades() const override { return mData.get_or_empty_array("c"); }
-        // inline Annotations annotations() const override { return mData.get_or_empty_array("a"); }
-        // inline bool reference() const override { return mData.get_or_default("S", "").find("R") != std::string::npos; }
+        inline Name name() const override  { return mMain->name(); }
+        inline Date date() const override  { return mMain->date(); }
+        inline Passage passage() const override { return mMain->passage(); }
+        inline BLineage lineage() const override  { return mMain->lineage(); }
+        inline Reassortant reassortant() const override { return mMain->reassortant(); }
+        inline LabIds lab_ids() const override { return mMain->lab_ids(); }
+        inline Clades clades() const override { return mMain->clades(); }
+        inline Annotations annotations() const override { return mMain->annotations(); }
+        inline bool reference() const override { return mMain->reference(); }
 
      private:
         AntigenP mMain;
@@ -77,15 +77,15 @@ namespace acmacs::chart
       public:
         inline SerumModify(SerumP aMain) : mMain{aMain} {}
 
-        // inline Name name() const override { return mData["N"]; }
-        // inline Passage passage() const override { return mData.get_or_default("P", ""); }
-        // BLineage lineage() const override;
-        // inline Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
-        // inline Annotations annotations() const override { return mData.get_or_empty_array("a"); }
-        // inline SerumId serum_id() const override { return mData.get_or_default("I", ""); }
-        // inline SerumSpecies serum_species() const override { return mData.get_or_default("s", ""); }
-        // inline PointIndexList homologous_antigens() const override { return mData.get_or_empty_array("h"); }
-        // inline void set_homologous(const std::vector<size_t>& ags) const override { const_cast<rjson::object&>(mData).set_field("h", rjson::array(rjson::array::use_iterator, ags.begin(), ags.end())); }
+        inline Name name() const override { return mMain->name(); }
+        inline Passage passage() const override { return mMain->passage(); }
+        inline BLineage lineage() const override { return mMain->lineage(); }
+        inline Reassortant reassortant() const override { return mMain->reassortant(); }
+        inline Annotations annotations() const override { return mMain->annotations(); }
+        inline SerumId serum_id() const override { return mMain->serum_id(); }
+        inline SerumSpecies serum_species() const override { return mMain->serum_species(); }
+        inline PointIndexList homologous_antigens() const override { return mMain->homologous_antigens(); }
+        inline void set_homologous(const std::vector<size_t>& ags) const override { return mMain->set_homologous(ags); }
 
      private:
         SerumP mMain;
@@ -99,9 +99,9 @@ namespace acmacs::chart
      public:
         inline AntigensModify(AntigensP aMain) : mMain{aMain} {}
 
-        // inline size_t size() const override { return mData.size(); }
-        // inline AntigenP operator[](size_t aIndex) const override { return std::make_shared<AntigenModify>(mData[aIndex]); }
-        // std::optional<size_t> find_by_full_name(std::string aFullName) const override;
+        inline size_t size() const override { return mMain->size(); }
+        inline AntigenP operator[](size_t aIndex) const override { return std::make_shared<AntigenModify>(mMain->operator[](aIndex)); }
+        inline std::optional<size_t> find_by_full_name(std::string aFullName) const override { return mMain->find_by_full_name(aFullName); }
 
      private:
         AntigensP mMain;
@@ -115,8 +115,8 @@ namespace acmacs::chart
       public:
         inline SeraModify(SeraP aMain) : mMain{aMain} {}
 
-        // inline size_t size() const override { return mData.size(); }
-        // inline SerumP operator[](size_t aIndex) const override { return std::make_shared<SerumModify>(mData[aIndex]); }
+        inline size_t size() const override { return mMain->size(); }
+        inline SerumP operator[](size_t aIndex) const override { return std::make_shared<SerumModify>(mMain->operator[](aIndex)); }
 
      private:
         SeraP mMain;
@@ -130,17 +130,17 @@ namespace acmacs::chart
       public:
         inline TitersModify(TitersP aMain) : mMain{aMain} {}
 
-        // Titer titer(size_t aAntigenNo, size_t aSerumNo) const override;
-        // Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override;
-        // inline size_t number_of_layers() const override { return mData.get_or_empty_array("L").size(); }
-        // size_t number_of_antigens() const override;
-        // size_t number_of_sera() const override;
-        // size_t number_of_non_dont_cares() const override;
+        inline Titer titer(size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titer(aAntigenNo, aSerumNo); }
+        inline Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titer_of_layer(aLayerNo, aAntigenNo, aSerumNo); }
+        inline size_t number_of_layers() const override { return mMain->number_of_layers(); }
+        inline size_t number_of_antigens() const override { return mMain->number_of_antigens(); }
+        inline size_t number_of_sera() const override { return mMain->number_of_sera(); }
+        inline size_t number_of_non_dont_cares() const override { return mMain->number_of_non_dont_cares(); }
 
           // support for fast exporting into ace, if source was ace or acd1
-        // inline const rjson::array& rjson_list_list() const override { const rjson::array& r = mData.get_or_empty_array("l"); if (r.empty()) throw data_not_available{"no \"l\""}; return r; }
-        // inline const rjson::array& rjson_list_dict() const override { const rjson::array& r = mData.get_or_empty_array("d"); if (r.empty()) throw data_not_available{"no \"d\""}; return r; }
-        // inline const rjson::array& rjson_layers() const override { const rjson::array& r = mData.get_or_empty_array("L"); if (r.empty()) throw data_not_available{"no \"L\""}; return r; }
+        inline const rjson::array& rjson_list_list() const override { return mMain->rjson_list_list(); }
+        inline const rjson::array& rjson_list_dict() const override { return mMain->rjson_list_dict(); }
+        inline const rjson::array& rjson_layers() const override { return mMain->rjson_layers(); }
 
      private:
         TitersP mMain;
@@ -154,9 +154,9 @@ namespace acmacs::chart
       public:
         inline ColumnBasesModify(ColumnBasesP aMain) : mMain{aMain} {}
 
-        // inline bool exists() const override { return !mData.empty(); }
-        // inline double column_basis(size_t aSerumNo) const override { return mData[aSerumNo]; }
-        // inline size_t size() const override { return mData.size(); }
+        inline bool exists() const override { return mMain->exists(); }
+        inline double column_basis(size_t aSerumNo) const override { return mMain->column_basis(aSerumNo); }
+        inline size_t size() const override { return mMain->size(); }
 
      private:
         ColumnBasesP mMain;
@@ -170,18 +170,18 @@ namespace acmacs::chart
       public:
         inline ProjectionModify(ProjectionP aMain) : mMain{aMain} {}
 
-        // inline double stress() const override { return mData.get_or_default("s", 0.0); }
-        // std::shared_ptr<Layout> layout() const override;
-        // inline std::string comment() const override { return mData.get_or_default("c", ""); }
-        // inline MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_default("m", "none"); }
-        // ColumnBasesP forced_column_bases() const override;
-        // acmacs::Transformation transformation() const override;
-        // inline bool dodgy_titer_is_regular() const override { return mData.get_or_default("d", false); }
-        // inline double stress_diff_to_stop() const override { return mData.get_or_default("d", 0.0); }
-        // inline PointIndexList unmovable() const override { return mData.get_or_empty_array("U"); }
-        // inline PointIndexList disconnected() const override { return mData.get_or_empty_array("D"); }
-        // inline PointIndexList unmovable_in_the_last_dimension() const override { return mData.get_or_empty_array("u"); }
-        // inline AvidityAdjusts avidity_adjusts() const override { return mData.get_or_empty_array("f"); }
+        inline double stress() const override { return mMain->stress(); }
+        inline std::shared_ptr<Layout> layout() const override { return mMain->layout(); }
+        inline std::string comment() const override { return mMain->comment(); }
+        inline MinimumColumnBasis minimum_column_basis() const override { return mMain->minimum_column_basis(); }
+        inline ColumnBasesP forced_column_bases() const override { return mMain->forced_column_bases(); }
+        inline acmacs::Transformation transformation() const override { return mMain->transformation(); }
+        inline bool dodgy_titer_is_regular() const override { return mMain->dodgy_titer_is_regular(); }
+        inline double stress_diff_to_stop() const override { return mMain->stress_diff_to_stop(); }
+        inline PointIndexList unmovable() const override { return mMain->unmovable(); }
+        inline PointIndexList disconnected() const override { return mMain->disconnected(); }
+        inline PointIndexList unmovable_in_the_last_dimension() const override { return mMain->unmovable_in_the_last_dimension(); }
+        inline AvidityAdjusts avidity_adjusts() const override { return mMain->avidity_adjusts(); }
 
      private:
         ProjectionP mMain;
@@ -195,9 +195,9 @@ namespace acmacs::chart
       public:
         inline ProjectionsModify(ProjectionsP aMain) : mMain{aMain} {}
 
-        // inline bool empty() const override { return mData.empty(); }
-        // inline size_t size() const override { return mData.size(); }
-        // inline ProjectionP operator[](size_t aIndex) const override { return std::make_shared<ProjectionModify>(mData[aIndex]); }
+        inline bool empty() const override { return mMain->empty(); }
+        inline size_t size() const override { return mMain->size(); }
+        inline ProjectionP operator[](size_t aIndex) const override { return std::make_shared<ProjectionModify>(mMain->operator[](aIndex)); }
 
      private:
         ProjectionsP mMain;
@@ -211,12 +211,12 @@ namespace acmacs::chart
       public:
         inline PlotSpecModify(PlotSpecP aMain) : mMain{aMain} {}
 
-        // inline bool empty() const override { return mData.empty(); }
-        // inline DrawingOrder drawing_order() const override { return mData.get_or_empty_array("d"); }
-        // Color error_line_positive_color() const override;
-        // Color error_line_negative_color() const override;
-        // PointStyle style(size_t aPointNo) const override;
-        // std::vector<PointStyle> all_styles() const override;
+        inline bool empty() const override { return mMain->empty(); }
+        inline DrawingOrder drawing_order() const override { return mMain->drawing_order(); }
+        inline Color error_line_positive_color() const override { return mMain->error_line_positive_color(); }
+        inline Color error_line_negative_color() const override { return mMain->error_line_negative_color(); }
+        inline PointStyle style(size_t aPointNo) const override { return mMain->style(aPointNo); }
+        inline std::vector<PointStyle> all_styles() const override { return mMain->all_styles(); }
 
      private:
         PlotSpecP mMain;
