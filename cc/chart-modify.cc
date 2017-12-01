@@ -47,7 +47,7 @@ ColumnBasesP ChartModify::forced_column_bases() const
 
 ProjectionsP ChartModify::projections() const
 {
-    return std::make_shared<ProjectionsModify>(mMain->projections());
+    return std::make_shared<ProjectionsModify>(mMain->projections(), const_cast<ChartModify&>(*this));
 
 } // ChartModify::projections
 
@@ -61,7 +61,7 @@ PlotSpecP ChartModify::plot_spec() const
 
 // ----------------------------------------------------------------------
 
-InfoModifyP ChartModify::info_modify() const
+InfoModifyP ChartModify::info_modify()
 {
     return std::make_shared<InfoModify>(mMain->info());
 
@@ -69,7 +69,7 @@ InfoModifyP ChartModify::info_modify() const
 
 // ----------------------------------------------------------------------
 
-AntigensModifyP ChartModify::antigens_modify() const
+AntigensModifyP ChartModify::antigens_modify()
 {
     return std::make_shared<AntigensModify>(mMain->antigens());
 
@@ -77,7 +77,7 @@ AntigensModifyP ChartModify::antigens_modify() const
 
 // ----------------------------------------------------------------------
 
-SeraModifyP ChartModify::sera_modify() const
+SeraModifyP ChartModify::sera_modify()
 {
     return std::make_shared<SeraModify>(mMain->sera());
 
@@ -85,7 +85,7 @@ SeraModifyP ChartModify::sera_modify() const
 
 // ----------------------------------------------------------------------
 
-TitersModifyP ChartModify::titers_modify() const
+TitersModifyP ChartModify::titers_modify()
 {
     return std::make_shared<TitersModify>(mMain->titers());
 
@@ -93,7 +93,7 @@ TitersModifyP ChartModify::titers_modify() const
 
 // ----------------------------------------------------------------------
 
-ColumnBasesModifyP ChartModify::forced_column_bases_modify() const
+ColumnBasesModifyP ChartModify::forced_column_bases_modify()
 {
     return std::make_shared<ColumnBasesModify>(mMain->forced_column_bases());
 
@@ -101,15 +101,23 @@ ColumnBasesModifyP ChartModify::forced_column_bases_modify() const
 
 // ----------------------------------------------------------------------
 
-ProjectionsModifyP ChartModify::projections_modify() const
+ProjectionsModifyP ChartModify::projections_modify()
 {
-    return std::make_shared<ProjectionsModify>(mMain->projections());
+    return std::make_shared<ProjectionsModify>(mMain->projections(), *this);
 
 } // ChartModify::projections_modify
 
 // ----------------------------------------------------------------------
 
-PlotSpecModifyP ChartModify::plot_spec_modify() const
+ProjectionModifyP ChartModify::projection_modify(size_t aProjectionNo)
+{
+    return std::make_shared<ProjectionModify>(mMain->projections()->operator[](aProjectionNo), *this);
+
+} // ChartModify::projection_modify
+
+// ----------------------------------------------------------------------
+
+PlotSpecModifyP ChartModify::plot_spec_modify()
 {
     return std::make_shared<PlotSpecModify>(mMain->plot_spec());
 

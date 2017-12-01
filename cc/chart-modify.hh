@@ -9,18 +9,30 @@ namespace acmacs::chart
     class InfoModify;
     class AntigensModify;
     class SeraModify;
+    class AntigenModify;
+    class SerumModify;
     class TitersModify;
     class ColumnBasesModify;
+    class ProjectionModify;
     class ProjectionsModify;
     class PlotSpecModify;
 
     using InfoModifyP = std::shared_ptr<InfoModify>;
     using AntigensModifyP = std::shared_ptr<AntigensModify>;
     using SeraModifyP = std::shared_ptr<SeraModify>;
+    using AntigenModifyP = std::shared_ptr<AntigenModify>;
+    using SerumModifyP = std::shared_ptr<SerumModify>;
     using TitersModifyP = std::shared_ptr<TitersModify>;
     using ColumnBasesModifyP = std::shared_ptr<ColumnBasesModify>;
     using ProjectionsModifyP = std::shared_ptr<ProjectionsModify>;
+    using ProjectionModifyP = std::shared_ptr<ProjectionModify>;
     using PlotSpecModifyP = std::shared_ptr<PlotSpecModify>;
+
+    namespace internal
+    {
+        class ProjectionModifyData;
+
+    } // namespace internal
 
     class ChartModify : public Chart
     {
@@ -36,16 +48,20 @@ namespace acmacs::chart
         PlotSpecP plot_spec() const override;
         inline bool is_merge() const override { return mMain->is_merge(); }
 
-        InfoModifyP info_modify() const;
-        AntigensModifyP antigens_modify() const;
-        SeraModifyP sera_modify() const;
-        TitersModifyP titers_modify() const;
-        ColumnBasesModifyP forced_column_bases_modify() const;
-        ProjectionsModifyP projections_modify() const;
-        PlotSpecModifyP plot_spec_modify() const;
+        InfoModifyP info_modify();
+        AntigensModifyP antigens_modify();
+        SeraModifyP sera_modify();
+        TitersModifyP titers_modify();
+        ColumnBasesModifyP forced_column_bases_modify();
+        ProjectionsModifyP projections_modify();
+        ProjectionModifyP projection_modify(size_t aProjectionNo);
+        PlotSpecModifyP plot_spec_modify();
 
      private:
         ChartP mMain;
+        std::unique_ptr<internal::ProjectionModifyData> mProjectionModifyData;
+
+        friend class ProjectionModify;
 
     }; // class ChartModify
 
@@ -192,7 +208,7 @@ namespace acmacs::chart
     class ProjectionModify : public Projection
     {
      public:
-        inline ProjectionModify(ProjectionP aMain) : mMain{aMain} {}
+        inline ProjectionModify(ProjectionP aMain, ChartModify& aChart) : mMain{aMain}, mChart(aChart) {}
 
         inline double stress() const override { return mMain->stress(); }
         inline std::shared_ptr<Layout> layout() const override { return mMain->layout(); }
@@ -209,6 +225,7 @@ namespace acmacs::chart
 
      private:
         ProjectionP mMain;
+        ChartModify& mChart;
 
     }; // class ProjectionsModify
 
@@ -217,14 +234,15 @@ namespace acmacs::chart
     class ProjectionsModify : public Projections
     {
      public:
-        inline ProjectionsModify(ProjectionsP aMain) : mMain{aMain} {}
+        inline ProjectionsModify(ProjectionsP aMain, ChartModify& aChart) : mMain{aMain}, mChart(aChart) {}
 
         inline bool empty() const override { return mMain->empty(); }
         inline size_t size() const override { return mMain->size(); }
-        inline ProjectionP operator[](size_t aIndex) const override { return std::make_shared<ProjectionModify>(mMain->operator[](aIndex)); }
+        inline ProjectionP operator[](size_t aIndex) const override { return std::make_shared<ProjectionModify>(mMain->operator[](aIndex), mChart); }
 
      private:
         ProjectionsP mMain;
+        ChartModify& mChart;
 
     }; // class ProjectionsModify
 
@@ -248,6 +266,15 @@ namespace acmacs::chart
     }; // class PlotSpecModify
 
 // ----------------------------------------------------------------------
+
+    namespace internal
+    {
+        class ProjectionModifyData
+        {
+        }; // class ProjectionModifyData
+
+    } // namespace internal
+
 
 } // namespace acmacs::chart
 
