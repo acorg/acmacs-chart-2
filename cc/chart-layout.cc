@@ -36,7 +36,9 @@ int main(int argc, char* const argv[])
             auto sera = chart->sera();
             auto layout = chart->projection(args["--projection"])->layout();
             const std::string filename = args[1];
-            if (string::ends_with(filename, ".csv") || string::ends_with(filename, ".csv.xz"))
+            if (filename == "-")
+                write_text(filename, args["--field-separator"], antigens, sera, layout);
+            else if (string::ends_with(filename, ".csv") || string::ends_with(filename, ".csv.xz"))
                 write_csv(filename, antigens, sera, layout);
             else
                 write_text(filename, args["--field-separator"], antigens, sera, layout);
