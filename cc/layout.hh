@@ -32,7 +32,7 @@ namespace acmacs::chart
 
         inline bool not_nan() const
             {
-                return std::all_of(begin(), end(), [](double value) -> bool { return ! std::isnan(value); });
+                return !empty() && std::all_of(begin(), end(), [](double value) -> bool { return ! std::isnan(value); });
             }
 
     }; // class Coordinates

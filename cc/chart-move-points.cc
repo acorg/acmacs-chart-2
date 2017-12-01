@@ -24,11 +24,15 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
+            size_t projection_no = 0;
             auto chart = acmacs::chart::import_factory(args[2], acmacs::chart::Verify::None);
             std::cout << chart->make_info() << '\n';
             acmacs::chart::ChartModify chart_modify(chart);
             const auto points = acmacs::string::split_into_uint(std::string_view(args[0]), ",");
             const auto target_coordinates = acmacs::string::split_into_double(std::string_view(args[1]), ",");
+            auto projection = chart_modify.projection_modify(projection_no);
+            for (auto point_no: points)
+                projection->move_point(point_no, target_coordinates);
             acmacs::chart::export_factory(chart_modify, args[3], fs::path(args.program()).filename());
         }
     }

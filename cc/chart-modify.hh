@@ -28,11 +28,43 @@ namespace acmacs::chart
     using ProjectionModifyP = std::shared_ptr<ProjectionModify>;
     using PlotSpecModifyP = std::shared_ptr<PlotSpecModify>;
 
+// ----------------------------------------------------------------------
+
     namespace internal
     {
-        class ProjectionModifyData;
+        class Layout : public acmacs::chart::Layout
+        {
+         public:
+            Layout(const acmacs::chart::Layout& aSource);
+
+            inline size_t number_of_points() const noexcept override { return mData.size(); }
+            inline size_t number_of_dimensions() const noexcept override { for (const auto& point: mData) { if (point.not_nan()) return point.size(); } return 0; }
+            inline acmacs::chart::Coordinates operator[](size_t aPointNo) const override { return mData[aPointNo]; }
+            inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override { return mData[aPointNo][aDimensionNo]; }
+            inline void set(size_t aPointNo, const Coordinates& aCoordinates) override { if (number_of_dimensions() != aCoordinates.size()) throw std::runtime_error{"Invalid number of dimensions in acmacs::chart::internal::Layout::set"};  mData[aPointNo] = aCoordinates; }
+
+         private:
+            std::vector<acmacs::chart::Coordinates> mData;
+
+        }; // class Layout
+
+        class ProjectionModifyData
+        {
+         public:
+            ProjectionModifyData(ProjectionP aMain);
+            inline void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { mLayout->set(aPointNo, aCoordinates); }
+            inline std::shared_ptr<Layout> layout() { return mLayout; }
+            inline const Transformation& transformation() const { return mTransformation; }
+
+         private:
+            std::shared_ptr<Layout> mLayout;
+            Transformation mTransformation;
+
+        }; // class ProjectionModifyData
 
     } // namespace internal
+
+// ----------------------------------------------------------------------
 
     class ChartModify : public Chart
     {
@@ -59,7 +91,10 @@ namespace acmacs::chart
 
      private:
         ChartP mMain;
-        std::unique_ptr<internal::ProjectionModifyData> mProjectionModifyData;
+        std::map<size_t, std::unique_ptr<internal::ProjectionModifyData>> mProjectionModifyData; // projection_no to data
+
+        internal::ProjectionModifyData& projection_modify_data(size_t aProjectionNo);
+        inline bool projection_modify_data_exists(size_t aProjectionNo) const { return mProjectionModifyData.find(aProjectionNo) != mProjectionModifyData.end(); }
 
         friend class ProjectionModify;
 
@@ -208,14 +243,14 @@ namespace acmacs::chart
     class ProjectionModify : public Projection
     {
      public:
-        inline ProjectionModify(ProjectionP aMain, ChartModify& aChart) : mMain{aMain}, mChart(aChart) {}
+        inline ProjectionModify(ProjectionP aMain, size_t aProjectionNo, ChartModify& aChart) : mMain{aMain}, mProjectionNo(aProjectionNo), mChart(aChart) {}
 
-        inline double stress() const override { return mMain->stress(); }
-        inline std::shared_ptr<Layout> layout() const override { return mMain->layout(); }
+        inline double stress() const override { return mChart.projection_modify_data_exists(mProjectionNo) ? 0.0 : mMain->stress(); } // no stress if projection was modified
+        inline std::shared_ptr<Layout> layout() const override { return mChart.projection_modify_data_exists(mProjectionNo) ? mChart.projection_modify_data(mProjectionNo).layout() : mMain->layout(); }
         inline std::string comment() const override { return mMain->comment(); }
         inline MinimumColumnBasis minimum_column_basis() const override { return mMain->minimum_column_basis(); }
         inline ColumnBasesP forced_column_bases() const override { return mMain->forced_column_bases(); }
-        inline acmacs::Transformation transformation() const override { return mMain->transformation(); }
+        inline acmacs::Transformation transformation() const override { return mChart.projection_modify_data_exists(mProjectionNo) ? mChart.projection_modify_data(mProjectionNo).transformation() : mMain->transformation(); }
         inline bool dodgy_titer_is_regular() const override { return mMain->dodgy_titer_is_regular(); }
         inline double stress_diff_to_stop() const override { return mMain->stress_diff_to_stop(); }
         inline PointIndexList unmovable() const override { return mMain->unmovable(); }
@@ -223,11 +258,14 @@ namespace acmacs::chart
         inline PointIndexList unmovable_in_the_last_dimension() const override { return mMain->unmovable_in_the_last_dimension(); }
         inline AvidityAdjusts avidity_adjusts() const override { return mMain->avidity_adjusts(); }
 
+        inline void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { mChart.projection_modify_data(mProjectionNo).move_point(aPointNo, aCoordinates); }
+
      private:
         ProjectionP mMain;
+        size_t mProjectionNo;
         ChartModify& mChart;
 
-    }; // class ProjectionsModify
+    }; // class ProjectionModify
 
 // ----------------------------------------------------------------------
 
@@ -238,7 +276,7 @@ namespace acmacs::chart
 
         inline bool empty() const override { return mMain->empty(); }
         inline size_t size() const override { return mMain->size(); }
-        inline ProjectionP operator[](size_t aIndex) const override { return std::make_shared<ProjectionModify>(mMain->operator[](aIndex), mChart); }
+        inline ProjectionP operator[](size_t aIndex) const override { return std::make_shared<ProjectionModify>(mMain->operator[](aIndex), aIndex, mChart); }
 
      private:
         ProjectionsP mMain;
@@ -266,15 +304,6 @@ namespace acmacs::chart
     }; // class PlotSpecModify
 
 // ----------------------------------------------------------------------
-
-    namespace internal
-    {
-        class ProjectionModifyData
-        {
-        }; // class ProjectionModifyData
-
-    } // namespace internal
-
 
 } // namespace acmacs::chart
 
