@@ -142,9 +142,20 @@ acmacs::chart::internal::Layout::Layout(const acmacs::chart::Layout& aSource)
     : mData(aSource.number_of_points())
 {
     for (size_t point_no = 0; point_no < aSource.number_of_points(); ++point_no)
-        set(point_no, aSource[point_no]);
+        mData[point_no] = aSource[point_no];
 
 } // acmacs::chart::internal::Layout::Layout
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::internal::Layout::set(size_t aPointNo, const Coordinates& aCoordinates)
+{
+    // std::cerr << *this << '\n';
+    if (number_of_dimensions() != aCoordinates.size())
+        throw std::runtime_error{"Wrong number of dimensions (" + acmacs::to_string(aCoordinates.size()) + ") in acmacs::chart::internal::Layout::set(), expected: " + acmacs::to_string(number_of_dimensions())};
+    mData[aPointNo] = aCoordinates;
+
+} // acmacs::chart::internal::Layout::set
 
 // ----------------------------------------------------------------------
 

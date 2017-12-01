@@ -1,5 +1,6 @@
 #pragma once
 
+#include "acmacs-base/stream.hh"
 #include "acmacs-base/transformation.hh"
 #include "acmacs-base/vector.hh"
 
@@ -37,6 +38,12 @@ namespace acmacs::chart
 
     }; // class Coordinates
 
+    inline std::ostream& operator<<(std::ostream& s, const Coordinates& c)
+    {
+        stream_internal::write_to_stream(s, c, "[", "]", ", ");
+        return s;
+    }
+
 // ----------------------------------------------------------------------
 
     class Layout
@@ -66,6 +73,15 @@ namespace acmacs::chart
 
     }; // class Layout
 
+    inline std::ostream& operator<<(std::ostream& s, const Layout& c)
+    {
+        s << "Layout [";
+        for (size_t no = 0; no < c.number_of_points(); ++no)
+            s << c[no] << ' ';
+        s << ']';
+        return s;
+    }
+
 // ----------------------------------------------------------------------
 
     namespace internal
@@ -91,6 +107,8 @@ namespace acmacs::chart
     } // namespace internal
 
 } // namespace acmacs::chart
+
+// ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------
 /// Local Variables:

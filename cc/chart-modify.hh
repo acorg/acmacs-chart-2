@@ -41,7 +41,7 @@ namespace acmacs::chart
             inline size_t number_of_dimensions() const noexcept override { for (const auto& point: mData) { if (point.not_nan()) return point.size(); } return 0; }
             inline acmacs::chart::Coordinates operator[](size_t aPointNo) const override { return mData[aPointNo]; }
             inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override { return mData[aPointNo][aDimensionNo]; }
-            inline void set(size_t aPointNo, const Coordinates& aCoordinates) override { if (number_of_dimensions() != aCoordinates.size()) throw std::runtime_error{"Invalid number of dimensions in acmacs::chart::internal::Layout::set"};  mData[aPointNo] = aCoordinates; }
+            void set(size_t aPointNo, const Coordinates& aCoordinates) override;
 
          private:
             std::vector<acmacs::chart::Coordinates> mData;
