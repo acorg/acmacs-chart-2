@@ -1,0 +1,32 @@
+#! /bin/bash
+
+TDIR=$(mktemp -d)
+TESTDIR=$(dirname $0)
+
+# ======================================================================
+
+function on_exit
+{
+    rm -rf "$TDIR"
+}
+
+trap on_exit EXIT
+
+function failed
+{
+    echo FAILED "$@" >&2
+    exit 1
+}
+
+trap failed ERR
+
+# ======================================================================
+
+cd "$TESTDIR"
+../dist/chart-move-points 0,3 10,-10 ./test-2004-3.ace "${TDIR}/r.ace" >/dev/null 2>&1
+if [[ $(../dist/chart-layout "${TDIR}/r.ace" - 2>/dev/null | head -n 1) != "AG S:1.0_X:0.0_Y:1.0 10 -10" ]]; then
+    failed chart-move-points for point 0
+fi
+if [[ $(../dist/chart-layout "${TDIR}/r.ace" - 2>/dev/null | head -n 4 | tail -n 1) != "AG S:1.0_X:1.0_Y:0.0 10 -10" ]]; then
+    failed chart-move-points for point 3
+fi
