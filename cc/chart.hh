@@ -73,7 +73,7 @@ namespace acmacs::chart
         virtual std::string name(Compute = Compute::No) const = 0;
         inline std::string name_non_empty() const { const auto result = name(Compute::Yes); return result.empty() ? std::string{"UNKNOWN"} : result; }
         virtual std::string virus(Compute = Compute::No) const = 0;
-        inline std::string virus_not_influenza(Compute aCompute = Compute::No) const { const auto v = virus(aCompute); return string::lower(v) == "influenza" ? std::string{} : v; }
+        inline std::string virus_not_influenza(Compute aCompute = Compute::No) const { const auto v = virus(aCompute); return ::string::lower(v) == "influenza" ? std::string{} : v; }
         virtual std::string virus_type(Compute = Compute::Yes) const = 0;
         virtual std::string subset(Compute = Compute::No) const = 0;
         virtual std::string assay(Compute = Compute::No) const = 0;
@@ -309,12 +309,12 @@ namespace acmacs::chart
         virtual Annotations annotations() const = 0;
         virtual bool reference() const = 0;
 
-        inline std::string full_name() const { return string::join(" ", {name(), reassortant(), string::join(" ", annotations()), passage()}); }
-        inline std::string full_name_without_passage() const { return string::join(" ", {name(), reassortant(), string::join(" ", annotations())}); }
-        inline std::string full_name_for_seqdb_matching() const { return string::join(" ", {name(), reassortant(), passage(), string::join(" ", annotations())}); } // annotations may part of the passage in seqdb (NIMR ISOLATE 1)
-        inline std::string abbreviated_name() const { return string::join(" ", {name_abbreviated(), reassortant(), string::join(" ", annotations())}); }
-        inline std::string abbreviated_name_with_passage_type() const { return string::join("-", {name_abbreviated(), reassortant(), string::join(" ", annotations()), passage_type()}); }
-        inline std::string abbreviated_location_with_passage_type() const { return string::join(" ", {location_abbreviated(), passage_type()}); }
+        inline std::string full_name() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations()), passage()}); }
+        inline std::string full_name_without_passage() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations())}); }
+        inline std::string full_name_for_seqdb_matching() const { return ::string::join(" ", {name(), reassortant(), passage(), ::string::join(" ", annotations())}); } // annotations may part of the passage in seqdb (NIMR ISOLATE 1)
+        inline std::string abbreviated_name() const { return ::string::join(" ", {name_abbreviated(), reassortant(), ::string::join(" ", annotations())}); }
+        inline std::string abbreviated_name_with_passage_type() const { return ::string::join("-", {name_abbreviated(), reassortant(), ::string::join(" ", annotations()), passage_type()}); }
+        inline std::string abbreviated_location_with_passage_type() const { return ::string::join(" ", {location_abbreviated(), passage_type()}); }
 
         std::string name_abbreviated() const;
         std::string location_abbreviated() const;
@@ -339,9 +339,9 @@ namespace acmacs::chart
         virtual PointIndexList homologous_antigens() const = 0;
         virtual inline void set_homologous(const std::vector<size_t>&) const {}
 
-        inline std::string full_name() const { return string::join(" ", {name(), reassortant(), serum_id(), string::join(" ", annotations())}); }
+        inline std::string full_name() const { return ::string::join(" ", {name(), reassortant(), serum_id(), ::string::join(" ", annotations())}); }
         inline std::string full_name_without_passage() const { return full_name(); }
-        inline std::string abbreviated_name() const { return string::join(" ", {name_abbreviated(), reassortant(), string::join(" ", annotations())}); }
+        inline std::string abbreviated_name() const { return ::string::join(" ", {name_abbreviated(), reassortant(), ::string::join(" ", annotations())}); }
         inline std::string abbreviated_name_with_passage_type() const { return abbreviated_name(); }
 
         std::string name_abbreviated() const;
