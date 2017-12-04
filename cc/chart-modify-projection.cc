@@ -10,9 +10,13 @@
 
 // ----------------------------------------------------------------------
 
-inline void extend(std::vector<size_t>& target, std::vector<size_t>&& source, size_t aIncrementEach)
+inline void extend(std::vector<size_t>& target, std::vector<size_t>&& source, size_t aIncrementEach, size_t aMax)
 {
-    std::transform(source.begin(), source.end(), std::back_inserter(target), [aIncrementEach](auto v) { return v + aIncrementEach; });
+    std::transform(source.begin(), source.end(), std::back_inserter(target), [aIncrementEach,aMax](auto v) {
+        if (v >= aMax)
+            throw std::runtime_error("invalid index " + acmacs::to_string(v) + ", expected in range 0.." + acmacs::to_string(aMax) + " inclusive");
+        return v + aIncrementEach;
+    });
 }
 
 int main(int argc, char* const argv[])
@@ -21,10 +25,10 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv, {
                 {"--projection", 0},
-                {"--points", ""},
-                {"--antigens", ""},
-                {"--sera", ""},
-                {"--move-to", ""},
+                {"--points", "", "comma separated list of point indexes, no spaces!"},
+                {"--antigens", "", "comma separated list of antigen indexes, no spaces!"},
+                {"--sera", "", "comma separated list of serum indexes, no spaces!"},
+                {"--move-to", "", "comma separated list of coordinates, no spaces!" },
                 {"--rotate-degrees", 0.0},
                 {"--rotate-radians", 0.0},
                 {"--flip-ew", false},
@@ -47,11 +51,11 @@ int main(int argc, char* const argv[])
 
             std::vector<size_t> points;
             if (args["--points"])
-                extend(points, acmacs::string::split_into_uint(static_cast<std::string_view>(args["--points"]), ","), 0);
+                extend(points, acmacs::string::split_into_uint(static_cast<std::string_view>(args["--points"]), ","), 0, chart->number_of_points());
             if (args["--antigens"])
-                extend(points, acmacs::string::split_into_uint(static_cast<std::string_view>(args["--antigens"]), ","), 0);
+                extend(points, acmacs::string::split_into_uint(static_cast<std::string_view>(args["--antigens"]), ","), 0, chart->number_of_antigens());
             if (args["--sera"])
-                extend(points, acmacs::string::split_into_uint(static_cast<std::string_view>(args["--sera"]), ","), chart->number_of_antigens());
+                extend(points, acmacs::string::split_into_uint(static_cast<std::string_view>(args["--sera"]), ","), chart->number_of_antigens(), chart->number_of_sera());
             std::sort(points.begin(), points.end());
             points.erase(std::unique(points.begin(), points.end()), points.end());
             if (!points.empty() && points.back() >= chart->number_of_points())
