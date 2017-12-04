@@ -289,6 +289,8 @@ namespace acmacs::chart
         using internal::index_list_data::index_list_data;
 
         inline size_t index_of(size_t aValue) const { return static_cast<size_t>(std::find(begin(), end(), aValue) - begin()); }
+        inline void raise(size_t aIndex) { *std::remove(begin(), end(), aIndex) = aIndex; }
+        inline void lower(size_t aIndex) { *std::remove(rbegin(), rend(), aIndex) = aIndex; }
 
     }; // class DrawingOrder
 

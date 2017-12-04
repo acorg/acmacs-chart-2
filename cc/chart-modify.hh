@@ -68,6 +68,29 @@ namespace acmacs::chart
 
         }; // class ProjectionModifyData
 
+        class PlotSpecModifyData
+        {
+         public:
+            PlotSpecModifyData(PlotSpecP aMain);
+
+            inline const PointStyle& style(size_t aPointNo) const { return mStyles.at(aPointNo); }
+            inline const std::vector<PointStyle>& all_styles() const { return mStyles; }
+            inline const DrawingOrder& drawing_order() const { return mDrawingOrder; }
+
+            inline size_t number_of_points() const { return mStyles.size(); }
+            inline void validate_point_no(size_t aPointNo) const { if (aPointNo >= number_of_points()) throw std::runtime_error("Invalid point number: " + acmacs::to_string(aPointNo) + ", expected integer in range 0.." + acmacs::to_string(number_of_points() - 1) + ", inclusive"); }
+            inline void size(size_t aPointNo, Pixels aSize) { validate_point_no(aPointNo); mStyles[aPointNo].size = aSize; }
+            inline void fill(size_t aPointNo, Color aFill) { validate_point_no(aPointNo); mStyles[aPointNo].fill = aFill; }
+            inline void outline(size_t aPointNo, Color aOutline) { validate_point_no(aPointNo); mStyles[aPointNo].outline = aOutline; }
+            inline void raise(size_t aPointNo) { validate_point_no(aPointNo); mDrawingOrder.raise(aPointNo); }
+            inline void lower(size_t aPointNo) { validate_point_no(aPointNo); mDrawingOrder.lower(aPointNo); }
+
+         private:
+            std::vector<PointStyle> mStyles;
+            DrawingOrder mDrawingOrder;
+
+        }; // class PlotSpecModifyData
+
     } // namespace internal
 
 // ----------------------------------------------------------------------
@@ -98,11 +121,15 @@ namespace acmacs::chart
      private:
         ChartP mMain;
         std::map<size_t, std::unique_ptr<internal::ProjectionModifyData>> mProjectionModifyData; // projection_no to data
+        std::optional<internal::PlotSpecModifyData> mPlotSpecModifyData;
 
         internal::ProjectionModifyData& modify_projection(size_t aProjectionNo);
         inline bool modified_projection(size_t aProjectionNo) const { return mProjectionModifyData.find(aProjectionNo) != mProjectionModifyData.end(); }
+        internal::PlotSpecModifyData& modify_plot_spec();
+        inline bool modified_plot_spec() const { return mPlotSpecModifyData.has_value(); }
 
         friend class ProjectionModify;
+        friend class PlotSpecModify;
 
     }; // class ChartModify
 
@@ -300,17 +327,24 @@ namespace acmacs::chart
     class PlotSpecModify : public PlotSpec
     {
      public:
-        inline PlotSpecModify(PlotSpecP aMain) : mMain{aMain} {}
+        inline PlotSpecModify(PlotSpecP aMain, ChartModify& aChart) : mMain{aMain}, mChart(aChart) {}
 
-        inline bool empty() const override { return mMain->empty(); }
-        inline DrawingOrder drawing_order() const override { return mMain->drawing_order(); }
+        inline bool empty() const override { return mChart.modified_plot_spec() ? false : mMain->empty(); }
+        inline DrawingOrder drawing_order() const override { return mChart.modified_plot_spec() ? mChart.modify_plot_spec().drawing_order() : mMain->drawing_order(); }
         inline Color error_line_positive_color() const override { return mMain->error_line_positive_color(); }
         inline Color error_line_negative_color() const override { return mMain->error_line_negative_color(); }
-        inline PointStyle style(size_t aPointNo) const override { return mMain->style(aPointNo); }
-        inline std::vector<PointStyle> all_styles() const override { return mMain->all_styles(); }
+        inline PointStyle style(size_t aPointNo) const override { return mChart.modified_plot_spec() ? mChart.modify_plot_spec().style(aPointNo) : mMain->style(aPointNo); }
+        inline std::vector<PointStyle> all_styles() const override { return mChart.modified_plot_spec() ? mChart.modify_plot_spec().all_styles() : mMain->all_styles(); }
+
+        inline void size(size_t aPointNo, Pixels aSize) { mChart.modify_plot_spec().size(aPointNo, aSize); }
+        inline void fill(size_t aPointNo, Color aFill) { mChart.modify_plot_spec().fill(aPointNo, aFill); }
+        inline void outline(size_t aPointNo, Color aOutline) { mChart.modify_plot_spec().outline(aPointNo, aOutline); }
+        inline void raise(size_t aPointNo) { mChart.modify_plot_spec().raise(aPointNo); }
+        inline void lower(size_t aPointNo) { mChart.modify_plot_spec().lower(aPointNo); }
 
      private:
         PlotSpecP mMain;
+        ChartModify& mChart;
 
     }; // class PlotSpecModify
 

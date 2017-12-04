@@ -24,15 +24,14 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
-                {"--projection", 0},
                 {"--points", "", "comma separated list of point indexes, no spaces!"},
                 {"--antigens", "", "comma separated list of antigen indexes, no spaces!"},
                 {"--sera", "", "comma separated list of serum indexes, no spaces!"},
-                {"--move-to", "", "comma separated list of coordinates, no spaces!" },
-                {"--rotate-degrees", 0.0},
-                {"--rotate-radians", 0.0},
-                {"--flip-ew", false},
-                {"--flip-ns", false},
+
+                {"--size", 0.0, "change point size"},
+                {"--fill", "", "change point fill color"},
+                {"--outline", "", "change point outline color"},
+
                 {"-h", false},
                 {"--help", false},
                 {"-v", false},
@@ -45,39 +44,37 @@ int main(int argc, char* const argv[])
         else {
             auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None);
             std::cout << chart->make_info() << '\n';
-            const size_t projection_no = args["--projection"];
-            if (projection_no >= chart->number_of_projections())
-                throw std::runtime_error("Invalid projection: " + acmacs::to_string(projection_no) + ", expected in range 0.." + acmacs::to_string(chart->number_of_projections() - 1) + " inclusive");
 
             std::vector<size_t> points;
-            if (args["--points"].present())
+            if (args["--points"])
                 extend(points, acmacs::string::split_into_uint(static_cast<std::string_view>(args["--points"]), ","), 0, chart->number_of_points());
-            if (args["--antigens"].present())
+            if (args["--antigens"])
                 extend(points, acmacs::string::split_into_uint(static_cast<std::string_view>(args["--antigens"]), ","), 0, chart->number_of_antigens());
-            if (args["--sera"].present())
+            if (args["--sera"])
                 extend(points, acmacs::string::split_into_uint(static_cast<std::string_view>(args["--sera"]), ","), chart->number_of_antigens(), chart->number_of_sera());
             std::sort(points.begin(), points.end());
             points.erase(std::unique(points.begin(), points.end()), points.end());
-            if (!points.empty() && points.back() >= chart->number_of_points())
-                throw std::runtime_error("Invalid point index: " + acmacs::to_string(points.back()) + ", expected in range 0.." + acmacs::to_string(chart->number_of_points() - 1) + " inclusive");
+            if (points.empty())
+                throw std::runtime_error("No point indexes were provided, use --points, --antigens, --sera");
+            // else if (!points.empty() && points.back() >= chart->number_of_points())
+            //     throw std::runtime_error("Invalid point index: " + acmacs::to_string(points.back()) + ", expected in range 0.." + acmacs::to_string(chart->number_of_points() - 1) + " inclusive");
+            std::cerr << "points: " << points << '\n';
 
             acmacs::chart::ChartModify chart_modify(chart);
-            auto projection = chart_modify.projection_modify(projection_no);
-            if (args["--move-to"].present()) {
-                if (points.empty())
-                    throw std::runtime_error("--move-to requires at least one of --antigens, --sera, --points");
-                const auto target_coordinates = acmacs::string::split_into_double(std::string_view(args["--move-to"]), ",");
+            auto plot_spec = chart_modify.plot_spec_modify();
+
+            if (args["--size"].present()) {
                 for (auto point_no: points)
-                    projection->move_point(point_no, target_coordinates);
+                    plot_spec->size(point_no, Pixels{args["--size"]});
             }
-            if (const double rotate_degrees = args["--rotate-degrees"]; !float_zero(rotate_degrees))
-                projection->rotate_degrees(rotate_degrees);
-            if (const double rotate_radians = args["--rotate-radians"]; !float_zero(rotate_radians))
-                projection->rotate_radians(rotate_radians);
-            if (args["--flip-ew"])
-                projection->flip_east_west();
-            if (args["--flip-ns"])
-                projection->flip_north_south();
+            if (args["--fill"].present()) {
+                for (auto point_no: points)
+                    plot_spec->fill(point_no, static_cast<std::string_view>(args["--fill"]));
+            }
+            if (args["--outline"].present()) {
+                for (auto point_no: points)
+                    plot_spec->outline(point_no, static_cast<std::string_view>(args["--outline"]));
+            }
 
             acmacs::chart::export_factory(chart_modify, args[1], fs::path(args.program()).filename());
         }

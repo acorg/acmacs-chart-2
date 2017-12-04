@@ -55,7 +55,7 @@ ProjectionsP ChartModify::projections() const
 
 PlotSpecP ChartModify::plot_spec() const
 {
-    return std::make_shared<PlotSpecModify>(mMain->plot_spec());
+    return std::make_shared<PlotSpecModify>(mMain->plot_spec(), const_cast<ChartModify&>(*this));
 
 } // ChartModify::plot_spec
 
@@ -119,7 +119,7 @@ ProjectionModifyP ChartModify::projection_modify(size_t aProjectionNo)
 
 PlotSpecModifyP ChartModify::plot_spec_modify()
 {
-    return std::make_shared<PlotSpecModify>(mMain->plot_spec());
+    return std::make_shared<PlotSpecModify>(mMain->plot_spec(), *this);
 
 } // ChartModify::plot_spec_modify
 
@@ -135,6 +135,17 @@ internal::ProjectionModifyData& ChartModify::modify_projection(size_t aProjectio
         return *found->second;
 
 } // ChartModify::modify_projection
+
+// ----------------------------------------------------------------------
+
+internal::PlotSpecModifyData& ChartModify::modify_plot_spec()
+{
+    if (!mPlotSpecModifyData) {
+        mPlotSpecModifyData = internal::PlotSpecModifyData(mMain->plot_spec());
+    }
+    return *mPlotSpecModifyData;
+
+} // ChartModify::modify_plot_spec
 
 // ----------------------------------------------------------------------
 
@@ -162,11 +173,14 @@ void acmacs::chart::internal::Layout::set(size_t aPointNo, const Coordinates& aC
 acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData(ProjectionP aMain)
     : mLayout(std::make_shared<acmacs::chart::internal::Layout>(*aMain->layout())), mTransformation(aMain->transformation())
 {
-
 } // acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::internal::PlotSpecModifyData::PlotSpecModifyData(PlotSpecP aMain)
+    : mStyles(aMain->all_styles()), mDrawingOrder(aMain->drawing_order())
+{
+} // acmacs::chart::internal::PlotSpecModifyData::PlotSpecModifyData
 
 // ----------------------------------------------------------------------
 /// Local Variables:

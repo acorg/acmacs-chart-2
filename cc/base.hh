@@ -64,6 +64,8 @@ namespace acmacs::chart
             constexpr inline auto end() const { return mData.cend(); }
             constexpr inline auto begin() { return mData.begin(); }
             constexpr inline auto end() { return mData.end(); }
+            constexpr inline auto rbegin() { return mData.rbegin(); }
+            constexpr inline auto rend() { return mData.rend(); }
 
             inline bool operator==(const T_list_data<T>& other) const
                 {
