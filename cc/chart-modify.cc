@@ -125,7 +125,7 @@ PlotSpecModifyP ChartModify::plot_spec_modify()
 
 // ----------------------------------------------------------------------
 
-internal::ProjectionModifyData& ChartModify::projection_modify_data(size_t aProjectionNo)
+internal::ProjectionModifyData& ChartModify::modify_projection(size_t aProjectionNo)
 {
     if (const auto found = mProjectionModifyData.find(aProjectionNo); found == mProjectionModifyData.end()) {
         mProjectionModifyData[aProjectionNo] = std::make_unique<internal::ProjectionModifyData>(mMain->projections()->operator[](aProjectionNo));
@@ -134,7 +134,7 @@ internal::ProjectionModifyData& ChartModify::projection_modify_data(size_t aProj
     else
         return *found->second;
 
-} // ChartModify::projection_modify_data
+} // ChartModify::modify_projection
 
 // ----------------------------------------------------------------------
 

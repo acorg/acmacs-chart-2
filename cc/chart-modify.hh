@@ -52,9 +52,15 @@ namespace acmacs::chart
         {
          public:
             ProjectionModifyData(ProjectionP aMain);
-            inline void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { mLayout->set(aPointNo, aCoordinates); }
             inline std::shared_ptr<Layout> layout() { return mLayout; }
             inline const Transformation& transformation() const { return mTransformation; }
+
+            inline void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { mLayout->set(aPointNo, aCoordinates); }
+            inline void rotate_radians(double aAngle) { mTransformation.rotate(aAngle); }
+            inline void rotate_degrees(double aAngle) { rotate_radians(aAngle * M_PI / 180.0); }
+            inline void flip(double aX, double aY) { mTransformation.flip(aX, aY); }
+            inline void flip_east_west() { flip(0, 1); }
+            inline void flip_north_south() { flip(1, 0); }
 
          private:
             std::shared_ptr<Layout> mLayout;
@@ -93,8 +99,8 @@ namespace acmacs::chart
         ChartP mMain;
         std::map<size_t, std::unique_ptr<internal::ProjectionModifyData>> mProjectionModifyData; // projection_no to data
 
-        internal::ProjectionModifyData& projection_modify_data(size_t aProjectionNo);
-        inline bool projection_modify_data_exists(size_t aProjectionNo) const { return mProjectionModifyData.find(aProjectionNo) != mProjectionModifyData.end(); }
+        internal::ProjectionModifyData& modify_projection(size_t aProjectionNo);
+        inline bool modified_projection(size_t aProjectionNo) const { return mProjectionModifyData.find(aProjectionNo) != mProjectionModifyData.end(); }
 
         friend class ProjectionModify;
 
@@ -245,12 +251,12 @@ namespace acmacs::chart
      public:
         inline ProjectionModify(ProjectionP aMain, size_t aProjectionNo, ChartModify& aChart) : mMain{aMain}, mProjectionNo(aProjectionNo), mChart(aChart) {}
 
-        inline double stress() const override { return mChart.projection_modify_data_exists(mProjectionNo) ? 0.0 : mMain->stress(); } // no stress if projection was modified
-        inline std::shared_ptr<Layout> layout() const override { return mChart.projection_modify_data_exists(mProjectionNo) ? mChart.projection_modify_data(mProjectionNo).layout() : mMain->layout(); }
+        inline double stress() const override { return mChart.modified_projection(mProjectionNo) ? 0.0 : mMain->stress(); } // no stress if projection was modified
+        inline std::shared_ptr<Layout> layout() const override { return mChart.modified_projection(mProjectionNo) ? mChart.modify_projection(mProjectionNo).layout() : mMain->layout(); }
         inline std::string comment() const override { return mMain->comment(); }
         inline MinimumColumnBasis minimum_column_basis() const override { return mMain->minimum_column_basis(); }
         inline ColumnBasesP forced_column_bases() const override { return mMain->forced_column_bases(); }
-        inline acmacs::Transformation transformation() const override { return mChart.projection_modify_data_exists(mProjectionNo) ? mChart.projection_modify_data(mProjectionNo).transformation() : mMain->transformation(); }
+        inline acmacs::Transformation transformation() const override { return mChart.modified_projection(mProjectionNo) ? mChart.modify_projection(mProjectionNo).transformation() : mMain->transformation(); }
         inline bool dodgy_titer_is_regular() const override { return mMain->dodgy_titer_is_regular(); }
         inline double stress_diff_to_stop() const override { return mMain->stress_diff_to_stop(); }
         inline PointIndexList unmovable() const override { return mMain->unmovable(); }
@@ -258,7 +264,12 @@ namespace acmacs::chart
         inline PointIndexList unmovable_in_the_last_dimension() const override { return mMain->unmovable_in_the_last_dimension(); }
         inline AvidityAdjusts avidity_adjusts() const override { return mMain->avidity_adjusts(); }
 
-        inline void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { mChart.projection_modify_data(mProjectionNo).move_point(aPointNo, aCoordinates); }
+        inline void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { mChart.modify_projection(mProjectionNo).move_point(aPointNo, aCoordinates); }
+        inline void rotate_radians(double aAngle) { mChart.modify_projection(mProjectionNo).rotate_radians(aAngle); }
+        inline void rotate_degrees(double aAngle) { mChart.modify_projection(mProjectionNo).rotate_degrees(aAngle); }
+        inline void flip(double aX, double aY) { mChart.modify_projection(mProjectionNo).flip(aX, aY); }
+        inline void flip_east_west() { mChart.modify_projection(mProjectionNo).flip_east_west(); }
+        inline void flip_north_south() { mChart.modify_projection(mProjectionNo).flip_north_south(); }
 
      private:
         ProjectionP mMain;
