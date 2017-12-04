@@ -6,6 +6,7 @@
 
 namespace acmacs::chart
 {
+    class ChartModify;
     class InfoModify;
     class AntigensModify;
     class SeraModify;
@@ -17,6 +18,7 @@ namespace acmacs::chart
     class ProjectionsModify;
     class PlotSpecModify;
 
+    using ChartModifyP = std::shared_ptr<ChartModify>;
     using InfoModifyP = std::shared_ptr<InfoModify>;
     using AntigensModifyP = std::shared_ptr<AntigensModify>;
     using SeraModifyP = std::shared_ptr<SeraModify>;
