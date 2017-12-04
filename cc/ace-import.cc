@@ -118,7 +118,7 @@ ProjectionsP AceChart::projections() const
 
 PlotSpecP AceChart::plot_spec() const
 {
-    return std::make_shared<AcePlotSpec>(mData["c"].get_or_empty_object("p"));
+    return std::make_shared<AcePlotSpec>(mData["c"].get_or_empty_object("p"), *this);
 
 } // AceChart::plot_spec
 
@@ -426,8 +426,8 @@ Color AcePlotSpec::error_line_negative_color() const
 acmacs::PointStyle AcePlotSpec::style(size_t aPointNo) const
 {
     acmacs::PointStyle result;
+    const rjson::array& indices = mData.get_or_empty_array("p");
     try {
-        const rjson::array& indices = mData["p"];
         const size_t style_no = indices[aPointNo];
         // std::cerr << "style " << aPointNo << ' ' << style_no << ' ' << mData["P"][style_no].to_json() << '\n';
         return extract(mData["P"][style_no], aPointNo, style_no);
@@ -443,19 +443,25 @@ acmacs::PointStyle AcePlotSpec::style(size_t aPointNo) const
 
 std::vector<acmacs::PointStyle> AcePlotSpec::all_styles() const
 {
-    try {
-        const rjson::array& indices = mData["p"];
-        std::vector<acmacs::PointStyle> result(indices.size());
-        for (auto [point_no, target]: acmacs::enumerate(result)) {
-            const size_t style_no = indices[point_no];
-            target = extract(mData["P"][style_no], point_no, style_no);
+    const rjson::array& indices = mData.get_or_empty_array("p");
+    if (!indices.empty()) {
+        try {
+            std::vector<acmacs::PointStyle> result(indices.size());
+            for (auto [point_no, target]: acmacs::enumerate(result)) {
+                const size_t style_no = indices[point_no];
+                target = extract(mData["P"][style_no], point_no, style_no);
+            }
+            return result;
         }
-        return result;
+        catch (std::exception& err) {
+            std::cerr << "WARNING: [ace]: cannot get point styles: " << err.what() << '\n';
+        }
+        return {};
     }
-    catch (std::exception& err) {
-        std::cerr << "WARNING: [ace]: cannot get point styles: " << err.what() << '\n';
+    else {
+        std::cerr << "WARNING: [ace]: no point styles stored, default is used\n";
+        return std::vector<acmacs::PointStyle>(mChart.number_of_points());
     }
-    return {};
 
 } // AcePlotSpec::all_styles
 

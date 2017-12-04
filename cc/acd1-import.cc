@@ -285,7 +285,7 @@ ProjectionsP Acd1Chart::projections() const
 
 PlotSpecP Acd1Chart::plot_spec() const
 {
-    return std::make_shared<Acd1PlotSpec>(mData.get_or_empty_object("plot_spec"));
+    return std::make_shared<Acd1PlotSpec>(mData.get_or_empty_object("plot_spec"), *this);
 
 } // Acd1Chart::plot_spec
 
@@ -839,19 +839,25 @@ acmacs::PointStyle Acd1PlotSpec::style(size_t aPointNo) const
 
 std::vector<acmacs::PointStyle> Acd1PlotSpec::all_styles() const
 {
-    try {
-        const rjson::array& indices = mData["points"];
-        std::vector<acmacs::PointStyle> result(indices.size());
-        for (auto [point_no, target]: acmacs::enumerate(result)) {
-            const size_t style_no = indices[point_no];
-            target = extract(mData["styles"][style_no], point_no, style_no);
+    const rjson::array& indices = mData.get_or_empty_array("points");
+    if (!indices.empty()) {
+        try {
+            std::vector<acmacs::PointStyle> result(indices.size());
+            for (auto [point_no, target]: acmacs::enumerate(result)) {
+                const size_t style_no = indices[point_no];
+                target = extract(mData["styles"][style_no], point_no, style_no);
+            }
+            return result;
         }
-        return result;
+        catch (std::exception& err) {
+            std::cerr << "WARNING: [acd1]: cannot get point styles: " << err.what() << '\n';
+        }
+        return {};
     }
-    catch (std::exception& err) {
-        std::cerr << "WARNING: [acd1]: cannot get point styles: " << err.what() << '\n';
+    else {
+        std::cerr << "WARNING: [ace]: no point styles stored, default is used\n";
+        return std::vector<acmacs::PointStyle>(mChart.number_of_points());
     }
-    return {};
 
 } // Acd1PlotSpec::all_styles
 

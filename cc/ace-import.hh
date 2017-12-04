@@ -239,7 +239,7 @@ namespace acmacs::chart
     class AcePlotSpec : public PlotSpec
     {
       public:
-        inline AcePlotSpec(const rjson::object& aData) : mData{aData} {}
+        inline AcePlotSpec(const rjson::object& aData, const AceChart& aChart) : mData{aData}, mChart{aChart} {}
 
         inline bool empty() const override { return mData.empty(); }
         inline DrawingOrder drawing_order() const override { return mData.get_or_empty_array("d"); }
@@ -250,6 +250,7 @@ namespace acmacs::chart
 
      private:
         const rjson::object& mData;
+        const AceChart& mChart;
 
         PointStyle extract(const rjson::object& aSrc, size_t aPointNo, size_t aStyleNo) const;
         void label_style(PointStyle& aStyle, const rjson::object& aData) const;

@@ -252,7 +252,7 @@ namespace acmacs::chart
     class Acd1PlotSpec : public PlotSpec
     {
       public:
-        inline Acd1PlotSpec(const rjson::object& aData) : mData{aData} {}
+        inline Acd1PlotSpec(const rjson::object& aData, const Acd1Chart& aChart) : mData{aData}, mChart{aChart} {}
 
         inline bool empty() const override { return mData.empty(); }
         DrawingOrder drawing_order() const override;
@@ -263,6 +263,7 @@ namespace acmacs::chart
 
      private:
         const rjson::object& mData;
+        const Acd1Chart& mChart;
 
         PointStyle extract(const rjson::object& aSrc, size_t aPointNo, size_t aStyleNo) const;
 
