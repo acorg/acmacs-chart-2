@@ -1,0 +1,30 @@
+#! /bin/bash
+
+TDIR=$(mktemp -d)
+TESTDIR=$(dirname $0)
+
+# ======================================================================
+
+function on_exit
+{
+    rm -rf "$TDIR"
+}
+
+trap on_exit EXIT
+
+function failed
+{
+    echo FAILED "$@" >&2
+    exit 1
+}
+
+trap failed ERR
+
+# ======================================================================
+
+cd "$TESTDIR"
+../dist/chart-modify-plot-spec --sera 4,5 --fill pink --size 25 ./test-2004-3.ace "${TDIR}/r1.ace" >/dev/null 2>&1
+xz -dc ./test-2004-3.ace >"${TDIR}/orig.json"
+xz -dc "${TDIR}/r1.ace" >"${TDIR}/r1.json"
+diff -I "\"\\?created\":" "${TDIR}/orig.json" "${TDIR}/r1.json" >"${TDIR}/diff-1.txt" || true
+cmp "${TDIR}/diff-1.txt" test-modify-plot-spec.expected-1.diff
