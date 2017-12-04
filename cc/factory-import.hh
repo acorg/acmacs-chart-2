@@ -10,8 +10,9 @@
 namespace acmacs::chart
 {
     class Chart;
+    using ChartP = std::shared_ptr<Chart>;
 
-    std::shared_ptr<Chart> import_factory(std::string aFilename, Verify aVerify);
+    ChartP import_factory(std::string aFilename, Verify aVerify);
 
 } // namespace acmacs::chart
 

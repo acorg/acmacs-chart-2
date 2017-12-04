@@ -139,7 +139,7 @@ std::pair<std::shared_ptr<acmacs::chart::ColumnBases>, acmacs::chart::MinimumCol
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Chart> acmacs::chart::lispmds_import(const std::string_view& aData, Verify aVerify)
+ChartP acmacs::chart::lispmds_import(const std::string_view& aData, Verify aVerify)
 {
     // try {
         auto chart = std::make_shared<LispmdsChart>(acmacs::lispmds::parse_string(aData));
@@ -171,7 +171,7 @@ void LispmdsChart::verify_data(Verify) const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Info> LispmdsChart::info() const
+InfoP LispmdsChart::info() const
 {
     return std::make_shared<LispmdsInfo>(mData);
 
@@ -179,7 +179,7 @@ std::shared_ptr<Info> LispmdsChart::info() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Antigens> LispmdsChart::antigens() const
+AntigensP LispmdsChart::antigens() const
 {
     return std::make_shared<LispmdsAntigens>(mData);
 
@@ -187,7 +187,7 @@ std::shared_ptr<Antigens> LispmdsChart::antigens() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Sera> LispmdsChart::sera() const
+SeraP LispmdsChart::sera() const
 {
     return std::make_shared<LispmdsSera>(mData);
 
@@ -195,7 +195,7 @@ std::shared_ptr<Sera> LispmdsChart::sera() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Titers> LispmdsChart::titers() const
+TitersP LispmdsChart::titers() const
 {
     return std::make_shared<LispmdsTiters>(mData);
 
@@ -203,7 +203,7 @@ std::shared_ptr<Titers> LispmdsChart::titers() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ColumnBases> LispmdsChart::forced_column_bases() const
+ColumnBasesP LispmdsChart::forced_column_bases() const
 {
     return ::forced_column_bases(mData, 0).first;
 
@@ -211,7 +211,7 @@ std::shared_ptr<ColumnBases> LispmdsChart::forced_column_bases() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Projections> LispmdsChart::projections() const
+ProjectionsP LispmdsChart::projections() const
 {
     return std::make_shared<LispmdsProjections>(mData);
 
@@ -219,7 +219,7 @@ std::shared_ptr<Projections> LispmdsChart::projections() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<PlotSpec> LispmdsChart::plot_spec() const
+PlotSpecP LispmdsChart::plot_spec() const
 {
     return std::make_shared<LispmdsPlotSpec>(mData);
 
@@ -398,7 +398,7 @@ size_t LispmdsAntigens::size() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Antigen> LispmdsAntigens::operator[](size_t aIndex) const
+AntigenP LispmdsAntigens::operator[](size_t aIndex) const
 {
     return std::make_shared<LispmdsAntigen>(mData, aIndex);
 
@@ -414,7 +414,7 @@ size_t LispmdsSera::size() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Serum> LispmdsSera::operator[](size_t aIndex) const
+SerumP LispmdsSera::operator[](size_t aIndex) const
 {
     return std::make_shared<LispmdsSerum>(mData, aIndex);
 
@@ -559,7 +559,7 @@ std::shared_ptr<Layout> LispmdsProjection::layout() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ColumnBases> LispmdsProjection::forced_column_bases() const
+ColumnBasesP LispmdsProjection::forced_column_bases() const
 {
     return ::forced_column_bases(mData, mIndex).first;
 
@@ -683,7 +683,7 @@ size_t LispmdsProjections::size() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Projection> LispmdsProjections::operator[](size_t aIndex) const
+ProjectionP LispmdsProjections::operator[](size_t aIndex) const
 {
     return std::make_shared<LispmdsProjection>(mData, aIndex, number_of_antigens(mData), number_of_sera(mData));
 

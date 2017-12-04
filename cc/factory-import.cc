@@ -7,7 +7,7 @@
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::chart::Chart> acmacs::chart::import_factory(std::string aFilename, Verify aVerify)
+acmacs::chart::ChartP acmacs::chart::import_factory(std::string aFilename, Verify aVerify)
 {
     Timeit ti("reading chart from " + aFilename + ": ");
     Timeit ti_file("reading " + aFilename + ": ");

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "acmacs-base/stream.hh"
 #include "acmacs-base/transformation.hh"
 #include "acmacs-base/vector.hh"
 
@@ -32,10 +33,16 @@ namespace acmacs::chart
 
         inline bool not_nan() const
             {
-                return std::all_of(begin(), end(), [](double value) -> bool { return ! std::isnan(value); });
+                return !empty() && std::all_of(begin(), end(), [](double value) -> bool { return ! std::isnan(value); });
             }
 
     }; // class Coordinates
+
+    inline std::ostream& operator<<(std::ostream& s, const Coordinates& c)
+    {
+        stream_internal::write_to_stream(s, c, "[", "]", ", ");
+        return s;
+    }
 
 // ----------------------------------------------------------------------
 
@@ -66,6 +73,15 @@ namespace acmacs::chart
 
     }; // class Layout
 
+    inline std::ostream& operator<<(std::ostream& s, const Layout& c)
+    {
+        s << "Layout [";
+        for (size_t no = 0; no < c.number_of_points(); ++no)
+            s << c[no] << ' ';
+        s << ']';
+        return s;
+    }
+
 // ----------------------------------------------------------------------
 
     namespace internal
@@ -91,6 +107,8 @@ namespace acmacs::chart
     } // namespace internal
 
 } // namespace acmacs::chart
+
+// ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------
 /// Local Variables:

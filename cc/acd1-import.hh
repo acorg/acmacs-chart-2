@@ -18,13 +18,13 @@ namespace acmacs::chart
       public:
         inline Acd1Chart(rjson::value&& aSrc) : mData{std::move(aSrc)} {}
 
-        std::shared_ptr<Info> info() const override;
-        std::shared_ptr<Antigens> antigens() const override;
-        std::shared_ptr<Sera> sera() const override;
-        std::shared_ptr<Titers> titers() const override;
-        std::shared_ptr<ColumnBases> forced_column_bases() const override;
-        std::shared_ptr<Projections> projections() const override;
-        std::shared_ptr<PlotSpec> plot_spec() const override;
+        InfoP info() const override;
+        AntigensP antigens() const override;
+        SeraP sera() const override;
+        TitersP titers() const override;
+        ColumnBasesP forced_column_bases() const override;
+        ProjectionsP projections() const override;
+        PlotSpecP plot_spec() const override;
         bool is_merge() const override;
 
         void verify_data(Verify aVerify) const;
@@ -33,7 +33,7 @@ namespace acmacs::chart
         rjson::value mData;
         mutable acd1::name_index_t mAntigenNameIndex;
 
-    }; // class Chart
+    }; // class Acd1Chart
 
     inline bool is_acd1(const std::string_view& aData)
     {
@@ -48,7 +48,7 @@ namespace acmacs::chart
         return true;
     }
 
-    std::shared_ptr<Chart> acd1_import(const std::string_view& aData, Verify aVerify);
+    ChartP acd1_import(const std::string_view& aData, Verify aVerify);
 
 // ----------------------------------------------------------------------
 
@@ -66,7 +66,7 @@ namespace acmacs::chart
         inline std::string rbc_species(Compute aCompute = Compute::No) const override { return make_field("rbc_species", "+", aCompute); }
         std::string date(Compute aCompute = Compute::No) const override;
         inline size_t number_of_sources() const override { return mData.get_or_empty_array("sources").size(); }
-        inline std::shared_ptr<Info> source(size_t aSourceNo) const override { return std::make_shared<Acd1Info>(mData.get_or_empty_array("sources")[aSourceNo]); }
+        inline InfoP source(size_t aSourceNo) const override { return std::make_shared<Acd1Info>(mData.get_or_empty_array("sources")[aSourceNo]); }
 
      private:
         const rjson::value& mData;
@@ -128,7 +128,7 @@ namespace acmacs::chart
         inline Acd1Antigens(const rjson::array& aData, acd1::name_index_t& aAntigenNameIndex) : mData{aData}, mAntigenNameIndex{aAntigenNameIndex} {}
 
         inline size_t size() const override { return mData.size(); }
-        inline std::shared_ptr<Antigen> operator[](size_t aIndex) const override { return std::make_shared<Acd1Antigen>(mData[aIndex]); }
+        inline AntigenP operator[](size_t aIndex) const override { return std::make_shared<Acd1Antigen>(mData[aIndex]); }
         std::optional<size_t> find_by_full_name(std::string aFullName) const override;
 
      private:
@@ -147,7 +147,7 @@ namespace acmacs::chart
         inline Acd1Sera(const rjson::array& aData) : mData{aData} {}
 
         inline size_t size() const override { return mData.size(); }
-        inline std::shared_ptr<Serum> operator[](size_t aIndex) const override { return std::make_shared<Acd1Serum>(mData[aIndex]); }
+        inline SerumP operator[](size_t aIndex) const override { return std::make_shared<Acd1Serum>(mData[aIndex]); }
 
      private:
         const rjson::array& mData;
@@ -217,7 +217,7 @@ namespace acmacs::chart
         std::shared_ptr<Layout> layout() const override;
         std::string comment() const override;
         inline MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("minimum_column_basis", "none"); }
-        std::shared_ptr<ColumnBases> forced_column_bases() const override;
+        ColumnBasesP forced_column_bases() const override;
         acmacs::Transformation transformation() const override;
         inline bool dodgy_titer_is_regular() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("dodgy_titer_is_regular", false); }
         inline double stress_diff_to_stop() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("stress_diff_to_stop", 0.0); }
@@ -240,7 +240,7 @@ namespace acmacs::chart
 
         inline bool empty() const override { return mData.empty(); }
         inline size_t size() const override { return mData.size(); }
-        inline std::shared_ptr<Projection> operator[](size_t aIndex) const override { return std::make_shared<Acd1Projection>(mData[aIndex]); }
+        inline ProjectionP operator[](size_t aIndex) const override { return std::make_shared<Acd1Projection>(mData[aIndex]); }
 
      private:
         const rjson::array& mData;

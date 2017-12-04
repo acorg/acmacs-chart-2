@@ -289,6 +289,8 @@ namespace acmacs::chart
         using internal::index_list_data::index_list_data;
 
         inline size_t index_of(size_t aValue) const { return static_cast<size_t>(std::find(begin(), end(), aValue) - begin()); }
+        inline void raise(size_t aIndex) { *std::remove(begin(), end(), aIndex) = aIndex; }
+        inline void lower(size_t aIndex) { *std::remove(rbegin(), rend(), aIndex) = aIndex; }
 
     }; // class DrawingOrder
 
@@ -573,9 +575,17 @@ namespace acmacs::chart
 
     }; // class Chart
 
+    using ChartP = std::shared_ptr<Chart>;
     using AntigenP = std::shared_ptr<Antigen>;
     using SerumP = std::shared_ptr<Serum>;
-    using ChartP = std::shared_ptr<Chart>;
+    using AntigensP = std::shared_ptr<Antigens>;
+    using SeraP = std::shared_ptr<Sera>;
+    using InfoP = std::shared_ptr<Info>;
+    using TitersP = std::shared_ptr<Titers>;
+    using ColumnBasesP = std::shared_ptr<ColumnBases>;
+    using ProjectionP = std::shared_ptr<Projection>;
+    using ProjectionsP = std::shared_ptr<Projections>;
+    using PlotSpecP = std::shared_ptr<PlotSpec>;
 
 } // namespace acmacs::chart
 
