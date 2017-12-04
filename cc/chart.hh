@@ -289,8 +289,34 @@ namespace acmacs::chart
         using internal::index_list_data::index_list_data;
 
         inline size_t index_of(size_t aValue) const { return static_cast<size_t>(std::find(begin(), end(), aValue) - begin()); }
-        inline void raise(size_t aIndex) { *std::remove(begin(), end(), aIndex) = aIndex; }
-        inline void lower(size_t aIndex) { *std::remove(rbegin(), rend(), aIndex) = aIndex; }
+
+        inline void raise(size_t aIndex)
+            {
+                if (const auto p = std::find(begin(), end(), aIndex); p != end())
+                    std::rotate(p, p + 1, end());
+            }
+
+        inline void raise(const std::vector<size_t>& aIndexes)
+            {
+                std::for_each(aIndexes.begin(), aIndexes.end(), [this](size_t index) { this->raise(index); });
+            }
+
+        inline void lower(size_t aIndex)
+            {
+                if (const auto p = std::find(rbegin(), rend(), aIndex); p != rend())
+                    std::rotate(p, p + 1, rend());
+            }
+
+        inline void lower(const std::vector<size_t>& aIndexes)
+            {
+                std::for_each(aIndexes.begin(), aIndexes.end(), [this](size_t index) { this->lower(index); });
+            }
+
+        inline void fill_if_empty(size_t aSize)
+            {
+                if (empty())
+                    acmacs::fill_with_indexes(data(), aSize);
+            }
 
     }; // class DrawingOrder
 

@@ -78,6 +78,7 @@ namespace acmacs::chart
             inline const PointStyle& style(size_t aPointNo) const { return mStyles.at(aPointNo); }
             inline const std::vector<PointStyle>& all_styles() const { return mStyles; }
             inline const DrawingOrder& drawing_order() const { return mDrawingOrder; }
+            inline DrawingOrder& drawing_order() { return mDrawingOrder; }
 
             inline size_t number_of_points() const { return mStyles.size(); }
             inline void validate_point_no(size_t aPointNo) const { if (aPointNo >= number_of_points()) throw std::runtime_error("Invalid point number: " + acmacs::to_string(aPointNo) + ", expected integer in range 0.." + acmacs::to_string(number_of_points() - 1) + ", inclusive"); }
@@ -332,11 +333,13 @@ namespace acmacs::chart
         inline PlotSpecModify(PlotSpecP aMain, ChartModify& aChart) : mMain{aMain}, mChart(aChart) {}
 
         inline bool empty() const override { return mChart.modified_plot_spec() ? false : mMain->empty(); }
-        inline DrawingOrder drawing_order() const override { return mChart.modified_plot_spec() ? mChart.modify_plot_spec().drawing_order() : mMain->drawing_order(); }
         inline Color error_line_positive_color() const override { return mMain->error_line_positive_color(); }
         inline Color error_line_negative_color() const override { return mMain->error_line_negative_color(); }
         inline PointStyle style(size_t aPointNo) const override { return mChart.modified_plot_spec() ? mChart.modify_plot_spec().style(aPointNo) : mMain->style(aPointNo); }
         inline std::vector<PointStyle> all_styles() const override { return mChart.modified_plot_spec() ? mChart.modify_plot_spec().all_styles() : mMain->all_styles(); }
+
+        DrawingOrder drawing_order() const override;
+        inline DrawingOrder& drawing_order_modify() { return mChart.modify_plot_spec().drawing_order(); }
 
         inline void size(size_t aPointNo, Pixels aSize) { mChart.modify_plot_spec().size(aPointNo, aSize); }
         inline void fill(size_t aPointNo, Color aFill) { mChart.modify_plot_spec().fill(aPointNo, aFill); }

@@ -170,6 +170,18 @@ void acmacs::chart::internal::Layout::set(size_t aPointNo, const Coordinates& aC
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::DrawingOrder acmacs::chart::PlotSpecModify::drawing_order() const
+{
+    if (mChart.modified_plot_spec())
+        return mChart.modify_plot_spec().drawing_order();
+    auto drawing_order = mMain->drawing_order();
+    drawing_order.fill_if_empty(mChart.number_of_points());
+    return drawing_order;
+
+} // acmacs::chart::PlotSpecModify::drawing_order
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData(ProjectionP aMain)
     : mLayout(std::make_shared<acmacs::chart::internal::Layout>(*aMain->layout())), mTransformation(aMain->transformation())
 {
@@ -180,6 +192,8 @@ acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData(ProjectionP 
 acmacs::chart::internal::PlotSpecModifyData::PlotSpecModifyData(PlotSpecP aMain)
     : mStyles(aMain->all_styles()), mDrawingOrder(aMain->drawing_order())
 {
+    mDrawingOrder.fill_if_empty(number_of_points());
+
 } // acmacs::chart::internal::PlotSpecModifyData::PlotSpecModifyData
 
 // ----------------------------------------------------------------------
