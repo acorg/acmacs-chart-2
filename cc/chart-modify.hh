@@ -55,18 +55,20 @@ namespace acmacs::chart
          public:
             ProjectionModifyData(ProjectionP aMain);
             inline std::shared_ptr<Layout> layout() { return mLayout; }
+            inline std::shared_ptr<acmacs::chart::Layout> transformed_layout() const { if (!mTransformedLayout) mTransformedLayout.reset(mLayout->transform(mTransformation)); return mTransformedLayout; }
             inline const Transformation& transformation() const { return mTransformation; }
 
-            inline void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { mLayout->set(aPointNo, aCoordinates); }
-            inline void rotate_radians(double aAngle) { mTransformation.rotate(aAngle); }
-            inline void rotate_degrees(double aAngle) { rotate_radians(aAngle * M_PI / 180.0); }
-            inline void flip(double aX, double aY) { mTransformation.flip(aX, aY); }
+            inline void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { mLayout->set(aPointNo, aCoordinates); mTransformedLayout.reset(); }
+            inline void rotate_radians(double aAngle) { mTransformation.rotate(aAngle); mTransformedLayout.reset(); }
+            inline void rotate_degrees(double aAngle) { rotate_radians(aAngle * M_PI / 180.0); mTransformedLayout.reset(); }
+            inline void flip(double aX, double aY) { mTransformation.flip(aX, aY); mTransformedLayout.reset(); }
             inline void flip_east_west() { flip(0, 1); }
             inline void flip_north_south() { flip(1, 0); }
 
          private:
             std::shared_ptr<Layout> mLayout;
             Transformation mTransformation;
+            mutable std::shared_ptr<acmacs::chart::Layout> mTransformedLayout;
 
         }; // class ProjectionModifyData
 
@@ -283,6 +285,7 @@ namespace acmacs::chart
 
         inline double stress() const override { return mChart.modified_projection(mProjectionNo) ? 0.0 : mMain->stress(); } // no stress if projection was modified
         inline std::shared_ptr<Layout> layout() const override { return mChart.modified_projection(mProjectionNo) ? mChart.modify_projection(mProjectionNo).layout() : mMain->layout(); }
+        inline std::shared_ptr<Layout> transformed_layout() const override { return mChart.modified_projection(mProjectionNo) ? mChart.modify_projection(mProjectionNo).transformed_layout() : mMain->transformed_layout(); }
         inline std::string comment() const override { return mMain->comment(); }
         inline MinimumColumnBasis minimum_column_basis() const override { return mMain->minimum_column_basis(); }
         inline ColumnBasesP forced_column_bases() const override { return mMain->forced_column_bases(); }

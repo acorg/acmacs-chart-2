@@ -511,6 +511,7 @@ namespace acmacs::chart
         virtual double stress() const = 0;
         virtual std::string comment() const = 0;
         virtual std::shared_ptr<Layout> layout() const = 0;
+        virtual inline std::shared_ptr<Layout> transformed_layout() const { return std::shared_ptr<Layout>(layout()->transform(transformation())); }
         virtual MinimumColumnBasis minimum_column_basis() const = 0;
         virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0;
         virtual acmacs::Transformation transformation() const = 0;
