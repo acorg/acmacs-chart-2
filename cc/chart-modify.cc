@@ -172,11 +172,14 @@ void acmacs::chart::internal::Layout::set(size_t aPointNo, const Coordinates& aC
 
 acmacs::chart::DrawingOrder acmacs::chart::PlotSpecModify::drawing_order() const
 {
-    if (mChart.modified_plot_spec())
+    if (mChart.modified_plot_spec()) {
         return mChart.modify_plot_spec().drawing_order();
-    auto drawing_order = mMain->drawing_order();
-    drawing_order.fill_if_empty(mChart.number_of_points());
-    return drawing_order;
+    }
+    else {
+        auto drawing_order = mMain->drawing_order();
+        drawing_order.fill_if_empty(mChart.number_of_points());
+        return drawing_order;
+    }
 
 } // acmacs::chart::PlotSpecModify::drawing_order
 

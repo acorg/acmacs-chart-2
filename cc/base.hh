@@ -108,6 +108,11 @@ namespace acmacs::chart
         using index_list_data = T_list_data<size_t>;
         using double_list_data = T_list_data<double>;
 
+        template <typename T> inline std::ostream& operator << (std::ostream& out, const T_list_data<T>& a)
+        {
+            return ::operator<<(out, a.data());
+        }
+
     } // namespace internal
 
 } // namespace acmacs::chart
