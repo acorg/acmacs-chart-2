@@ -563,6 +563,10 @@ namespace acmacs::chart
 
     class Chart
     {
+     protected:
+        enum class PointType { TestAntigen, ReferenceAntigen, Serum };
+        PointStyle default_style(PointType aPointType) const;
+
      public:
         virtual ~Chart();
 
@@ -588,6 +592,9 @@ namespace acmacs::chart
 
         std::string make_info() const;
         std::string make_name(std::optional<size_t> aProjectionNo = {}) const;
+
+        inline PointStyle default_style(size_t aPointNo) const { auto ags = antigens(); return default_style(aPointNo < ags->size() ? ((*ags)[aPointNo]->reference() ? PointType::ReferenceAntigen : PointType::TestAntigen) : PointType::Serum); }
+        std::vector<acmacs::PointStyle> default_all_styles() const;
 
           // Negative radius means calculation failed (e.g. no homologous titer)
         double serum_circle_radius(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool aVerbose = false) const;

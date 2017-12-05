@@ -828,10 +828,10 @@ acmacs::PointStyle Acd1PlotSpec::style(size_t aPointNo) const
         const size_t style_no = indices[aPointNo];
         return extract(mData["styles"][style_no], aPointNo, style_no);
     }
-    catch (std::exception& err) {
-        std::cerr << "WARNING: [acd1]: cannot get style for point " << aPointNo << ": " << err.what() << '\n';
+    catch (std::exception& /*err*/) {
+        // std::cerr << "WARNING: [acd1]: cannot get style for point " << aPointNo << ": " << err.what() << '\n';
     }
-    return {};
+    return mChart.default_style(aPointNo);
 
 } // Acd1PlotSpec::style
 
@@ -841,22 +841,22 @@ std::vector<acmacs::PointStyle> Acd1PlotSpec::all_styles() const
 {
     const rjson::array& indices = mData.get_or_empty_array("points");
     if (!indices.empty()) {
-        try {
-            std::vector<acmacs::PointStyle> result(indices.size());
-            for (auto [point_no, target]: acmacs::enumerate(result)) {
+        std::vector<acmacs::PointStyle> result(indices.size());
+        for (auto [point_no, target]: acmacs::enumerate(result)) {
+            try {
                 const size_t style_no = indices[point_no];
                 target = extract(mData["styles"][style_no], point_no, style_no);
             }
-            return result;
+            catch (std::exception& err) {
+                std::cerr << "WARNING: [acd1]: cannot get point " << point_no << " style: " << err.what() << '\n';
+                target = mChart.default_style(point_no);
+            }
         }
-        catch (std::exception& err) {
-            std::cerr << "WARNING: [acd1]: cannot get point styles: " << err.what() << '\n';
-        }
-        return {};
+        return result;
     }
     else {
-        std::cerr << "WARNING: [ace]: no point styles stored, default is used\n";
-        return std::vector<acmacs::PointStyle>(mChart.number_of_points());
+          // std::cerr << "WARNING: [ace]: no point styles stored, default is used\n";
+        return mChart.default_all_styles();
     }
 
 } // Acd1PlotSpec::all_styles

@@ -214,6 +214,48 @@ void acmacs::chart::Chart::set_homologous(bool force, SeraP aSera) const
 
 // ----------------------------------------------------------------------
 
+acmacs::PointStyle acmacs::chart::Chart::default_style(acmacs::chart::Chart::PointType aPointType) const
+{
+    acmacs::PointStyle style;
+    style.outline = BLACK;
+    switch (aPointType) {
+      case PointType::TestAntigen:
+          style.shape = acmacs::PointShape::Circle;
+          style.size = Pixels{5.0};
+          style.fill = GREEN;
+          break;
+      case PointType::ReferenceAntigen:
+          style.shape = acmacs::PointShape::Circle;
+          style.size = Pixels{8.0};
+          style.fill = TRANSPARENT;
+          break;
+      case PointType::Serum:
+          style.shape = acmacs::PointShape::Box;
+          style.size = Pixels{6.5};
+          style.fill = TRANSPARENT;
+          break;
+    }
+    return style;
+
+} // acmacs::chart::Chart::default_style
+
+// ----------------------------------------------------------------------
+
+std::vector<acmacs::PointStyle> acmacs::chart::Chart::default_all_styles() const
+{
+    auto ags = antigens();
+    auto srs = sera();
+    std::vector<acmacs::PointStyle> result(ags->size() + srs->size());
+    for (size_t ag_no = 0; ag_no < ags->size(); ++ag_no)
+        result[ag_no] = default_style((*ags)[ag_no]->reference() ? PointType::ReferenceAntigen : PointType::TestAntigen);
+    for (auto ps = result.begin() + static_cast<typename decltype(result.begin())::difference_type>(ags->size()); ps != result.end(); ++ps)
+        *ps = default_style(PointType::Serum);
+    return result;
+
+} // acmacs::chart::Chart::default_all_styles
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::BLineage::Lineage acmacs::chart::BLineage::from(std::string aSource)
 {
     if (!aSource.empty()) {
