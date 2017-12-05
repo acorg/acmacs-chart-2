@@ -79,14 +79,17 @@ namespace acmacs::chart
 
             inline const PointStyle& style(size_t aPointNo) const { return mStyles.at(aPointNo); }
             inline const std::vector<PointStyle>& all_styles() const { return mStyles; }
-            inline const DrawingOrder& drawing_order() const { return mDrawingOrder; }
-            inline DrawingOrder& drawing_order() { return mDrawingOrder; }
 
             inline size_t number_of_points() const { return mStyles.size(); }
             inline void validate_point_no(size_t aPointNo) const { if (aPointNo >= number_of_points()) throw std::runtime_error("Invalid point number: " + acmacs::to_string(aPointNo) + ", expected integer in range 0.." + acmacs::to_string(number_of_points() - 1) + ", inclusive"); }
             inline void size(size_t aPointNo, Pixels aSize) { validate_point_no(aPointNo); mStyles[aPointNo].size = aSize; }
             inline void fill(size_t aPointNo, Color aFill) { validate_point_no(aPointNo); mStyles[aPointNo].fill = aFill; }
             inline void outline(size_t aPointNo, Color aOutline) { validate_point_no(aPointNo); mStyles[aPointNo].outline = aOutline; }
+
+            inline void modify(size_t aPointNo, const PointStyle& aStyle) { mStyles.at(aPointNo) = aStyle; }
+
+            inline const DrawingOrder& drawing_order() const { return mDrawingOrder; }
+            inline DrawingOrder& drawing_order() { return mDrawingOrder; }
             inline void raise(size_t aPointNo) { validate_point_no(aPointNo); mDrawingOrder.raise(aPointNo); }
             inline void lower(size_t aPointNo) { validate_point_no(aPointNo); mDrawingOrder.lower(aPointNo); }
 
@@ -334,7 +337,7 @@ namespace acmacs::chart
     class PlotSpecModify : public PlotSpec
     {
      public:
-        inline PlotSpecModify(PlotSpecP aMain, ChartModify& aChart) : mMain{aMain}, mChart(aChart) {}
+        inline PlotSpecModify(PlotSpecP aMain, ChartModify& aChart) : mMain{aMain}, mChart(aChart), mNumberOfAntigens(aChart.number_of_antigens()) {}
 
         inline bool empty() const override { return mChart.modified_plot_spec() ? false : mMain->empty(); }
         inline Color error_line_positive_color() const override { return mMain->error_line_positive_color(); }
@@ -344,16 +347,20 @@ namespace acmacs::chart
 
         DrawingOrder drawing_order() const override;
         inline DrawingOrder& drawing_order_modify() { return mChart.modify_plot_spec().drawing_order(); }
+        inline void raise(size_t aPointNo) { mChart.modify_plot_spec().raise(aPointNo); }
+        inline void lower(size_t aPointNo) { mChart.modify_plot_spec().lower(aPointNo); }
 
         inline void size(size_t aPointNo, Pixels aSize) { mChart.modify_plot_spec().size(aPointNo, aSize); }
         inline void fill(size_t aPointNo, Color aFill) { mChart.modify_plot_spec().fill(aPointNo, aFill); }
         inline void outline(size_t aPointNo, Color aOutline) { mChart.modify_plot_spec().outline(aPointNo, aOutline); }
-        inline void raise(size_t aPointNo) { mChart.modify_plot_spec().raise(aPointNo); }
-        inline void lower(size_t aPointNo) { mChart.modify_plot_spec().lower(aPointNo); }
+
+        inline void modify(size_t aPointNo, const PointStyle& aStyle) { mChart.modify_plot_spec().modify(aPointNo, aStyle); }
+        inline void modify_serum(size_t aSerumNo, const PointStyle& aStyle) { mChart.modify_plot_spec().modify(aSerumNo + mNumberOfAntigens, aStyle); }
 
      private:
         PlotSpecP mMain;
         ChartModify& mChart;
+        size_t mNumberOfAntigens;
 
     }; // class PlotSpecModify
 
