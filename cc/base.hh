@@ -41,6 +41,8 @@ namespace acmacs::chart
 
         }; // class string_data
 
+        inline std::ostream& operator << (std::ostream& out, const string_data& a) { return out << a.data(); }
+
 // ----------------------------------------------------------------------
 
         template <typename T> class T_list_data
@@ -108,26 +110,11 @@ namespace acmacs::chart
         using index_list_data = T_list_data<size_t>;
         using double_list_data = T_list_data<double>;
 
-        template <typename T> inline std::ostream& operator << (std::ostream& out, const T_list_data<T>& a)
-        {
-            return ::operator<<(out, a.data());
-        }
+        template <typename T> inline std::ostream& operator << (std::ostream& out, const T_list_data<T>& a) { return ::operator<<(out, a.data()); }
 
     } // namespace internal
 
 } // namespace acmacs::chart
-
-// ----------------------------------------------------------------------
-
-inline std::ostream& operator << (std::ostream& out, const acmacs::chart::internal::string_data& a)
-{
-    return out << a.data();
-}
-
-// template <typename T> inline std::ostream& operator << (std::ostream& out, const acmacs::chart::internal::T_list_data<T>& a)
-// {
-//     return out << a.data();
-// }
 
 // ----------------------------------------------------------------------
 /// Local Variables:
