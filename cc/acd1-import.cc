@@ -13,6 +13,9 @@
 using namespace std::string_literals;
 using namespace acmacs::chart;
 
+constexpr const double PointScale = 5.0;
+constexpr const double LabelScale = 10.0;
+
 static std::string convert_to_json(const std::string_view& aData);
 static void convert_set_of_one_string(std::string& aData);
 
@@ -882,7 +885,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::object& aSrc, size_t aPoin
             else if (field_name == "shape")
                 result.shape = field_value.str();
             else if (field_name == "size")
-                result.size = Pixels{static_cast<double>(field_value) * 5.0};
+                result.size = Pixels{static_cast<double>(field_value) * PointScale};
             else if (field_name == "rotation")
                 result.rotation = Rotation{field_value};
             else if (field_name == "aspect")
@@ -896,7 +899,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::object& aSrc, size_t aPoin
             else if (field_name == "label")
                 result.label_text = field_value.str();
             else if (field_name == "label_size")
-                result.label.size = Pixels{static_cast<double>(field_value) * 10.0};
+                result.label.size = Pixels{static_cast<double>(field_value) * LabelScale};
             else if (field_name == "label_color")
                 result.label.color = Color(static_cast<size_t>(field_value));
             else if (field_name == "label_rotation")

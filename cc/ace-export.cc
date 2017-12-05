@@ -2,6 +2,7 @@
 #include "acmacs-base/time.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-chart-2/ace-export.hh"
+#include "acmacs-chart-2/ace.hh"
 #include "acmacs-chart-2/chart.hh"
 
 // ----------------------------------------------------------------------
@@ -336,7 +337,8 @@ void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle)
     set_field(st, "F", aStyle.fill);
     set_field(st, "O", aStyle.outline);
     set_field(st, "o", aStyle.outline_width);
-    set_field(st, "s", aStyle.size);
+    if (aStyle.size.not_default())
+        st.set_field("s", rjson::to_value(aStyle.size->value() / acmacs::chart::ace::PointScale));
     set_field(st, "r", aStyle.rotation);
     set_field(st, "a", aStyle.aspect);
     set_field(st, "S", aStyle.shape);
@@ -347,7 +349,8 @@ void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle)
     set_field(ls, "f", aStyle.label.style.font_family);
     set_field(ls, "S", aStyle.label.style.slant);
     set_field(ls, "W", aStyle.label.style.weight);
-    set_field(ls, "s", aStyle.label.size);
+    if (aStyle.label.size.not_default())
+        ls.set_field("s", rjson::to_value(aStyle.label.size->value() / acmacs::chart::ace::LabelScale));
     set_field(ls, "c", aStyle.label.color);
     set_field(ls, "r", aStyle.label.rotation);
     set_field(ls, "i", aStyle.label.interline);

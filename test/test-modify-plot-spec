@@ -27,4 +27,4 @@ cd "$TESTDIR"
 xz -dc ./test-2004-3.ace >"${TDIR}/orig.json"
 xz -dc "${TDIR}/r1.ace" >"${TDIR}/r1.json"
 diff -I "\"\\?created\":" "${TDIR}/orig.json" "${TDIR}/r1.json" >"${TDIR}/diff-1.txt" || true
-cmp "${TDIR}/diff-1.txt" test-modify-plot-spec.expected-1.diff
+cmp "${TDIR}/diff-1.txt" test-modify-plot-spec.expected-1.diff || (echo '********************'; cat "${TDIR}/diff-1.txt"; echo '********************'; false)

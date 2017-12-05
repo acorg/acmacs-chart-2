@@ -8,6 +8,7 @@
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/virus-name.hh"
 #include "acmacs-chart-2/ace-import.hh"
+#include "acmacs-chart-2/ace.hh"
 
 using namespace std::string_literals;
 using namespace acmacs::chart;
@@ -487,7 +488,7 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::object& aSrc, size_t aPoint
                       result.outline_width = Pixels{field_value};
                       break;
                   case 's':
-                      result.size = Pixels{field_value};
+                      result.size = Pixels{static_cast<double>(field_value) * acmacs::chart::ace::PointScale};
                       break;
                   case 'r':
                       result.rotation = Rotation{field_value};
@@ -529,7 +530,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::object& a
                       label_style.offset = acmacs::Offset(field_value[0], field_value[1]);
                       break;
                   case 's':
-                      label_style.size = Pixels{field_value};
+                      label_style.size = Pixels{static_cast<double>(field_value) * acmacs::chart::ace::LabelScale};
                       break;
                   case 'c':
                       label_style.color = static_cast<std::string_view>(field_value);
