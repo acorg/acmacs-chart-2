@@ -85,6 +85,7 @@ namespace acmacs::chart
             inline void size(size_t aPointNo, Pixels aSize) { validate_point_no(aPointNo); mStyles[aPointNo].size = aSize; }
             inline void fill(size_t aPointNo, Color aFill) { validate_point_no(aPointNo); mStyles[aPointNo].fill = aFill; }
             inline void outline(size_t aPointNo, Color aOutline) { validate_point_no(aPointNo); mStyles[aPointNo].outline = aOutline; }
+            inline void scale_all(double aPointScale, double aOulineScale) { std::for_each(mStyles.begin(), mStyles.end(), [=](auto& style) { style.scale(aPointScale).scale_outline(aOulineScale); }); }
 
             inline void modify(size_t aPointNo, const PointStyle& aStyle) { mStyles.at(aPointNo) = aStyle; }
 
@@ -348,14 +349,23 @@ namespace acmacs::chart
         DrawingOrder drawing_order() const override;
         inline DrawingOrder& drawing_order_modify() { return mChart.modify_plot_spec().drawing_order(); }
         inline void raise(size_t aPointNo) { mChart.modify_plot_spec().raise(aPointNo); }
+        inline void raise(const Indexes& aPoints) { std::for_each(aPoints.begin(), aPoints.end(), [&](size_t aIndex) { this->raise(aIndex); }); }
         inline void lower(size_t aPointNo) { mChart.modify_plot_spec().lower(aPointNo); }
+        inline void lower(const Indexes& aPoints) { std::for_each(aPoints.begin(), aPoints.end(), [&](size_t aIndex) { this->lower(aIndex); }); }
+        inline void raise_serum(size_t aSerumNo) { mChart.modify_plot_spec().raise(aSerumNo + mNumberOfAntigens); }
+        inline void raise_serum(const Indexes& aSera) { std::for_each(aSera.begin(), aSera.end(), [&](size_t aIndex) { this->raise_serum(aIndex); }); }
+        inline void lower_serum(size_t aSerumNo) { mChart.modify_plot_spec().lower(aSerumNo + mNumberOfAntigens); }
+        inline void lower_serum(const Indexes& aSera) { std::for_each(aSera.begin(), aSera.end(), [&](size_t aIndex) { this->lower_serum(aIndex); }); }
 
         inline void size(size_t aPointNo, Pixels aSize) { mChart.modify_plot_spec().size(aPointNo, aSize); }
         inline void fill(size_t aPointNo, Color aFill) { mChart.modify_plot_spec().fill(aPointNo, aFill); }
         inline void outline(size_t aPointNo, Color aOutline) { mChart.modify_plot_spec().outline(aPointNo, aOutline); }
+        inline void scale_all(double aPointScale, double aOulineScale) { mChart.modify_plot_spec().scale_all(aPointScale, aOulineScale); }
 
         inline void modify(size_t aPointNo, const PointStyle& aStyle) { mChart.modify_plot_spec().modify(aPointNo, aStyle); }
+        inline void modify(const Indexes& aPoints, const PointStyle& aStyle) { std::for_each(aPoints.begin(), aPoints.end(), [&](size_t aIndex) { this->modify(aIndex, aStyle); }); }
         inline void modify_serum(size_t aSerumNo, const PointStyle& aStyle) { mChart.modify_plot_spec().modify(aSerumNo + mNumberOfAntigens, aStyle); }
+        inline void modify_sera(const Indexes& aSera, const PointStyle& aStyle) { std::for_each(aSera.begin(), aSera.end(), [&](size_t aIndex) { this->modify_serum(aIndex, aStyle); }); }
 
      private:
         PlotSpecP mMain;
