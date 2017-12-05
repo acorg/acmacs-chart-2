@@ -297,6 +297,7 @@ namespace acmacs::chart
         inline PointIndexList unmovable_in_the_last_dimension() const override { return mMain->unmovable_in_the_last_dimension(); }
         inline AvidityAdjusts avidity_adjusts() const override { return mMain->avidity_adjusts(); }
 
+        inline size_t projection_no() const { return mProjectionNo; }
         inline void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { mChart.modify_projection(mProjectionNo).move_point(aPointNo, aCoordinates); }
         inline void rotate_radians(double aAngle) { mChart.modify_projection(mProjectionNo).rotate_radians(aAngle); }
         inline void rotate_degrees(double aAngle) { mChart.modify_projection(mProjectionNo).rotate_degrees(aAngle); }
