@@ -124,10 +124,10 @@ inline std::ostream& operator << (std::ostream& out, const acmacs::chart::intern
     return out << a.data();
 }
 
-template <typename T> inline std::ostream& operator << (std::ostream& out, const acmacs::chart::internal::T_list_data<T>& a)
-{
-    return out << a.data();
-}
+// template <typename T> inline std::ostream& operator << (std::ostream& out, const acmacs::chart::internal::T_list_data<T>& a)
+// {
+//     return out << a.data();
+// }
 
 // ----------------------------------------------------------------------
 /// Local Variables:
