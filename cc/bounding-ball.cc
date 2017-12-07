@@ -2,7 +2,7 @@
 
 // ----------------------------------------------------------------------
 
-void acmacs::BoundingBall::extend(const acmacs::chart::Coordinates& aPoint)
+void acmacs::BoundingBall::extend(const acmacs::Coordinates& aPoint)
 {
     const double distance2_to_center = distance2FromCenter(aPoint);
     if (distance2_to_center > radius2()) {
@@ -26,6 +26,21 @@ void acmacs::BoundingBall::extend(const acmacs::BoundingBall& aBoundingBall)
     set(new_center, diameter() + center().distance(aBoundingBall.center()));
 
 } // acmacs::BoundingBall::extend
+
+// ----------------------------------------------------------------------
+
+acmacs::BoundingBall* acmacs::minimum_bounding_ball(const LayoutInterface& aLayout)
+{
+    auto [min_point, max_point] = aLayout.boundaries();
+    BoundingBall* bb = new BoundingBall(min_point, max_point);
+    for (size_t point_no = 0; point_no < aLayout.number_of_points(); ++point_no)
+        bb->extend(aLayout.get(point_no));
+    return bb;
+
+} // acmacs::minimum_bounding_ball
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:

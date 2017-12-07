@@ -16,7 +16,7 @@ TARGETS = \
     $(DIST)/chart-modify-projection \
     $(DIST)/chart-modify-plot-spec
 
-SOURCES = chart.cc layout.cc bounding-ball.cc \
+SOURCES = chart.cc bounding-ball.cc \
     factory-import.cc ace-import.cc acd1-import.cc lispmds-import.cc lispmds-token.cc \
     factory-export.cc ace-export.cc lispmds-export.cc lispmds-encode.cc chart-modify.cc
 

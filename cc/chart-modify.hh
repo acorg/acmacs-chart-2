@@ -41,12 +41,12 @@ namespace acmacs::chart
 
             inline size_t number_of_points() const noexcept override { return mData.size(); }
             inline size_t number_of_dimensions() const noexcept override { for (const auto& point: mData) { if (point.not_nan()) return point.size(); } return 0; }
-            inline acmacs::chart::Coordinates operator[](size_t aPointNo) const override { return mData[aPointNo]; }
+            inline const acmacs::Coordinates operator[](size_t aPointNo) const override { return mData[aPointNo]; }
             inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override { return mData[aPointNo][aDimensionNo]; }
             void set(size_t aPointNo, const Coordinates& aCoordinates) override;
 
          private:
-            std::vector<acmacs::chart::Coordinates> mData;
+            std::vector<acmacs::Coordinates> mData;
 
         }; // class Layout
 

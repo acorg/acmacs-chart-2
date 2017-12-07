@@ -2,7 +2,7 @@
 
 #include "acmacs-base/log.hh"
 #include "acmacs-base/stream.hh"
-#include "acmacs-chart-2/layout.hh"
+#include "acmacs-base/layout.hh"
 
 // ----------------------------------------------------------------------
 
@@ -13,7 +13,7 @@ namespace acmacs
      public:
         inline BoundingBall() = default;
           // aP1 and aP2 are opposite corners of some area, draw a minimal circle through them
-        inline BoundingBall(const acmacs::chart::Coordinates& aP1, const acmacs::chart::Coordinates& aP2)
+        inline BoundingBall(const Coordinates& aP1, const Coordinates& aP2)
             : mCenter(aP1.size()), mDiameter(0)
             {
                 Vector v{aP1};
@@ -47,7 +47,7 @@ namespace acmacs
             }
 
           // Extends bounding ball (change center and diameter) to make sure the bounding ball includes the passed point
-        void extend(const acmacs::chart::Coordinates& aPoint);
+        void extend(const Coordinates& aPoint);
 
           // Extends bounding ball to make sure it includes all points of the second boundig ball
         void extend(const BoundingBall& aBoundingBall);
@@ -62,7 +62,7 @@ namespace acmacs
         double mDiameter;
 
           // Returns distance^2 from the ball center to point
-        inline double distance2FromCenter(const acmacs::chart::Coordinates& aPoint) const
+        inline double distance2FromCenter(const Coordinates& aPoint) const
             {
                 Vector v(aPoint);
                 v.subtract(mCenter);
@@ -75,6 +75,8 @@ namespace acmacs
             }
 
     }; // class BoundingBall
+
+    BoundingBall* minimum_bounding_ball(const LayoutInterface& aLayout);
 
 } // namespace acmacs
 

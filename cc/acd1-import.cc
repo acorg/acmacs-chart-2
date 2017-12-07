@@ -645,7 +645,7 @@ class Acd1Layout : public acmacs::chart::Layout
  public:
     inline Acd1Layout(const rjson::object& aData) : mData{aData} {}
 
-    size_t number_of_points() const noexcept override
+    inline size_t number_of_points() const noexcept override
         {
             return mData.get_or_empty_array("layout").size();
         }
@@ -665,15 +665,15 @@ class Acd1Layout : public acmacs::chart::Layout
             return 0;
         }
 
-    Coordinates operator[](size_t aPointNo) const override
+    inline const acmacs::Coordinates operator[](size_t aPointNo) const override
         {
             const rjson::array& point = mData.get_or_empty_array("layout")[aPointNo];
-            Coordinates result(number_of_dimensions(), std::numeric_limits<double>::quiet_NaN());
+            acmacs::Coordinates result(number_of_dimensions(), std::numeric_limits<double>::quiet_NaN());
             std::transform(point.begin(), point.end(), result.begin(), [](const auto& coord) -> double { return coord; });
             return result;
         }
 
-    double coordinate(size_t aPointNo, size_t aDimensionNo) const override
+    inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override
         {
             const auto& point = mData.get_or_empty_array("layout")[aPointNo];
             try {
@@ -684,7 +684,7 @@ class Acd1Layout : public acmacs::chart::Layout
             }
         }
 
-    void set(size_t /*aPointNo*/, const Coordinates& /*aCoordinates*/) override { throw acmacs::chart::chart_is_read_only{"Acd1Layout::set: cannot modify"}; }
+    inline void set(size_t /*aPointNo*/, const acmacs::Coordinates& /*aCoordinates*/) override { throw acmacs::chart::chart_is_read_only{"Acd1Layout::set: cannot modify"}; }
 
  private:
     const rjson::object& mData;

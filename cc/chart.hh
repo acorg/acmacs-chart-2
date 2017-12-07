@@ -5,10 +5,9 @@
 #include "acmacs-base/range.hh"
 #include "acmacs-base/color.hh"
 #include "acmacs-base/point-style.hh"
-#include "acmacs-base/transformation.hh"
+#include "acmacs-base/layout.hh"
 #include "acmacs-chart-2/base.hh"
 #include "acmacs-chart-2/passage.hh"
-#include "acmacs-chart-2/layout.hh"
 
 // ----------------------------------------------------------------------
 
@@ -16,43 +15,8 @@ namespace rjson { class array; }
 
 namespace acmacs::chart
 {
-    namespace internal
-    {
-        template <typename Parent, typename Reference> class iterator
-        {
-         public:
-            using reference = Reference;
-            using pointer = typename std::add_pointer<Reference>::type;
-            using value_type = typename std::remove_reference<Reference>::type;
-            using difference_type = ssize_t;
-            using iterator_category = std::random_access_iterator_tag;
-
-            constexpr inline iterator& operator++() { ++mIndex; return *this; }
-            constexpr inline iterator& operator+=(difference_type n) { mIndex += n; return *this; }
-            constexpr inline iterator& operator-=(difference_type n) { mIndex -= n; return *this; }
-            constexpr inline iterator operator-(difference_type n) { iterator temp = *this; return temp -= n; }
-            constexpr inline difference_type operator-(const iterator& rhs) { return mIndex - rhs.mIndex; }
-            constexpr inline bool operator==(const iterator& other) const { return &mParent == &other.mParent && mIndex == other.mIndex; }
-            constexpr inline bool operator!=(const iterator& other) const { return &mParent != &other.mParent || mIndex != other.mIndex; }
-            constexpr inline reference operator*() { return mParent[mIndex]; }
-            constexpr inline size_t index() const { return mIndex; }
-            constexpr inline bool operator<(const iterator& rhs) const { return mIndex < rhs.mIndex; }
-            constexpr inline bool operator<=(const iterator& rhs) const { return mIndex <= rhs.mIndex; }
-            constexpr inline bool operator>(const iterator& rhs) const { return mIndex > rhs.mIndex; }
-            constexpr inline bool operator>=(const iterator& rhs) const { return mIndex >= rhs.mIndex; }
-
-         private:
-            inline iterator(const Parent& aParent, size_t aIndex) : mParent{aParent}, mIndex{aIndex} {}
-
-            const Parent& mParent;
-            size_t mIndex;
-
-            friend Parent;
-        };
-
-    } // namespace internal
-
-// ----------------------------------------------------------------------
+    using Indexes = std::vector<size_t>;
+    using Layout = acmacs::LayoutInterface;
 
     class data_not_available : public std::runtime_error { public: using std::runtime_error::runtime_error; };
     class invalid_titer : public std::runtime_error { public: using std::runtime_error::runtime_error; };

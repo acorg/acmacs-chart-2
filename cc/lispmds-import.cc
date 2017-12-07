@@ -527,21 +527,21 @@ class LispmdsLayout : public acmacs::chart::Layout
             return mData[0].size();
         }
 
-    Coordinates operator[](size_t aPointNo) const override
+    inline const acmacs::Coordinates operator[](size_t aPointNo) const override
         {
             const auto& point = mData[aPointNo];
-            Coordinates result(point.size());
+            acmacs::Coordinates result(point.size());
             for (size_t dim = 0; dim < point.size(); ++dim)
                 result[dim] = std::get<acmacs::lispmds::number>(point[dim]);
             return result;
         }
 
-    double coordinate(size_t aPointNo, size_t aDimensionNo) const override
+    inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override
         {
             return std::get<acmacs::lispmds::number>(mData[aPointNo][aDimensionNo]);
         }
 
-    void set(size_t /*aPointNo*/, const Coordinates& /*aCoordinates*/) override { throw acmacs::chart::chart_is_read_only{"LispmdsLayout::set: cannot modify"}; }
+    inline void set(size_t /*aPointNo*/, const acmacs::Coordinates& /*aCoordinates*/) override { throw acmacs::chart::chart_is_read_only{"LispmdsLayout::set: cannot modify"}; }
 
  private:
     const acmacs::lispmds::value& mData;
