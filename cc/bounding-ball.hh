@@ -17,7 +17,7 @@ namespace acmacs
             : mCenter(aP1.size()), mDiameter(0)
             {
                 Vector v{aP1};
-                v.subtract(aP2);
+                v -= aP2;
                 mDiameter = v.eucledian_norm();
                 for (Vector::size_type dim = 0; dim < aP1.size(); ++dim)
                     mCenter[dim] = (aP1[dim] + aP2[dim]) * 0.5;
@@ -41,10 +41,7 @@ namespace acmacs
                     mCenter[dim] = (aP1[dim] + aP2[dim]) * 0.5;
             }
 
-        inline void moveCenter(const Vector& aBy)
-            {
-                mCenter.add(aBy);
-            }
+        inline void moveCenter(const Vector& aBy) { mCenter += aBy; }
 
           // Extends bounding ball (change center and diameter) to make sure the bounding ball includes the passed point
         void extend(const Coordinates& aPoint);
@@ -65,7 +62,7 @@ namespace acmacs
         inline double distance2FromCenter(const Coordinates& aPoint) const
             {
                 Vector v(aPoint);
-                v.subtract(mCenter);
+                v -= mCenter;
                 return v.inner_product();
             }
 

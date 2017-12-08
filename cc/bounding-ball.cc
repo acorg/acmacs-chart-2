@@ -21,8 +21,8 @@ void acmacs::BoundingBall::extend(const acmacs::Coordinates& aPoint)
 void acmacs::BoundingBall::extend(const acmacs::BoundingBall& aBoundingBall)
 {
     Vector new_center(center());
-    new_center.add(aBoundingBall.center());
-    new_center.multiply_by(0.5);
+    new_center += aBoundingBall.center();
+    new_center *= 0.5;
     set(new_center, diameter() + center().distance(aBoundingBall.center()));
 
 } // acmacs::BoundingBall::extend
