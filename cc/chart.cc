@@ -119,7 +119,7 @@ double acmacs::chart::Chart::serum_circle_radius(size_t aAntigenNo, size_t aSeru
             else
                 return false;
         };
-        Indexes antigens_by_distances(acmacs::incrementer<size_t>::begin(0), acmacs::incrementer<size_t>::end(number_of_antigens()));
+        Indexes antigens_by_distances(acmacs::index_iterator(0UL), acmacs::index_iterator(number_of_antigens()));
         std::sort(antigens_by_distances.begin(), antigens_by_distances.end(), antigens_by_distances_sorting);
           //if (aVerbose) std::cerr << "DEBUG: antigens_by_distances " << antigens_by_distances << std::endl;
 
