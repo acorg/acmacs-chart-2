@@ -30,6 +30,8 @@ namespace acmacs::chart
         enum class Compute { No, Yes };
 
         virtual ~Info();
+        Info() = default;
+        Info(const Info&) = delete;
 
         virtual std::string make_info() const;
         std::string make_name() const;
@@ -290,6 +292,8 @@ namespace acmacs::chart
     {
       public:
         virtual ~Antigen();
+        Antigen() = default;
+        Antigen(const Antigen&) = delete;
 
         virtual Name name() const = 0;
         virtual Date date() const = 0;
@@ -320,6 +324,8 @@ namespace acmacs::chart
     {
       public:
         virtual ~Serum();
+        Serum() = default;
+        Serum(const Serum&) = delete;
 
         virtual Name name() const = 0;
         virtual Passage passage() const = 0;
@@ -347,6 +353,8 @@ namespace acmacs::chart
     {
      public:
         virtual ~Antigens();
+        Antigens() = default;
+        Antigens(const Antigens&) = delete;
 
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Antigen> operator[](size_t aIndex) const = 0;
@@ -397,6 +405,8 @@ namespace acmacs::chart
     {
       public:
         virtual ~Sera();
+        Sera() = default;
+        Sera(const Sera&) = delete;
 
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Serum> operator[](size_t aIndex) const = 0;
@@ -434,6 +444,8 @@ namespace acmacs::chart
     {
       public:
         virtual ~Titers();
+        Titers() = default;
+        Titers(const Titers&) = delete;
 
         virtual Titer titer(size_t aAntigenNo, size_t aSerumNo) const = 0;
         virtual Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const = 0;
@@ -456,6 +468,8 @@ namespace acmacs::chart
     {
       public:
         virtual ~ColumnBases();
+        ColumnBases() = default;
+        ColumnBases(const ColumnBases&) = delete;
 
         virtual bool exists() const = 0;
         inline operator bool() const { return exists(); }
@@ -470,6 +484,8 @@ namespace acmacs::chart
     {
       public:
         virtual ~Projection();
+        Projection() = default;
+        Projection(const Projection&) = delete;
 
         virtual std::string make_info() const;
         virtual double stress() const = 0;
@@ -495,6 +511,8 @@ namespace acmacs::chart
     {
       public:
         virtual ~Projections();
+        Projections() = default;
+        Projections(const Projections&) = delete;
 
         virtual bool empty() const = 0;
         virtual size_t size() const = 0;
@@ -513,6 +531,8 @@ namespace acmacs::chart
     {
       public:
         virtual ~PlotSpec();
+        PlotSpec() = default;
+        PlotSpec(const PlotSpec&) = delete;
 
         virtual bool empty() const = 0;
         virtual DrawingOrder drawing_order() const = 0;
@@ -533,6 +553,8 @@ namespace acmacs::chart
 
      public:
         virtual ~Chart();
+        Chart() = default;
+        Chart(const Chart&) = delete;
 
         virtual std::shared_ptr<Info> info() const = 0;
         virtual std::shared_ptr<Antigens> antigens() const = 0;

@@ -58,7 +58,7 @@ namespace acmacs::chart
             inline std::shared_ptr<acmacs::chart::Layout> transformed_layout() const { if (!mTransformedLayout) mTransformedLayout.reset(mLayout->transform(mTransformation)); return mTransformedLayout; }
             inline const Transformation& transformation() const { return mTransformation; }
 
-            inline void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { mLayout->set(aPointNo, aCoordinates); mTransformedLayout.reset(); }
+            inline void move_point(size_t aPointNo, const Coordinates& aCoordinates) { mLayout->set(aPointNo, aCoordinates); mTransformedLayout.reset(); }
             inline void rotate_radians(double aAngle) { mTransformation.rotate(aAngle); mTransformedLayout.reset(); }
             inline void rotate_degrees(double aAngle) { rotate_radians(aAngle * M_PI / 180.0); mTransformedLayout.reset(); }
             inline void flip(double aX, double aY) { mTransformation.flip(aX, aY); mTransformedLayout.reset(); }
