@@ -58,21 +58,24 @@ std::string acmacs::chart::ace_export(const Chart& aChart, std::string aProgramN
 
 void export_info(rjson::object& aTarget, acmacs::chart::InfoP aInfo)
 {
-    aTarget.set_field_if_not_empty("v", aInfo->virus());
-    aTarget.set_field_if_not_empty("V", aInfo->virus_type());
-    aTarget.set_field_if_not_empty("A", aInfo->assay());
-    aTarget.set_field_if_not_empty("D", aInfo->date());
-    aTarget.set_field_if_not_empty("N", aInfo->name());
-    aTarget.set_field_if_not_empty("l", aInfo->lab());
-    aTarget.set_field_if_not_empty("r", aInfo->rbc_species());
-    aTarget.set_field_if_not_empty("s", aInfo->subset());
-      //aTarget.set_field_if_not_empty("T", aInfo->table_type());
+    auto do_export = [](rjson::object& target, acmacs::chart::InfoP info, bool /*for_source*/) {
+        target.set_field_if_not_empty("v", info->virus());
+        target.set_field_if_not_empty("V", info->virus_type());
+        target.set_field_if_not_empty("A", info->assay());
+        target.set_field_if_not_empty("D", info->date());
+        target.set_field_if_not_empty("N", info->name());
+        target.set_field_if_not_empty("l", info->lab());
+        target.set_field_if_not_empty("r", info->rbc_species());
+        target.set_field_if_not_empty("s", info->subset());
+          //target.set_field_if_not_empty("T", info->table_type());
+    };
 
+    do_export(aTarget, aInfo, false);
     const auto number_of_sources = aInfo->number_of_sources();
     if (number_of_sources) {
         rjson::array& array = aTarget.set_field("S", rjson::array{});
         for (size_t source_no = 0; source_no < number_of_sources; ++source_no) {
-            export_info(array.insert(rjson::object{}), aInfo->source(source_no));
+            do_export(array.insert(rjson::object{}), aInfo->source(source_no), true);
         }
     }
 
