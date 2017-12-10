@@ -468,9 +468,10 @@ static inline Annotations make_annotations(const rjson::object& aData)
 {
     Annotations result;
       // mutations, extra, distinct, annotations, control_duplicate
-    if (aData.get_or_default("distinct", false) || ! aData.get_or_default("control_duplicate", "").empty())
+    if (aData.get_or_default("distinct", false) || aData.get_or_default("DISTINCT", false) || !aData.get_or_default("control_duplicate", "").empty() || !aData.get_or_default("CONTROL_DUPLICATE", "").empty())
         result.push_back("DISTINCT");
     result.push_back(aData.get_or_default("extra", ""));
+    result.push_back(aData.get_or_default("EXTRA", ""));
     for (const auto& annotation: aData.get_or_empty_array("annotations"))
         result.push_back(annotation);
     for (const auto& mutation: aData.get_or_empty_array("mutations"))
