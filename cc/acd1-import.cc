@@ -2,8 +2,8 @@
 #include <map>
 #include <vector>
 #include <limits>
-#include <regex>
 
+#include "acmacs-base/timeit.hh"
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
@@ -17,7 +17,7 @@ constexpr const double PointScale = 5.0;
 constexpr const double LabelScale = 10.0;
 
 static std::string convert_to_json(const std::string_view& aData);
-static void convert_set_of_one_string(std::string& aData);
+static void convert_set_of_one_string(std::string& aData, const std::vector<size_t>& aPerhapsSet);
 
 // ----------------------------------------------------------------------
 
@@ -59,18 +59,26 @@ static inline std::pair<bool, size_t> object_numeric_key(const std::string_view&
 
 std::string convert_to_json(const std::string_view& aData)
 {
+    Timeit ti("converting acd1 (" + std::to_string(aData.size()) + " bytes) to json: ");
     std::string result;
+    std::vector<size_t> perhaps_set;
     for (auto input = aData.find("data = {") + 7; input < aData.size(); ++input) {
         switch (aData[input]) {
           case '\'':
-              if (input > 0 && std::isalnum(aData[input - 1]) && std::isalnum(aData[input + 1]))
+              if (input > 0 && std::isalnum(aData[input - 1]) && std::isalnum(aData[input + 1])) {
                   result.append(1, aData[input]); // "COTE D'IVOIR" case
-              else
+              }
+              else {
                   result.append(1, '"');
+                  if (aData[input - 1] == '{')
+                      perhaps_set.push_back(result.size() - 2);
+              }
               break;
           case '"': // string containing ' enclosed in double quotes, e.g. "COTE D'IVOIR"
               // result.append(1, '\\');
               result.append(1, aData[input]);
+              if (aData[input - 1] == '{')
+                  perhaps_set.push_back(result.size() - 2);
               break;
           case '\\':
               result.append(1, aData[input++]);
@@ -179,7 +187,8 @@ std::string convert_to_json(const std::string_view& aData)
               break;
         }
     }
-    convert_set_of_one_string(result);
+      // std::cerr << "perhaps_set: " << perhaps_set.size() << '\n';
+    convert_set_of_one_string(result, perhaps_set);
     // std::cout << result << '\n';
     return result;
 
@@ -187,13 +196,20 @@ std::string convert_to_json(const std::string_view& aData)
 
 // ----------------------------------------------------------------------
 
-void convert_set_of_one_string(std::string& aData)
+void convert_set_of_one_string(std::string& aData, const std::vector<size_t>& aPerhapsSet)
 {
-    std::regex set_of_one_string("\\{\"[^\"]+\"\\}");
-    std::match_results<decltype(aData.begin())> match;
-    for (auto start = aData.begin(); std::regex_search(start, aData.end(), match, set_of_one_string); start += match.position(0) + match.length(0)) {
-        *(start + match.position(0)) = '[';
-        *(start + match.position(0) + match.length(0) - 1) = ']';
+      // Timeit ti("convert_set_of_one_string: ");
+    for (auto offset: aPerhapsSet) {
+        if (aData[offset + 1] == '"') {
+            auto p = aData.begin() + static_cast<ssize_t>(offset) + 2;
+            for (; *p != '"' && p < aData.end(); ++p);
+            ++p;
+            if (*p == '}') {    // set
+                  // std::cerr << "SET: " << std::string_view(aData.data() + offset, p - aData.begin() - offset + 1) << '\n';
+                aData[offset] = '[';
+                *p = ']';
+            }
+        }
     }
 
 } // convert_set_of_one_string

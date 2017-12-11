@@ -10,10 +10,10 @@
 acmacs::chart::ChartP acmacs::chart::import_factory(std::string aFilename, Verify aVerify)
 {
     Timeit ti("reading chart from " + aFilename + ": ");
-    Timeit ti_file("reading " + aFilename + ": ");
+      // Timeit ti_file("reading " + aFilename + ": ");
     const std::string data = acmacs::file::read(aFilename);
     const std::string_view data_view(data);
-    ti_file.report();
+      // ti_file.report();
     if (acmacs::chart::is_ace(data_view))
         return acmacs::chart::ace_import(data_view, aVerify);
     if (acmacs::chart::is_acd1(data_view))
