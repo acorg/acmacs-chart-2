@@ -107,6 +107,19 @@ namespace acmacs::chart
 
     }; // class BLineage
 
+    inline std::ostream& operator<<(std::ostream& s, const BLineage& lineage)
+    {
+        switch (static_cast<BLineage::Lineage>(lineage)) {
+          case BLineage::Victoria:
+          case BLineage::Yamagata:
+              s << static_cast<std::string>(lineage);
+              break;
+          case BLineage::Unknown:
+              break;
+        }
+        return s;
+    }
+
     class LabIds : public internal::string_list_data
     {
      public:
@@ -248,6 +261,8 @@ namespace acmacs::chart
             }
 
     }; // class MinimumColumnBasis
+
+      // acmacs::to_string(const MinimumColumnBasis& aMinimumColumnBasis); is below
 
     class DrawingOrder : public internal::index_list_data
     {
@@ -478,6 +493,8 @@ namespace acmacs::chart
 
     }; // class ColumnBases
 
+      // acmacs::to_string(const ColumnBases& aColumnBases); is below
+
 // ----------------------------------------------------------------------
 
     class Projection
@@ -638,19 +655,16 @@ template <> struct std::iterator_traits<acmacs::chart::Projections::iterator>
 
 // ----------------------------------------------------------------------
 
-inline std::ostream& operator<<(std::ostream& s, const acmacs::chart::BLineage& lineage)
+namespace acmacs
 {
-    using namespace acmacs::chart;
-    switch (static_cast<BLineage::Lineage>(lineage)) {
-      case BLineage::Victoria:
-      case BLineage::Yamagata:
-          s << static_cast<std::string>(lineage);
-          break;
-      case BLineage::Unknown:
-          break;
+    std::string to_string(const acmacs::chart::ColumnBases& aColumnBases);
+
+    inline std::string to_string(const acmacs::chart::MinimumColumnBasis& aMinimumColumnBasis)
+    {
+        return static_cast<std::string>(aMinimumColumnBasis);
     }
-    return s;
-}
+
+} // namespace acmacs
 
 // ----------------------------------------------------------------------
 /// Local Variables:

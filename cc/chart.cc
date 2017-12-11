@@ -1,6 +1,7 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/virus-name.hh"
 #include "acmacs-base/enumerate.hh"
+#include "acmacs-base/range.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -434,10 +435,34 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Chart::computed_colum
 
 // ----------------------------------------------------------------------
 
+std::string acmacs::to_string(const acmacs::chart::ColumnBases& aColumnBases)
+{
+    std::string result;
+    if (aColumnBases.exists()) {
+        result = "[";
+        for (auto serum_no: acmacs::incrementer(0UL, aColumnBases.size())) {
+            if (serum_no)
+                result += ' ';
+            result += std::to_string(aColumnBases.column_basis(serum_no));
+        }
+    }
+    else
+        result = "<none>";
+    return result;
+
+} // acmacs::to_string
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Projection::make_info() const
 {
     auto lt = layout();
-    return std::to_string(stress()) + " " + std::to_string(lt->number_of_dimensions()) + "d";
+    std::string result = std::to_string(stress()) + " " + std::to_string(lt->number_of_dimensions()) + 'd';
+    if (auto fcb = forced_column_bases(); fcb && fcb->exists())
+        result += " forced:" + acmacs::to_string(*fcb);
+    else
+        result += " >=" + static_cast<std::string>(minimum_column_basis());
+    return result;
 
 } // acmacs::chart::Projection::make_info
 
@@ -446,8 +471,8 @@ std::string acmacs::chart::Projection::make_info() const
 std::string acmacs::chart::Projections::make_info() const
 {
     std::string result = "Projections: " + std::to_string(size());
-    if (!empty())
-        result += "\n" + operator[](0)->make_info();
+    for (auto projection_no: acmacs::incrementer(0UL, std::min(10UL, size())))
+        result += "\n  " + std::to_string(projection_no) + ' ' + operator[](0)->make_info();
     return result;
 
 } // acmacs::chart::Projections::make_info
