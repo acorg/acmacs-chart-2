@@ -20,6 +20,8 @@ class TiterMerger
         ThresholdedMax, // if max(<) of thresholded is more than max on non-thresholded (e.g. <40 20), then find minimum of thresholded which is more than max on non-thresholded, it is the result with <
     };
 
+    enum MoreThanHandling { MoreThanIgnore, MoreThanAdjust };
+
     inline TiterMerger() = default;
     inline TiterMerger(std::vector<acmacs::chart::Titer>&& titers_for_layers, acmacs::chart::Titer&& merged)
         : mTiters(std::move(titers_for_layers)), mMerged(std::move(merged)) {}
@@ -31,6 +33,7 @@ class TiterMerger
     acmacs::chart::Titer mMerged;
     Type mType = DontCare;
     double sd_threshold_ = 1.0;
+    MoreThanHandling more_than_handling_ = MoreThanIgnore;
 
 }; // class TiterMerger
 
@@ -82,7 +85,7 @@ TiterMerger::Type TiterMerger::merge()
         }
         else if (num_more == mTiters.size()) {
             mType = ThresholdedOnly;
-            const auto value = acmacs::chart::Titer::from_logged(logged.max() - 1, ">");
+            const auto value = more_than_handling_ == MoreThanAdjust ? acmacs::chart::Titer::from_logged(logged.max() - 1, ">") : acmacs::chart::Titer("*");
             if (value != mMerged)
                   // throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
                 std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
@@ -121,19 +124,22 @@ TiterMerger::Type TiterMerger::merge()
                 if (const auto regular_min = regular.min(), thresholded_min = thresholded.min(); thresholded_min < regular_min) {
                       // if min(>) of thresholded is less than min on non-thresholded (e.g. >1280 2560), then find maximum of thresholded which is less than min on non-thresholded, it is the result with >
                     mType = ThresholdedMax;
-                    double thresholded_to_go = thresholded_min;
-                    for (double thresholded_value: thresholded) {
-                        if (thresholded_value < regular_min)
-                            thresholded_to_go = std::max(thresholded_to_go, thresholded_value);
+                    auto value = acmacs::chart::Titer("*");
+                    if (more_than_handling_ == MoreThanAdjust) {
+                        double thresholded_to_go = thresholded_min;
+                        for (double thresholded_value: thresholded) {
+                            if (thresholded_value < regular_min)
+                                thresholded_to_go = std::max(thresholded_to_go, thresholded_value);
+                        }
+                        value = acmacs::chart::Titer::from_logged(thresholded_to_go, ">");
                     }
-                    const auto value = acmacs::chart::Titer::from_logged(thresholded_to_go, ">");
                     if (value != mMerged)
                         // throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
                         std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
                 }
                 else {
                     mType = Thresholded;
-                    const auto value = acmacs::chart::Titer::from_logged(regular_min - 1, ">");
+                    const auto value = more_than_handling_ == MoreThanAdjust ? acmacs::chart::Titer::from_logged(regular_min - 1, ">") : acmacs::chart::Titer("*");
                     if (value != mMerged)
                         // throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
                         std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
