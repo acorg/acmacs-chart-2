@@ -33,6 +33,7 @@ int main(int argc, char* const argv[])
             for (auto ag_no: acmacs::range(0UL, chart->number_of_antigens())) {
                 for (auto sr_no: acmacs::range(0UL, chart->number_of_sera())) {
                     auto titer_layers = titers->titers_for_layers(ag_no, sr_no);
+                    std::cout << ag_no << ' ' << sr_no << ' ' << titer_layers << '\n';
                 }
             }
 

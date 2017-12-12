@@ -590,7 +590,20 @@ Titer Acd1Titers::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSer
 
 std::vector<Titer> Acd1Titers::titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const
 {
-    throw data_not_available("Acd1Titers::titers_for_layers not implemented");
+    const rjson::array& layers = mData.get_or_empty_array("layers_dict_for_antigen");
+    if (layers.empty())
+        throw data_not_available("no layers");
+    const auto serum_no = std::to_string(aSerumNo);
+    std::vector<Titer> result;
+    for (const rjson::array& layer: layers) {
+        const rjson::object& for_ag = layer[aAntigenNo];
+        try {
+            result.push_back(for_ag[serum_no]);
+        }
+        catch (rjson::field_not_found&) {
+        }
+    }
+    return result;
 
 } // Acd1Titers::titers_for_layers
 
