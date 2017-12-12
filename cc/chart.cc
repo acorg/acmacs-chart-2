@@ -354,9 +354,9 @@ double acmacs::chart::Titer::logged_with_thresholded() const
       case Dodgy:
           return logged();
       case LessThan:
-          return logged() + 1;
-      case MoreThan:
           return logged() - 1;
+      case MoreThan:
+          return logged() + 1;
     }
     throw invalid_titer(data()); // for gcc 7.2
 

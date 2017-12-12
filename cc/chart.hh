@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <cmath>
 
 #include "acmacs-base/range.hh"
 #include "acmacs-base/color.hh"
@@ -199,6 +200,9 @@ namespace acmacs::chart
         std::string logged_as_string() const;
         double logged_for_column_bases() const;
         size_t value_for_sorting() const;
+
+          // static inline Titer from_logged(double aLogged, std::string aPrefix = "") { return aPrefix + std::to_string(std::lround(std::pow(2.0, aLogged) * 10.0)); }
+        static inline Titer from_logged(double aLogged, std::string aPrefix = "") { return aPrefix + std::to_string(std::lround(std::exp2(aLogged) * 10.0)); }
 
     }; // class Titer
 
@@ -663,6 +667,11 @@ namespace acmacs
     inline std::string to_string(const acmacs::chart::MinimumColumnBasis& aMinimumColumnBasis)
     {
         return static_cast<std::string>(aMinimumColumnBasis);
+    }
+
+    template <> inline std::string to_string(acmacs::chart::Titer aTiter)
+    {
+        return aTiter.data();
     }
 
 } // namespace acmacs

@@ -23,8 +23,12 @@ namespace acmacs::chart
             inline string_data(std::string&& aSrc) : mData{std::move(aSrc)} {}
             inline string_data(const char* aSrc) : mData{aSrc} {}
             inline string_data(const rjson::value& aSrc) : mData{aSrc.str()} {}
+            inline string_data(const string_data& aSrc) = default;
+            inline string_data(string_data&& aSrc) = default;
             inline string_data& operator=(const std::string& aSrc) { mData = aSrc; return *this; }
             inline string_data& operator=(std::string&& aSrc) { mData = std::move(aSrc); return *this; }
+            inline string_data& operator=(const string_data& aSrc) = default;
+            inline string_data& operator=(string_data&& aSrc) = default;
 
             inline bool empty() const noexcept { return mData.empty(); }
             inline size_t size() const noexcept { return mData.size(); }
@@ -149,6 +153,17 @@ namespace acmacs::chart
     } // namespace internal
 
 } // namespace acmacs::chart
+
+// ----------------------------------------------------------------------
+
+namespace acmacs
+{
+    template <> inline std::string to_string(const acmacs::chart::internal::string_data& value)
+    {
+        return value.data();
+    }
+
+} // namespace acmacs
 
 // ----------------------------------------------------------------------
 /// Local Variables:
