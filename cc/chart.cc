@@ -440,7 +440,7 @@ std::string acmacs::to_string(const acmacs::chart::ColumnBases& aColumnBases)
     std::string result;
     if (aColumnBases.exists()) {
         result = "[";
-        for (auto serum_no: acmacs::incrementer(0UL, aColumnBases.size())) {
+        for (auto serum_no: acmacs::range(0UL, aColumnBases.size())) {
             if (serum_no)
                 result += ' ';
             result += std::to_string(aColumnBases.column_basis(serum_no));
@@ -471,7 +471,7 @@ std::string acmacs::chart::Projection::make_info() const
 std::string acmacs::chart::Projections::make_info() const
 {
     std::string result = "Projections: " + std::to_string(size());
-    for (auto projection_no: acmacs::incrementer(0UL, std::min(10UL, size())))
+    for (auto projection_no: acmacs::range(0UL, std::min(10UL, size())))
         result += "\n  " + std::to_string(projection_no) + ' ' + operator[](0)->make_info();
     return result;
 

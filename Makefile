@@ -14,7 +14,8 @@ TARGETS = \
     $(DIST)/chart-layout \
     $(DIST)/chart-convert \
     $(DIST)/chart-modify-projection \
-    $(DIST)/chart-modify-plot-spec
+    $(DIST)/chart-modify-plot-spec \
+    $(DIST)/chart-titer-merging-report
 
 SOURCES = chart.cc bounding-ball.cc \
     factory-import.cc ace-import.cc acd1-import.cc lispmds-import.cc lispmds-token.cc \

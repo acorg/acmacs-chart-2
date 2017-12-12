@@ -263,6 +263,18 @@ Titer AceTiters::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSeru
 
 // ----------------------------------------------------------------------
 
+std::vector<Titer> AceTiters::titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const
+{
+    const auto& layers = mData.get_or_empty_array("L");
+    if (layers.empty())
+        throw data_not_available("no layers");
+
+    throw data_not_available("AceTiters::titers_for_layers not implemented");
+
+} // AceTiters::titers_for_layers
+
+// ----------------------------------------------------------------------
+
 size_t AceTiters::number_of_antigens() const
 {
     if (auto [present, list] = mData.get_array_if("l"); present) {

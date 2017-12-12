@@ -588,6 +588,14 @@ Titer Acd1Titers::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSer
 
 // ----------------------------------------------------------------------
 
+std::vector<Titer> Acd1Titers::titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const
+{
+    throw data_not_available("Acd1Titers::titers_for_layers not implemented");
+
+} // Acd1Titers::titers_for_layers
+
+// ----------------------------------------------------------------------
+
 size_t Acd1Titers::number_of_antigens() const
 {
     if (auto [present, list] = mData.get_array_if("titers_list_of_list"); present) {

@@ -18,9 +18,9 @@ namespace acmacs::chart
     using Indexes = std::vector<size_t>;
     using Layout = acmacs::LayoutInterface;
 
-    class data_not_available : public std::runtime_error { public: using std::runtime_error::runtime_error; };
-    class invalid_titer : public std::runtime_error { public: using std::runtime_error::runtime_error; };
-    class chart_is_read_only : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+    class data_not_available : public std::runtime_error { public: inline data_not_available(std::string msg) : std::runtime_error("data_not_available: " + msg) {} };
+    class invalid_titer : public std::runtime_error { public: inline invalid_titer(std::string msg) : std::runtime_error("invalid_titer: " + msg) {} };
+    class chart_is_read_only : public std::runtime_error { public: inline chart_is_read_only(std::string msg) : std::runtime_error("chart_is_read_only: " + msg) {} };
 
 // ----------------------------------------------------------------------
 
@@ -464,6 +464,7 @@ namespace acmacs::chart
 
         virtual Titer titer(size_t aAntigenNo, size_t aSerumNo) const = 0;
         virtual Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const = 0;
+        virtual std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const = 0; // returns list of non-dont-care titers in layers, may throw data_not_available
         virtual size_t number_of_layers() const = 0;
         virtual size_t number_of_antigens() const = 0;
         virtual size_t number_of_sera() const = 0;
