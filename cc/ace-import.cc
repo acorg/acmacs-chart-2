@@ -140,7 +140,9 @@ std::string AceInfo::name(Compute aCompute) const
         if (const auto& sources{mData.get_or_empty_array("S")}; !sources.empty()) {
             std::vector<std::string> composition;
             std::transform(std::begin(sources), std::end(sources), std::back_inserter(composition), [](const auto& sinfo) { return sinfo.get_or_default("N", ""); });
-            result = string::join(" + ", composition);
+            composition.erase(std::remove_if(composition.begin(), composition.end(), [](const auto& s) { return s.empty(); }), composition.end());
+            if (composition.size() > (sources.size() / 2))
+                result = string::join(" + ", composition);
         }
     }
     if (result.empty() && aCompute == Compute::Yes) {

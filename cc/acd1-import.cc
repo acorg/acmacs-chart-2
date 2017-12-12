@@ -325,7 +325,9 @@ std::string Acd1Info::name(Compute aCompute) const
         if (const auto& sources{mData.get_or_empty_array("sources")}; !sources.empty()) {
             std::vector<std::string> composition;
             std::transform(std::begin(sources), std::end(sources), std::back_inserter(composition), [](const auto& sinfo) { return sinfo.get_or_default("name", ""); });
-            result = string::join(" + ", composition);
+            composition.erase(std::remove_if(composition.begin(), composition.end(), [](const auto& s) { return s.empty(); }), composition.end());
+            if (composition.size() > (sources.size() / 2))
+                result = string::join(" + ", composition); // use only, if most sources have "name"
         }
     }
     if (result.empty() && aCompute == Compute::Yes) {
