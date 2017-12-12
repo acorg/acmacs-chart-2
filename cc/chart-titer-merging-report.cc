@@ -13,6 +13,7 @@ class TiterMerger
     enum Type {
         DontCare,          // If there are just *, result is *
         Regular,         // If there are no < nor >, result is mean.
+        SDTooBig,        // if SD > sd_threshold_ (default: 1.0), result is *
         ThresholdedBoth,   // If there are > and < titers, result is *
         ThresholdedOnly, // If there are just thresholded titers, result is min (<) or max (>) of them
         ThresholdedLess, // if max(<) of thresholded is more than max on non-thresholded (e.g. <40 20), then find minimum of thresholded which is more than max on non-thresholded, it is the result with <
@@ -31,6 +32,7 @@ class TiterMerger
     std::vector<acmacs::chart::Titer> mTiters;
     acmacs::chart::Titer mMerged;
     Type mType = DontCare;
+    double sd_threshold_ = 1.0;
 
 }; // class TiterMerger
 
@@ -64,14 +66,7 @@ TiterMerger::Type TiterMerger::merge()
                   break;
             }
         }
-        if (num_less == 0 && num_more == 0) {
-            mType = Regular;
-            const auto mean = logged.mean();
-            const auto value = acmacs::chart::Titer::from_logged(mean);
-            if (value != mMerged)
-                throw std::runtime_error("Unxpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
-        }
-        else if (num_less && num_more) {
+        if (num_less && num_more) {
             mType = ThresholdedBoth;
             if (mMerged != "*")
                 throw std::runtime_error("Invalid pre-merged titer: " + mMerged.data() + " for sources: " + acmacs::to_string(mTiters) + ", must be: *");
@@ -89,6 +84,26 @@ TiterMerger::Type TiterMerger::merge()
             if (value != mMerged)
                   // throw std::runtime_error("Unxpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
                 std::cerr << "Unxpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
+        }
+        else {
+            const auto [mean, sd] = logged.mean_and_standard_deviation();
+            if (sd > sd_threshold_) {
+                mType = SDTooBig;
+                if (mMerged != "*")
+                    throw std::runtime_error("Invalid pre-merged titer: " + mMerged.data() + " for sources: " + acmacs::to_string(mTiters) + ", must be: * (because SD is " + std::to_string(sd) + " > " + std::to_string(sd_threshold_) + ")");
+            }
+            else if (num_less) {
+                std::cerr << "num_less not imlemented: " << mMerged << " <-- " << mTiters << '\n';
+            }
+            else if (num_more) {
+                std::cerr << "num_more not imlemented: " << mMerged << " <-- " << mTiters << '\n';
+            }
+            else {
+                mType = Regular;
+                const auto value = acmacs::chart::Titer::from_logged(mean);
+                if (value != mMerged)
+                    throw std::runtime_error("Unxpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
+            }
         }
     }
     return mType;
