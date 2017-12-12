@@ -16,10 +16,8 @@ class TiterMerger
         SDTooBig,        // if SD > sd_threshold_ (default: 1.0), result is *
         ThresholdedBoth,   // If there are > and < titers, result is *
         ThresholdedOnly, // If there are just thresholded titers, result is min (<) or max (>) of them
-        ThresholdedLess, // if max(<) of thresholded is more than max on non-thresholded (e.g. <40 20), then find minimum of thresholded which is more than max on non-thresholded, it is the result with <
-        ThresholdedLessNormal, // result is next of min non-thresholded with < (e.g. <20 40 --> <80, <20 80 --> <160)
-        ThresholdedMore, // if min(>) of thresholded is less than min on non-thresholded (e.g. >1280 2560), then find maximum of thresholded which is less than min on non-thresholded, it is the result with >
-        ThresholdedMoreNormal // result is next of max non-thresholded with >
+        Thresholded, // result is next of min non-thresholded with < (e.g. <20 40 --> <80, <20 80 --> <160)
+        ThresholdedMax, // if max(<) of thresholded is more than max on non-thresholded (e.g. <40 20), then find minimum of thresholded which is more than max on non-thresholded, it is the result with <
     };
 
     inline TiterMerger() = default;
@@ -47,21 +45,25 @@ TiterMerger::Type TiterMerger::merge()
     }
     else {
         size_t num_less = 0, num_more = 0;
-        acmacs::Vector logged(mTiters.size());
+          // double max_thresholded = 0, max_non_thresholded = 0, min_thresholded = std::numeric_limits<double>::max(), min_non_thresholded = std::numeric_limits<double>::max();
+        acmacs::Vector logged(mTiters.size()), thresholded, regular;
         for (auto t_no: acmacs::range(0UL, mTiters.size())) {
             const auto& titer = mTiters[t_no];
-            logged[t_no] = titer.logged_with_thresholded();
+            const auto lgd = logged[t_no] = titer.logged_with_thresholded();
             switch (titer.type()) {
               case acmacs::chart::Titer::Invalid:
               case acmacs::chart::Titer::DontCare:
               case acmacs::chart::Titer::Dodgy:
                   throw std::runtime_error("Invalid titer: " + titer.data());
               case acmacs::chart::Titer::Regular:
+                  regular.push_back(lgd);
                   break;
               case acmacs::chart::Titer::LessThan:
+                  thresholded.push_back(lgd + 1);
                   ++num_less;
                   break;
               case acmacs::chart::Titer::MoreThan:
+                  thresholded.push_back(lgd - 1);
                   ++num_more;
                   break;
             }
@@ -76,33 +78,72 @@ TiterMerger::Type TiterMerger::merge()
             // std::cerr << "less-only mean: " << logged.min() << " src:" << mTiters << '\n';
             const auto value = acmacs::chart::Titer::from_logged(logged.min() + 1, "<"); // +1 becasue logged contains values with subtructed 1
             if (value != mMerged)
-                throw std::runtime_error("Unxpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
+                throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
         }
         else if (num_more == mTiters.size()) {
             mType = ThresholdedOnly;
             const auto value = acmacs::chart::Titer::from_logged(logged.max() - 1, ">");
             if (value != mMerged)
-                  // throw std::runtime_error("Unxpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
-                std::cerr << "Unxpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
+                  // throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
+                std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
         }
         else {
             const auto [mean, sd] = logged.mean_and_standard_deviation();
             if (sd > sd_threshold_) {
                 mType = SDTooBig;
+                // std::cerr << "SDTooBig: " << sd << ": " << mMerged << " <-- " << mTiters << '\n';
                 if (mMerged != "*")
                     throw std::runtime_error("Invalid pre-merged titer: " + mMerged.data() + " for sources: " + acmacs::to_string(mTiters) + ", must be: * (because SD is " + std::to_string(sd) + " > " + std::to_string(sd_threshold_) + ")");
             }
             else if (num_less) {
-                std::cerr << "num_less not imlemented: " << mMerged << " <-- " << mTiters << '\n';
+                if (const auto regular_max = regular.max(), thresholded_max = thresholded.max(); thresholded_max > regular_max) {
+                      //  if max(<) of thresholded is more than max on non-thresholded (e.g. <40 20), then find minimum of thresholded which is more than max on non-thresholded, it is the result with <
+                    mType = ThresholdedMax;
+                    double thresholded_to_go = thresholded_max;
+                    for (double thresholded_value: thresholded) {
+                        if (thresholded_value > regular_max)
+                            thresholded_to_go = std::min(thresholded_to_go, thresholded_value);
+                    }
+                    const auto value = acmacs::chart::Titer::from_logged(thresholded_to_go, "<");
+                    if (value != mMerged)
+                        // throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
+                        std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
+                }
+                else {
+                    mType = Thresholded;
+                    const auto value = acmacs::chart::Titer::from_logged(regular_max + 1, "<");
+                    if (value != mMerged)
+                        // throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
+                        std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
+                }
             }
             else if (num_more) {
-                std::cerr << "num_more not imlemented: " << mMerged << " <-- " << mTiters << '\n';
+                if (const auto regular_min = regular.min(), thresholded_min = thresholded.min(); thresholded_min < regular_min) {
+                      // if min(>) of thresholded is less than min on non-thresholded (e.g. >1280 2560), then find maximum of thresholded which is less than min on non-thresholded, it is the result with >
+                    mType = ThresholdedMax;
+                    double thresholded_to_go = thresholded_min;
+                    for (double thresholded_value: thresholded) {
+                        if (thresholded_value < regular_min)
+                            thresholded_to_go = std::max(thresholded_to_go, thresholded_value);
+                    }
+                    const auto value = acmacs::chart::Titer::from_logged(thresholded_to_go, ">");
+                    if (value != mMerged)
+                        // throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
+                        std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
+                }
+                else {
+                    mType = Thresholded;
+                    const auto value = acmacs::chart::Titer::from_logged(regular_min - 1, ">");
+                    if (value != mMerged)
+                        // throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
+                        std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
+                }
             }
             else {
                 mType = Regular;
                 const auto value = acmacs::chart::Titer::from_logged(mean);
                 if (value != mMerged)
-                    throw std::runtime_error("Unxpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
+                    throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
             }
         }
     }
