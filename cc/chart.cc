@@ -204,7 +204,7 @@ void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, In
 void acmacs::chart::Chart::set_homologous(bool force, SeraP aSera) const
 {
     if (!mHomologousFound && (force || (!is_merge() && number_of_antigens() < 200))) {
-        Timeit ti("set homologous for sera: ");
+        // Timeit ti("set homologous for sera: ");
         if (!aSera)
             aSera = sera();
         aSera->set_homologous(*antigens());
