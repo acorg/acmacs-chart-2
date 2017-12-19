@@ -33,17 +33,19 @@ int main(int argc, char* const argv[])
                 {"--rotate-radians", 0.0},
                 {"--flip-ew", false},
                 {"--flip-ns", false},
+                {"--time", false, "report time of loading chart"},
+                {"--verbose", false},
                 {"-h", false},
                 {"--help", false},
                 {"-v", false},
-                {"--verbose", false}
         });
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
             std::cerr << "Usage: " << args.program() << " [options] <input-chart-file> <output-chart-file>\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {
-            auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None);
+            const report_time report = args["--time"] ? report_time::Yes : report_time::No;
+            auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None, report);
             std::cout << chart->make_info() << '\n';
             const size_t projection_no = args["--projection"];
             if (projection_no >= chart->number_of_projections())

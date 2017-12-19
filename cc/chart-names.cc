@@ -13,18 +13,20 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
+                {"--verbose", false},
+                {"--time", false, "report time of loading chart"},
                 {"-h", false},
                 {"--help", false},
                 {"-v", false},
-                {"--verbose", false}
         });
         if (args["-h"] || args["--help"] || args.number_of_arguments() < 1) {
             std::cerr << "Usage: " << args.program() << " [options] <chart-file> ...\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {
+            const report_time report = args["--time"] ? report_time::Yes : report_time::No;
             for (size_t file_no = 0; file_no < args.number_of_arguments(); ++file_no) {
-                auto chart = acmacs::chart::import_factory(args[file_no], acmacs::chart::Verify::None);
+                auto chart = acmacs::chart::import_factory(args[file_no], acmacs::chart::Verify::None, report);
                 auto antigens = chart->antigens();
                 auto sera = chart->sera();
                 const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;

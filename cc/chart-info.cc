@@ -12,6 +12,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv, {
                 {"--verify", false},
+                {"--time", false, "report time of loading chart"},
                 {"-h", false},
                 {"--help", false},
                 {"-v", false},
@@ -23,8 +24,9 @@ int main(int argc, char* const argv[])
         }
         else {
             const bool verify = args["--verify"];
+            const report_time report = args["--time"] ? report_time::Yes : report_time::No;
             for (size_t file_no = 0; file_no < args.number_of_arguments(); ++file_no) {
-                auto chart = acmacs::chart::import_factory(args[file_no], verify ? acmacs::chart::Verify::All : acmacs::chart::Verify::None);
+                auto chart = acmacs::chart::import_factory(args[file_no], verify ? acmacs::chart::Verify::All : acmacs::chart::Verify::None, report);
                 std::cout << chart->make_info() << '\n';
             }
         }

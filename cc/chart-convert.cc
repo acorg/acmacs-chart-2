@@ -13,17 +13,19 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
+                {"--verbose", false},
+                {"--time", false, "report time of loading chart"},
                 {"-h", false},
                 {"--help", false},
                 {"-v", false},
-                {"--verbose", false}
         });
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
             std::cerr << "Usage: " << args.program() << " [options] <input-chart-file> <output-chart-file>\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {
-            auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::All);
+            const report_time report = args["--time"] ? report_time::Yes : report_time::No;
+            auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::All, report);
             std::cout << chart->make_info() << '\n';
             acmacs::chart::export_factory(*chart, args[1], fs::path(args.program()).filename());
         }

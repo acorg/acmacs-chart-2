@@ -1,5 +1,4 @@
 #include "acmacs-base/read-file.hh"
-#include "acmacs-base/timeit.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/ace-import.hh"
 #include "acmacs-chart-2/acd1-import.hh"
@@ -7,9 +6,9 @@
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::ChartP acmacs::chart::import_factory(std::string aFilename, Verify aVerify)
+acmacs::chart::ChartP acmacs::chart::import_factory(std::string aFilename, Verify aVerify, report_time aReport)
 {
-    Timeit ti("reading chart from " + aFilename + ": ");
+    Timeit ti("reading chart from " + aFilename + ": ", aReport);
       // Timeit ti_file("reading " + aFilename + ": ");
     const std::string data = acmacs::file::read(aFilename);
     const std::string_view data_view(data);

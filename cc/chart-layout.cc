@@ -21,17 +21,19 @@ int main(int argc, char* const argv[])
         argc_argv args(argc, argv, {
                 {"--projection", 0L},
                 {"--field-separator", " "},
+                {"--time", false, "report time of loading chart"},
+                {"--verbose", false},
                 {"-h", false},
                 {"--help", false},
                 {"-v", false},
-                {"--verbose", false}
         });
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
             std::cerr << "Usage: " << args.program() << " [options] <chart-file> <output-layout.{txt,csv}[.xz]>\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {
-            auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None);
+            const report_time report = args["--time"] ? report_time::Yes : report_time::No;
+            auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None, report);
             auto antigens = chart->antigens();
             auto sera = chart->sera();
             auto layout = chart->projection(args["--projection"])->layout();

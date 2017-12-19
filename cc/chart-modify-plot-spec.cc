@@ -32,17 +32,18 @@ int main(int argc, char* const argv[])
                 {"--fill", "", "change point fill color"},
                 {"--outline", "", "change point outline color"},
 
+                {"--time", false, "report time of loading chart"},
+                {"--verbose", false},
                 {"-h", false},
                 {"--help", false},
                 {"-v", false},
-                {"--verbose", false}
         });
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
             std::cerr << "Usage: " << args.program() << " [options] <input-chart-file> <output-chart-file>\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {
-            auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None);
+            auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
             std::cout << chart->make_info() << '\n';
 
             std::vector<size_t> points;

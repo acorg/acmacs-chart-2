@@ -25,10 +25,11 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
+                {"--verbose", false},
+                {"--time", false, "report time of loading chart"},
                 {"-h", false},
                 {"--help", false},
                 {"-v", false},
-                {"--verbose", false}
         });
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
             std::cerr << "Usage: " << args.program() << " [options] <chart-file>\n" << args.usage_options() << '\n';
@@ -49,7 +50,8 @@ int main(int argc, char* const argv[])
 
 void print_plot_spec(const argc_argv& args)
 {
-    auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None);
+    const report_time report = args["--time"] ? report_time::Yes : report_time::No;
+    auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None, report);
     auto antigens = chart->antigens();
     auto sera = chart->sera();
     auto plot_spec = chart->plot_spec();
