@@ -327,6 +327,7 @@ namespace acmacs::chart
         inline bool empty() const override { return mMain->empty(); }
         inline size_t size() const override { return mMain->size(); }
         inline ProjectionP operator[](size_t aIndex) const override { return std::make_shared<ProjectionModify>(mMain->operator[](aIndex), aIndex, mChart); }
+        inline ProjectionModifyP at(size_t aIndex) const { return std::make_shared<ProjectionModify>(mMain->operator[](aIndex), aIndex, mChart); }
 
      private:
         ProjectionsP mMain;
