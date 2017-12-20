@@ -59,7 +59,7 @@ static inline std::pair<bool, size_t> object_numeric_key(const std::string_view&
 
 std::string convert_to_json(const std::string_view& aData)
 {
-    Timeit ti("converting acd1 (" + std::to_string(aData.size()) + " bytes) to json: ");
+    // Timeit ti("converting acd1 (" + std::to_string(aData.size()) + " bytes) to json: ");
     std::string result;
     std::vector<size_t> perhaps_set;
     for (auto input = aData.find("data = {") + 7; input < aData.size(); ++input) {
