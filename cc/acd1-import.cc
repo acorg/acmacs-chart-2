@@ -17,7 +17,7 @@ constexpr const double PointScale = 5.0;
 constexpr const double LabelScale = 10.0;
 
 static std::string convert_to_json(const std::string_view& aData);
-static void convert_set_of_one_string(std::string& aData, const std::vector<size_t>& aPerhapsSet);
+static void convert_set(std::string& aData, const std::vector<size_t>& aPerhapsSet);
 
 // ----------------------------------------------------------------------
 
@@ -115,6 +115,8 @@ std::string convert_to_json(const std::string_view& aData)
                   input = end_of_number - 1;
               }
               else {
+                  if (aData[input - 1] == '{')
+                      perhaps_set.push_back(result.size() - 1);
                   result.append(aData.substr(input, end_of_number - input));
                   input = end_of_number - 1;
               }
@@ -188,7 +190,7 @@ std::string convert_to_json(const std::string_view& aData)
         }
     }
       // std::cerr << "perhaps_set: " << perhaps_set.size() << '\n';
-    convert_set_of_one_string(result, perhaps_set);
+    convert_set(result, perhaps_set);
     // std::cout << result << '\n';
     return result;
 
@@ -196,11 +198,12 @@ std::string convert_to_json(const std::string_view& aData)
 
 // ----------------------------------------------------------------------
 
-void convert_set_of_one_string(std::string& aData, const std::vector<size_t>& aPerhapsSet)
+void convert_set(std::string& aData, const std::vector<size_t>& aPerhapsSet)
 {
-      // Timeit ti("convert_set_of_one_string: ");
+      // Timeit ti("convert_set: ");
     for (auto offset: aPerhapsSet) {
         if (aData[offset + 1] == '"') {
+              // set of strings
             auto p = aData.begin() + static_cast<ssize_t>(offset) + 2;
             for (; *p != '"' && p < aData.end(); ++p);
             ++p;
@@ -210,9 +213,18 @@ void convert_set_of_one_string(std::string& aData, const std::vector<size_t>& aP
                 *p = ']';
             }
         }
+        else if (std::isdigit(aData[offset + 1])) {
+              // set of numbers, e.g. ["table"]["antigens"]["sources"]
+            auto p = aData.begin() + static_cast<ssize_t>(offset) + 2;
+            for (; *p != ':' && *p != '}' && p < aData.end(); ++p);
+            if (*p == '}') {    // set
+                aData[offset] = '[';
+                *p = ']';
+            }
+        }
     }
 
-} // convert_set_of_one_string
+} // convert_set
 
 // ----------------------------------------------------------------------
 
