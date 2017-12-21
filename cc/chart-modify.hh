@@ -57,6 +57,7 @@ namespace acmacs::chart
             inline std::shared_ptr<Layout> layout() { return mLayout; }
             inline std::shared_ptr<acmacs::chart::Layout> transformed_layout() const { if (!mTransformedLayout) mTransformedLayout.reset(mLayout->transform(mTransformation)); return mTransformedLayout; }
             inline const Transformation& transformation() const { return mTransformation; }
+            size_t number_of_points() const { return mLayout->number_of_points(); }
             size_t number_of_dimensions() const { return mLayout->number_of_dimensions(); }
 
             inline void move_point(size_t aPointNo, const Coordinates& aCoordinates) { mLayout->set(aPointNo, aCoordinates); mTransformedLayout.reset(); }
@@ -293,6 +294,7 @@ namespace acmacs::chart
         inline std::shared_ptr<Layout> layout() const override { return mChart.modified_projection(mProjectionNo) ? mChart.modify_projection(mProjectionNo).layout() : mMain->layout(); }
         inline std::shared_ptr<Layout> transformed_layout() const override { return mChart.modified_projection(mProjectionNo) ? mChart.modify_projection(mProjectionNo).transformed_layout() : mMain->transformed_layout(); }
         inline std::string comment() const override { return mMain->comment(); }
+        inline size_t number_of_points() const override { return mChart.modified_projection(mProjectionNo) ? mChart.modify_projection(mProjectionNo).number_of_points() : mMain->number_of_points(); }
         inline size_t number_of_dimensions() const override { return mChart.modified_projection(mProjectionNo) ? mChart.modify_projection(mProjectionNo).number_of_dimensions() : mMain->number_of_dimensions(); }
         inline MinimumColumnBasis minimum_column_basis() const override { return mMain->minimum_column_basis(); }
         inline ColumnBasesP forced_column_bases() const override { return mMain->forced_column_bases(); }
