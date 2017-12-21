@@ -692,6 +692,24 @@ std::string Acd1Projection::comment() const
 
 // ----------------------------------------------------------------------
 
+static inline size_t acd1_number_of_dimensions(const rjson::object& data) noexcept
+{
+    try {
+        for (const rjson::array& row: static_cast<const rjson::array&>(data["layout"])) {
+            if (!row.empty())
+                return row.size();
+        }
+    }
+    catch (rjson::field_not_found&) {
+    }
+    catch (std::bad_variant_access&) {
+    }
+    return 0;
+
+} // number_of_dimensions
+
+// ----------------------------------------------------------------------
+
 class Acd1Layout : public acmacs::chart::Layout
 {
  public:
@@ -704,17 +722,7 @@ class Acd1Layout : public acmacs::chart::Layout
 
     inline size_t number_of_dimensions() const noexcept override
         {
-            try {
-                for (const rjson::array& row: static_cast<const rjson::array&>(mData["layout"])) {
-                    if (!row.empty())
-                        return row.size();
-                }
-            }
-            catch (rjson::field_not_found&) {
-            }
-            catch (std::bad_variant_access&) {
-            }
-            return 0;
+            return ::acd1_number_of_dimensions(mData);
         }
 
     inline const acmacs::Coordinates operator[](size_t aPointNo) const override
@@ -750,6 +758,14 @@ std::shared_ptr<acmacs::chart::Layout> Acd1Projection::layout() const
     return std::make_shared<Acd1Layout>(mData);
 
 } // Acd1Projection::layout
+
+// ----------------------------------------------------------------------
+
+size_t Acd1Projection::number_of_dimensions() const
+{
+    return ::acd1_number_of_dimensions(mData);
+
+} // Acd1Projection::number_of_dimensions
 
 // ----------------------------------------------------------------------
 

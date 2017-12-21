@@ -217,6 +217,7 @@ namespace acmacs::chart
         inline double stress() const override { return mData.get_or_default("stress", 0.0); }
         std::shared_ptr<Layout> layout() const override;
         std::string comment() const override;
+        size_t number_of_dimensions() const override;
         inline MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("minimum_column_basis", "none"); }
         ColumnBasesP forced_column_bases() const override;
         acmacs::Transformation transformation() const override;

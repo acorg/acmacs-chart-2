@@ -559,6 +559,14 @@ std::shared_ptr<Layout> LispmdsProjection::layout() const
 
 // ----------------------------------------------------------------------
 
+size_t LispmdsProjection::number_of_dimensions() const
+{
+    return projection_layout(mData, mIndex)[0].size();
+
+} // LispmdsProjection::number_of_dimensions
+
+// ----------------------------------------------------------------------
+
 ColumnBasesP LispmdsProjection::forced_column_bases() const
 {
     return ::forced_column_bases(mData, mIndex).first;

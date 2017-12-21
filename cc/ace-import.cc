@@ -340,6 +340,24 @@ size_t AceTiters::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
+static inline size_t ace_number_of_dimensions(const rjson::object& data) noexcept
+{
+    try {
+        for (const rjson::array& row: static_cast<const rjson::array&>(data["l"])) {
+            if (!row.empty())
+                return row.size();
+        }
+    }
+    catch (rjson::field_not_found&) {
+    }
+    catch (std::bad_variant_access&) {
+    }
+    return 0;
+
+} // number_of_dimensions
+
+// ----------------------------------------------------------------------
+
 class AceLayout : public acmacs::chart::Layout
 {
  public:
@@ -350,20 +368,7 @@ class AceLayout : public acmacs::chart::Layout
             return mData.get_or_empty_array("l").size();
         }
 
-    inline size_t number_of_dimensions() const noexcept override
-        {
-            try {
-                for (const rjson::array& row: static_cast<const rjson::array&>(mData["l"])) {
-                    if (!row.empty())
-                        return row.size();
-                }
-            }
-            catch (rjson::field_not_found&) {
-            }
-            catch (std::bad_variant_access&) {
-            }
-            return 0;
-        }
+    inline size_t number_of_dimensions() const noexcept override { return ::ace_number_of_dimensions(mData); }
 
     inline const acmacs::Coordinates operator[](size_t aPointNo) const override
         {
@@ -398,6 +403,14 @@ std::shared_ptr<Layout> AceProjection::layout() const
     return std::make_shared<AceLayout>(mData);
 
 } // AceProjection::layout
+
+// ----------------------------------------------------------------------
+
+size_t AceProjection::number_of_dimensions() const
+{
+    return ::ace_number_of_dimensions(mData);
+
+} // AceProjection::number_of_dimensions
 
 // ----------------------------------------------------------------------
 
