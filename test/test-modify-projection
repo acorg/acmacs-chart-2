@@ -38,4 +38,4 @@ cmp "${TDIR}/diff-2.txt" test-modify-projection.expected-2.diff
 ../dist/chart-modify-projection --flip-ew ./test-2004-3.ace "${TDIR}/r3.ace" >/dev/null 2>&1
 xz -dc "${TDIR}/r3.ace" >"${TDIR}/r3.json"
 diff -I "\"\\?created\":" "${TDIR}/orig.json" "${TDIR}/r3.json" >"${TDIR}/diff-3.txt" || true
-cmp "${TDIR}/diff-3.txt" test-modify-projection.expected-3.diff
+cmp "${TDIR}/diff-3.txt" test-modify-projection.expected-3.diff || (echo; echo; diff -I "\"\\?created\":" "${TDIR}/orig.json" "${TDIR}/r3.json" && false)
