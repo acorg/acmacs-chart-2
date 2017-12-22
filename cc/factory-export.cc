@@ -33,7 +33,7 @@ void acmacs::chart::export_factory(const Chart& aChart, std::string aFilename, s
     Timeit ti_file("writing " + aFilename + ": ");
     acmacs::file::write(aFilename, data, force_compression);
 
-} // acmacs::chart::import_factory
+} // acmacs::chart::import_from_file
 
 // ----------------------------------------------------------------------
 /// Local Variables:

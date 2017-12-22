@@ -28,7 +28,7 @@ int main(int argc, char* const argv[])
         else {
             const report_time report = args["--time"] ? report_time::Yes : report_time::No;
             for (size_t file_no = 0; file_no < args.number_of_arguments(); ++file_no) {
-                auto chart = acmacs::chart::import_factory(args[file_no], acmacs::chart::Verify::None, report);
+                auto chart = acmacs::chart::import_from_file(args[file_no], acmacs::chart::Verify::None, report);
                 auto antigens = chart->antigens();
                 auto sera = chart->sera();
                 const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;

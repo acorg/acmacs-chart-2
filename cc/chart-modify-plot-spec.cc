@@ -43,7 +43,7 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
+            auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
             std::cout << chart->make_info() << '\n';
 
             std::vector<size_t> points;

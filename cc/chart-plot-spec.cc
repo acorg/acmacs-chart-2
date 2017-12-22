@@ -51,7 +51,7 @@ int main(int argc, char* const argv[])
 void print_plot_spec(const argc_argv& args)
 {
     const report_time report = args["--time"] ? report_time::Yes : report_time::No;
-    auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None, report);
+    auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
     auto antigens = chart->antigens();
     auto sera = chart->sera();
     auto plot_spec = chart->plot_spec();
