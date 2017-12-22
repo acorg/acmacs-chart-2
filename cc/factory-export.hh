@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "acmacs-chart-2/verify.hh"
+#include "acmacs-base/timeit.hh"
 
 // ----------------------------------------------------------------------
 
@@ -11,7 +12,7 @@ namespace acmacs::chart
 {
     class Chart;
 
-    void export_factory(const Chart& aChart, std::string aFilename, std::string aProgramName);
+    void export_factory(const Chart& aChart, std::string aFilename, std::string aProgramName, report_time aReport);
 
 } // namespace acmacs::chart
 

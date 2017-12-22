@@ -77,7 +77,7 @@ int main(int argc, char* const argv[])
                     plot_spec->outline(point_no, static_cast<std::string_view>(args["--outline"]));
             }
 
-            acmacs::chart::export_factory(chart_modify, args[1], fs::path(args.program()).filename());
+            acmacs::chart::export_factory(chart_modify, args[1], fs::path(args.program()).filename(), args["--time"] ? report_time::Yes : report_time::No);
         }
     }
     catch (std::exception& err) {

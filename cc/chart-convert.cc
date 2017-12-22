@@ -27,7 +27,7 @@ int main(int argc, char* const argv[])
             const report_time report = args["--time"] ? report_time::Yes : report_time::No;
             auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::All, report);
             std::cout << chart->make_info() << '\n';
-            acmacs::chart::export_factory(*chart, args[1], fs::path(args.program()).filename());
+            acmacs::chart::export_factory(*chart, args[1], fs::path(args.program()).filename(), report);
         }
     }
     catch (std::exception& err) {

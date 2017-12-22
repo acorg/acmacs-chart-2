@@ -7,9 +7,9 @@
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::export_factory(const Chart& aChart, std::string aFilename, std::string aProgramName)
+void acmacs::chart::export_factory(const Chart& aChart, std::string aFilename, std::string aProgramName, report_time aReport)
 {
-    Timeit ti("writing chart to " + aFilename + ": ");
+    Timeit ti("writing chart to " + aFilename + ": ", aReport);
     auto force_compression = acmacs::file::ForceCompression::No;
     std::string data;
     if (fs::path(aFilename).extension() == ".ace") {
@@ -30,7 +30,7 @@ void acmacs::chart::export_factory(const Chart& aChart, std::string aFilename, s
     if (data.empty())
         throw export_error("No data to write to " + aFilename);
 
-    Timeit ti_file("writing " + aFilename + ": ");
+    Timeit ti_file("writing " + aFilename + ": ", aReport);
     acmacs::file::write(aFilename, data, force_compression);
 
 } // acmacs::chart::import_from_file
