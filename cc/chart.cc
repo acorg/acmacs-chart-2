@@ -472,7 +472,7 @@ std::string acmacs::chart::Projections::make_info() const
 {
     std::string result = "Projections: " + std::to_string(size());
     for (auto projection_no: acmacs::range(0UL, std::min(10UL, size())))
-        result += "\n  " + std::to_string(projection_no) + ' ' + operator[](0)->make_info();
+        result += "\n  " + std::to_string(projection_no) + ' ' + operator[](projection_no)->make_info();
     return result;
 
 } // acmacs::chart::Projections::make_info
