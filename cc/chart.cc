@@ -302,108 +302,7 @@ std::string acmacs::chart::Info::make_name() const
 
 // ----------------------------------------------------------------------
 
-size_t acmacs::chart::Titer::value_for_sorting() const
-{
-    switch (type()) {
-      case Invalid:
-      case DontCare:
-          return 0;
-      case Regular:
-          return std::stoul(data());
-      case LessThan:
-          return std::stoul(data().substr(1)) - 1;
-      case MoreThan:
-          return std::stoul(data().substr(1)) + 1;
-      case Dodgy:
-          return std::stoul(data().substr(1));
-    }
-    return 0;
-
-} // acmacs::chart::Titer::value_for_sorting
-
-// ----------------------------------------------------------------------
-
-double acmacs::chart::Titer::logged() const
-{
-    constexpr auto log_titer = [](std::string source) -> double { return std::log2(std::stod(source) / 10.0); };
-
-    switch (type()) {
-      case Invalid:
-          throw invalid_titer(data());
-      case Regular:
-          return log_titer(data());
-      case DontCare:
-          throw invalid_titer(data());
-      case LessThan:
-      case MoreThan:
-      case Dodgy:
-          return log_titer(data().substr(1));
-    }
-    throw invalid_titer(data()); // for gcc 7.2
-
-} // acmacs::chart::Titer::logged
-
-// ----------------------------------------------------------------------
-
-double acmacs::chart::Titer::logged_with_thresholded() const
-{
-    switch (type()) {
-      case Invalid:
-      case Regular:
-      case DontCare:
-      case Dodgy:
-          return logged();
-      case LessThan:
-          return logged() - 1;
-      case MoreThan:
-          return logged() + 1;
-    }
-    throw invalid_titer(data()); // for gcc 7.2
-
-} // acmacs::chart::Titer::logged_with_thresholded
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Titer::logged_as_string() const
-{
-    switch (type()) {
-      case Invalid:
-          throw invalid_titer(data());
-      case Regular:
-          return acmacs::to_string(logged());
-      case DontCare:
-          return data();
-      case LessThan:
-      case MoreThan:
-      case Dodgy:
-          return data()[0] + acmacs::to_string(logged());
-    }
-    throw invalid_titer(data()); // for gcc 7.2
-
-} // acmacs::chart::Titer::logged_as_string
-
-// ----------------------------------------------------------------------
-
-double acmacs::chart::Titer::logged_for_column_bases() const
-{
-    switch (type()) {
-      case Invalid:
-          throw invalid_titer(data());
-      case Regular:
-      case LessThan:
-          return logged();
-      case MoreThan:
-          return logged() + 1;
-      case DontCare:
-      case Dodgy:
-          return -1;
-    }
-    throw invalid_titer(data()); // for gcc 7.2
-
-} // acmacs::chart::Titer::logged_for_column_bases
-
-// ----------------------------------------------------------------------
-
+// %%% move to titers
 class ComputedColumnBases : public acmacs::chart::ColumnBases
 {
  public:
@@ -712,12 +611,6 @@ acmacs::chart::Antigens::~Antigens()
 acmacs::chart::Sera::~Sera()
 {
 } // acmacs::chart::Sera::~Sera
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::Titers::~Titers()
-{
-} // acmacs::chart::Titers::~Titers
 
 // ----------------------------------------------------------------------
 
