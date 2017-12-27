@@ -30,8 +30,7 @@ ACMACS_CHART_LIB_MAJOR = 2
 ACMACS_CHART_LIB_MINOR = 0
 ACMACS_CHART_LIB = $(DIST)/$(call shared_lib_name,libacmacschart,$(ACMACS_CHART_LIB_MAJOR),$(ACMACS_CHART_LIB_MINOR))
 
-CXXFLAGS = -g -MMD $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WARNINGS) -Icc -I$(AD_INCLUDE) $(PKG_INCLUDES)
-LDFLAGS = $(OPTIMIZATION) $(PROFILE)
+CXXFLAGS += -Icc $(PKG_INCLUDES)
 LDLIBS = \
 	$(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
 	$(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
