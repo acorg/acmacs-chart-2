@@ -302,57 +302,6 @@ std::string acmacs::chart::Info::make_name() const
 
 // ----------------------------------------------------------------------
 
-// %%% move to titers
-class ComputedColumnBases : public acmacs::chart::ColumnBases
-{
- public:
-    inline ComputedColumnBases(size_t aNumberOfSera) : mData(aNumberOfSera, 0) {}
-
-    inline bool exists() const override { return true; }
-    inline double column_basis(size_t aSerumNo) const override { return mData.at(aSerumNo); }
-    inline size_t size() const override { return mData.size(); }
-
-    inline void update(size_t aSerumNo, double aValue) { if (aValue > mData[aSerumNo]) mData[aSerumNo] = aValue; }
-
- private:
-    std::vector<double> mData;
-
-}; // class ComputedColumnBases
-
-std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Chart::computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const
-{
-    auto cb = std::make_shared<ComputedColumnBases>(number_of_sera());
-    auto tts = titers();
-    for (size_t ag_no = 0; ag_no < number_of_antigens(); ++ag_no)
-        for (size_t sr_no = 0; sr_no < number_of_sera(); ++sr_no)
-            cb->update(sr_no, tts->titer(ag_no, sr_no).logged_for_column_bases());
-    for (size_t sr_no = 0; sr_no < number_of_sera(); ++sr_no)
-        cb->update(sr_no, aMinimumColumnBasis);
-    return cb;
-
-} // acmacs::chart::Chart::computed_column_bases
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::to_string(const acmacs::chart::ColumnBases& aColumnBases)
-{
-    std::string result;
-    if (aColumnBases.exists()) {
-        result = "[";
-        for (auto serum_no: acmacs::range(0UL, aColumnBases.size())) {
-            if (serum_no)
-                result += ' ';
-            result += std::to_string(aColumnBases.column_basis(serum_no));
-        }
-    }
-    else
-        result = "<none>";
-    return result;
-
-} // acmacs::to_string
-
-// ----------------------------------------------------------------------
-
 std::string acmacs::chart::Projection::make_info() const
 {
     auto lt = layout();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "acmacs-chart-2/base.hh"
+#include "acmacs-chart-2/column-bases.hh"
 
 namespace rjson { class array; }
 
@@ -20,122 +21,22 @@ namespace acmacs::chart
 
         enum Type { Invalid, Regular, DontCare, LessThan, MoreThan, Dodgy };
 
-        inline Type type() const
-            {
-                if (data().empty())
-                    return Invalid;
-                switch (data()[0]) {
-                  case '*':
-                      return DontCare;
-                  case '<':
-                      return LessThan;
-                  case '>':
-                      return MoreThan;
-                  case '~':
-                      return Dodgy;
-                  case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-                      return Regular;
-                  default:
-                      return Invalid;
-                }
-                return Invalid;
-            }
+        Type type() const;
 
-        inline bool is_dont_care() const { return type() == DontCare; }
-        inline bool is_regular() const { return type() == Regular; }
-        inline bool is_less_than() const { return type() == LessThan; }
-        inline bool is_more_than() const { return type() == MoreThan; }
+        bool is_dont_care() const { return type() == DontCare; }
+        bool is_regular() const { return type() == Regular; }
+        bool is_less_than() const { return type() == LessThan; }
+        bool is_more_than() const { return type() == MoreThan; }
 
-        inline bool operator<(const Titer& other) const { return value_for_sorting() < other.value_for_sorting(); }
-        inline bool operator==(const Titer& other) const { return data() == other.data(); }
-        inline bool operator!=(const Titer& other) const { return ! operator==(other); }
+        bool operator<(const Titer& other) const { return value_for_sorting() < other.value_for_sorting(); }
+        bool operator==(const Titer& other) const { return data() == other.data(); }
+        bool operator!=(const Titer& other) const { return ! operator==(other); }
 
-        double logged() const
-            {
-                constexpr auto log_titer = [](std::string source) -> double { return std::log2(std::stod(source) / 10.0); };
-
-                switch (type()) {
-                  case Invalid:
-                      throw invalid_titer(data());
-                  case Regular:
-                      return log_titer(data());
-                  case DontCare:
-                      throw invalid_titer(data());
-                  case LessThan:
-                  case MoreThan:
-                  case Dodgy:
-                      return log_titer(data().substr(1));
-                }
-                throw invalid_titer(data()); // for gcc 7.2
-            }
-
-        double logged_with_thresholded() const
-            {
-                switch (type()) {
-                  case Invalid:
-                  case Regular:
-                  case DontCare:
-                  case Dodgy:
-                      return logged();
-                  case LessThan:
-                      return logged() - 1;
-                  case MoreThan:
-                      return logged() + 1;
-                }
-                throw invalid_titer(data()); // for gcc 7.2
-            }
-
-        std::string logged_as_string() const
-            {
-                switch (type()) {
-                  case Invalid:
-                      throw invalid_titer(data());
-                  case Regular:
-                      return acmacs::to_string(logged());
-                  case DontCare:
-                      return data();
-                  case LessThan:
-                  case MoreThan:
-                  case Dodgy:
-                      return data()[0] + acmacs::to_string(logged());
-                }
-                throw invalid_titer(data()); // for gcc 7.2
-            }
-
-        double logged_for_column_bases() const
-            {
-                switch (type()) {
-                  case Invalid:
-                      throw invalid_titer(data());
-                  case Regular:
-                  case LessThan:
-                      return logged();
-                  case MoreThan:
-                      return logged() + 1;
-                  case DontCare:
-                  case Dodgy:
-                      return -1;
-                }
-                throw invalid_titer(data()); // for gcc 7.2
-            }
-
-        size_t value_for_sorting() const
-            {
-                switch (type()) {
-                  case Invalid:
-                  case DontCare:
-                      return 0;
-                  case Regular:
-                      return std::stoul(data());
-                  case LessThan:
-                      return std::stoul(data().substr(1)) - 1;
-                  case MoreThan:
-                      return std::stoul(data().substr(1)) + 1;
-                  case Dodgy:
-                      return std::stoul(data().substr(1));
-                }
-                return 0;
-            }
+        double logged() const;
+        double logged_with_thresholded() const;
+        std::string logged_as_string() const;
+        double logged_for_column_bases() const;
+        size_t value_for_sorting() const;
 
           // static inline Titer from_logged(double aLogged, std::string aPrefix = "") { return aPrefix + std::to_string(std::lround(std::pow(2.0, aLogged) * 10.0)); }
         static inline Titer from_logged(double aLogged, std::string aPrefix = "") { return aPrefix + std::to_string(std::lround(std::exp2(aLogged) * 10.0)); }
@@ -166,6 +67,8 @@ namespace acmacs::chart
         virtual inline const rjson::array& rjson_list_list() const { throw data_not_available{"rjson_list_list titers are not available"}; }
         virtual inline const rjson::array& rjson_list_dict() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
         virtual inline const rjson::array& rjson_layers() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
+
+        std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis, size_t number_of_antigens, size_t number_of_sera) const;
 
     }; // class Titers
 

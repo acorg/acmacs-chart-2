@@ -17,7 +17,7 @@ TARGETS = \
     $(DIST)/chart-modify-plot-spec \
     $(DIST)/chart-titer-merging-report
 
-SOURCES = chart.cc bounding-ball.cc \
+SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc \
     factory-import.cc ace-import.cc acd1-import.cc lispmds-import.cc lispmds-token.cc \
     factory-export.cc ace-export.cc lispmds-export.cc lispmds-encode.cc chart-modify.cc
 
@@ -31,6 +31,11 @@ ACMACS_CHART_LIB_MINOR = 0
 ACMACS_CHART_LIB = $(DIST)/$(call shared_lib_name,libacmacschart,$(ACMACS_CHART_LIB_MAJOR),$(ACMACS_CHART_LIB_MINOR))
 
 CXXFLAGS += -Icc $(PKG_INCLUDES)
+# ifneq ($(wildcard $(AD_INCLUDE)/acmacs-base/pch.$(shell uname).pch),)
+#   CXXFLAGS += -include $(AD_INCLUDE)/acmacs-base/pch.$(shell uname).hh -verify-pch
+# endif
+# CXX := gtime $(CXX)
+
 LDLIBS = \
 	$(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
 	$(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
