@@ -245,7 +245,7 @@ void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Pr
         target.set_field_if_not_default("s", projection->stress(), 0.0);
         if (const auto minimum_column_basis = projection->minimum_column_basis(); !minimum_column_basis.is_none())
             target.set_field("m", rjson::string{minimum_column_basis});
-        if (const auto forced_column_bases = projection->forced_column_bases(); forced_column_bases->exists()) {
+        if (const auto forced_column_bases = projection->forced_column_bases(); forced_column_bases) {
             rjson::array& ar = target.set_field("C", rjson::array{});
             for (size_t sr_no = 0; sr_no < forced_column_bases->size(); ++sr_no)
                 ar.insert(rjson::to_value(forced_column_bases->column_basis(sr_no)));

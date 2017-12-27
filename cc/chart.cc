@@ -87,7 +87,7 @@ double acmacs::chart::Chart::serum_circle_radius(size_t aAntigenNo, size_t aSeru
         auto layout = prj->layout();
         auto tts = titers();
         double cb;
-        if (auto forced = prj->forced_column_bases(); forced->exists())
+        if (auto forced = prj->forced_column_bases(); forced)
             cb = forced->column_basis(aSerumNo);
         else
             cb = computed_column_bases(prj->minimum_column_basis())->column_basis(aSerumNo);
@@ -306,8 +306,8 @@ std::string acmacs::chart::Projection::make_info() const
 {
     auto lt = layout();
     std::string result = std::to_string(stress()) + " " + std::to_string(lt->number_of_dimensions()) + 'd';
-    if (auto fcb = forced_column_bases(); fcb && fcb->exists())
-        result += " forced:" + acmacs::to_string(*fcb);
+    if (auto fcb = forced_column_bases(); fcb)
+        result += " forced:" + acmacs::to_string(fcb);
     else
         result += " >=" + static_cast<std::string>(minimum_column_basis());
     return result;

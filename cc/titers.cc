@@ -133,7 +133,6 @@ class ComputedColumnBases : public acmacs::chart::ColumnBases
  public:
     inline ComputedColumnBases(size_t aNumberOfSera) : mData(aNumberOfSera, 0) {}
 
-    inline bool exists() const override { return true; }
     inline double column_basis(size_t aSerumNo) const override { return mData.at(aSerumNo); }
     inline size_t size() const override { return mData.size(); }
 

@@ -274,7 +274,6 @@ namespace acmacs::chart
      public:
         inline ColumnBasesModify(ColumnBasesP aMain) : mMain{aMain} {}
 
-        inline bool exists() const override { return mMain->exists(); }
         inline double column_basis(size_t aSerumNo) const override { return mMain->column_basis(aSerumNo); }
         inline size_t size() const override { return mMain->size(); }
 

@@ -55,8 +55,6 @@ namespace acmacs::chart
         ColumnBases() = default;
         ColumnBases(const ColumnBases&) = delete;
 
-        virtual bool exists() const = 0;
-        inline operator bool() const { return exists(); }
         virtual double column_basis(size_t aSerumNo) const = 0;
         virtual size_t size() const = 0;
 
@@ -69,6 +67,14 @@ namespace acmacs::chart
 namespace acmacs
 {
     std::string to_string(const acmacs::chart::ColumnBases& aColumnBases);
+
+    inline std::string to_string(std::shared_ptr<acmacs::chart::ColumnBases> aColumnBases)
+    {
+        if (aColumnBases)
+            return to_string(*aColumnBases);
+        else
+            return "<none>";
+    }
 
     inline std::string to_string(const acmacs::chart::MinimumColumnBasis& aMinimumColumnBasis)
     {

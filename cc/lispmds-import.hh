@@ -173,23 +173,11 @@ namespace acmacs::chart
       public:
         inline LispmdsColumnBases(const std::vector<double>& aData) : mData{aData} {}
 
-        inline bool exists() const override { return true; }
         inline double column_basis(size_t aSerumNo) const override { return mData.at(aSerumNo); }
         inline size_t size() const override { return mData.size(); }
 
      private:
         std::vector<double> mData;
-
-    }; // class LispmdsColumnBases
-
-    class LispmdsNoColumnBases : public ColumnBases
-    {
-      public:
-        inline LispmdsNoColumnBases() = default;
-
-        inline bool exists() const override { return false; }
-        double column_basis(size_t) const override { return 0; }
-        inline size_t size() const override { return 0; }
 
     }; // class LispmdsColumnBases
 

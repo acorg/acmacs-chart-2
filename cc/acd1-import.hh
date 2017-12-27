@@ -198,7 +198,6 @@ namespace acmacs::chart
       public:
         inline Acd1ColumnBases(const rjson::array& aData) : mData{aData} {}
 
-        inline bool exists() const override { return !mData.empty(); }
         inline double column_basis(size_t aSerumNo) const override { return mData[aSerumNo]; }
         inline size_t size() const override { return mData.size(); }
 

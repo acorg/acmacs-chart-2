@@ -300,7 +300,9 @@ TitersP Acd1Chart::titers() const
 
 ColumnBasesP Acd1Chart::forced_column_bases() const
 {
-    return std::make_shared<Acd1ColumnBases>(mData["table"].get_or_empty_array("column_bases"));
+    if (const auto& cb = mData["table"].get_or_empty_array("column_bases"); !cb.empty())
+        return std::make_shared<Acd1ColumnBases>(cb);
+    return nullptr;
 
 } // Acd1Chart::forced_column_bases
 
@@ -774,7 +776,9 @@ ColumnBasesP Acd1Projection::forced_column_bases() const
     const rjson::object& sep = mData.get_or_empty_object("stress_evaluator_parameters");
     if (const rjson::array& cb = sep.get_or_empty_array("column_bases"); !cb.empty())
         return std::make_shared<Acd1ColumnBases>(cb);
-    return std::make_shared<Acd1ColumnBases>(sep.get_or_empty_array("columns_bases"));
+    if (const rjson::array& cb = sep.get_or_empty_array("columns_bases"); !cb.empty())
+        return std::make_shared<Acd1ColumnBases>(cb);
+    return nullptr;
 
 } // Acd1Projection::forced_column_bases
 

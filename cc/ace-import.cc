@@ -103,7 +103,9 @@ TitersP AceChart::titers() const
 
 ColumnBasesP AceChart::forced_column_bases() const
 {
-    return std::make_shared<AceColumnBases>(mData["c"].get_or_empty_array("C"));
+    if (const auto& cb = mData["c"].get_or_empty_array("C"); !cb.empty())
+        return std::make_shared<AceColumnBases>(cb);
+    return nullptr;
 
 } // AceChart::forced_column_bases
 
@@ -416,7 +418,9 @@ size_t AceProjection::number_of_dimensions() const
 
 ColumnBasesP AceProjection::forced_column_bases() const
 {
-    return std::make_shared<AceColumnBases>(mData.get_or_empty_array("C"));
+    if (const auto& cb = mData.get_or_empty_array("C"); !cb.empty())
+        return std::make_shared<AceColumnBases>(cb);
+    return nullptr;
 
 } // AceProjection::forced_column_bases
 

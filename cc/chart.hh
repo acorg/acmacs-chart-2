@@ -382,7 +382,7 @@ namespace acmacs::chart
         virtual std::shared_ptr<Layout> layout() const = 0;
         virtual inline std::shared_ptr<Layout> transformed_layout() const { return std::shared_ptr<Layout>(layout()->transform(transformation())); }
         virtual MinimumColumnBasis minimum_column_basis() const = 0;
-        virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0;
+        virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0; // returns nullptr if not forced
         virtual acmacs::Transformation transformation() const = 0;
         virtual bool dodgy_titer_is_regular() const = 0;
         virtual double stress_diff_to_stop() const = 0;
@@ -449,10 +449,11 @@ namespace acmacs::chart
         virtual std::shared_ptr<Antigens> antigens() const = 0;
         virtual std::shared_ptr<Sera> sera() const = 0;
         virtual std::shared_ptr<Titers> titers() const = 0;
-        virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0;
-        inline std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const { return titers()->computed_column_bases(aMinimumColumnBasis, number_of_antigens(), number_of_sera()); }
+        virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0; // returns nullptr if column bases not forced
+        inline  std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const { return titers()->computed_column_bases(aMinimumColumnBasis, number_of_antigens(), number_of_sera()); }
+        inline  std::shared_ptr<ColumnBases> column_bases(MinimumColumnBasis aMinimumColumnBasis) const { auto cb = forced_column_bases(); if (!cb) cb = computed_column_bases(aMinimumColumnBasis); return cb; }
         virtual std::shared_ptr<Projections> projections() const = 0;
-        inline std::shared_ptr<Projection> projection(size_t aProjectionNo) const { return (*projections())[aProjectionNo]; }
+        inline  std::shared_ptr<Projection> projection(size_t aProjectionNo) const { return (*projections())[aProjectionNo]; }
         virtual std::shared_ptr<PlotSpec> plot_spec() const = 0;
         virtual bool is_merge() const = 0;
 

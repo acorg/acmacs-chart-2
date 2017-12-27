@@ -196,7 +196,7 @@ std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_
     }
     result.append(1, '\n').append(aIndent + 3, ' ');
     auto cb = aProjection->forced_column_bases();
-    if (!cb->exists())
+    if (!cb)
         cb = aChart.computed_column_bases(aProjection->minimum_column_basis());
     for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
         if (sr_no)

@@ -116,7 +116,7 @@ std::pair<std::shared_ptr<acmacs::chart::ColumnBases>, acmacs::chart::MinimumCol
         const auto native_cb = native_column_bases(aData);
         const auto cb = column_bases(aData, aProjectionNo);
         if (native_cb == cb) {
-            return {std::make_shared<LispmdsNoColumnBases>(), acmacs::chart::MinimumColumnBasis()};
+            return {nullptr, acmacs::chart::MinimumColumnBasis()};
         }
         else {
             const double min_forced = *std::min_element(cb.begin(), cb.end());
@@ -126,13 +126,13 @@ std::pair<std::shared_ptr<acmacs::chart::ColumnBases>, acmacs::chart::MinimumCol
             // std::cerr << "INFO: forced: " << cb << '\n';
             // std::cerr << "INFO: upgrad: " << native_upgraded << '\n';
             if (native_upgraded == cb)
-                return {std::make_shared<LispmdsNoColumnBases>(), acmacs::chart::MinimumColumnBasis(min_forced)};
+                return {nullptr, acmacs::chart::MinimumColumnBasis(min_forced)};
             else
                 return {std::make_shared<LispmdsColumnBases>(cb), acmacs::chart::MinimumColumnBasis()};
         }
     }
     catch (acmacs::lispmds::keyword_no_found&) {
-        return {std::make_shared<LispmdsNoColumnBases>(), acmacs::chart::MinimumColumnBasis()};
+        return {nullptr, acmacs::chart::MinimumColumnBasis()};
     }
 
 } // forced_column_bases
