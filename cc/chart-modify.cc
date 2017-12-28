@@ -39,7 +39,10 @@ TitersP ChartModify::titers() const
 
 ColumnBasesP ChartModify::forced_column_bases() const
 {
-    return std::make_shared<ColumnBasesModify>(mMain->forced_column_bases());
+    if (auto cb = mMain->forced_column_bases(); cb)
+        return std::make_shared<ColumnBasesModify>(cb);
+    else
+        return nullptr;
 
 } // ChartModify::forced_column_bases
 
@@ -95,7 +98,10 @@ TitersModifyP ChartModify::titers_modify()
 
 ColumnBasesModifyP ChartModify::forced_column_bases_modify()
 {
-    return std::make_shared<ColumnBasesModify>(mMain->forced_column_bases());
+    if (auto cb = mMain->forced_column_bases(); cb)
+        return std::make_shared<ColumnBasesModify>(cb);
+    else
+        return nullptr;
 
 } // ChartModify::forced_column_bases_modify
 

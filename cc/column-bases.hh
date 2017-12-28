@@ -84,6 +84,14 @@ namespace acmacs
 
 } // namespace acmacs
 
+namespace acmacs::chart
+{
+    inline std::ostream& operator<<(std::ostream& out, const ColumnBases& cb)
+    {
+        return out << acmacs::to_string(cb);
+    }
+}
+
 // ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
