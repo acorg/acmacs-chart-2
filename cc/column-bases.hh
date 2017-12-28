@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "acmacs-base/float.hh"
 #include "acmacs-base/string.hh"
 
