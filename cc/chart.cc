@@ -327,7 +327,7 @@ std::string acmacs::chart::Projections::make_info() const
 
 // ----------------------------------------------------------------------
 
-static inline std::string name_abbreviated(std::string aName)
+inline std::string name_abbreviated(std::string aName)
 {
     try {
         std::string virus_type, host, location, isolation, year, passage;

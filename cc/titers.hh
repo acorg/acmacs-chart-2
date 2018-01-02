@@ -47,6 +47,9 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+    template <typename Float> class TableDistances;
+    class PointIndexList;
+
     class Titers
     {
       public:
@@ -69,6 +72,9 @@ namespace acmacs::chart
         virtual inline const rjson::array& rjson_layers() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
 
         std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis, size_t number_of_antigens, size_t number_of_sera) const;
+
+        virtual void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular) const;
+        virtual void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular) const;
 
     }; // class Titers
 

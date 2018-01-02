@@ -10,6 +10,7 @@
 #include "acmacs-chart-2/base.hh"
 #include "acmacs-chart-2/passage.hh"
 #include "acmacs-chart-2/titers.hh"
+#include "acmacs-chart-2/stress.hh"
 
 // ----------------------------------------------------------------------
 
@@ -392,6 +393,11 @@ namespace acmacs::chart
         virtual AvidityAdjusts avidity_adjusts() const = 0; // antigens_sera_titers_multipliers, double for each point
           // antigens_sera_gradient_multipliers, double for each point
 
+        template <typename Float> inline double calculate_stress(const Stress<Float>& stress) const
+            {
+                return static_cast<double>(stress.value(*layout()));
+            }
+
     }; // class Projection
 
 // ----------------------------------------------------------------------
@@ -479,6 +485,21 @@ namespace acmacs::chart
         void serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const;
 
         void set_homologous(bool force, std::shared_ptr<Sera> aSera = nullptr) const;
+
+        template <typename Float> inline Stress<Float> make_stress(const Projection& projection) const
+            {
+                Stress<Float> stress(projection.number_of_dimensions(), number_of_antigens());
+                auto cb = projection.forced_column_bases();
+                if (!cb)
+                    cb = column_bases(projection.minimum_column_basis());
+                titers()->update(stress.table_distances(), *cb, projection.disconnected(), projection.dodgy_titer_is_regular());
+                return stress;
+            }
+
+        template <typename Float> inline Stress<Float> make_stress(size_t aProjectionNo) const
+            {
+                return make_stress<Float>(*projection(aProjectionNo));
+            }
 
      private:
         mutable bool mHomologousFound = false;

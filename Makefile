@@ -15,9 +15,10 @@ TARGETS = \
     $(DIST)/chart-convert \
     $(DIST)/chart-modify-projection \
     $(DIST)/chart-modify-plot-spec \
-    $(DIST)/chart-titer-merging-report
+    $(DIST)/chart-titer-merging-report \
+    $(DIST)/chart-stress
 
-SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc \
+SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc \
     factory-import.cc ace-import.cc acd1-import.cc lispmds-import.cc lispmds-token.cc \
     factory-export.cc ace-export.cc lispmds-export.cc lispmds-encode.cc chart-modify.cc
 

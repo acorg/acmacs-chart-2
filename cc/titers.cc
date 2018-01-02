@@ -1,4 +1,7 @@
+#include "acmacs-base/debug.hh"
+#include "acmacs-base/range.hh"
 #include "acmacs-chart-2/titers.hh"
+#include "acmacs-chart-2/chart.hh"
 
 // ----------------------------------------------------------------------
 
@@ -158,6 +161,52 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Titers::computed_colu
     return cb;
 
 } // acmacs::chart::Titers::computed_column_bases
+
+// ----------------------------------------------------------------------
+
+template <typename Float> static void update(const acmacs::chart::Titers& titers, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular)
+{
+    const bool multiply_antigen_titer_until_column_adjust = true;
+    table_distances.dodgy_is_regular(dodgy_titer_is_regular);
+    if (titers.number_of_sera()) {
+        for (auto p1 : acmacs::range(0U, titers.number_of_antigens())) {
+            if (!disconnected.exist(p1)) {
+                for (auto p2 : acmacs::range(titers.number_of_antigens(), titers.number_of_antigens() + titers.number_of_sera())) {
+                    if (!disconnected.exist(p2)) {
+                        const auto serum_no = p2 - titers.number_of_antigens();
+                        const auto titer = titers.titer(p1, serum_no);
+                        try {
+                            auto distance = column_bases.column_basis(serum_no) - titer.logged();
+                            if (distance < 0 && multiply_antigen_titer_until_column_adjust)
+                                distance = 0;
+                            table_distances.add(titer.type(), p1, p2, distance);
+                        }
+                        catch (acmacs::chart::invalid_titer&) {
+                              // ignore dont-care
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else {
+        throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
+    }
+}
+
+void acmacs::chart::Titers::update(acmacs::chart::TableDistances<float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular) const
+{
+    ::update(*this, table_distances, column_bases, disconnected, dodgy_titer_is_regular);
+
+} // acmacs::chart::Titers::update
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Titers::update(acmacs::chart::TableDistances<double>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular) const
+{
+    ::update(*this, table_distances, column_bases, disconnected, dodgy_titer_is_regular);
+
+} // acmacs::chart::Titers::update
 
 // ----------------------------------------------------------------------
 

@@ -62,6 +62,7 @@ namespace acmacs::chart
 
             constexpr inline bool empty() const { return mData.empty(); }
             constexpr inline size_t size() const { return mData.size(); }
+            constexpr inline bool exist(const T& val) const { return std::find(mData.begin(), mData.end(), val) != mData.end(); }
             constexpr inline const std::vector<T>& data() const noexcept { return mData; }
             constexpr inline std::vector<T>& data() noexcept { return mData; }
             constexpr inline operator const std::vector<T>&() const noexcept { return mData; }
