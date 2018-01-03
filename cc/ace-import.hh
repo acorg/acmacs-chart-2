@@ -161,20 +161,13 @@ namespace acmacs::chart
         inline const rjson::array& rjson_list_dict() const override { const rjson::array& r = mData.get_or_empty_array("d"); if (r.empty()) throw data_not_available{"no \"d\""}; return r; }
         inline const rjson::array& rjson_layers() const override { const rjson::array& r = mData.get_or_empty_array("L"); if (r.empty()) throw data_not_available{"no \"L\""}; return r; }
 
+        void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust) const override;
+        void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust) const override;
+
      private:
         const rjson::object& mData;
 
         inline const rjson::object& layer(size_t aLayerNo) const { return rjson_layers()[aLayerNo]; }
-
-        inline Titer titer_in_d(const rjson::array& aSource, size_t aAntigenNo, size_t aSerumNo) const
-            {
-                try {
-                    return aSource[aAntigenNo][std::to_string(aSerumNo)];
-                }
-                catch (rjson::field_not_found&) {
-                    return "*";
-                }
-            }
 
     }; // class AceTiters
 

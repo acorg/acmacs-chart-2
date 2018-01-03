@@ -488,11 +488,13 @@ namespace acmacs::chart
 
         template <typename Float> inline Stress<Float> make_stress(const Projection& projection) const
             {
+                const bool multiply_antigen_titer_until_column_adjust = true;
                 Stress<Float> stress(projection.number_of_dimensions(), number_of_antigens());
                 auto cb = projection.forced_column_bases();
                 if (!cb)
                     cb = column_bases(projection.minimum_column_basis());
-                titers()->update(stress.table_distances(), *cb, projection.disconnected(), projection.dodgy_titer_is_regular());
+                titers()->update(stress.table_distances(), *cb, projection.disconnected(), projection.dodgy_titer_is_regular(), multiply_antigen_titer_until_column_adjust);
+                stress.table_distances().report();
                 return stress;
             }
 

@@ -2,6 +2,7 @@
 #include <vector>
 #include <limits>
 
+#include "acmacs-base/debug.hh"
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
@@ -9,6 +10,7 @@
 #include "acmacs-base/virus-name.hh"
 #include "acmacs-chart-2/ace-import.hh"
 #include "acmacs-chart-2/ace.hh"
+#include "acmacs-chart-2/rjson-import.hh"
 
 using namespace std::string_literals;
 using namespace acmacs::chart;
@@ -250,7 +252,7 @@ Titer AceTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
         return list[aAntigenNo][aSerumNo];
     }
     else {
-        return titer_in_d(mData["d"], aAntigenNo, aSerumNo);
+        return rjson_import::titer_in_d(mData["d"], aAntigenNo, aSerumNo);
     }
 
 } // AceTiters::titer
@@ -259,7 +261,7 @@ Titer AceTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
 
 Titer AceTiters::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const
 {
-    return titer_in_d(mData["L"][aLayerNo], aAntigenNo, aSerumNo);
+    return rjson_import::titer_in_d(mData["L"][aLayerNo], aAntigenNo, aSerumNo);
 
 } // AceTiters::titer_of_layer
 
@@ -267,20 +269,7 @@ Titer AceTiters::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSeru
 
 std::vector<Titer> AceTiters::titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const
 {
-    const rjson::array& layers = mData.get_or_empty_array("L");
-    if (layers.empty())
-        throw data_not_available("no layers");
-    const auto serum_no = std::to_string(aSerumNo);
-    std::vector<Titer> result;
-    for (const rjson::array& layer: layers) {
-        const rjson::object& for_ag = layer[aAntigenNo];
-        try {
-            result.push_back(for_ag[serum_no]);
-        }
-        catch (rjson::field_not_found&) {
-        }
-    }
-    return result;
+    return rjson_import::titers_for_layers(mData.get_or_empty_array("L"), aAntigenNo, aSerumNo);
 
 } // AceTiters::titers_for_layers
 
@@ -288,12 +277,7 @@ std::vector<Titer> AceTiters::titers_for_layers(size_t aAntigenNo, size_t aSerum
 
 size_t AceTiters::number_of_antigens() const
 {
-    if (auto [present, list] = mData.get_array_if("l"); present) {
-        return list.size();
-    }
-    else {
-        return static_cast<const rjson::array&>(mData["d"]).size();
-    }
+    return rjson_import::number_of_antigens(mData, "l", "d");
 
 } // AceTiters::number_of_antigens
 
@@ -301,21 +285,7 @@ size_t AceTiters::number_of_antigens() const
 
 size_t AceTiters::number_of_sera() const
 {
-    if (auto [present, list] = mData.get_array_if("l"); present) {
-        return static_cast<const rjson::array&>(list[0]).size();
-    }
-    else {
-        const rjson::array& d = mData["d"];
-        auto max_index = [](const rjson::object& obj) -> size_t {
-                             size_t result = 0;
-                             for (auto key_value: obj) {
-                                 if (const size_t ind = std::stoul(key_value.first); ind > result)
-                                     result = ind;
-                             }
-                             return result;
-                         };
-        return max_index(*std::max_element(d.begin(), d.end(), [max_index](const rjson::object& a, const rjson::object& b) { return max_index(a) < max_index(b); })) + 1;
-    }
+    return rjson_import::number_of_sera(mData, "l", "d");
 
 } // AceTiters::number_of_sera
 
@@ -323,40 +293,33 @@ size_t AceTiters::number_of_sera() const
 
 size_t AceTiters::number_of_non_dont_cares() const
 {
-    size_t result = 0;
-    if (auto [present, list] = mData.get_array_if("l"); present) {
-        for (const rjson::array& row: list) {
-            for (const Titer titer: row) {
-                if (!titer.is_dont_care())
-                    ++result;
-            }
-        }
-    }
-    else {
-        const rjson::array& d = mData["d"];
-        result = std::accumulate(d.begin(), d.end(), 0U, [](size_t a, const rjson::object& row) -> size_t { return a + row.size(); });
-    }
-    return result;
+    return rjson_import::number_of_non_dont_cares(mData, "l", "d");
 
 } // AceTiters::number_of_non_dont_cares
 
 // ----------------------------------------------------------------------
 
-static inline size_t ace_number_of_dimensions(const rjson::object& data) noexcept
+void AceTiters::update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust) const
 {
-    try {
-        for (const rjson::array& row: static_cast<const rjson::array&>(data["l"])) {
-            if (!row.empty())
-                return row.size();
-        }
+    if (number_of_sera()) {
+        rjson_import::update(mData, "l", "d", table_distances, column_bases, disconnected, dodgy_titer_is_regular, multiply_antigen_titer_until_column_adjust);
     }
-    catch (rjson::field_not_found&) {
+    else {
+        throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
     }
-    catch (std::bad_variant_access&) {
-    }
-    return 0;
 
-} // number_of_dimensions
+} // AceTiters::update
+
+void AceTiters::update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust) const
+{
+    if (number_of_sera()) {
+        rjson_import::update(mData, "l", "d", table_distances, column_bases, disconnected, dodgy_titer_is_regular, multiply_antigen_titer_until_column_adjust);
+    }
+    else {
+        throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
+    }
+
+} // AceTiters::update
 
 // ----------------------------------------------------------------------
 
@@ -370,7 +333,7 @@ class AceLayout : public acmacs::chart::Layout
             return mData.get_or_empty_array("l").size();
         }
 
-    inline size_t number_of_dimensions() const noexcept override { return ::ace_number_of_dimensions(mData); }
+    inline size_t number_of_dimensions() const noexcept override { return rjson_import::number_of_dimensions(mData["l"]); }
 
     inline const acmacs::Coordinates operator[](size_t aPointNo) const override
         {
@@ -410,7 +373,7 @@ std::shared_ptr<Layout> AceProjection::layout() const
 
 size_t AceProjection::number_of_dimensions() const
 {
-    return ::ace_number_of_dimensions(mData);
+    return rjson_import::number_of_dimensions(mData["l"]);
 
 } // AceProjection::number_of_dimensions
 

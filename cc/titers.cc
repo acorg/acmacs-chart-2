@@ -164,12 +164,11 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Titers::computed_colu
 
 // ----------------------------------------------------------------------
 
-template <typename Float> static void update(const acmacs::chart::Titers& titers, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular)
+template <typename Float> static void update(const acmacs::chart::Titers& titers, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust)
 {
-    const bool multiply_antigen_titer_until_column_adjust = true;
     table_distances.dodgy_is_regular(dodgy_titer_is_regular);
     if (titers.number_of_sera()) {
-        for (auto p1 : acmacs::range(0U, titers.number_of_antigens())) {
+        for (auto p1 : acmacs::range(titers.number_of_antigens())) {
             if (!disconnected.exist(p1)) {
                 for (auto p2 : acmacs::range(titers.number_of_antigens(), titers.number_of_antigens() + titers.number_of_sera())) {
                     if (!disconnected.exist(p2)) {
@@ -194,17 +193,17 @@ template <typename Float> static void update(const acmacs::chart::Titers& titers
     }
 }
 
-void acmacs::chart::Titers::update(acmacs::chart::TableDistances<float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular) const
+void acmacs::chart::Titers::update(acmacs::chart::TableDistances<float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust) const
 {
-    ::update(*this, table_distances, column_bases, disconnected, dodgy_titer_is_regular);
+    ::update(*this, table_distances, column_bases, disconnected, dodgy_titer_is_regular, multiply_antigen_titer_until_column_adjust);
 
 } // acmacs::chart::Titers::update
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Titers::update(acmacs::chart::TableDistances<double>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular) const
+void acmacs::chart::Titers::update(acmacs::chart::TableDistances<double>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust) const
 {
-    ::update(*this, table_distances, column_bases, disconnected, dodgy_titer_is_regular);
+    ::update(*this, table_distances, column_bases, disconnected, dodgy_titer_is_regular, multiply_antigen_titer_until_column_adjust);
 
 } // acmacs::chart::Titers::update
 

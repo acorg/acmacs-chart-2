@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <vector>
 
 #include "acmacs-chart-2/titers.hh"
@@ -14,6 +15,11 @@ namespace acmacs::chart
         inline void dodgy_is_regular(bool dodgy_is_regular) { dodgy_is_regular_ = dodgy_is_regular; }
 
         template <typename Source> inline void add(Titer::Type type, size_t p1, size_t p2, Source value) { add_value(type, p1, p2, static_cast<Float>(value)); }
+
+        inline void report() const
+            {
+                std::cerr << "TableDistances regular: " << regular_.size() << "  less-than: " << less_than_.size() << '\n';
+            }
 
      private:
         bool dodgy_is_regular_ = false;
