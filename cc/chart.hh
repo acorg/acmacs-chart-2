@@ -486,7 +486,7 @@ namespace acmacs::chart
 
         void set_homologous(bool force, std::shared_ptr<Sera> aSera = nullptr) const;
 
-        template <typename Float> inline Stress<Float> make_stress(const Projection& projection) const
+        template <typename Float> Stress<Float> make_stress(const Projection& projection) const
             {
                 const bool multiply_antigen_titer_until_column_adjust = true;
                 Stress<Float> stress(projection.number_of_dimensions(), number_of_antigens());
