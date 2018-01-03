@@ -12,21 +12,27 @@ namespace acmacs::chart
     template <typename Float> class TableDistances
     {
      public:
+        using index_t = std::pair<size_t, size_t>;
+        using indexes_t = std::vector<index_t>;
+        using distances_t = std::vector<Float>;
+
         inline void dodgy_is_regular(bool dodgy_is_regular) { dodgy_is_regular_ = dodgy_is_regular; }
 
         template <typename Source> inline void add(Titer::Type type, size_t p1, size_t p2, Source value) { add_value(type, p1, p2, static_cast<Float>(value)); }
 
-        inline void report() const
-            {
-                std::cerr << "TableDistances regular: " << regular_.size() << "  less-than: " << less_than_.size() << '\n';
-            }
+        inline void report() const { std::cerr << "TableDistances regular: " << regular_.size() << "  less-than: " << less_than_.size() << '\n'; }
+
+        inline const indexes_t& regular_indexes() const { return regular_indexes_; }
+        inline const distances_t& regular_distances() const { return regular_; }
+        inline const indexes_t& less_than_indexes() const { return less_than_indexes_; }
+        inline const distances_t& less_than_distances() const { return less_than_; }
 
      private:
         bool dodgy_is_regular_ = false;
-        std::vector<std::pair<size_t, size_t>> regular_indexes_;
-        std::vector<Float> regular_;
-        std::vector<std::pair<size_t, size_t>> less_than_indexes_;
-        std::vector<Float> less_than_;
+        indexes_t regular_indexes_;
+        distances_t regular_;
+        indexes_t less_than_indexes_;
+        distances_t less_than_;
 
         void add_value(Titer::Type type, size_t p1, size_t p2, Float value)
             {

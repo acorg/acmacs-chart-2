@@ -494,7 +494,7 @@ namespace acmacs::chart
                 if (!cb)
                     cb = column_bases(projection.minimum_column_basis());
                 titers()->update(stress.table_distances(), *cb, projection.disconnected(), projection.dodgy_titer_is_regular(), multiply_antigen_titer_until_column_adjust);
-                stress.table_distances().report();
+                // stress.table_distances().report();
                 return stress;
             }
 
