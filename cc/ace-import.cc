@@ -323,49 +323,9 @@ void AceTiters::update(TableDistances<double>& table_distances, const ColumnBase
 
 // ----------------------------------------------------------------------
 
-class AceLayout : public acmacs::chart::Layout
-{
- public:
-    inline AceLayout(const rjson::object& aData) : mData{aData} {}
-
-    inline size_t number_of_points() const noexcept override
-        {
-            return mData.get_or_empty_array("l").size();
-        }
-
-    inline size_t number_of_dimensions() const noexcept override { return rjson_import::number_of_dimensions(mData["l"]); }
-
-    inline const acmacs::Coordinates operator[](size_t aPointNo) const override
-        {
-            const rjson::array& point = mData.get_or_empty_array("l")[aPointNo];
-            acmacs::Coordinates result(number_of_dimensions(), std::numeric_limits<double>::quiet_NaN());
-            std::transform(point.begin(), point.end(), result.begin(), [](const auto& coord) -> double { return coord; });
-            return result;
-        }
-
-    inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override
-        {
-            const auto& point = mData.get_or_empty_array("l")[aPointNo];
-            try {
-                return point[aDimensionNo];
-            }
-            catch (std::exception&) {
-                return std::numeric_limits<double>::quiet_NaN();
-            }
-        }
-
-    inline void set(size_t /*aPointNo*/, const acmacs::Coordinates& /*aCoordinates*/) override { throw acmacs::chart::chart_is_read_only{"AceLayout::set: cannot modify"}; }
-
- private:
-    const rjson::object& mData;
-
-}; // class AceLayout
-
-// ----------------------------------------------------------------------
-
 std::shared_ptr<Layout> AceProjection::layout() const
 {
-    return std::make_shared<AceLayout>(mData);
+    return std::make_shared<rjson_import::Layout>(mData.get_or_empty_array("l"));
 
 } // AceProjection::layout
 

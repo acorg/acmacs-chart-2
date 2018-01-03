@@ -68,6 +68,13 @@ size_t acmacs::chart::rjson_import::number_of_non_dont_cares(const rjson::object
 
 // ----------------------------------------------------------------------
 
+void acmacs::chart::rjson_import::Layout::set(size_t /*aPointNo*/, const acmacs::Coordinates& /*aCoordinates*/)
+{
+    throw acmacs::chart::chart_is_read_only{"rjson_import::Layout::set: cannot modify"};
+}
+
+// ----------------------------------------------------------------------
+
 template <typename Float> static void update_list(const rjson::array& data, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool multiply_antigen_titer_until_column_adjust)
 {
     for (auto p1 : acmacs::range(data.size())) {
