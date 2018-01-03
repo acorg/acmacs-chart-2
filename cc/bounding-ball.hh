@@ -18,7 +18,7 @@ namespace acmacs
             {
                 Vector v{aP1};
                 v -= aP2;
-                mDiameter = v.eucledian_norm();
+                mDiameter = acmacs::vector_math::eucledian_norm<Vector::value_type>(v.begin(), v.end());
                 for (Vector::size_type dim = 0; dim < aP1.size(); ++dim)
                     mCenter[dim] = (aP1[dim] + aP2[dim]) * 0.5;
             }
@@ -63,7 +63,7 @@ namespace acmacs
             {
                 Vector v(aPoint);
                 v -= mCenter;
-                return v.inner_product();
+                return acmacs::vector_math::inner_product<Vector::value_type>(v.begin(), v.end());
             }
 
         inline double radius2() const
