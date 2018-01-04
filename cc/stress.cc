@@ -39,7 +39,7 @@ template <typename Float> Float acmacs::chart::Stress<Float>::value(const std::v
         const Float diff = table_distance - map_distance(index);
         return diff * diff;
     };
-    auto contribution_less_than = [map_distance](Float table_distance, const auto& index) {
+    auto contribution_less_than = [map_distance,SigmoidMutiplier](Float table_distance, const auto& index) {
         const Float diff = table_distance - map_distance(index) + 1;
         return diff * diff * acmacs::sigmoid(diff * SigmoidMutiplier);
     };
