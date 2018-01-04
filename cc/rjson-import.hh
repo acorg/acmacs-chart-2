@@ -70,71 +70,14 @@ namespace acmacs::chart::rjson_import
 
 // ----------------------------------------------------------------------
 
-    class Layout : public acmacs::LayoutInterface
+    class Layout : public acmacs::Layout
     {
      public:
         Layout(const rjson::array& aData);
 
-        inline size_t number_of_points() const noexcept override { return data_.size() / number_of_dimensions_; }
-        inline size_t number_of_dimensions() const noexcept override { return number_of_dimensions_; }
-        inline const acmacs::Coordinates operator[](size_t aPointNo) const override
-            {
-                using diff_t = decltype(data_.begin())::difference_type;
-                return {data_.begin() + static_cast<diff_t>(aPointNo * number_of_dimensions_), data_.begin() + static_cast<diff_t>((aPointNo + 1) * number_of_dimensions_)};
-            }
-
-        inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override { return data_[aPointNo * number_of_dimensions_ + aDimensionNo]; }
-
-        inline std::vector<double> as_flat_vector_double() const override { return data_; }
-        inline std::vector<float> as_flat_vector_float() const override { return {data_.begin(), data_.end()}; }
-
         void set(size_t /*aPointNo*/, const acmacs::Coordinates& /*aCoordinates*/) override;
 
-     private:
-        size_t number_of_dimensions_;
-        std::vector<double> data_;
-
     }; // class Layout
-
-    // class Layout : public acmacs::LayoutInterface
-    // {
-    //  public:
-    //     inline Layout(const rjson::array& aData) : mData{aData} {}
-
-    //     inline size_t number_of_points() const noexcept override
-    //         {
-    //             return mData.size();
-    //         }
-
-    //     inline size_t number_of_dimensions() const noexcept override
-    //         {
-    //             return rjson_import::number_of_dimensions(mData);
-    //         }
-
-    //     inline const acmacs::Coordinates operator[](size_t aPointNo) const override
-    //         {
-    //             const rjson::array& point = mData[aPointNo];
-    //             acmacs::Coordinates result(number_of_dimensions(), std::numeric_limits<double>::quiet_NaN());
-    //             std::transform(point.begin(), point.end(), result.begin(), [](const auto& coord) -> double { return coord; });
-    //             return result;
-    //         }
-
-    //     inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override
-    //         {
-    //             try {
-    //                 return mData[aPointNo][aDimensionNo];
-    //             }
-    //             catch (std::exception&) {
-    //                 return std::numeric_limits<double>::quiet_NaN();
-    //             }
-    //         }
-
-    //     void set(size_t /*aPointNo*/, const acmacs::Coordinates& /*aCoordinates*/) override;
-
-    //  private:
-    //     const rjson::array& mData;
-
-    // }; // class Layout
 
 // ----------------------------------------------------------------------
 

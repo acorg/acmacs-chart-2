@@ -155,26 +155,6 @@ internal::PlotSpecModifyData& ChartModify::modify_plot_spec()
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::internal::Layout::Layout(const acmacs::chart::Layout& aSource)
-    : number_of_dimensions_{aSource.number_of_dimensions()},
-      data_(aSource.as_flat_vector_double())
-{
-
-} // acmacs::chart::internal::Layout::Layout
-
-// ----------------------------------------------------------------------
-
-void acmacs::chart::internal::Layout::set(size_t aPointNo, const Coordinates& aCoordinates)
-{
-    // std::cerr << *this << '\n';
-    if (number_of_dimensions() != aCoordinates.size())
-        throw std::runtime_error{"Wrong number of dimensions (" + acmacs::to_string(aCoordinates.size()) + ") in acmacs::chart::internal::Layout::set(), expected: " + acmacs::to_string(number_of_dimensions())};
-    std::copy(aCoordinates.begin(), aCoordinates.end(), data_.begin() + static_cast<decltype(data_.begin())::difference_type>(aPointNo * number_of_dimensions()));
-
-} // acmacs::chart::internal::Layout::set
-
-// ----------------------------------------------------------------------
-
 acmacs::chart::DrawingOrder acmacs::chart::PlotSpecModify::drawing_order() const
 {
     if (mChart.modified_plot_spec()) {
@@ -191,7 +171,7 @@ acmacs::chart::DrawingOrder acmacs::chart::PlotSpecModify::drawing_order() const
 // ----------------------------------------------------------------------
 
 acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData(ProjectionP aMain)
-    : mLayout(std::make_shared<acmacs::chart::internal::Layout>(*aMain->layout())), mTransformation(aMain->transformation())
+    : mLayout(std::make_shared<acmacs::Layout>(*aMain->layout())), mTransformation(aMain->transformation())
 {
 } // acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData
 
