@@ -6,6 +6,23 @@
 
 // ----------------------------------------------------------------------
 
+// std::transform_reduce is not in g++-7.2 (nor in g++-8, see Parallelism TS in https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#status.iso.2017)
+#if __GNUC__ == 7
+namespace std
+{
+      // extracted from clang5 lib: /usr/local/opt/llvm/include/c++/v1/numeric
+    template <class _InputIterator1, class _InputIterator2, class _Tp, class _BinaryOp1, class _BinaryOp2>
+        inline _Tp transform_reduce(_InputIterator1 __first1, _InputIterator1 __last1, _InputIterator2 __first2, _Tp __init,  _BinaryOp1 __b1, _BinaryOp2 __b2)
+    {
+        for (; __first1 != __last1; ++__first1, (void) ++__first2)
+            __init = __b1(__init, __b2(*__first1, *__first2));
+        return __init;
+    }
+}
+#endif
+
+// ----------------------------------------------------------------------
+
 template <typename Float> Float acmacs::chart::Stress<Float>::value(const std::vector<Float>& aArgument) const
 {
     using diff_t = typename decltype(aArgument.begin())::difference_type;
