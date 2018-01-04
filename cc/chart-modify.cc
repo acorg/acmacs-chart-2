@@ -156,10 +156,9 @@ internal::PlotSpecModifyData& ChartModify::modify_plot_spec()
 // ----------------------------------------------------------------------
 
 acmacs::chart::internal::Layout::Layout(const acmacs::chart::Layout& aSource)
-    : mData(aSource.number_of_points())
+    : number_of_dimensions_{aSource.number_of_dimensions()},
+      data_(aSource.as_flat_vector_double())
 {
-    for (size_t point_no = 0; point_no < aSource.number_of_points(); ++point_no)
-        mData[point_no] = aSource[point_no];
 
 } // acmacs::chart::internal::Layout::Layout
 
@@ -170,7 +169,7 @@ void acmacs::chart::internal::Layout::set(size_t aPointNo, const Coordinates& aC
     // std::cerr << *this << '\n';
     if (number_of_dimensions() != aCoordinates.size())
         throw std::runtime_error{"Wrong number of dimensions (" + acmacs::to_string(aCoordinates.size()) + ") in acmacs::chart::internal::Layout::set(), expected: " + acmacs::to_string(number_of_dimensions())};
-    mData[aPointNo] = aCoordinates;
+    std::copy(aCoordinates.begin(), aCoordinates.end(), data_.begin() + static_cast<decltype(data_.begin())::difference_type>(aPointNo * number_of_dimensions()));
 
 } // acmacs::chart::internal::Layout::set
 

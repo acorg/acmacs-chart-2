@@ -56,6 +56,7 @@ namespace acmacs::lispmds
         inline number(const std::string_view& aValue) : number(std::string{aValue}) {}
 
         inline operator double() const { return std::stod(mValue); }
+        inline operator float() const { return std::stof(mValue); }
         inline operator unsigned long() const { return std::stoul(mValue); }
         inline operator long() const { return std::stol(mValue); }
 

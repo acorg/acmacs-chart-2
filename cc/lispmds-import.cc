@@ -513,6 +513,19 @@ double LispmdsProjection::stress() const
 
 class LispmdsLayout : public acmacs::chart::Layout
 {
+ private:
+    template <typename Float> static inline std::vector<Float> as_flat_vector(size_t number_of_points, size_t number_of_dimensions, const acmacs::lispmds::value& data)
+        {
+            std::vector<Float> result(number_of_points * number_of_dimensions);
+            auto target = result.begin();
+            for (size_t p_no = 0; p_no < number_of_points; ++p_no) {
+                const auto& point = data[p_no];
+                for (size_t dim = 0; dim < point.size(); ++dim)
+                    *target++ = std::get<acmacs::lispmds::number>(point[dim]);
+            }
+            return result;
+        }
+
  public:
     inline LispmdsLayout(const acmacs::lispmds::value& aData, size_t aNumberOfAntigens, size_t aNumberOfSera)
         : mData{aData}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} {}
@@ -539,6 +552,16 @@ class LispmdsLayout : public acmacs::chart::Layout
     inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override
         {
             return std::get<acmacs::lispmds::number>(mData[aPointNo][aDimensionNo]);
+        }
+
+    inline std::vector<double> as_flat_vector_double() const override
+        {
+            return as_flat_vector<double>(number_of_points(), number_of_dimensions(), mData);
+        }
+
+    inline std::vector<float> as_flat_vector_float() const override
+        {
+            return as_flat_vector<float>(number_of_points(), number_of_dimensions(), mData);
         }
 
     inline void set(size_t /*aPointNo*/, const acmacs::Coordinates& /*aCoordinates*/) override { throw acmacs::chart::chart_is_read_only{"LispmdsLayout::set: cannot modify"}; }

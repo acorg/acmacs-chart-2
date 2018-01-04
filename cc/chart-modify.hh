@@ -39,14 +39,17 @@ namespace acmacs::chart
          public:
             Layout(const acmacs::chart::Layout& aSource);
 
-            inline size_t number_of_points() const noexcept override { return mData.size(); }
-            inline size_t number_of_dimensions() const noexcept override { for (const auto& point: mData) { if (point.not_nan()) return point.size(); } return 0; }
-            inline const acmacs::Coordinates operator[](size_t aPointNo) const override { return mData[aPointNo]; }
-            inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override { return mData[aPointNo][aDimensionNo]; }
+            inline size_t number_of_points() const noexcept override { return data_.size() / number_of_dimensions_; }
+            inline size_t number_of_dimensions() const noexcept override { return number_of_dimensions_; }
+            inline const acmacs::Coordinates operator[](size_t aPointNo) const override { return {data_.begin() + static_cast<long>(aPointNo * number_of_dimensions_), data_.begin() + static_cast<long>((aPointNo + 1) * number_of_dimensions_)}; }
+            inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override { return data_[aPointNo * number_of_dimensions_ + aDimensionNo]; }
             void set(size_t aPointNo, const Coordinates& aCoordinates) override;
+            inline std::vector<double> as_flat_vector_double() const override { return data_; }
+            inline std::vector<float> as_flat_vector_float() const override { return {data_.begin(), data_.end()}; }
 
          private:
-            std::vector<acmacs::Coordinates> mData;
+            size_t number_of_dimensions_;
+            std::vector<double> data_;
 
         }; // class Layout
 

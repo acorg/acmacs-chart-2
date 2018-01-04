@@ -39,13 +39,10 @@ template <typename Float> Float acmacs::chart::Stress<Float>::value(const std::v
 
 template <typename Float> Float acmacs::chart::Stress<Float>::value(const acmacs::LayoutInterface& aLayout) const
 {
-    std::vector<Float> argument(aLayout.number_of_points() * aLayout.number_of_dimensions());
-    for (auto p_no : acmacs::range(aLayout.number_of_points())) {
-        for (auto d_no : acmacs::range(aLayout.number_of_dimensions())) {
-            argument[p_no * aLayout.number_of_dimensions() + d_no] = static_cast<Float>(aLayout.coordinate(p_no, d_no));
-        }
-    }
-    return value(argument);
+    if constexpr (std::is_same_v<Float, double>)
+        return value(aLayout.as_flat_vector_double());
+    else
+        return value(aLayout.as_flat_vector_float());
 
 } // acmacs::chart::Stress<Float>::value
 

@@ -85,6 +85,9 @@ namespace acmacs::chart::rjson_import
 
         inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override { return data_[aPointNo * number_of_dimensions_ + aDimensionNo]; }
 
+        inline std::vector<double> as_flat_vector_double() const override { return data_; }
+        inline std::vector<float> as_flat_vector_float() const override { return {data_.begin(), data_.end()}; }
+
         void set(size_t /*aPointNo*/, const acmacs::Coordinates& /*aCoordinates*/) override;
 
      private:
