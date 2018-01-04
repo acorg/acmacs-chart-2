@@ -44,8 +44,8 @@ template <typename Float> Float acmacs::chart::Stress<Float>::value(const std::v
         return diff * diff * acmacs::sigmoid(diff * SigmoidMutiplier);
     };
 
-    return std::transform_reduce(table_distances().regular_distances().begin(), table_distances().regular_distances().end(), table_distances().regular_indexes().begin(), Float{0}, std::plus<>(), contribution_regular)
-            + std::transform_reduce(table_distances().less_than_distances().begin(), table_distances().less_than_distances().end(), table_distances().less_than_indexes().begin(), Float{0}, std::plus<>(), contribution_less_than);
+    return std::transform_reduce(table_distances().regular_distances().begin(), table_distances().regular_distances().end(), table_distances().regular_indexes().begin(), Float{0}, std::plus<Float>(), contribution_regular)
+            + std::transform_reduce(table_distances().less_than_distances().begin(), table_distances().less_than_distances().end(), table_distances().less_than_indexes().begin(), Float{0}, std::plus<Float>(), contribution_less_than);
 
 } // acmacs::chart::Stress<Float>::value
 
