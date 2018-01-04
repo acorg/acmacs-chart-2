@@ -15,7 +15,7 @@ template <typename Float> double measure(acmacs::chart::ProjectionP projection, 
     double duration{0};
     size_t count = 0;
     for (; duration < test_duration; duration = acmacs::elapsed(start)) {
-        for (size_t i = 0; i < 1000; ++i, ++count)
+        for (size_t i = 0; i < 300; ++i, ++count)
             projection->calculate_stress(stress);
     }
     return count / duration;

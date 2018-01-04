@@ -32,6 +32,7 @@ namespace acmacs::chart
      private:
         rjson::value mData;
         mutable ace::name_index_t mAntigenNameIndex;
+        mutable ProjectionsP projections_;
 
     }; // class AceChart
 
@@ -210,6 +211,7 @@ namespace acmacs::chart
 
      private:
         const rjson::object& mData;
+        mutable std::shared_ptr<Layout> layout_;
 
     }; // class AceProjections
 
@@ -218,14 +220,20 @@ namespace acmacs::chart
     class AceProjections : public Projections
     {
       public:
-        inline AceProjections(const rjson::array& aData) : mData{aData} {}
+        inline AceProjections(const rjson::array& aData) : mData{aData}, projections_(aData.size(), nullptr) {}
 
-        inline bool empty() const override { return mData.empty(); }
-        inline size_t size() const override { return mData.size(); }
-        inline ProjectionP operator[](size_t aIndex) const override { return std::make_shared<AceProjection>(mData[aIndex]); }
+        inline bool empty() const override { return projections_.empty(); }
+        inline size_t size() const override { return projections_.size(); }
+        inline ProjectionP operator[](size_t aIndex) const override
+            {
+                if (!projections_[aIndex])
+                    projections_[aIndex] = std::make_shared<AceProjection>(mData[aIndex]);
+                return projections_[aIndex];
+            }
 
      private:
         const rjson::array& mData;
+        mutable std::vector<ProjectionP> projections_;
 
     }; // class AceProjections
 

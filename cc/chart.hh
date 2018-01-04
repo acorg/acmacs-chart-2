@@ -21,6 +21,7 @@ namespace acmacs::chart
     using Indexes = std::vector<size_t>;
     using Layout = acmacs::LayoutInterface;
 
+    class invalid_data : public std::runtime_error { public: inline invalid_data(std::string msg) : std::runtime_error("invalid_data: " + msg) {} };
     class chart_is_read_only : public std::runtime_error { public: inline chart_is_read_only(std::string msg) : std::runtime_error("chart_is_read_only: " + msg) {} };
 
 // ----------------------------------------------------------------------

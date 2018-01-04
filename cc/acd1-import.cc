@@ -311,7 +311,9 @@ ColumnBasesP Acd1Chart::forced_column_bases() const
 
 ProjectionsP Acd1Chart::projections() const
 {
-    return std::make_shared<Acd1Projections>(mData.get_or_empty_array("projections"));
+    if (!projections_)
+        projections_ = std::make_shared<Acd1Projections>(mData.get_or_empty_array("projections"));
+    return projections_;
 
 } // Acd1Chart::projections
 
@@ -676,7 +678,9 @@ std::string Acd1Projection::comment() const
 
 std::shared_ptr<acmacs::chart::Layout> Acd1Projection::layout() const
 {
-    return std::make_shared<rjson_import::Layout>(mData.get_or_empty_array("layout"));
+    if (!layout_)
+        layout_ = std::make_shared<rjson_import::Layout>(mData.get_or_empty_array("layout"));
+    return layout_;
 
 } // Acd1Projection::layout
 

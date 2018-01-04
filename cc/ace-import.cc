@@ -115,7 +115,9 @@ ColumnBasesP AceChart::forced_column_bases() const
 
 ProjectionsP AceChart::projections() const
 {
-    return std::make_shared<AceProjections>(mData["c"].get_or_empty_array("P"));
+    if (!projections_)
+        projections_ = std::make_shared<AceProjections>(mData["c"].get_or_empty_array("P"));
+    return projections_;
 
 } // AceChart::projections
 
@@ -325,7 +327,9 @@ void AceTiters::update(TableDistances<double>& table_distances, const ColumnBase
 
 std::shared_ptr<Layout> AceProjection::layout() const
 {
-    return std::make_shared<rjson_import::Layout>(mData.get_or_empty_array("l"));
+    if (!layout_)
+        layout_ = std::make_shared<rjson_import::Layout>(mData.get_or_empty_array("l"));
+    return layout_;
 
 } // AceProjection::layout
 

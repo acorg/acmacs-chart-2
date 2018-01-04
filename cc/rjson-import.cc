@@ -68,6 +68,23 @@ size_t acmacs::chart::rjson_import::number_of_non_dont_cares(const rjson::object
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::rjson_import::Layout::Layout(const rjson::array& aData)
+    : number_of_dimensions_{rjson_import::number_of_dimensions(aData)},
+      data_(aData.size() * number_of_dimensions_, std::numeric_limits<double>::quiet_NaN())
+{
+    auto coord = data_.begin();
+    for (const rjson::array& point : aData) {
+        if (point.size() == number_of_dimensions_)
+            std::transform(point.begin(), point.end(), coord, [](const auto& coordinate) -> double { return coordinate; });
+        else if (!point.empty())
+            throw invalid_data("rjson_import::Layout: point has invalid number of coordinates: " + std::to_string(point.size()) + ", expected 0 or " + std::to_string(number_of_dimensions_));
+        coord += static_cast<decltype(coord)::difference_type>(number_of_dimensions_);
+    }
+
+} // acmacs::chart::rjson_import::Layout::Layout
+
+// ----------------------------------------------------------------------
+
 void acmacs::chart::rjson_import::Layout::set(size_t /*aPointNo*/, const acmacs::Coordinates& /*aCoordinates*/)
 {
     throw acmacs::chart::chart_is_read_only{"rjson_import::Layout::set: cannot modify"};
