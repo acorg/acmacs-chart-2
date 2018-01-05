@@ -47,25 +47,43 @@ template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_fac
 
 // ----------------------------------------------------------------------
 
+template <typename Float> constexpr inline Float SigmoidMutiplier() { return 10; }
+template <typename Float> constexpr inline Float non_zero(Float value) { return float_zero(value) ? static_cast<Float>(1e-5) : value; };
+
+// ----------------------------------------------------------------------
+
+template <typename Float> static inline std::vector<Float> flatten(const acmacs::LayoutInterface& aLayout)
+{
+    if constexpr (std::is_same_v<Float, double>)
+        return aLayout.as_flat_vector_double();
+    else
+        return aLayout.as_flat_vector_float();
+
+} // flatten
+
+// ----------------------------------------------------------------------
+
+template <typename Float> static inline Float map_distance(const std::vector<Float>& aArgument, const typename acmacs::chart::TableDistances<Float>::Entry& entry, size_t number_of_dimensions)
+{
+    using diff_t = typename std::vector<Float>::difference_type;
+    return acmacs::vector_math::distance<Float>(
+        aArgument.begin() + static_cast<diff_t>(number_of_dimensions * entry.point_1),
+        aArgument.begin() + static_cast<diff_t>(number_of_dimensions * (entry.point_1 + 1)),
+        aArgument.begin() + static_cast<diff_t>(number_of_dimensions * entry.point_2));
+
+} // map_distance
+
+// ----------------------------------------------------------------------
+
 template <typename Float> Float acmacs::chart::Stress<Float>::value(const std::vector<Float>& aArgument) const
 {
-    using diff_t = typename decltype(aArgument.begin())::difference_type;
-
-    constexpr const Float SigmoidMutiplier{10};
-
-    auto map_distance = [&aArgument,num_dim=number_of_dimensions_](const auto& entry) {
-        return acmacs::vector_math::distance<Float>(
-            aArgument.begin() + static_cast<diff_t>(num_dim * entry.point_1),
-            aArgument.begin() + static_cast<diff_t>(num_dim * (entry.point_1 + 1)),
-            aArgument.begin() + static_cast<diff_t>(num_dim * entry.point_2));
-    };
-    auto contribution_regular = [map_distance](const auto& entry) {
-        const Float diff = entry.table_distance - map_distance(entry);
+    auto contribution_regular = [&aArgument,num_dim=number_of_dimensions_](const auto& entry) {
+        const Float diff = entry.table_distance - ::map_distance(aArgument, entry, num_dim);
         return diff * diff;
     };
-    auto contribution_less_than = [map_distance,SigmoidMutiplier](const auto& entry) {
-        const Float diff = entry.table_distance - map_distance(entry) + 1;
-        return diff * diff * acmacs::sigmoid(diff * SigmoidMutiplier);
+    auto contribution_less_than = [&aArgument,num_dim=number_of_dimensions_](const auto& entry) {
+        const Float diff = entry.table_distance - ::map_distance(aArgument, entry, num_dim) + 1;
+        return diff * diff * acmacs::sigmoid(diff * SigmoidMutiplier<Float>());
     };
 
     return std::transform_reduce(table_distances().regular().begin(), table_distances().regular().end(), Float{0}, std::plus<>(), contribution_regular)
@@ -77,12 +95,51 @@ template <typename Float> Float acmacs::chart::Stress<Float>::value(const std::v
 
 template <typename Float> Float acmacs::chart::Stress<Float>::value(const acmacs::LayoutInterface& aLayout) const
 {
-    if constexpr (std::is_same_v<Float, double>)
-        return value(aLayout.as_flat_vector_double());
-    else
-        return value(aLayout.as_flat_vector_float());
+    return value(::flatten<Float>(aLayout));
 
 } // acmacs::chart::Stress<Float>::value
+
+// ----------------------------------------------------------------------
+
+template <typename Float> std::vector<Float> acmacs::chart::Stress<Float>::gradient(const std::vector<Float>& aArgument) const
+{
+    std::vector<Float> result(aArgument.size(), 0);
+
+    auto contribution_regular = [&aArgument,&result,num_dim=number_of_dimensions_](const auto& entry) {
+        const Float map_dist = ::map_distance(aArgument, entry, num_dim);
+        const Float diff = (entry.table_distance - map_dist) * 2 / non_zero(map_dist);
+        for (auto d : acmacs::range(num_dim)) {
+            const Float inc = diff * (aArgument[entry.point_1 * num_dim + d] - aArgument[entry.point_2 * num_dim + d]);
+            result[entry.point_1 * num_dim + d] -= inc;
+            result[entry.point_2 * num_dim + d] += inc;
+        }
+    };
+    auto contribution_less_than = [&aArgument,&result,num_dim=number_of_dimensions_](const auto& entry) {
+        const Float map_dist = ::map_distance(aArgument, entry, num_dim);
+        const Float diff = entry.table_distance - map_dist + 1;
+        const Float inc_base = (diff * 2 * acmacs::sigmoid(diff * SigmoidMutiplier<Float>())
+                                + diff * diff * acmacs::d_sigmoid(diff * SigmoidMutiplier<Float>()) * SigmoidMutiplier<Float>()) / non_zero(map_dist);
+        for (auto d : acmacs::range(num_dim)) {
+            const Float inc = inc_base * (aArgument[entry.point_1 * num_dim + d] - aArgument[entry.point_2 * num_dim + d]);
+            result[entry.point_1 * num_dim + d] -= inc;
+            result[entry.point_2 * num_dim + d] += inc;
+        }
+    };
+
+    std::for_each(table_distances().regular().begin(), table_distances().regular().end(), contribution_regular);
+    std::for_each(table_distances().less_than().begin(), table_distances().less_than().end(), contribution_less_than);
+
+    return result;
+
+} // acmacs::chart::Stress<Float>::gradient
+
+// ----------------------------------------------------------------------
+
+template <typename Float> std::vector<Float> acmacs::chart::Stress<Float>::gradient(const acmacs::LayoutInterface& aLayout) const
+{
+    return gradient(::flatten<Float>(aLayout));
+
+} // acmacs::chart::Stress<Float>::gradient
 
 // ----------------------------------------------------------------------
 

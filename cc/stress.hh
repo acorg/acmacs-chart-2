@@ -22,6 +22,8 @@ namespace acmacs::chart
 
         Float value(const std::vector<Float>& aArgument) const;
         Float value(const acmacs::LayoutInterface& aLayout) const;
+        std::vector<Float> gradient(const std::vector<Float>& aArgument) const;
+        std::vector<Float> gradient(const acmacs::LayoutInterface& aLayout) const;
 
         inline const TableDistances<Float>& table_distances() const { return table_distances_; }
         inline TableDistances<Float>& table_distances() { return table_distances_; }
