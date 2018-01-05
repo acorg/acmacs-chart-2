@@ -39,7 +39,7 @@ template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_fac
     auto cb = projection.forced_column_bases();
     if (!cb)
         cb = chart.column_bases(projection.minimum_column_basis());
-    chart.titers()->update(stress.table_distances(), *cb, projection.disconnected(), projection.dodgy_titer_is_regular(), multiply_antigen_titer_until_column_adjust);
+    chart.titers()->update(stress.table_distances(), *cb, projection.disconnected(), projection.dodgy_titer_is_regular(), projection.avidity_adjusts(), multiply_antigen_titer_until_column_adjust);
       // stress.table_distances().report();
     return stress;
 

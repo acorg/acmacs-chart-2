@@ -175,8 +175,8 @@ namespace acmacs::chart
         inline const rjson::array& rjson_list_dict() const override { const rjson::array& r =  mData.get_or_empty_array("titers_list_of_dict"); if (r.empty()) throw data_not_available{"no titers_list_of_dict"}; return r; }
         inline const rjson::array& rjson_layers() const override {const rjson::array& r = mData.get_or_empty_array("layers_dict_for_antigen"); if (r.empty()) throw data_not_available{"no layers_dict_for_antigen"}; return r; }
 
-        void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust) const override;
-        void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust) const override;
+        void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const override;
+        void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const override;
 
      private:
         const rjson::object& mData;

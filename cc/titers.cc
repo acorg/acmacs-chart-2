@@ -164,7 +164,7 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Titers::computed_colu
 
 // ----------------------------------------------------------------------
 
-template <typename Float> static void update(const acmacs::chart::Titers& titers, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust)
+template <typename Float> static void update(const acmacs::chart::Titers& titers, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular, const acmacs::chart::AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust)
 {
     table_distances.dodgy_is_regular(dodgy_titer_is_regular);
     if (titers.number_of_sera()) {
@@ -193,17 +193,17 @@ template <typename Float> static void update(const acmacs::chart::Titers& titers
     }
 }
 
-void acmacs::chart::Titers::update(acmacs::chart::TableDistances<float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust) const
+void acmacs::chart::Titers::update(acmacs::chart::TableDistances<float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const
 {
-    ::update(*this, table_distances, column_bases, disconnected, dodgy_titer_is_regular, multiply_antigen_titer_until_column_adjust);
+    ::update(*this, table_distances, column_bases, disconnected, dodgy_titer_is_regular, avidity_adjusts, multiply_antigen_titer_until_column_adjust);
 
 } // acmacs::chart::Titers::update
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Titers::update(acmacs::chart::TableDistances<double>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust) const
+void acmacs::chart::Titers::update(acmacs::chart::TableDistances<double>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const
 {
-    ::update(*this, table_distances, column_bases, disconnected, dodgy_titer_is_regular, multiply_antigen_titer_until_column_adjust);
+    ::update(*this, table_distances, column_bases, disconnected, dodgy_titer_is_regular, avidity_adjusts, multiply_antigen_titer_until_column_adjust);
 
 } // acmacs::chart::Titers::update
 

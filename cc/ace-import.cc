@@ -301,10 +301,10 @@ size_t AceTiters::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
-void AceTiters::update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust) const
+void AceTiters::update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const
 {
     if (number_of_sera()) {
-        rjson_import::update(mData, "l", "d", table_distances, column_bases, disconnected, dodgy_titer_is_regular, multiply_antigen_titer_until_column_adjust);
+        rjson_import::update(mData, "l", "d", table_distances, column_bases, disconnected, dodgy_titer_is_regular, avidity_adjusts, multiply_antigen_titer_until_column_adjust);
     }
     else {
         throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
@@ -312,10 +312,10 @@ void AceTiters::update(TableDistances<float>& table_distances, const ColumnBases
 
 } // AceTiters::update
 
-void AceTiters::update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, bool multiply_antigen_titer_until_column_adjust) const
+void AceTiters::update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const
 {
     if (number_of_sera()) {
-        rjson_import::update(mData, "l", "d", table_distances, column_bases, disconnected, dodgy_titer_is_regular, multiply_antigen_titer_until_column_adjust);
+        rjson_import::update(mData, "l", "d", table_distances, column_bases, disconnected, dodgy_titer_is_regular, avidity_adjusts, multiply_antigen_titer_until_column_adjust);
     }
     else {
         throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
