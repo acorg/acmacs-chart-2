@@ -23,6 +23,21 @@ namespace std
 
 // ----------------------------------------------------------------------
 
+template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_factory(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection)
+{
+    const bool multiply_antigen_titer_until_column_adjust = true;
+    Stress<Float> stress(projection.number_of_dimensions(), chart.number_of_antigens());
+    auto cb = projection.forced_column_bases();
+    if (!cb)
+        cb = chart.column_bases(projection.minimum_column_basis());
+    chart.titers()->update(stress.table_distances(), *cb, projection.disconnected(), projection.dodgy_titer_is_regular(), multiply_antigen_titer_until_column_adjust);
+      // stress.table_distances().report();
+    return stress;
+
+} // acmacs::chart::stress_factory
+
+// ----------------------------------------------------------------------
+
 template <typename Float> Float acmacs::chart::Stress<Float>::value(const std::vector<Float>& aArgument) const
 {
     using diff_t = typename decltype(aArgument.begin())::difference_type;
@@ -93,6 +108,8 @@ template <typename Float> Float acmacs::chart::Stress<Float>::value(const acmacs
 
 template class acmacs::chart::Stress<float>;
 template class acmacs::chart::Stress<double>;
+template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection);
+template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection);
 
 // ----------------------------------------------------------------------
 /// Local Variables:

@@ -487,22 +487,8 @@ namespace acmacs::chart
 
         void set_homologous(bool force, std::shared_ptr<Sera> aSera = nullptr) const;
 
-        template <typename Float> Stress<Float> make_stress(const Projection& projection) const
-            {
-                const bool multiply_antigen_titer_until_column_adjust = true;
-                Stress<Float> stress(projection.number_of_dimensions(), number_of_antigens());
-                auto cb = projection.forced_column_bases();
-                if (!cb)
-                    cb = column_bases(projection.minimum_column_basis());
-                titers()->update(stress.table_distances(), *cb, projection.disconnected(), projection.dodgy_titer_is_regular(), multiply_antigen_titer_until_column_adjust);
-                // stress.table_distances().report();
-                return stress;
-            }
-
-        template <typename Float> inline Stress<Float> make_stress(size_t aProjectionNo) const
-            {
-                return make_stress<Float>(*projection(aProjectionNo));
-            }
+        template <typename Float> Stress<Float> make_stress(const Projection& projection) const { return stress_factory<Float>(*this, projection); }
+        template <typename Float> inline Stress<Float> make_stress(size_t aProjectionNo) const { return make_stress<Float>(*projection(aProjectionNo)); }
 
      private:
         mutable bool mHomologousFound = false;

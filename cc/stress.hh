@@ -12,6 +12,9 @@ namespace acmacs
 
 namespace acmacs::chart
 {
+    class Chart;
+    class Projection;
+
     template <typename Float> class Stress
     {
      public:
@@ -30,8 +33,12 @@ namespace acmacs::chart
 
     }; // class Stress
 
+    template <typename Float> Stress<Float> stress_factory(const Chart& chart, const Projection& projection);
+
     extern template class Stress<float>;
     extern template class Stress<double>;
+    extern template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection);
+    extern template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection);
 
 } // namespace acmacs::chart
 
