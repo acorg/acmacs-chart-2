@@ -105,25 +105,30 @@ template <typename Float> std::vector<Float> acmacs::chart::Stress<Float>::gradi
 {
     std::vector<Float> result(aArgument.size(), 0);
 
-    auto contribution_regular = [&aArgument,&result,num_dim=number_of_dimensions_](const auto& entry) {
-        const Float map_dist = ::map_distance(aArgument, entry, num_dim);
-        const Float diff = (entry.table_distance - map_dist) * 2 / non_zero(map_dist);
-        for (auto d : acmacs::range(num_dim)) {
-            const Float inc = diff * (aArgument[entry.point_1 * num_dim + d] - aArgument[entry.point_2 * num_dim + d]);
-            result[entry.point_1 * num_dim + d] -= inc;
-            result[entry.point_2 * num_dim + d] += inc;
+    auto update = [&aArgument,&result,num_dim=number_of_dimensions_](const auto& entry, Float inc_base) {
+        using diff_t = typename std::vector<Float>::difference_type;
+        auto p1 = aArgument.begin() + static_cast<diff_t>(entry.point_1 * num_dim),
+                p2 = aArgument.begin() + static_cast<diff_t>(entry.point_2 * num_dim);
+        auto r1 = result.begin() + static_cast<diff_t>(entry.point_1 * num_dim),
+                r2 = result.begin() + static_cast<diff_t>(entry.point_2 * num_dim);
+        for (size_t d = 0; d < num_dim; ++d, ++p1, ++p2, ++r1, ++r2) {
+            const Float inc = inc_base * (*p1 - *p2);
+            *r1 -= inc;
+            *r2 += inc;
         }
     };
-    auto contribution_less_than = [&aArgument,&result,num_dim=number_of_dimensions_](const auto& entry) {
+
+    auto contribution_regular = [&aArgument,num_dim=number_of_dimensions_,update](const auto& entry) {
+        const Float map_dist = ::map_distance(aArgument, entry, num_dim);
+        const Float inc_base = (entry.table_distance - map_dist) * 2 / non_zero(map_dist);
+        update(entry, inc_base);
+    };
+    auto contribution_less_than = [&aArgument,num_dim=number_of_dimensions_,update](const auto& entry) {
         const Float map_dist = ::map_distance(aArgument, entry, num_dim);
         const Float diff = entry.table_distance - map_dist + 1;
         const Float inc_base = (diff * 2 * acmacs::sigmoid(diff * SigmoidMutiplier<Float>())
                                 + diff * diff * acmacs::d_sigmoid(diff * SigmoidMutiplier<Float>()) * SigmoidMutiplier<Float>()) / non_zero(map_dist);
-        for (auto d : acmacs::range(num_dim)) {
-            const Float inc = inc_base * (aArgument[entry.point_1 * num_dim + d] - aArgument[entry.point_2 * num_dim + d]);
-            result[entry.point_1 * num_dim + d] -= inc;
-            result[entry.point_2 * num_dim + d] += inc;
-        }
+        update(entry, inc_base);
     };
 
     std::for_each(table_distances().regular().begin(), table_distances().regular().end(), contribution_regular);
