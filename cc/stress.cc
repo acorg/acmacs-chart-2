@@ -11,6 +11,15 @@
 namespace std
 {
       // extracted from clang5 lib: /usr/local/opt/llvm/include/c++/v1/numeric
+
+    template <const lass _InputIterator, class _Tp, class _BinaryOp, class _UnaryOp>
+        inline _Tp transform_reduce(_InputIterator __first, _InputIterator __last, _Tp __init,  _BinaryOp __b, _UnaryOp __u)
+    {
+        for (; __first != __last; ++__first)
+            __init = __b(__init, __u(*__first));
+        return __init;
+    }
+
     template <class _InputIterator1, class _InputIterator2, class _Tp, class _BinaryOp1, class _BinaryOp2>
         inline _Tp transform_reduce(_InputIterator1 __first1, _InputIterator1 __last1, _InputIterator2 __first2, _Tp __init,  _BinaryOp1 __b1, _BinaryOp2 __b2)
     {
@@ -44,54 +53,25 @@ template <typename Float> Float acmacs::chart::Stress<Float>::value(const std::v
 
     constexpr const Float SigmoidMutiplier{10};
 
-    auto map_distance = [&aArgument,num_dim=number_of_dimensions_](const auto& index) {
+    auto map_distance = [&aArgument,num_dim=number_of_dimensions_](const auto& entry) {
         return acmacs::vector_math::distance<Float>(
-            aArgument.begin() + static_cast<diff_t>(num_dim * index.first),
-            aArgument.begin() + static_cast<diff_t>(num_dim * (index.first + 1)),
-            aArgument.begin() + static_cast<diff_t>(num_dim * index.second));
+            aArgument.begin() + static_cast<diff_t>(num_dim * entry.point_1),
+            aArgument.begin() + static_cast<diff_t>(num_dim * (entry.point_1 + 1)),
+            aArgument.begin() + static_cast<diff_t>(num_dim * entry.point_2));
     };
-    auto contribution_regular = [map_distance](Float table_distance, const auto& index) {
-        const Float diff = table_distance - map_distance(index);
+    auto contribution_regular = [map_distance](const auto& entry) {
+        const Float diff = entry.table_distance - map_distance(entry);
         return diff * diff;
     };
-    auto contribution_less_than = [map_distance,SigmoidMutiplier](Float table_distance, const auto& index) {
-        const Float diff = table_distance - map_distance(index) + 1;
+    auto contribution_less_than = [map_distance,SigmoidMutiplier](const auto& entry) {
+        const Float diff = entry.table_distance - map_distance(entry) + 1;
         return diff * diff * acmacs::sigmoid(diff * SigmoidMutiplier);
     };
 
-    return std::transform_reduce(table_distances().regular_distances().begin(), table_distances().regular_distances().end(), table_distances().regular_indexes().begin(), Float{0}, std::plus<>(), contribution_regular)
-            + std::transform_reduce(table_distances().less_than_distances().begin(), table_distances().less_than_distances().end(), table_distances().less_than_indexes().begin(), Float{0}, std::plus<>(), contribution_less_than);
+    return std::transform_reduce(table_distances().regular().begin(), table_distances().regular().end(), Float{0}, std::plus<>(), contribution_regular)
+            + std::transform_reduce(table_distances().less_than().begin(), table_distances().less_than().end(), Float{0}, std::plus<>(), contribution_less_than);
 
 } // acmacs::chart::Stress<Float>::value
-
-// template <typename Float> Float acmacs::chart::Stress<Float>::value(const std::vector<Float>& aArgument) const
-// {
-//     using diff_t = typename decltype(aArgument.begin())::difference_type;
-//     using index_t = decltype(table_distances().regular_indexes().begin());
-
-//     constexpr const Float SigmoidMutiplier{10};
-
-//     auto map_distance = [&aArgument,num_dim=this->number_of_dimensions_](const index_t& index) {
-//         return acmacs::vector_math::distance<Float>(
-//             aArgument.begin() + static_cast<diff_t>(num_dim * index->first),
-//             aArgument.begin() + static_cast<diff_t>(num_dim * (index->first + 1)),
-//             aArgument.begin() + static_cast<diff_t>(num_dim * index->second));
-//     };
-
-//     auto contribution_regular = [map_distance,index=table_distances().regular_indexes().begin()](Float sum, Float table_distance) mutable {
-//         const Float diff = table_distance - map_distance(index++);
-//         return sum + diff * diff;
-//     };
-
-//     auto contribution_less_than = [map_distance,index=table_distances().less_than_indexes().begin()](Float sum, Float table_distance) mutable {
-//         const Float diff = table_distance - map_distance(index++) + 1;
-//         return sum + diff * diff * sigmoid(diff * SigmoidMutiplier);
-//     };
-
-//     return std::accumulate(table_distances().regular_distances().begin(), table_distances().regular_distances().end(), Float{0}, contribution_regular)
-//             + std::accumulate(table_distances().less_than_distances().begin(), table_distances().less_than_distances().end(), Float{0}, contribution_less_than);
-
-// } // acmacs::chart::Stress<Float>::value
 
 // ----------------------------------------------------------------------
 
