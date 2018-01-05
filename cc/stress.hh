@@ -37,8 +37,13 @@ namespace acmacs::chart
 
     extern template class Stress<float>;
     extern template class Stress<double>;
+#if __GNUC__ == 7
+      // g++7 does not like extern template below
+#else
+      // clang5 wants those externs (otherwise warning -Wundefined-func-template)
     extern template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection);
     extern template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection);
+#endif
 
 } // namespace acmacs::chart
 

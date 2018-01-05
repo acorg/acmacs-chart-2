@@ -12,7 +12,7 @@ namespace std
 {
       // extracted from clang5 lib: /usr/local/opt/llvm/include/c++/v1/numeric
 
-    template <const lass _InputIterator, class _Tp, class _BinaryOp, class _UnaryOp>
+    template <class _InputIterator, class _Tp, class _BinaryOp, class _UnaryOp>
         inline _Tp transform_reduce(_InputIterator __first, _InputIterator __last, _Tp __init,  _BinaryOp __b, _UnaryOp __u)
     {
         for (; __first != __last; ++__first)
