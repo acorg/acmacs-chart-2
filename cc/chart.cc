@@ -310,6 +310,8 @@ std::string acmacs::chart::Projection::make_info() const
         result += " forced:" + acmacs::to_string(fcb);
     else
         result += " >=" + static_cast<std::string>(minimum_column_basis());
+    if (auto cmt = comment(); !cmt.empty())
+        result += " " + cmt;
     return result;
 
 } // acmacs::chart::Projection::make_info
