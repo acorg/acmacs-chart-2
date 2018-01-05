@@ -166,23 +166,16 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Titers::computed_colu
 
 template <typename Float> static void update(const acmacs::chart::Titers& titers, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular, const acmacs::chart::AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust)
 {
+    const auto number_of_points = titers.number_of_antigens() + titers.number_of_sera();
+    const auto logged_adjusts = avidity_adjusts.logged(number_of_points);
     table_distances.dodgy_is_regular(dodgy_titer_is_regular);
     if (titers.number_of_sera()) {
         for (auto p1 : acmacs::range(titers.number_of_antigens())) {
             if (!disconnected.exist(p1)) {
-                for (auto p2 : acmacs::range(titers.number_of_antigens(), titers.number_of_antigens() + titers.number_of_sera())) {
+                for (auto p2 : acmacs::range(titers.number_of_antigens(), number_of_points)) {
                     if (!disconnected.exist(p2)) {
                         const auto serum_no = p2 - titers.number_of_antigens();
-                        const auto titer = titers.titer(p1, serum_no);
-                        try {
-                            auto distance = column_bases.column_basis(serum_no) - titer.logged();
-                            if (distance < 0 && multiply_antigen_titer_until_column_adjust)
-                                distance = 0;
-                            table_distances.add(titer.type(), p1, p2, distance);
-                        }
-                        catch (acmacs::chart::invalid_titer&) {
-                              // ignore dont-care
-                        }
+                        table_distances.update(titers.titer(p1, serum_no), p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], multiply_antigen_titer_until_column_adjust);
                     }
                 }
             }

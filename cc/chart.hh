@@ -176,6 +176,14 @@ namespace acmacs::chart
                 return internal::double_list_data::empty() || std::all_of(begin(), end(), [](double val) -> bool { return float_equal(val, 1.0); });
             }
 
+        std::vector<double> logged(size_t number_of_points) const
+            {
+                std::vector<double> logged_adjusts(number_of_points, 0.0);
+                if (!empty())
+                    std::transform(begin(), end(), logged_adjusts.begin(), [](double adj) { return std::log2(adj); });
+                return logged_adjusts;
+            }
+
     }; // class AvidityAdjusts
 
     class DrawingOrder : public internal::index_list_data
