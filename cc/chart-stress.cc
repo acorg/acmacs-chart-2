@@ -29,12 +29,14 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv, {
                 {"--projection", 0L},
+                {"--double", false, "just report stress (double)"},
+                {"--float", false, "just report stress (float)"},
                 {"--time", false, "test speed"},
                 {"--verbose", false},
                 {"-h", false},
                 {"--help", false},
                 {"-v", false},
-        });
+                        });
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
             std::cerr << "Usage: " << args.program() << " [options] <chart-file>\n" << args.usage_options() << '\n';
             exit_code = 1;
@@ -43,16 +45,24 @@ int main(int argc, char* const argv[])
             const report_time report = args["--time"] ? report_time::Yes : report_time::No;
             auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
             auto projection = chart->projection(args["--projection"]);
-            auto stress = chart->make_stress<double>(args["--projection"]);
-            if (args["--time"])
-                std::cerr << "stress d: " << acmacs::to_string(projection->calculate_stress(stress)) << "   per second: " << measure(projection, stress) << '\n';
-            else
-                std::cerr << "stress d: " << acmacs::to_string(projection->calculate_stress(stress)) << '\n';
-            auto stress_f = chart->make_stress<float>(args["--projection"]);
-            if (args["--time"])
-                std::cerr << "stress f: " << acmacs::to_string(projection->calculate_stress(stress_f)) << "   per second: " << measure(projection, stress_f) << '\n';
-            else
-                std::cerr << "stress f: " << acmacs::to_string(projection->calculate_stress(stress_f)) << '\n';
+            if (args["--double"]) {
+                std::cout << acmacs::to_string(projection->calculate_stress(chart->make_stress<double>(args["--projection"]))) << '\n';
+            }
+            else if (args["--float"]) {
+                std::cout << acmacs::to_string(projection->calculate_stress(chart->make_stress<float>(args["--projection"]))) << '\n';
+            }
+            else {
+                auto stress = chart->make_stress<double>(args["--projection"]);
+                if (args["--time"])
+                    std::cerr << "stress d: " << acmacs::to_string(projection->calculate_stress(stress)) << "   per second: " << measure(projection, stress) << '\n';
+                else
+                    std::cerr << "stress d: " << acmacs::to_string(projection->calculate_stress(stress)) << '\n';
+                auto stress_f = chart->make_stress<float>(args["--projection"]);
+                if (args["--time"])
+                    std::cerr << "stress f: " << acmacs::to_string(projection->calculate_stress(stress_f)) << "   per second: " << measure(projection, stress_f) << '\n';
+                else
+                    std::cerr << "stress f: " << acmacs::to_string(projection->calculate_stress(stress_f)) << '\n';
+            }
         }
     }
     catch (std::exception& err) {
