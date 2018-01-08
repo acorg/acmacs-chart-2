@@ -14,7 +14,7 @@ namespace acmacs::chart
      public:
         struct Entry
         {
-            inline Entry(size_t p1, size_t p2, Float dist) : point_1{p1}, point_2{p2}, table_distance{dist} {}
+            inline Entry(size_t p1, size_t p2, Float dist) : point_1(p1), point_2(p2), table_distance{dist} {}
             size_t point_1;
             size_t point_2;
             Float table_distance;

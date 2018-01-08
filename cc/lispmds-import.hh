@@ -29,6 +29,7 @@ namespace acmacs::chart
 
      private:
         acmacs::lispmds::value mData;
+        mutable ProjectionsP projections_;
 
     }; // class Chart
 
@@ -209,6 +210,7 @@ namespace acmacs::chart
         const acmacs::lispmds::value& mData;
         size_t mIndex;
         size_t mNumberOfAntigens, mNumberOfSera;
+        mutable std::shared_ptr<Layout> layout_;
 
     }; // class LispmdsProjections
 
@@ -217,7 +219,7 @@ namespace acmacs::chart
     class LispmdsProjections : public Projections
     {
       public:
-        inline LispmdsProjections(const acmacs::lispmds::value& aData) : mData{aData} {}
+        inline LispmdsProjections(const acmacs::lispmds::value& aData) : mData{aData}, projections_(size(), nullptr) {}
 
         bool empty() const override;
         size_t size() const override;
@@ -225,6 +227,7 @@ namespace acmacs::chart
 
      private:
         const acmacs::lispmds::value& mData;
+        mutable std::vector<ProjectionP> projections_;
 
     }; // class LispmdsProjections
 

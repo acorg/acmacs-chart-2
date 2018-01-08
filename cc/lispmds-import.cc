@@ -213,7 +213,9 @@ ColumnBasesP LispmdsChart::forced_column_bases() const
 
 ProjectionsP LispmdsChart::projections() const
 {
-    return std::make_shared<LispmdsProjections>(mData);
+    if (!projections_)
+        projections_ = std::make_shared<LispmdsProjections>(mData);
+    return projections_;
 
 } // LispmdsChart::projections
 
@@ -511,64 +513,27 @@ double LispmdsProjection::stress() const
 
 // ----------------------------------------------------------------------
 
-class LispmdsLayout : public acmacs::chart::Layout
+class LispmdsLayout : public acmacs::Layout
 {
- private:
-    template <typename Float> static inline std::vector<Float> as_flat_vector(size_t number_of_points, size_t number_of_dimensions, const acmacs::lispmds::value& data)
-        {
-            std::vector<Float> result(number_of_points * number_of_dimensions);
-            auto target = result.begin();
-            for (size_t p_no = 0; p_no < number_of_points; ++p_no) {
-                const auto& point = data[p_no];
-                for (size_t dim = 0; dim < point.size(); ++dim)
-                    *target++ = std::get<acmacs::lispmds::number>(point[dim]);
-            }
-            return result;
-        }
-
  public:
-    inline LispmdsLayout(const acmacs::lispmds::value& aData, size_t aNumberOfAntigens, size_t aNumberOfSera)
-        : mData{aData}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} {}
-
-    size_t number_of_points() const noexcept override
+    LispmdsLayout(const acmacs::lispmds::value& aData, size_t aNumberOfAntigens, size_t aNumberOfSera)
+        : acmacs::Layout(aNumberOfAntigens + aNumberOfSera, aData[0].size())
         {
-            return mNumberOfAntigens + mNumberOfSera;
-        }
-
-    inline size_t number_of_dimensions() const noexcept override
-        {
-            return mData[0].size();
-        }
-
-    inline const acmacs::Coordinates operator[](size_t aPointNo) const override
-        {
-            const auto& point = mData[aPointNo];
-            acmacs::Coordinates result(point.size());
-            for (size_t dim = 0; dim < point.size(); ++dim)
-                result[dim] = std::get<acmacs::lispmds::number>(point[dim]);
-            return result;
-        }
-
-    inline double coordinate(size_t aPointNo, size_t aDimensionNo) const override
-        {
-            return std::get<acmacs::lispmds::number>(mData[aPointNo][aDimensionNo]);
-        }
-
-    inline std::vector<double> as_flat_vector_double() const override
-        {
-            return as_flat_vector<double>(number_of_points(), number_of_dimensions(), mData);
-        }
-
-    inline std::vector<float> as_flat_vector_float() const override
-        {
-            return as_flat_vector<float>(number_of_points(), number_of_dimensions(), mData);
+            auto target = begin();
+            for (size_t p_no = 0; p_no < number_of_points(); ++p_no) {
+                const auto& point = aData[p_no];
+                if (point.size() == number_of_dimensions()) {
+                    for (size_t dim = 0; dim < point.size(); ++dim)
+                        *target++ = std::get<acmacs::lispmds::number>(point[dim]);
+                }
+                else if (!point.empty())
+                    throw invalid_data("LispmdsLayout: point has invalid number of coordinates: " + std::to_string(point.size()) + ", expected 0 or " + std::to_string(number_of_dimensions()));
+                else
+                    target += static_cast<decltype(target)::difference_type>(number_of_dimensions());
+            }
         }
 
     inline void set(size_t /*aPointNo*/, const acmacs::Coordinates& /*aCoordinates*/) override { throw acmacs::chart::chart_is_read_only{"LispmdsLayout::set: cannot modify"}; }
-
- private:
-    const acmacs::lispmds::value& mData;
-    size_t mNumberOfAntigens, mNumberOfSera;
 
 }; // class LispmdsLayout
 
@@ -576,7 +541,9 @@ class LispmdsLayout : public acmacs::chart::Layout
 
 std::shared_ptr<Layout> LispmdsProjection::layout() const
 {
-    return std::make_shared<LispmdsLayout>(projection_layout(mData, mIndex), mNumberOfAntigens, mNumberOfSera);
+    if (!layout_)
+        layout_ = std::make_shared<LispmdsLayout>(projection_layout(mData, mIndex), mNumberOfAntigens, mNumberOfSera);
+    return layout_;
 
 } // LispmdsProjection::layout
 
@@ -716,7 +683,9 @@ size_t LispmdsProjections::size() const
 
 ProjectionP LispmdsProjections::operator[](size_t aIndex) const
 {
-    return std::make_shared<LispmdsProjection>(mData, aIndex, number_of_antigens(mData), number_of_sera(mData));
+    if (!projections_[aIndex])
+        projections_[aIndex] = std::make_shared<LispmdsProjection>(mData, aIndex, number_of_antigens(mData), number_of_sera(mData));
+    return projections_[aIndex];
 
 } // LispmdsProjections::operator[]
 
