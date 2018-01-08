@@ -99,7 +99,7 @@ namespace acmacs::chart
     {
      public:
 
-        inline ChartModify(ChartP aMain) : mMain{aMain} {}
+        inline ChartModify(ChartP main) : main_{main} {}
 
         InfoP info() const override;
         AntigensP antigens() const override;
@@ -108,7 +108,7 @@ namespace acmacs::chart
         ColumnBasesP forced_column_bases() const override;
         ProjectionsP projections() const override;
         PlotSpecP plot_spec() const override;
-        inline bool is_merge() const override { return mMain->is_merge(); }
+        inline bool is_merge() const override { return main_->is_merge(); }
 
         InfoModifyP info_modify();
         AntigensModifyP antigens_modify();
@@ -122,7 +122,9 @@ namespace acmacs::chart
         ProjectionId new_projection_id() const { return ++last_projection_id_; }
 
      private:
-        ChartP mMain;
+        ChartP main_;
+        mutable ProjectionsModifyP projections_;
+
         mutable ProjectionId last_projection_id_{0};
         std::map<ProjectionId, std::unique_ptr<internal::ProjectionModifyData>> mProjectionModifyData; // projection_id to data
         std::optional<internal::PlotSpecModifyData> mPlotSpecModifyData;

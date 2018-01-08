@@ -7,7 +7,7 @@ using namespace acmacs::chart;
 
 InfoP ChartModify::info() const
 {
-    return std::make_shared<InfoModify>(mMain->info());
+    return std::make_shared<InfoModify>(main_->info());
 
 } // ChartModify::info
 
@@ -15,7 +15,7 @@ InfoP ChartModify::info() const
 
 AntigensP ChartModify::antigens() const
 {
-    return std::make_shared<AntigensModify>(mMain->antigens());
+    return std::make_shared<AntigensModify>(main_->antigens());
 
 } // ChartModify::antigens
 
@@ -23,7 +23,7 @@ AntigensP ChartModify::antigens() const
 
 SeraP ChartModify::sera() const
 {
-    return std::make_shared<SeraModify>(mMain->sera());
+    return std::make_shared<SeraModify>(main_->sera());
 
 } // ChartModify::sera
 
@@ -31,7 +31,7 @@ SeraP ChartModify::sera() const
 
 TitersP ChartModify::titers() const
 {
-    return std::make_shared<TitersModify>(mMain->titers());
+    return std::make_shared<TitersModify>(main_->titers());
 
 } // ChartModify::titers
 
@@ -39,7 +39,7 @@ TitersP ChartModify::titers() const
 
 ColumnBasesP ChartModify::forced_column_bases() const
 {
-    if (auto cb = mMain->forced_column_bases(); cb)
+    if (auto cb = main_->forced_column_bases(); cb)
         return std::make_shared<ColumnBasesModify>(cb);
     else
         return nullptr;
@@ -50,7 +50,9 @@ ColumnBasesP ChartModify::forced_column_bases() const
 
 ProjectionsP ChartModify::projections() const
 {
-    return std::make_shared<ProjectionsModify>(mMain->projections(), const_cast<ChartModify&>(*this));
+    if (!projections_)
+        projections_ = std::make_shared<ProjectionsModify>(main_->projections(), const_cast<ChartModify&>(*this));
+    return projections_;
 
 } // ChartModify::projections
 
@@ -58,7 +60,7 @@ ProjectionsP ChartModify::projections() const
 
 PlotSpecP ChartModify::plot_spec() const
 {
-    return std::make_shared<PlotSpecModify>(mMain->plot_spec(), const_cast<ChartModify&>(*this));
+    return std::make_shared<PlotSpecModify>(main_->plot_spec(), const_cast<ChartModify&>(*this));
 
 } // ChartModify::plot_spec
 
@@ -66,7 +68,7 @@ PlotSpecP ChartModify::plot_spec() const
 
 InfoModifyP ChartModify::info_modify()
 {
-    return std::make_shared<InfoModify>(mMain->info());
+    return std::make_shared<InfoModify>(main_->info());
 
 } // ChartModify::info_modify
 
@@ -74,7 +76,7 @@ InfoModifyP ChartModify::info_modify()
 
 AntigensModifyP ChartModify::antigens_modify()
 {
-    return std::make_shared<AntigensModify>(mMain->antigens());
+    return std::make_shared<AntigensModify>(main_->antigens());
 
 } // ChartModify::antigens_modify
 
@@ -82,7 +84,7 @@ AntigensModifyP ChartModify::antigens_modify()
 
 SeraModifyP ChartModify::sera_modify()
 {
-    return std::make_shared<SeraModify>(mMain->sera());
+    return std::make_shared<SeraModify>(main_->sera());
 
 } // ChartModify::sera_modify
 
@@ -90,7 +92,7 @@ SeraModifyP ChartModify::sera_modify()
 
 TitersModifyP ChartModify::titers_modify()
 {
-    return std::make_shared<TitersModify>(mMain->titers());
+    return std::make_shared<TitersModify>(main_->titers());
 
 } // ChartModify::titers_modify
 
@@ -98,7 +100,7 @@ TitersModifyP ChartModify::titers_modify()
 
 ColumnBasesModifyP ChartModify::forced_column_bases_modify()
 {
-    if (auto cb = mMain->forced_column_bases(); cb)
+    if (auto cb = main_->forced_column_bases(); cb)
         return std::make_shared<ColumnBasesModify>(cb);
     else
         return nullptr;
@@ -109,7 +111,7 @@ ColumnBasesModifyP ChartModify::forced_column_bases_modify()
 
 ProjectionsModifyP ChartModify::projections_modify()
 {
-    return std::make_shared<ProjectionsModify>(mMain->projections(), *this);
+    return std::make_shared<ProjectionsModify>(main_->projections(), *this);
 
 } // ChartModify::projections_modify
 
@@ -117,7 +119,7 @@ ProjectionsModifyP ChartModify::projections_modify()
 
 ProjectionModifyP ChartModify::projection_modify(size_t aProjectionNo)
 {
-    return std::make_shared<ProjectionModifyMain>(mMain->projections()->operator[](aProjectionNo), aProjectionNo, *this);
+    return std::make_shared<ProjectionModifyMain>(main_->projections()->operator[](aProjectionNo), aProjectionNo, *this);
 
 } // ChartModify::projection_modify
 
@@ -125,7 +127,7 @@ ProjectionModifyP ChartModify::projection_modify(size_t aProjectionNo)
 
 PlotSpecModifyP ChartModify::plot_spec_modify()
 {
-    return std::make_shared<PlotSpecModify>(mMain->plot_spec(), *this);
+    return std::make_shared<PlotSpecModify>(main_->plot_spec(), *this);
 
 } // ChartModify::plot_spec_modify
 
@@ -134,7 +136,7 @@ PlotSpecModifyP ChartModify::plot_spec_modify()
 internal::ProjectionModifyData& ChartModify::modify_projection(ProjectionId aProjectionId)
 {
     if (const auto found = mProjectionModifyData.find(aProjectionId); found == mProjectionModifyData.end()) {
-        mProjectionModifyData[aProjectionId] = std::make_unique<internal::ProjectionModifyData>(mMain->projections()->operator[](aProjectionId));
+        mProjectionModifyData[aProjectionId] = std::make_unique<internal::ProjectionModifyData>(main_->projections()->operator[](aProjectionId));
         return *mProjectionModifyData[aProjectionId];
     }
     else
@@ -162,7 +164,7 @@ void ChartModify::clone_modified_projection(ProjectionId old_id, ProjectionId ne
 internal::PlotSpecModifyData& ChartModify::modify_plot_spec()
 {
     if (!mPlotSpecModifyData) {
-        mPlotSpecModifyData = internal::PlotSpecModifyData(mMain->plot_spec());
+        mPlotSpecModifyData = internal::PlotSpecModifyData(main_->plot_spec());
     }
     return *mPlotSpecModifyData;
 
