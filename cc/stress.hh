@@ -19,11 +19,12 @@ namespace acmacs::chart
 
     struct StressParameters
     {
-        inline StressParameters(PointIndexList&& a_unmovable, PointIndexList&& a_disconnected, PointIndexList&& a_unmovable_in_the_last_dimension, bool a_multiply_antigen_titer_until_column_adjust, AvidityAdjusts&& a_avidity_adjusts, bool a_dodgy_titer_is_regular)
-            : unmovable(std::move(a_unmovable)), disconnected(std::move(a_disconnected)),
+        inline StressParameters(size_t a_number_of_points, PointIndexList&& a_unmovable, PointIndexList&& a_disconnected, PointIndexList&& a_unmovable_in_the_last_dimension, bool a_multiply_antigen_titer_until_column_adjust, AvidityAdjusts&& a_avidity_adjusts, bool a_dodgy_titer_is_regular)
+            : number_of_points(a_number_of_points), unmovable(std::move(a_unmovable)), disconnected(std::move(a_disconnected)),
               unmovable_in_the_last_dimension(std::move(a_unmovable_in_the_last_dimension)), multiply_antigen_titer_until_column_adjust(a_multiply_antigen_titer_until_column_adjust),
               avidity_adjusts(std::move(a_avidity_adjusts)), dodgy_titer_is_regular(a_dodgy_titer_is_regular) {}
 
+        size_t number_of_points;
         PointIndexList unmovable;
         PointIndexList disconnected;
         PointIndexList unmovable_in_the_last_dimension;
@@ -51,6 +52,9 @@ namespace acmacs::chart
         const size_t number_of_dimensions_;
         TableDistances<Float> table_distances_;
         StressParameters parameters_;
+
+        std::vector<Float> gradient_plain(const std::vector<Float>& aArgument) const;
+        std::vector<Float> gradient_with_unmovable(const std::vector<Float>& aArgument) const;
 
     }; // class Stress
 

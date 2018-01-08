@@ -76,7 +76,7 @@ template <typename Float> static inline Float map_distance(const std::vector<Flo
 
 template <typename Float> acmacs::chart::Stress<Float>::Stress(const Projection& projection, bool multiply_antigen_titer_until_column_adjust)
     : number_of_dimensions_(projection.number_of_dimensions()),
-      parameters_(projection.unmovable(), projection.disconnected(), projection.unmovable_in_the_last_dimension(),
+      parameters_(projection.number_of_points(), projection.unmovable(), projection.disconnected(), projection.unmovable_in_the_last_dimension(),
                   multiply_antigen_titer_until_column_adjust, projection.avidity_adjusts(), projection.dodgy_titer_is_regular())
 {
 } // acmacs::chart::Stress<Float>::Stress
@@ -111,6 +111,25 @@ template <typename Float> Float acmacs::chart::Stress<Float>::value(const acmacs
 
 template <typename Float> std::vector<Float> acmacs::chart::Stress<Float>::gradient(const std::vector<Float>& aArgument) const
 {
+    if (parameters_.unmovable.empty() && parameters_.unmovable_in_the_last_dimension.empty())
+        return gradient_plain(aArgument);
+    else
+        return gradient_with_unmovable(aArgument);
+
+} // acmacs::chart::Stress<Float>::gradient
+
+// ----------------------------------------------------------------------
+
+template <typename Float> std::vector<Float> acmacs::chart::Stress<Float>::gradient(const acmacs::LayoutInterface& aLayout) const
+{
+    return gradient(::flatten<Float>(aLayout));
+
+} // acmacs::chart::Stress<Float>::gradient
+
+// ----------------------------------------------------------------------
+
+template <typename Float> std::vector<Float> acmacs::chart::Stress<Float>::gradient_plain(const std::vector<Float>& aArgument) const
+{
     std::vector<Float> result(aArgument.size(), 0);
 
     auto update = [&aArgument,&result,num_dim=number_of_dimensions_](const auto& entry, Float inc_base) {
@@ -144,15 +163,57 @@ template <typename Float> std::vector<Float> acmacs::chart::Stress<Float>::gradi
 
     return result;
 
-} // acmacs::chart::Stress<Float>::gradient
+} // acmacs::chart::Stress<Float>::gradient_plain
 
 // ----------------------------------------------------------------------
 
-template <typename Float> std::vector<Float> acmacs::chart::Stress<Float>::gradient(const acmacs::LayoutInterface& aLayout) const
+template <typename Float> std::vector<Float> acmacs::chart::Stress<Float>::gradient_with_unmovable(const std::vector<Float>& aArgument) const
 {
-    return gradient(::flatten<Float>(aLayout));
+    std::vector<bool> unmovable(parameters_.number_of_points, false);
+    for (const auto p_no: parameters_.unmovable)
+        unmovable[p_no] = true;
+    std::vector<bool> unmovable_in_the_last_dimension(parameters_.number_of_points, false);
+    for (const auto p_no: parameters_.unmovable_in_the_last_dimension)
+        unmovable_in_the_last_dimension[p_no] = true;
 
-} // acmacs::chart::Stress<Float>::gradient
+    std::vector<Float> result(aArgument.size(), 0);
+
+    auto update = [&aArgument,&result,num_dim=number_of_dimensions_,&unmovable,&unmovable_in_the_last_dimension](const auto& entry, Float inc_base) {
+        using diff_t = typename std::vector<Float>::difference_type;
+        auto p1f = [p=static_cast<diff_t>(entry.point_1 * num_dim)] (auto b) { return b + p; };
+        auto p2f = [p=static_cast<diff_t>(entry.point_2 * num_dim)] (auto b) { return b + p; };
+        auto p1 = p1f(aArgument.begin());
+        auto r1 = p1f(result.begin());
+        auto p2 = p2f(aArgument.begin());
+        auto r2 = p2f(result.begin());
+        for (size_t d = 0; d < num_dim; ++d, ++p1, ++p2, ++r1, ++r2) {
+            const Float inc = inc_base * (*p1 - *p2);
+            if (!unmovable[entry.point_1] && (!unmovable_in_the_last_dimension[entry.point_1] || (d + 1) < num_dim))
+                *r1 -= inc;
+            if (!unmovable[entry.point_2] && (!unmovable_in_the_last_dimension[entry.point_2] || (d + 1) < num_dim))
+                *r2 += inc;
+        }
+    };
+
+    auto contribution_regular = [&aArgument,num_dim=number_of_dimensions_,update](const auto& entry) {
+        const Float map_dist = ::map_distance(aArgument, entry, num_dim);
+        const Float inc_base = (entry.table_distance - map_dist) * 2 / non_zero(map_dist);
+        update(entry, inc_base);
+    };
+    auto contribution_less_than = [&aArgument,num_dim=number_of_dimensions_,update](const auto& entry) {
+        const Float map_dist = ::map_distance(aArgument, entry, num_dim);
+        const Float diff = entry.table_distance - map_dist + 1;
+        const Float inc_base = (diff * 2 * acmacs::sigmoid(diff * SigmoidMutiplier<Float>())
+                                + diff * diff * acmacs::d_sigmoid(diff * SigmoidMutiplier<Float>()) * SigmoidMutiplier<Float>()) / non_zero(map_dist);
+        update(entry, inc_base);
+    };
+
+    std::for_each(table_distances().regular().begin(), table_distances().regular().end(), contribution_regular);
+    std::for_each(table_distances().less_than().begin(), table_distances().less_than().end(), contribution_less_than);
+
+    return result;
+
+} // acmacs::chart::Stress<Float>::gradient_with_unmovable
 
 // ----------------------------------------------------------------------
 
