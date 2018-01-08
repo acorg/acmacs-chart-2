@@ -92,16 +92,16 @@ void acmacs::chart::rjson_import::Layout::set(size_t /*aPointNo*/, const acmacs:
 
 // ----------------------------------------------------------------------
 
-template <typename Float> static void update_list(const rjson::array& data, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, const acmacs::chart::AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust, size_t number_of_points)
+template <typename Float> static void update_list(const rjson::array& data, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters, size_t number_of_points)
 {
-    const auto logged_adjusts = avidity_adjusts.logged(number_of_points);
+    const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     for (auto p1 : acmacs::range(data.size())) {
-        if (!disconnected.exist(p1)) {
+        if (!parameters.disconnected.exist(p1)) {
             const rjson::array& row = data[p1];
             for (auto serum_no : acmacs::range(row.size())) {
                 const auto p2 = serum_no + data.size();
-                if (!disconnected.exist(p2)) {
-                    table_distances.update(row[serum_no], p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], multiply_antigen_titer_until_column_adjust);
+                if (!parameters.disconnected.exist(p2)) {
+                    table_distances.update(row[serum_no], p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.multiply_antigen_titer_until_column_adjust);
                 }
             }
         }
@@ -109,17 +109,17 @@ template <typename Float> static void update_list(const rjson::array& data, acma
 
 } // update_list
 
-template <typename Float> static void update_dict(const rjson::array& data, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, const acmacs::chart::AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust, size_t number_of_points)
+template <typename Float> static void update_dict(const rjson::array& data, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters, size_t number_of_points)
 {
-    const auto logged_adjusts = avidity_adjusts.logged(number_of_points);
+    const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     for (auto p1 : acmacs::range(data.size())) {
-        if (!disconnected.exist(p1)) {
+        if (!parameters.disconnected.exist(p1)) {
             const rjson::object& row = data[p1];
             for (auto [serum_no_s, titer_s] : row) {
                 const auto serum_no = std::stoul(serum_no_s);
                 const auto p2 = serum_no + data.size();
-                if (!disconnected.exist(p2)) {
-                    table_distances.update(titer_s, p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], multiply_antigen_titer_until_column_adjust);
+                if (!parameters.disconnected.exist(p2)) {
+                    table_distances.update(titer_s, p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.multiply_antigen_titer_until_column_adjust);
                 }
             }
         }
@@ -127,18 +127,18 @@ template <typename Float> static void update_dict(const rjson::array& data, acma
 
 } // update_dict
 
-template <typename Float> void acmacs::chart::rjson_import::update(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<Float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust, size_t number_of_points)
+template <typename Float> void acmacs::chart::rjson_import::update(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<Float>& table_distances, const ColumnBases& column_bases, const ProjectionParameters& parameters, size_t number_of_points)
 {
-    table_distances.dodgy_is_regular(dodgy_titer_is_regular);
+    table_distances.dodgy_is_regular(parameters.dodgy_titer_is_regular);
     if (auto [present, list] = data.get_array_if(list_key); present)
-        ::update_list(list, table_distances, column_bases, disconnected, avidity_adjusts, multiply_antigen_titer_until_column_adjust, number_of_points);
+        ::update_list(list, table_distances, column_bases, parameters, number_of_points);
     else
-        ::update_dict(data[dict_key], table_distances, column_bases, disconnected, avidity_adjusts, multiply_antigen_titer_until_column_adjust, number_of_points);
+        ::update_dict(data[dict_key], table_distances, column_bases, parameters, number_of_points);
 
 } // acmacs::chart::rjson_import::update
 
-template void acmacs::chart::rjson_import::update<float>(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust, size_t number_of_points);
-template void acmacs::chart::rjson_import::update<double>(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<double>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust, size_t number_of_points);
+template void acmacs::chart::rjson_import::update<float>(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<float>& table_distances, const ColumnBases& column_bases, const ProjectionParameters& parameters, size_t number_of_points);
+template void acmacs::chart::rjson_import::update<double>(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<double>& table_distances, const ColumnBases& column_bases, const ProjectionParameters& parameters, size_t number_of_points);
 
 // ----------------------------------------------------------------------
 /// Local Variables:

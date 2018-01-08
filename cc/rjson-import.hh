@@ -81,9 +81,9 @@ namespace acmacs::chart::rjson_import
 
 // ----------------------------------------------------------------------
 
-    template <typename Float> void update(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<Float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust, size_t number_of_points);
-    extern template void update<float>(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust, size_t number_of_points);
-    extern template void update<double>(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<double>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust, size_t number_of_points);
+    template <typename Float> void update(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<Float>& table_distances, const ColumnBases& column_bases, const ProjectionParameters& parameters, size_t number_of_points);
+    extern template void update<float>(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<float>& table_distances, const ColumnBases& column_bases, const ProjectionParameters& parameters, size_t number_of_points);
+    extern template void update<double>(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<double>& table_distances, const ColumnBases& column_bases, const ProjectionParameters& parameters, size_t number_of_points);
 
 } // namespace acmacs::chart::rjson
 

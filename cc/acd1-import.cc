@@ -637,10 +637,10 @@ size_t Acd1Titers::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
-void Acd1Titers::update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const
+void Acd1Titers::update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters) const
 {
     if (number_of_sera()) {
-        rjson_import::update(mData, "titers_list_of_list", "titers_list_of_dict", table_distances, column_bases, disconnected, dodgy_titer_is_regular, avidity_adjusts, multiply_antigen_titer_until_column_adjust, number_of_antigens() + number_of_sera());
+        rjson_import::update(mData, "titers_list_of_list", "titers_list_of_dict", table_distances, column_bases, parameters, number_of_antigens() + number_of_sera());
     }
     else {
         throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
@@ -650,10 +650,10 @@ void Acd1Titers::update(TableDistances<float>& table_distances, const ColumnBase
 
 // ----------------------------------------------------------------------
 
-void Acd1Titers::update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const
+void Acd1Titers::update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters) const
 {
     if (number_of_sera()) {
-        rjson_import::update(mData, "titers_list_of_list", "titers_list_of_dict", table_distances, column_bases, disconnected, dodgy_titer_is_regular, avidity_adjusts, multiply_antigen_titer_until_column_adjust, number_of_antigens() + number_of_sera());
+        rjson_import::update(mData, "titers_list_of_list", "titers_list_of_dict", table_distances, column_bases, parameters, number_of_antigens() + number_of_sera());
     }
     else {
         throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);

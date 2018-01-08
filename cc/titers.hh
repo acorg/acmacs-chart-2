@@ -50,6 +50,7 @@ namespace acmacs::chart
     template <typename Float> class TableDistances;
     class PointIndexList;
     class AvidityAdjusts;
+    struct ProjectionParameters;
 
     class Titers
     {
@@ -74,8 +75,10 @@ namespace acmacs::chart
 
         std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis, size_t number_of_antigens, size_t number_of_sera) const;
 
-        virtual void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const;
-        virtual void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const;
+        // virtual void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const;
+        // virtual void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const;
+        virtual void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const ProjectionParameters& parameters) const;
+        virtual void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const ProjectionParameters& parameters) const;
 
     }; // class Titers
 

@@ -377,6 +377,21 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+    struct ProjectionParameters
+    {
+        inline ProjectionParameters(PointIndexList&& a_unmovable, PointIndexList&& a_disconnected, PointIndexList&& a_unmovable_in_the_last_dimension, bool a_multiply_antigen_titer_until_column_adjust, AvidityAdjusts&& a_avidity_adjusts, bool a_dodgy_titer_is_regular)
+            : unmovable(std::move(a_unmovable)), disconnected(std::move(a_disconnected)),
+              unmovable_in_the_last_dimension(std::move(a_unmovable_in_the_last_dimension)), multiply_antigen_titer_until_column_adjust(a_multiply_antigen_titer_until_column_adjust),
+              avidity_adjusts(std::move(a_avidity_adjusts)), dodgy_titer_is_regular(a_dodgy_titer_is_regular) {}
+
+        PointIndexList unmovable;
+        PointIndexList disconnected;
+        PointIndexList unmovable_in_the_last_dimension;
+        bool multiply_antigen_titer_until_column_adjust;
+        AvidityAdjusts avidity_adjusts;
+        bool dodgy_titer_is_regular;
+    };
+
     class Projection
     {
       public:

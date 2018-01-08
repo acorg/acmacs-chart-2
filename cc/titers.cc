@@ -164,18 +164,18 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Titers::computed_colu
 
 // ----------------------------------------------------------------------
 
-template <typename Float> static void update(const acmacs::chart::Titers& titers, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular, const acmacs::chart::AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust)
+template <typename Float> static void update(const acmacs::chart::Titers& titers, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters)
 {
     const auto number_of_points = titers.number_of_antigens() + titers.number_of_sera();
-    const auto logged_adjusts = avidity_adjusts.logged(number_of_points);
-    table_distances.dodgy_is_regular(dodgy_titer_is_regular);
+    const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
+    table_distances.dodgy_is_regular(parameters.dodgy_titer_is_regular);
     if (titers.number_of_sera()) {
         for (auto p1 : acmacs::range(titers.number_of_antigens())) {
-            if (!disconnected.exist(p1)) {
+            if (!parameters.disconnected.exist(p1)) {
                 for (auto p2 : acmacs::range(titers.number_of_antigens(), number_of_points)) {
-                    if (!disconnected.exist(p2)) {
+                    if (!parameters.disconnected.exist(p2)) {
                         const auto serum_no = p2 - titers.number_of_antigens();
-                        table_distances.update(titers.titer(p1, serum_no), p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], multiply_antigen_titer_until_column_adjust);
+                        table_distances.update(titers.titer(p1, serum_no), p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.multiply_antigen_titer_until_column_adjust);
                     }
                 }
             }
@@ -186,22 +186,19 @@ template <typename Float> static void update(const acmacs::chart::Titers& titers
     }
 }
 
-void acmacs::chart::Titers::update(acmacs::chart::TableDistances<float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const
+void acmacs::chart::Titers::update(acmacs::chart::TableDistances<float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters) const
 {
-    ::update(*this, table_distances, column_bases, disconnected, dodgy_titer_is_regular, avidity_adjusts, multiply_antigen_titer_until_column_adjust);
+    ::update(*this, table_distances, column_bases, parameters);
 
 } // acmacs::chart::Titers::update
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Titers::update(acmacs::chart::TableDistances<double>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::PointIndexList& disconnected, bool dodgy_titer_is_regular, const AvidityAdjusts& avidity_adjusts, bool multiply_antigen_titer_until_column_adjust) const
+void acmacs::chart::Titers::update(acmacs::chart::TableDistances<double>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters) const
 {
-    ::update(*this, table_distances, column_bases, disconnected, dodgy_titer_is_regular, avidity_adjusts, multiply_antigen_titer_until_column_adjust);
+    ::update(*this, table_distances, column_bases, parameters);
 
 } // acmacs::chart::Titers::update
-
-// ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:
