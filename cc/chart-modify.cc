@@ -66,9 +66,19 @@ ProjectionsP ChartModify::projections() const
 
 // ----------------------------------------------------------------------
 
+PlotSpecModifyP ChartModify::get_plot_spec() const
+{
+    if (!plot_spec_)
+        plot_spec_ = std::make_shared<PlotSpecModify>(main_->plot_spec(), number_of_antigens());
+    return plot_spec_;
+
+} // ChartModify::get_plot_spec
+
+// ----------------------------------------------------------------------
+
 PlotSpecP ChartModify::plot_spec() const
 {
-    return std::make_shared<PlotSpecModify>(main_->plot_spec(), const_cast<ChartModify&>(*this));
+    return get_plot_spec();
 
 } // ChartModify::plot_spec
 
@@ -135,44 +145,9 @@ ProjectionModifyP ChartModify::projection_modify(size_t aProjectionNo)
 
 PlotSpecModifyP ChartModify::plot_spec_modify()
 {
-    return std::make_shared<PlotSpecModify>(main_->plot_spec(), *this);
+    return get_plot_spec();
 
 } // ChartModify::plot_spec_modify
-
-// ----------------------------------------------------------------------
-
-internal::PlotSpecModifyData& ChartModify::modify_plot_spec()
-{
-    if (!mPlotSpecModifyData) {
-        mPlotSpecModifyData = internal::PlotSpecModifyData(main_->plot_spec());
-    }
-    return *mPlotSpecModifyData;
-
-} // ChartModify::modify_plot_spec
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::DrawingOrder acmacs::chart::PlotSpecModify::drawing_order() const
-{
-    if (mChart.modified_plot_spec()) {
-        return mChart.modify_plot_spec().drawing_order();
-    }
-    else {
-        auto drawing_order = mMain->drawing_order();
-        drawing_order.fill_if_empty(mChart.number_of_points());
-        return drawing_order;
-    }
-
-} // acmacs::chart::PlotSpecModify::drawing_order
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::internal::PlotSpecModifyData::PlotSpecModifyData(PlotSpecP aMain)
-    : mStyles(aMain->all_styles()), mDrawingOrder(aMain->drawing_order())
-{
-    mDrawingOrder.fill_if_empty(number_of_points());
-
-} // acmacs::chart::internal::PlotSpecModifyData::PlotSpecModifyData
 
 // ----------------------------------------------------------------------
 /// Local Variables:

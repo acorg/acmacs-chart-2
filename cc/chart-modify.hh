@@ -32,42 +32,6 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    namespace internal
-    {
-        class PlotSpecModifyData
-        {
-         public:
-            PlotSpecModifyData(PlotSpecP aMain);
-
-            inline const PointStyle& style(size_t aPointNo) const { return mStyles.at(aPointNo); }
-            inline const std::vector<PointStyle>& all_styles() const { return mStyles; }
-
-            inline size_t number_of_points() const { return mStyles.size(); }
-            inline void validate_point_no(size_t aPointNo) const { if (aPointNo >= number_of_points()) throw std::runtime_error("Invalid point number: " + acmacs::to_string(aPointNo) + ", expected integer in range 0.." + acmacs::to_string(number_of_points() - 1) + ", inclusive"); }
-            inline void size(size_t aPointNo, Pixels aSize) { validate_point_no(aPointNo); mStyles[aPointNo].size = aSize; }
-            inline void fill(size_t aPointNo, Color aFill) { validate_point_no(aPointNo); mStyles[aPointNo].fill = aFill; }
-            inline void outline(size_t aPointNo, Color aOutline) { validate_point_no(aPointNo); mStyles[aPointNo].outline = aOutline; }
-            inline void scale_all(double aPointScale, double aOulineScale) { std::for_each(mStyles.begin(), mStyles.end(), [=](auto& style) { style.scale(aPointScale).scale_outline(aOulineScale); }); }
-
-            inline void modify(size_t aPointNo, const PointStyle& aStyle) { mStyles.at(aPointNo) = aStyle; }
-
-            inline const DrawingOrder& drawing_order() const { return mDrawingOrder; }
-            inline DrawingOrder& drawing_order() { return mDrawingOrder; }
-            inline void raise(size_t aPointNo) { validate_point_no(aPointNo); mDrawingOrder.raise(aPointNo); }
-            inline void lower(size_t aPointNo) { validate_point_no(aPointNo); mDrawingOrder.lower(aPointNo); }
-
-         private:
-            std::vector<PointStyle> mStyles;
-            DrawingOrder mDrawingOrder;
-
-        }; // class PlotSpecModifyData
-
-    } // namespace internal
-
-// ----------------------------------------------------------------------
-
-    // using ProjectionId = size_t;
-
     class ChartModify : public Chart
     {
      public:
@@ -95,15 +59,10 @@ namespace acmacs::chart
      private:
         ChartP main_;
         mutable ProjectionsModifyP projections_;
+        mutable PlotSpecModifyP plot_spec_;
 
         ProjectionsModifyP get_projections() const;
-
-        std::optional<internal::PlotSpecModifyData> mPlotSpecModifyData;
-
-        internal::PlotSpecModifyData& modify_plot_spec();
-        inline bool modified_plot_spec() const { return mPlotSpecModifyData.has_value(); }
-
-        friend class PlotSpecModify;
+        PlotSpecModifyP get_plot_spec() const;
 
     }; // class ChartModify
 
@@ -327,10 +286,10 @@ namespace acmacs::chart
     class ProjectionsModify : public Projections
     {
      public:
-        inline ProjectionsModify(ProjectionsP aMain)
-            : projections_(aMain->size(), nullptr)
+        inline ProjectionsModify(ProjectionsP main)
+            : projections_(main->size(), nullptr)
             {
-                std::transform(aMain->begin(), aMain->end(), projections_.begin(), [](ProjectionP aSource) mutable { return std::make_shared<ProjectionModifyMain>(aSource); });
+                std::transform(main->begin(), main->end(), projections_.begin(), [](ProjectionP aSource) mutable { return std::make_shared<ProjectionModifyMain>(aSource); });
             }
 
         inline bool empty() const override { return projections_.empty(); }
@@ -350,39 +309,57 @@ namespace acmacs::chart
     class PlotSpecModify : public PlotSpec
     {
      public:
-        inline PlotSpecModify(PlotSpecP aMain, ChartModify& aChart) : mMain{aMain}, mChart(aChart), mNumberOfAntigens(aChart.number_of_antigens()) {}
+        PlotSpecModify(PlotSpecP main, size_t number_of_antigens) : main_{main}, number_of_antigens_(number_of_antigens) {}
 
-        inline bool empty() const override { return mChart.modified_plot_spec() ? false : mMain->empty(); }
-        inline Color error_line_positive_color() const override { return mMain->error_line_positive_color(); }
-        inline Color error_line_negative_color() const override { return mMain->error_line_negative_color(); }
-        inline PointStyle style(size_t aPointNo) const override { return mChart.modified_plot_spec() ? mChart.modify_plot_spec().style(aPointNo) : mMain->style(aPointNo); }
-        inline std::vector<PointStyle> all_styles() const override { return mChart.modified_plot_spec() ? mChart.modify_plot_spec().all_styles() : mMain->all_styles(); }
+        bool empty() const override { return modified() ? false : main_->empty(); }
+        Color error_line_positive_color() const override { return main_->error_line_positive_color(); }
+        Color error_line_negative_color() const override { return main_->error_line_negative_color(); }
+        PointStyle style(size_t aPointNo) const override { return modified() ? style_modified(aPointNo) : main_->style(aPointNo); }
+        std::vector<PointStyle> all_styles() const override { return modified() ? styles_ : main_->all_styles(); }
 
-        DrawingOrder drawing_order() const override;
-        inline DrawingOrder& drawing_order_modify() { return mChart.modify_plot_spec().drawing_order(); }
-        inline void raise(size_t aPointNo) { mChart.modify_plot_spec().raise(aPointNo); }
-        inline void raise(const Indexes& aPoints) { std::for_each(aPoints.begin(), aPoints.end(), [&](size_t aIndex) { this->raise(aIndex); }); }
-        inline void lower(size_t aPointNo) { mChart.modify_plot_spec().lower(aPointNo); }
-        inline void lower(const Indexes& aPoints) { std::for_each(aPoints.begin(), aPoints.end(), [&](size_t aIndex) { this->lower(aIndex); }); }
-        inline void raise_serum(size_t aSerumNo) { mChart.modify_plot_spec().raise(aSerumNo + mNumberOfAntigens); }
-        inline void raise_serum(const Indexes& aSera) { std::for_each(aSera.begin(), aSera.end(), [&](size_t aIndex) { this->raise_serum(aIndex); }); }
-        inline void lower_serum(size_t aSerumNo) { mChart.modify_plot_spec().lower(aSerumNo + mNumberOfAntigens); }
-        inline void lower_serum(const Indexes& aSera) { std::for_each(aSera.begin(), aSera.end(), [&](size_t aIndex) { this->lower_serum(aIndex); }); }
+        DrawingOrder drawing_order() const override
+            {
+                if (modified())
+                    return drawing_order_;
+                auto drawing_order = main_->drawing_order();
+                drawing_order.fill_if_empty(number_of_points());
+                return drawing_order;
+            }
 
-        inline void size(size_t aPointNo, Pixels aSize) { mChart.modify_plot_spec().size(aPointNo, aSize); }
-        inline void fill(size_t aPointNo, Color aFill) { mChart.modify_plot_spec().fill(aPointNo, aFill); }
-        inline void outline(size_t aPointNo, Color aOutline) { mChart.modify_plot_spec().outline(aPointNo, aOutline); }
-        inline void scale_all(double aPointScale, double aOulineScale) { mChart.modify_plot_spec().scale_all(aPointScale, aOulineScale); }
+        DrawingOrder& drawing_order_modify() { modify(); return drawing_order_; }
+        void raise(size_t point_no) { modify(); validate_point_no(point_no); drawing_order_.raise(point_no); }
+        void raise(const Indexes& points) { modify(); std::for_each(points.begin(), points.end(), [this](size_t index) { this->raise(index); }); }
+        void lower(size_t point_no) { modify(); validate_point_no(point_no); drawing_order_.lower(point_no); }
+        void lower(const Indexes& points) { modify(); std::for_each(points.begin(), points.end(), [this](size_t index) { this->lower(index); }); }
+        void raise_serum(size_t serum_no) { raise(serum_no + number_of_antigens_); }
+        void raise_serum(const Indexes& sera) { std::for_each(sera.begin(), sera.end(), [this](size_t index) { this->raise(index + this->number_of_antigens_); }); }
+        void lower_serum(size_t serum_no) { lower(serum_no + number_of_antigens_); }
+        void lower_serum(const Indexes& sera) { std::for_each(sera.begin(), sera.end(), [this](size_t index) { this->lower(index + this->number_of_antigens_); }); }
 
-        inline void modify(size_t aPointNo, const PointStyle& aStyle) { mChart.modify_plot_spec().modify(aPointNo, aStyle); }
-        inline void modify(const Indexes& aPoints, const PointStyle& aStyle) { std::for_each(aPoints.begin(), aPoints.end(), [&](size_t aIndex) { this->modify(aIndex, aStyle); }); }
-        inline void modify_serum(size_t aSerumNo, const PointStyle& aStyle) { mChart.modify_plot_spec().modify(aSerumNo + mNumberOfAntigens, aStyle); }
-        inline void modify_sera(const Indexes& aSera, const PointStyle& aStyle) { std::for_each(aSera.begin(), aSera.end(), [&](size_t aIndex) { this->modify_serum(aIndex, aStyle); }); }
+        void size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].size = size; }
+        void fill(size_t point_no, Color fill) { modify(); validate_point_no(point_no); styles_[point_no].fill = fill; }
+        void outline(size_t point_no, Color outline) { modify(); validate_point_no(point_no); styles_[point_no].outline = outline; }
+        void scale_all(double point_scale, double outline_scale) { modify(); std::for_each(styles_.begin(), styles_.end(), [=](auto& style) { style.scale(point_scale).scale_outline(outline_scale); }); }
+
+        void modify(size_t point_no, const PointStyle& style) { modify(); validate_point_no(point_no); styles_[point_no] = style; }
+        void modify(const Indexes& points, const PointStyle& style) { modify(); std::for_each(points.begin(), points.end(), [this,&style](size_t index) { this->modify(index, style); }); }
+        void modify_serum(size_t serum_no, const PointStyle& style) { modify(serum_no + number_of_antigens_, style); }
+        void modify_sera(const Indexes& sera, const PointStyle& style) { std::for_each(sera.begin(), sera.end(), [this,&style](size_t index) { this->modify(index + this->number_of_antigens_, style); }); }
+
+     protected:
+        virtual bool modified() const { return modified_; }
+        virtual void modify() { if (!modified()) clone_from(*main_); }
+        size_t number_of_points() const { return styles_.size(); }
+        void clone_from(const PlotSpec& aSource) { modified_ = true; styles_ = aSource.all_styles(); drawing_order_ = aSource.drawing_order(); drawing_order_.fill_if_empty(number_of_points()); }
+        const PointStyle& style_modified(size_t point_no) const { return styles_.at(point_no); }
+        void validate_point_no(size_t point_no) const { if (point_no >= number_of_points()) throw std::runtime_error("Invalid point number: " + acmacs::to_string(point_no) + ", expected integer in range 0.." + acmacs::to_string(number_of_points() - 1) + ", inclusive"); }
 
      private:
-        PlotSpecP mMain;
-        ChartModify& mChart;
-        size_t mNumberOfAntigens;
+        PlotSpecP main_;
+        size_t number_of_antigens_;
+        bool modified_ = false;
+        std::vector<PointStyle> styles_;
+        DrawingOrder drawing_order_;
 
     }; // class PlotSpecModify
 
