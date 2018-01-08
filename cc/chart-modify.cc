@@ -48,11 +48,19 @@ ColumnBasesP ChartModify::forced_column_bases() const
 
 // ----------------------------------------------------------------------
 
-ProjectionsP ChartModify::projections() const
+inline ProjectionsModifyP ChartModify::get_projections() const
 {
     if (!projections_)
-        projections_ = std::make_shared<ProjectionsModify>(main_->projections(), const_cast<ChartModify&>(*this));
+        projections_ = std::make_shared<ProjectionsModify>(main_->projections());
     return projections_;
+
+} // ChartModify::get_projections
+
+// ----------------------------------------------------------------------
+
+ProjectionsP ChartModify::projections() const
+{
+    return get_projections();
 
 } // ChartModify::projections
 
@@ -111,7 +119,7 @@ ColumnBasesModifyP ChartModify::forced_column_bases_modify()
 
 ProjectionsModifyP ChartModify::projections_modify()
 {
-    return std::make_shared<ProjectionsModify>(main_->projections(), *this);
+    return get_projections();
 
 } // ChartModify::projections_modify
 
@@ -119,7 +127,7 @@ ProjectionsModifyP ChartModify::projections_modify()
 
 ProjectionModifyP ChartModify::projection_modify(size_t aProjectionNo)
 {
-    return std::make_shared<ProjectionModifyMain>(main_->projections()->operator[](aProjectionNo), aProjectionNo, *this);
+    return get_projections()->at(aProjectionNo);
 
 } // ChartModify::projection_modify
 
@@ -130,34 +138,6 @@ PlotSpecModifyP ChartModify::plot_spec_modify()
     return std::make_shared<PlotSpecModify>(main_->plot_spec(), *this);
 
 } // ChartModify::plot_spec_modify
-
-// ----------------------------------------------------------------------
-
-internal::ProjectionModifyData& ChartModify::modify_projection(ProjectionId aProjectionId)
-{
-    if (const auto found = mProjectionModifyData.find(aProjectionId); found == mProjectionModifyData.end()) {
-        mProjectionModifyData[aProjectionId] = std::make_unique<internal::ProjectionModifyData>(main_->projections()->operator[](aProjectionId));
-        return *mProjectionModifyData[aProjectionId];
-    }
-    else
-        return *found->second;
-
-} // ChartModify::modify_projection
-
-// ----------------------------------------------------------------------
-
-void ChartModify::clone_modified_projection(ProjectionId old_id, ProjectionId new_id)
-{
-    if (const auto found_new = mProjectionModifyData.find(new_id); found_new != mProjectionModifyData.end())
-        throw invalid_data("ChartModify::clone_modified_projection: new_id already exists");
-    if (const auto found_old = mProjectionModifyData.find(old_id); found_old != mProjectionModifyData.end()) {
-        mProjectionModifyData[new_id] = std::make_unique<internal::ProjectionModifyData>(*found_old->second);
-    }
-    else {
-        throw invalid_data("ChartModify::clone_modified_projection: old_id does not exist");
-    }
-
-} // ChartModify::clone_modified_projection
 
 // ----------------------------------------------------------------------
 
@@ -184,20 +164,6 @@ acmacs::chart::DrawingOrder acmacs::chart::PlotSpecModify::drawing_order() const
     }
 
 } // acmacs::chart::PlotSpecModify::drawing_order
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData(ProjectionP aMain)
-    : mLayout(std::make_shared<acmacs::Layout>(*aMain->layout())), mTransformation(aMain->transformation())
-{
-} // acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData(const acmacs::chart::internal::ProjectionModifyData& aSource)
-    : mLayout(std::make_shared<acmacs::Layout>(aSource.clayout())), mTransformation(aSource.transformation())
-{
-} // acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData
 
 // ----------------------------------------------------------------------
 
