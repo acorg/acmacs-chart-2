@@ -164,7 +164,7 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Titers::computed_colu
 
 // ----------------------------------------------------------------------
 
-template <typename Float> static void update(const acmacs::chart::Titers& titers, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters)
+template <typename Float> static void update(const acmacs::chart::Titers& titers, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters)
 {
     const auto number_of_points = titers.number_of_antigens() + titers.number_of_sera();
     const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
@@ -186,7 +186,7 @@ template <typename Float> static void update(const acmacs::chart::Titers& titers
     }
 }
 
-void acmacs::chart::Titers::update(acmacs::chart::TableDistances<float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters) const
+void acmacs::chart::Titers::update(acmacs::chart::TableDistances<float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const
 {
     ::update(*this, table_distances, column_bases, parameters);
 
@@ -194,7 +194,7 @@ void acmacs::chart::Titers::update(acmacs::chart::TableDistances<float>& table_d
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Titers::update(acmacs::chart::TableDistances<double>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters) const
+void acmacs::chart::Titers::update(acmacs::chart::TableDistances<double>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const
 {
     ::update(*this, table_distances, column_bases, parameters);
 

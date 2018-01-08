@@ -301,7 +301,7 @@ size_t AceTiters::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
-void AceTiters::update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters) const
+void AceTiters::update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const
 {
     if (number_of_sera()) {
         rjson_import::update(mData, "l", "d", table_distances, column_bases, parameters, number_of_antigens() + number_of_sera());
@@ -312,7 +312,7 @@ void AceTiters::update(TableDistances<float>& table_distances, const ColumnBases
 
 } // AceTiters::update
 
-void AceTiters::update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters) const
+void AceTiters::update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const
 {
     if (number_of_sera()) {
         rjson_import::update(mData, "l", "d", table_distances, column_bases, parameters, number_of_antigens() + number_of_sera());

@@ -60,13 +60,13 @@ int main(int argc, char* const argv[])
             auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
             auto projection = chart->projection(args["--projection"]);
             if (args["--double"]) {
-                std::cout << acmacs::to_string(projection->calculate_stress(chart->make_stress<double>(args["--projection"]))) << '\n';
+                std::cout << acmacs::to_string(projection->calculate_stress<double>(*chart)) << '\n';
             }
             else if (args["--float"]) {
-                std::cout << acmacs::to_string(projection->calculate_stress(chart->make_stress<float>(args["--projection"]))) << '\n';
+                std::cout << acmacs::to_string(projection->calculate_stress<float>(*chart)) << '\n';
             }
             else if (args["--gradient"]) {
-                std::cout << acmacs::to_string(projection->calculate_gradient(chart->make_stress<double>(args["--projection"]))) << '\n';
+                std::cout << acmacs::to_string(projection->calculate_gradient<double>(*chart)) << '\n';
             }
             else {
                 auto stress = chart->make_stress<double>(args["--projection"]);

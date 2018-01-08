@@ -32,15 +32,13 @@ namespace std
 
 // ----------------------------------------------------------------------
 
-template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_factory(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection)
+template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_factory(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, bool multiply_antigen_titer_until_column_adjust)
 {
-    const bool multiply_antigen_titer_until_column_adjust = true;
-    Stress<Float> stress(projection.number_of_dimensions(), chart.number_of_antigens());
+    Stress<Float> stress(projection, multiply_antigen_titer_until_column_adjust);
     auto cb = projection.forced_column_bases();
     if (!cb)
         cb = chart.column_bases(projection.minimum_column_basis());
-    const ProjectionParameters parameters(projection.unmovable(), projection.disconnected(), projection.unmovable_in_the_last_dimension(), multiply_antigen_titer_until_column_adjust, projection.avidity_adjusts(), projection.dodgy_titer_is_regular());
-    chart.titers()->update(stress.table_distances(), *cb, parameters);
+    chart.titers()->update(stress.table_distances(), *cb, stress.parameters());
       // stress.table_distances().report();
     return stress;
 
@@ -73,6 +71,15 @@ template <typename Float> static inline Float map_distance(const std::vector<Flo
         aArgument.begin() + static_cast<diff_t>(number_of_dimensions * entry.point_2));
 
 } // map_distance
+
+// ----------------------------------------------------------------------
+
+template <typename Float> acmacs::chart::Stress<Float>::Stress(const Projection& projection, bool multiply_antigen_titer_until_column_adjust)
+    : number_of_dimensions_(projection.number_of_dimensions()),
+      parameters_(projection.unmovable(), projection.disconnected(), projection.unmovable_in_the_last_dimension(),
+                  multiply_antigen_titer_until_column_adjust, projection.avidity_adjusts(), projection.dodgy_titer_is_regular())
+{
+} // acmacs::chart::Stress<Float>::Stress
 
 // ----------------------------------------------------------------------
 
@@ -151,8 +158,8 @@ template <typename Float> std::vector<Float> acmacs::chart::Stress<Float>::gradi
 
 template class acmacs::chart::Stress<float>;
 template class acmacs::chart::Stress<double>;
-template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection);
-template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection);
+template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, bool multiply_antigen_titer_until_column_adjust);
+template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, bool multiply_antigen_titer_until_column_adjust);
 
 // ----------------------------------------------------------------------
 /// Local Variables:

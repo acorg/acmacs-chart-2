@@ -24,6 +24,8 @@ namespace acmacs::chart
     class invalid_data : public std::runtime_error { public: inline invalid_data(std::string msg) : std::runtime_error("invalid_data: " + msg) {} };
     class chart_is_read_only : public std::runtime_error { public: inline chart_is_read_only(std::string msg) : std::runtime_error("chart_is_read_only: " + msg) {} };
 
+    class Chart;
+
 // ----------------------------------------------------------------------
 
     class Info
@@ -158,33 +160,6 @@ namespace acmacs::chart
         using internal::string_data::string_data;
 
     }; // class SerumSpecies
-
-    class PointIndexList : public internal::index_list_data
-    {
-     public:
-        using internal::index_list_data::index_list_data;
-
-    }; // class PointIndexList
-
-    class AvidityAdjusts : public internal::double_list_data
-    {
-     public:
-        using internal::double_list_data::double_list_data;
-
-        constexpr inline bool empty() const
-            {
-                return internal::double_list_data::empty() || std::all_of(begin(), end(), [](double val) -> bool { return float_equal(val, 1.0); });
-            }
-
-        std::vector<double> logged(size_t number_of_points) const
-            {
-                std::vector<double> logged_adjusts(number_of_points, 0.0);
-                if (!empty())
-                    std::transform(begin(), end(), logged_adjusts.begin(), [](double adj) { return std::log2(adj); });
-                return logged_adjusts;
-            }
-
-    }; // class AvidityAdjusts
 
     class DrawingOrder : public internal::index_list_data
     {
@@ -377,21 +352,6 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    struct ProjectionParameters
-    {
-        inline ProjectionParameters(PointIndexList&& a_unmovable, PointIndexList&& a_disconnected, PointIndexList&& a_unmovable_in_the_last_dimension, bool a_multiply_antigen_titer_until_column_adjust, AvidityAdjusts&& a_avidity_adjusts, bool a_dodgy_titer_is_regular)
-            : unmovable(std::move(a_unmovable)), disconnected(std::move(a_disconnected)),
-              unmovable_in_the_last_dimension(std::move(a_unmovable_in_the_last_dimension)), multiply_antigen_titer_until_column_adjust(a_multiply_antigen_titer_until_column_adjust),
-              avidity_adjusts(std::move(a_avidity_adjusts)), dodgy_titer_is_regular(a_dodgy_titer_is_regular) {}
-
-        PointIndexList unmovable;
-        PointIndexList disconnected;
-        PointIndexList unmovable_in_the_last_dimension;
-        bool multiply_antigen_titer_until_column_adjust;
-        AvidityAdjusts avidity_adjusts;
-        bool dodgy_titer_is_regular;
-    };
-
     class Projection
     {
       public:
@@ -419,6 +379,9 @@ namespace acmacs::chart
 
         template <typename Float> inline double calculate_stress(const Stress<Float>& stress) const { return static_cast<double>(stress.value(*layout())); }
         template <typename Float> inline std::vector<Float> calculate_gradient(const Stress<Float>& stress) const { return stress.gradient(*layout()); }
+
+        template <typename Float> double calculate_stress(const Chart& chart, bool multiply_antigen_titer_until_column_adjust = true) const;
+        template <typename Float> std::vector<Float> calculate_gradient(const Chart& chart, bool multiply_antigen_titer_until_column_adjust = true) const;
 
     }; // class Projection
 
@@ -508,7 +471,11 @@ namespace acmacs::chart
 
         void set_homologous(bool force, std::shared_ptr<Sera> aSera = nullptr) const;
 
-        template <typename Float> Stress<Float> make_stress(const Projection& projection) const { return stress_factory<Float>(*this, projection); }
+        template <typename Float> Stress<Float> make_stress(const Projection& projection, bool multiply_antigen_titer_until_column_adjust = true) const
+            {
+                return stress_factory<Float>(*this, projection, multiply_antigen_titer_until_column_adjust);
+            }
+
         template <typename Float> inline Stress<Float> make_stress(size_t aProjectionNo) const { return make_stress<Float>(*projection(aProjectionNo)); }
 
      private:
@@ -527,6 +494,16 @@ namespace acmacs::chart
     using ProjectionP = std::shared_ptr<Projection>;
     using ProjectionsP = std::shared_ptr<Projections>;
     using PlotSpecP = std::shared_ptr<PlotSpec>;
+
+    template <typename Float> inline double Projection::calculate_stress(const Chart& chart, bool multiply_antigen_titer_until_column_adjust) const
+    {
+        return calculate_stress(stress_factory<Float>(chart, *this, multiply_antigen_titer_until_column_adjust));
+    }
+
+    template <typename Float> std::vector<Float> Projection::calculate_gradient(const Chart& chart, bool multiply_antigen_titer_until_column_adjust) const
+    {
+        return calculate_gradient(stress_factory<Float>(chart, *this, multiply_antigen_titer_until_column_adjust));
+    }
 
 } // namespace acmacs::chart
 

@@ -162,8 +162,8 @@ namespace acmacs::chart
         inline const rjson::array& rjson_list_dict() const override { const rjson::array& r = mData.get_or_empty_array("d"); if (r.empty()) throw data_not_available{"no \"d\""}; return r; }
         inline const rjson::array& rjson_layers() const override { const rjson::array& r = mData.get_or_empty_array("L"); if (r.empty()) throw data_not_available{"no \"L\""}; return r; }
 
-        void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters) const override;
-        void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters) const override;
+        void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const override;
+        void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const override;
 
      private:
         const rjson::object& mData;

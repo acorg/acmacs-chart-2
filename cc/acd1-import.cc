@@ -637,7 +637,7 @@ size_t Acd1Titers::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
-void Acd1Titers::update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters) const
+void Acd1Titers::update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const
 {
     if (number_of_sera()) {
         rjson_import::update(mData, "titers_list_of_list", "titers_list_of_dict", table_distances, column_bases, parameters, number_of_antigens() + number_of_sera());
@@ -650,7 +650,7 @@ void Acd1Titers::update(TableDistances<float>& table_distances, const ColumnBase
 
 // ----------------------------------------------------------------------
 
-void Acd1Titers::update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const acmacs::chart::ProjectionParameters& parameters) const
+void Acd1Titers::update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const
 {
     if (number_of_sera()) {
         rjson_import::update(mData, "titers_list_of_list", "titers_list_of_dict", table_distances, column_bases, parameters, number_of_antigens() + number_of_sera());
