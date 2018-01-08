@@ -90,9 +90,12 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+    using ProjectionId = size_t;
+
     class ChartModify : public Chart
     {
      public:
+
         inline ChartModify(ChartP aMain) : mMain{aMain} {}
 
         InfoP info() const override;
@@ -113,13 +116,16 @@ namespace acmacs::chart
         ProjectionModifyP projection_modify(size_t aProjectionNo);
         PlotSpecModifyP plot_spec_modify();
 
+        ProjectionId new_projection_id() { return ++last_projection_id_; }
+
      private:
         ChartP mMain;
-        std::map<size_t, std::unique_ptr<internal::ProjectionModifyData>> mProjectionModifyData; // projection_no to data
+        ProjectionId last_projection_id_{0};
+        std::map<ProjectionId, std::unique_ptr<internal::ProjectionModifyData>> mProjectionModifyData; // projection_id to data
         std::optional<internal::PlotSpecModifyData> mPlotSpecModifyData;
 
-        internal::ProjectionModifyData& modify_projection(size_t aProjectionNo);
-        inline bool modified_projection(size_t aProjectionNo) const { return mProjectionModifyData.find(aProjectionNo) != mProjectionModifyData.end(); }
+        internal::ProjectionModifyData& modify_projection(ProjectionId aProjectionId);
+        inline bool modified_projection(ProjectionId aProjectionId) const { return mProjectionModifyData.find(aProjectionId) != mProjectionModifyData.end(); }
         internal::PlotSpecModifyData& modify_plot_spec();
         inline bool modified_plot_spec() const { return mPlotSpecModifyData.has_value(); }
 
@@ -271,17 +277,17 @@ namespace acmacs::chart
     class ProjectionModify : public Projection
     {
      public:
-        inline ProjectionModify(ProjectionP aMain, size_t aProjectionNo, ChartModify& aChart) : mMain{aMain}, mProjectionNo(aProjectionNo), mChart(aChart) {}
+        inline ProjectionModify(ProjectionP aMain, ProjectionId aProjectionId, ChartModify& aChart) : mMain{aMain}, mProjectionId(aProjectionId), mChart(aChart) {}
 
-        inline double stress() const override { return mChart.modified_projection(mProjectionNo) ? 0.0 : mMain->stress(); } // no stress if projection was modified
-        inline std::shared_ptr<Layout> layout() const override { return mChart.modified_projection(mProjectionNo) ? mChart.modify_projection(mProjectionNo).layout() : mMain->layout(); }
-        inline std::shared_ptr<Layout> transformed_layout() const override { return mChart.modified_projection(mProjectionNo) ? mChart.modify_projection(mProjectionNo).transformed_layout() : mMain->transformed_layout(); }
+        inline double stress() const override { return mChart.modified_projection(mProjectionId) ? 0.0 : mMain->stress(); } // no stress if projection was modified
+        inline std::shared_ptr<Layout> layout() const override { return mChart.modified_projection(mProjectionId) ? mChart.modify_projection(mProjectionId).layout() : mMain->layout(); }
+        inline std::shared_ptr<Layout> transformed_layout() const override { return mChart.modified_projection(mProjectionId) ? mChart.modify_projection(mProjectionId).transformed_layout() : mMain->transformed_layout(); }
         inline std::string comment() const override { return mMain->comment(); }
-        inline size_t number_of_points() const override { return mChart.modified_projection(mProjectionNo) ? mChart.modify_projection(mProjectionNo).number_of_points() : mMain->number_of_points(); }
-        inline size_t number_of_dimensions() const override { return mChart.modified_projection(mProjectionNo) ? mChart.modify_projection(mProjectionNo).number_of_dimensions() : mMain->number_of_dimensions(); }
+        inline size_t number_of_points() const override { return mChart.modified_projection(mProjectionId) ? mChart.modify_projection(mProjectionId).number_of_points() : mMain->number_of_points(); }
+        inline size_t number_of_dimensions() const override { return mChart.modified_projection(mProjectionId) ? mChart.modify_projection(mProjectionId).number_of_dimensions() : mMain->number_of_dimensions(); }
         inline MinimumColumnBasis minimum_column_basis() const override { return mMain->minimum_column_basis(); }
         inline ColumnBasesP forced_column_bases() const override { return mMain->forced_column_bases(); }
-        inline acmacs::Transformation transformation() const override { return mChart.modified_projection(mProjectionNo) ? mChart.modify_projection(mProjectionNo).transformation() : mMain->transformation(); }
+        inline acmacs::Transformation transformation() const override { return mChart.modified_projection(mProjectionId) ? mChart.modify_projection(mProjectionId).transformation() : mMain->transformation(); }
         inline bool dodgy_titer_is_regular() const override { return mMain->dodgy_titer_is_regular(); }
         inline double stress_diff_to_stop() const override { return mMain->stress_diff_to_stop(); }
         inline PointIndexList unmovable() const override { return mMain->unmovable(); }
@@ -289,17 +295,17 @@ namespace acmacs::chart
         inline PointIndexList unmovable_in_the_last_dimension() const override { return mMain->unmovable_in_the_last_dimension(); }
         inline AvidityAdjusts avidity_adjusts() const override { return mMain->avidity_adjusts(); }
 
-        inline size_t projection_no() const { return mProjectionNo; }
-        inline void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { mChart.modify_projection(mProjectionNo).move_point(aPointNo, aCoordinates); }
-        inline void rotate_radians(double aAngle) { mChart.modify_projection(mProjectionNo).rotate_radians(aAngle); }
-        inline void rotate_degrees(double aAngle) { mChart.modify_projection(mProjectionNo).rotate_degrees(aAngle); }
-        inline void flip(double aX, double aY) { mChart.modify_projection(mProjectionNo).flip(aX, aY); }
-        inline void flip_east_west() { mChart.modify_projection(mProjectionNo).flip_east_west(); }
-        inline void flip_north_south() { mChart.modify_projection(mProjectionNo).flip_north_south(); }
+          // inline ProjectionId projection_no() const { return mProjectionId; }
+        inline void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { mChart.modify_projection(mProjectionId).move_point(aPointNo, aCoordinates); }
+        inline void rotate_radians(double aAngle) { mChart.modify_projection(mProjectionId).rotate_radians(aAngle); }
+        inline void rotate_degrees(double aAngle) { mChart.modify_projection(mProjectionId).rotate_degrees(aAngle); }
+        inline void flip(double aX, double aY) { mChart.modify_projection(mProjectionId).flip(aX, aY); }
+        inline void flip_east_west() { mChart.modify_projection(mProjectionId).flip_east_west(); }
+        inline void flip_north_south() { mChart.modify_projection(mProjectionId).flip_north_south(); }
 
      private:
         ProjectionP mMain;
-        size_t mProjectionNo;
+        ProjectionId mProjectionId;
         ChartModify& mChart;
 
     }; // class ProjectionModify
@@ -309,15 +315,20 @@ namespace acmacs::chart
     class ProjectionsModify : public Projections
     {
      public:
-        inline ProjectionsModify(ProjectionsP aMain, ChartModify& aChart) : mMain{aMain}, mChart(aChart) {}
+        inline ProjectionsModify(ProjectionsP aMain, ChartModify& aChart)
+            : projections_(aMain->size(), nullptr), mChart(aChart)
+            {
+                std::transform(aMain->begin(), aMain->end(), projections_.begin(), [this](ProjectionP aSource) mutable { return std::make_shared<ProjectionModify>(aSource, this->mChart.new_projection_id(), this->mChart); });
+            }
 
-        inline bool empty() const override { return mMain->empty(); }
-        inline size_t size() const override { return mMain->size(); }
-        inline ProjectionP operator[](size_t aIndex) const override { return std::make_shared<ProjectionModify>(mMain->operator[](aIndex), aIndex, mChart); }
-        inline ProjectionModifyP at(size_t aIndex) const { return std::make_shared<ProjectionModify>(mMain->operator[](aIndex), aIndex, mChart); }
+        inline bool empty() const override { return projections_.empty(); }
+        inline size_t size() const override { return projections_.size(); }
+        inline ProjectionP operator[](size_t aIndex) const override { return projections_.at(aIndex); }
+        inline ProjectionModifyP at(size_t aIndex) const { return projections_.at(aIndex); }
+        inline void sort() { std::sort(projections_.begin(), projections_.end(), [](const auto& p1, const auto& p2) { return p1->stress() < p2->stress(); }); }
 
      private:
-        ProjectionsP mMain;
+        std::vector<ProjectionModifyP> projections_;
         ChartModify& mChart;
 
     }; // class ProjectionsModify
