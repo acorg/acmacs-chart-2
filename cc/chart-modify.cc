@@ -144,6 +144,21 @@ internal::ProjectionModifyData& ChartModify::modify_projection(ProjectionId aPro
 
 // ----------------------------------------------------------------------
 
+void ChartModify::clone_modified_projection(ProjectionId old_id, ProjectionId new_id)
+{
+    if (const auto found_new = mProjectionModifyData.find(new_id); found_new != mProjectionModifyData.end())
+        throw invalid_data("ChartModify::clone_modified_projection: new_id already exists");
+    if (const auto found_old = mProjectionModifyData.find(old_id); found_old != mProjectionModifyData.end()) {
+        mProjectionModifyData[new_id] = std::make_unique<internal::ProjectionModifyData>(*found_old->second);
+    }
+    else {
+        throw invalid_data("ChartModify::clone_modified_projection: old_id does not exist");
+    }
+
+} // ChartModify::clone_modified_projection
+
+// ----------------------------------------------------------------------
+
 internal::PlotSpecModifyData& ChartModify::modify_plot_spec()
 {
     if (!mPlotSpecModifyData) {
@@ -172,6 +187,13 @@ acmacs::chart::DrawingOrder acmacs::chart::PlotSpecModify::drawing_order() const
 
 acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData(ProjectionP aMain)
     : mLayout(std::make_shared<acmacs::Layout>(*aMain->layout())), mTransformation(aMain->transformation())
+{
+} // acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData(const acmacs::chart::internal::ProjectionModifyData& aSource)
+    : mLayout(std::make_shared<acmacs::Layout>(aSource.clayout())), mTransformation(aSource.transformation())
 {
 } // acmacs::chart::internal::ProjectionModifyData::ProjectionModifyData
 

@@ -38,7 +38,9 @@ namespace acmacs::chart
         {
          public:
             ProjectionModifyData(ProjectionP aMain);
+            ProjectionModifyData(const ProjectionModifyData& aSource);
             inline std::shared_ptr<Layout> layout() { return mLayout; }
+            inline const Layout& clayout() const { return *mLayout; }
             inline std::shared_ptr<acmacs::chart::Layout> transformed_layout() const { if (!mTransformedLayout) mTransformedLayout.reset(mLayout->transform(mTransformation)); return mTransformedLayout; }
             inline const Transformation& transformation() const { return mTransformation; }
             size_t number_of_points() const { return mLayout->number_of_points(); }
@@ -128,6 +130,7 @@ namespace acmacs::chart
         inline bool modified_projection(ProjectionId aProjectionId) const { return mProjectionModifyData.find(aProjectionId) != mProjectionModifyData.end(); }
         internal::PlotSpecModifyData& modify_plot_spec();
         inline bool modified_plot_spec() const { return mPlotSpecModifyData.has_value(); }
+        void clone_modified_projection(ProjectionId old_id, ProjectionId new_id);
 
         friend class ProjectionModify;
         friend class PlotSpecModify;
@@ -308,6 +311,15 @@ namespace acmacs::chart
         ProjectionId mProjectionId;
         ChartModify& mChart;
 
+        friend class ProjectionsModify;
+        inline ProjectionModifyP clone() const
+            {
+                const auto id = mChart.new_projection_id();
+                if (mChart.modified_projection(mProjectionId))
+                    mChart.clone_modified_projection(mProjectionId, id);
+                return std::make_shared<ProjectionModify>(mMain, id, mChart);
+            }
+
     }; // class ProjectionModify
 
 // ----------------------------------------------------------------------
@@ -325,6 +337,7 @@ namespace acmacs::chart
         inline size_t size() const override { return projections_.size(); }
         inline ProjectionP operator[](size_t aIndex) const override { return projections_.at(aIndex); }
         inline ProjectionModifyP at(size_t aIndex) const { return projections_.at(aIndex); }
+        inline ProjectionModifyP clone(size_t aIndex) { auto cloned = projections_.at(aIndex)->clone(); projections_.push_back(cloned); return cloned; }
         inline void sort() { std::sort(projections_.begin(), projections_.end(), [](const auto& p1, const auto& p2) { return p1->stress() < p2->stress(); }); }
 
      private:
