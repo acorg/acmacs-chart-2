@@ -54,10 +54,26 @@ namespace acmacs::chart
       public:
         virtual ~ColumnBases();
         ColumnBases() = default;
-        ColumnBases(const ColumnBases&) = delete;
+        // ColumnBases(const ColumnBases&) = delete;
 
         virtual double column_basis(size_t aSerumNo) const = 0;
         virtual size_t size() const = 0;
+
+    }; // class ColumnBases
+
+// ----------------------------------------------------------------------
+
+    class ColumnBasesData : public ColumnBases
+    {
+      public:
+        ColumnBasesData(size_t number_of_sera) : data_(number_of_sera, 0) {}
+        ColumnBasesData(const ColumnBases& aSource) : data_(aSource.size()) { for (size_t serum_no = 0; serum_no < data_.size(); ++serum_no) data_[serum_no] = aSource.column_basis(serum_no); }
+
+        virtual double column_basis(size_t aSerumNo) const { return data_.at(aSerumNo); }
+        virtual size_t size() const { return data_.size(); }
+
+     private:
+        std::vector<double> data_;
 
     }; // class ColumnBases
 

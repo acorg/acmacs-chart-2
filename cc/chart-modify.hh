@@ -54,6 +54,7 @@ namespace acmacs::chart
         ColumnBasesModifyP forced_column_bases_modify();
         ProjectionsModifyP projections_modify();
         ProjectionModifyP projection_modify(size_t aProjectionNo);
+        ProjectionModifyP new_projection(size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis);
         PlotSpecModifyP plot_spec_modify();
 
      private:
@@ -235,6 +236,7 @@ namespace acmacs::chart
         size_t number_of_points_modified() const { return layout_->number_of_points(); }
         size_t number_of_dimensions_modified() const { return layout_->number_of_dimensions(); }
         const Transformation& transformation_modified() const { return transformation_; }
+        void new_layout(size_t number_of_points, size_t number_of_dimensions) { layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions); transformation_.reset(); transformed_layout_.reset(); }
 
      private:
         std::shared_ptr<Layout> layout_;
@@ -283,6 +285,50 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+    class ProjectionModifyNew : public ProjectionModify
+    {
+     public:
+        ProjectionModifyNew(size_t number_of_points, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, ColumnBasesP forced_column_bases)
+            : minimum_column_basis_(minimum_column_basis), forced_column_bases_(forced_column_bases)
+            {
+                new_layout(number_of_points, number_of_dimensions);
+            }
+
+        ProjectionModifyNew(const ProjectionModifyNew& aSource)
+            : ProjectionModify(aSource), minimum_column_basis_(aSource.minimum_column_basis_),
+              forced_column_bases_(std::make_shared<ColumnBasesData>(*aSource.forced_column_bases_)),
+              dodgy_titer_is_regular_(aSource.dodgy_titer_is_regular_), stress_diff_to_stop_(aSource.stress_diff_to_stop_)
+            {
+            }
+
+        double stress() const override { return 0.0; }
+        std::shared_ptr<Layout> layout() const override { return layout_modified(); }
+        std::shared_ptr<Layout> transformed_layout() const override { return transformed_layout_modified(); }
+        std::string comment() const override { return {}; }
+        size_t number_of_points() const override { return number_of_points_modified(); }
+        size_t number_of_dimensions() const override { return number_of_dimensions_modified(); }
+        MinimumColumnBasis minimum_column_basis() const override { return minimum_column_basis_; }
+        ColumnBasesP forced_column_bases() const override { return forced_column_bases_; }
+        acmacs::Transformation transformation() const override { return transformation_modified(); }
+        bool dodgy_titer_is_regular() const override { return dodgy_titer_is_regular_; }
+        double stress_diff_to_stop() const override { return stress_diff_to_stop_; }
+        PointIndexList unmovable() const override { return {}; }
+        PointIndexList disconnected() const override { return {}; }
+        PointIndexList unmovable_in_the_last_dimension() const override { return {}; }
+        AvidityAdjusts avidity_adjusts() const override { return {}; }
+
+     private:
+        MinimumColumnBasis minimum_column_basis_;
+        ColumnBasesP forced_column_bases_;
+        bool dodgy_titer_is_regular_{false};
+        double stress_diff_to_stop_{0};
+
+        ProjectionModifyP clone() const override { return std::make_shared<ProjectionModifyNew>(*this); }
+
+    }; // class ProjectionModifyNew
+
+// ----------------------------------------------------------------------
+
     class ProjectionsModify : public Projections
     {
      public:
@@ -301,6 +347,10 @@ namespace acmacs::chart
 
      private:
         std::vector<ProjectionModifyP> projections_;
+
+        friend class ChartModify;
+        ProjectionModifyP new_from_scratch(size_t number_of_points, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, ColumnBasesP forced_column_bases)
+            { projections_.push_back(std::make_shared<ProjectionModifyNew>(number_of_points, number_of_dimensions, minimum_column_basis, forced_column_bases)); return projections_.back(); }
 
     }; // class ProjectionsModify
 

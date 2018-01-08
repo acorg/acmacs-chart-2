@@ -76,6 +76,14 @@ PlotSpecModifyP ChartModify::get_plot_spec() const
 
 // ----------------------------------------------------------------------
 
+ProjectionModifyP ChartModify::new_projection(size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis)
+{
+    return get_projections()->new_from_scratch(number_of_points(), number_of_dimensions, minimum_column_basis, forced_column_bases());
+
+} // ChartModify::new_projection
+
+// ----------------------------------------------------------------------
+
 PlotSpecP ChartModify::plot_spec() const
 {
     return get_plot_spec();
