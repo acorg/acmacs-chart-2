@@ -44,6 +44,7 @@ int main(int argc, char* const argv[])
                 {"--projection", 0L},
                 {"--double", false, "just report stress (double)"},
                 {"--float", false, "just report stress (float)"},
+                {"--gradient", false, "just report gradient (double)"},
                 {"--time", false, "test speed"},
                 {"--verbose", false},
                 {"-h", false},
@@ -63,6 +64,9 @@ int main(int argc, char* const argv[])
             }
             else if (args["--float"]) {
                 std::cout << acmacs::to_string(projection->calculate_stress(chart->make_stress<float>(args["--projection"]))) << '\n';
+            }
+            else if (args["--gradient"]) {
+                std::cout << acmacs::to_string(projection->calculate_gradient(chart->make_stress<double>(args["--projection"]))) << '\n';
             }
             else {
                 auto stress = chart->make_stress<double>(args["--projection"]);
