@@ -117,7 +117,7 @@ ProjectionsModifyP ChartModify::projections_modify()
 
 ProjectionModifyP ChartModify::projection_modify(size_t aProjectionNo)
 {
-    return std::make_shared<ProjectionModify>(mMain->projections()->operator[](aProjectionNo), aProjectionNo, *this);
+    return std::make_shared<ProjectionModifyMain>(mMain->projections()->operator[](aProjectionNo), aProjectionNo, *this);
 
 } // ChartModify::projection_modify
 
