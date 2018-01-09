@@ -17,6 +17,7 @@ int main(int argc, char* const argv[])
         argc_argv args(argc, argv, {
                 {"-d", 2U, "number of dimensions"},
                 {"-m", "none", "minimum column basis"},
+                {"--md", 1.0, "max distance multiplier"},
                 {"--time", false, "report time of loading chart"},
                 {"--verbose", false},
                 {"-h", false},
@@ -31,6 +32,7 @@ int main(int argc, char* const argv[])
             const report_time report = args["--time"] ? report_time::Yes : report_time::No;
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
             auto projection = chart.projections_modify()->new_from_scratch(args["-d"], args["-m"].str());
+            projection->randomize_layout(args["--md"]);
             std::cout << chart.make_info() << '\n';
             if (args.number_of_arguments() > 1)
                 acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);

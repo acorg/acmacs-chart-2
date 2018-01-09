@@ -201,6 +201,28 @@ void acmacs::chart::Titers::update(acmacs::chart::TableDistances<double>& table_
 } // acmacs::chart::Titers::update
 
 // ----------------------------------------------------------------------
+
+double acmacs::chart::Titers::max_distance(const acmacs::chart::ColumnBases& column_bases)
+{
+    double max_distance{0};
+    if (number_of_sera()) {
+        for (auto ag_no : acmacs::range(number_of_antigens())) {
+            for (auto sr_no : acmacs::range(number_of_sera())) {
+                const auto t = titer(ag_no, sr_no);
+                if (!t.is_dont_care())
+                    max_distance = std::max(max_distance, column_bases.column_basis(sr_no) - t.logged_with_thresholded());
+            }
+        }
+    }
+    else {
+        throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
+    }
+    std::cerr << "Titers::max_distance: " << max_distance << '\n';
+    return max_distance;
+
+} // acmacs::chart::Titers::max_distance
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

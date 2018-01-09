@@ -1,6 +1,7 @@
 #pragma once
 
 #include "acmacs-chart-2/chart.hh"
+#include "acmacs-chart-2/randomizer.hh"
 
 // ----------------------------------------------------------------------
 
@@ -224,6 +225,9 @@ namespace acmacs::chart
         void flip(double aX, double aY) { modify(); transformation_.flip(aX, aY); transformed_layout_.reset(); }
         void flip_east_west() { flip(0, 1); }
         void flip_north_south() { flip(1, 0); }
+
+        void randomize_layout(double max_distance_multiplier = 1.0);
+        void randomize_layout(LayoutRandomizer& randomizer);
 
      protected:
         virtual void modify() {}

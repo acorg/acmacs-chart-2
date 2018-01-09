@@ -77,6 +77,7 @@ namespace acmacs::chart
 
         virtual void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters) const;
         virtual void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters) const;
+        virtual double max_distance(const ColumnBases& column_bases);
 
     }; // class Titers
 

@@ -150,6 +150,31 @@ PlotSpecModifyP ChartModify::plot_spec_modify()
 } // ChartModify::plot_spec_modify
 
 // ----------------------------------------------------------------------
+
+void ProjectionModify::randomize_layout(double max_distance_multiplier)
+{
+    auto cb = forced_column_bases();
+    if (!cb)
+        cb = chart().column_bases(minimum_column_basis());
+    LayoutRandomizerPlain randomizer(chart().titers()->max_distance(*cb) * max_distance_multiplier);
+    randomize_layout(randomizer);
+
+} // ProjectionModify::randomize_layout
+
+// ----------------------------------------------------------------------
+
+void ProjectionModify::randomize_layout(LayoutRandomizer& randomizer)
+{
+    modify();
+    auto layout = layout_modified();
+    for (size_t point_no = 0; point_no < layout->number_of_points(); ++point_no) {
+        for (size_t dim_no = 0; dim_no < layout->number_of_dimensions(); ++dim_no)
+            layout->set(point_no, dim_no, randomizer());
+    }
+
+} // ProjectionModify::randomize_layout
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
