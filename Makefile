@@ -16,7 +16,8 @@ TARGETS = \
     $(DIST)/chart-modify-projection \
     $(DIST)/chart-modify-plot-spec \
     $(DIST)/chart-titer-merging-report \
-    $(DIST)/chart-stress
+    $(DIST)/chart-stress \
+    $(DIST)/chart-relax
 
 SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc \
     rjson-import.cc \

@@ -54,7 +54,6 @@ namespace acmacs::chart
         ColumnBasesModifyP forced_column_bases_modify();
         ProjectionsModifyP projections_modify();
         ProjectionModifyP projection_modify(size_t aProjectionNo);
-        ProjectionModifyP new_projection(size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis);
         PlotSpecModifyP plot_spec_modify();
 
      private:
@@ -288,10 +287,10 @@ namespace acmacs::chart
     class ProjectionModifyNew : public ProjectionModify
     {
      public:
-        ProjectionModifyNew(const Chart& chart, size_t number_of_points, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, ColumnBasesP forced_column_bases)
-            : ProjectionModify(chart), minimum_column_basis_(minimum_column_basis), forced_column_bases_(forced_column_bases)
+        ProjectionModifyNew(const Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis)
+            : ProjectionModify(chart), minimum_column_basis_(minimum_column_basis), forced_column_bases_(chart.forced_column_bases())
             {
-                new_layout(number_of_points, number_of_dimensions);
+                new_layout(chart.number_of_points(), number_of_dimensions);
             }
 
         ProjectionModifyNew(const ProjectionModifyNew& aSource)
@@ -332,25 +331,29 @@ namespace acmacs::chart
     class ProjectionsModify : public Projections
     {
      public:
-        inline ProjectionsModify(ProjectionsP main)
+        ProjectionsModify(ProjectionsP main)
             : Projections(main->chart()), projections_(main->size(), nullptr)
             {
                 std::transform(main->begin(), main->end(), projections_.begin(), [](ProjectionP aSource) mutable { return std::make_shared<ProjectionModifyMain>(aSource); });
             }
 
-        inline bool empty() const override { return projections_.empty(); }
-        inline size_t size() const override { return projections_.size(); }
-        inline ProjectionP operator[](size_t aIndex) const override { return projections_.at(aIndex); }
-        inline ProjectionModifyP at(size_t aIndex) const { return projections_.at(aIndex); }
-        inline ProjectionModifyP clone(size_t aIndex) { auto cloned = projections_.at(aIndex)->clone(); projections_.push_back(cloned); return cloned; }
-        inline void sort() { std::sort(projections_.begin(), projections_.end(), [](const auto& p1, const auto& p2) { return p1->stress() < p2->stress(); }); }
+        bool empty() const override { return projections_.empty(); }
+        size_t size() const override { return projections_.size(); }
+        ProjectionP operator[](size_t aIndex) const override { return projections_.at(aIndex); }
+        ProjectionModifyP at(size_t aIndex) const { return projections_.at(aIndex); }
+        ProjectionModifyP clone(size_t aIndex) { auto cloned = projections_.at(aIndex)->clone(); projections_.push_back(cloned); return cloned; }
+        void sort() { std::sort(projections_.begin(), projections_.end(), [](const auto& p1, const auto& p2) { return p1->stress() < p2->stress(); }); }
+
+        ProjectionModifyP new_from_scratch(size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis)
+            {
+                projections_.push_back(std::make_shared<ProjectionModifyNew>(chart(), number_of_dimensions, minimum_column_basis));
+                return projections_.back();
+            }
 
      private:
         std::vector<ProjectionModifyP> projections_;
 
         friend class ChartModify;
-        ProjectionModifyP new_from_scratch(const Chart& chart, size_t number_of_points, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, ColumnBasesP forced_column_bases)
-            { projections_.push_back(std::make_shared<ProjectionModifyNew>(chart, number_of_points, number_of_dimensions, minimum_column_basis, forced_column_bases)); return projections_.back(); }
 
     }; // class ProjectionsModify
 
