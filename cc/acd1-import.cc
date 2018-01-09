@@ -312,7 +312,7 @@ ColumnBasesP Acd1Chart::forced_column_bases() const
 ProjectionsP Acd1Chart::projections() const
 {
     if (!projections_)
-        projections_ = std::make_shared<Acd1Projections>(mData.get_or_empty_array("projections"));
+        projections_ = std::make_shared<Acd1Projections>(*this, mData.get_or_empty_array("projections"));
     return projections_;
 
 } // Acd1Chart::projections

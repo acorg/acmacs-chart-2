@@ -210,8 +210,8 @@ namespace acmacs::chart
     class ProjectionModify : public Projection
     {
      public:
-        ProjectionModify() = default;
-        ProjectionModify(const ProjectionModify& aSource)
+        ProjectionModify(const Chart& chart) : Projection(chart) {}
+        ProjectionModify(const ProjectionModify& aSource) : Projection(aSource.chart())
             {
                 if (aSource.modified()) {
                     layout_ = std::make_shared<acmacs::Layout>(*aSource.layout_modified());
@@ -253,7 +253,7 @@ namespace acmacs::chart
     class ProjectionModifyMain : public ProjectionModify
     {
      public:
-        ProjectionModifyMain(ProjectionP main) : main_{main} {}
+        ProjectionModifyMain(ProjectionP main) : ProjectionModify(main->chart()), main_{main} {}
         ProjectionModifyMain(const ProjectionModifyMain& aSource) : ProjectionModify(aSource), main_(aSource.main_) {}
 
         double stress() const override { return modified() ? 0.0 : main_->stress(); } // no stress if projection was modified
@@ -288,8 +288,8 @@ namespace acmacs::chart
     class ProjectionModifyNew : public ProjectionModify
     {
      public:
-        ProjectionModifyNew(size_t number_of_points, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, ColumnBasesP forced_column_bases)
-            : minimum_column_basis_(minimum_column_basis), forced_column_bases_(forced_column_bases)
+        ProjectionModifyNew(const Chart& chart, size_t number_of_points, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, ColumnBasesP forced_column_bases)
+            : ProjectionModify(chart), minimum_column_basis_(minimum_column_basis), forced_column_bases_(forced_column_bases)
             {
                 new_layout(number_of_points, number_of_dimensions);
             }
@@ -333,7 +333,7 @@ namespace acmacs::chart
     {
      public:
         inline ProjectionsModify(ProjectionsP main)
-            : projections_(main->size(), nullptr)
+            : Projections(main->chart()), projections_(main->size(), nullptr)
             {
                 std::transform(main->begin(), main->end(), projections_.begin(), [](ProjectionP aSource) mutable { return std::make_shared<ProjectionModifyMain>(aSource); });
             }
@@ -349,8 +349,8 @@ namespace acmacs::chart
         std::vector<ProjectionModifyP> projections_;
 
         friend class ChartModify;
-        ProjectionModifyP new_from_scratch(size_t number_of_points, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, ColumnBasesP forced_column_bases)
-            { projections_.push_back(std::make_shared<ProjectionModifyNew>(number_of_points, number_of_dimensions, minimum_column_basis, forced_column_bases)); return projections_.back(); }
+        ProjectionModifyP new_from_scratch(const Chart& chart, size_t number_of_points, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, ColumnBasesP forced_column_bases)
+            { projections_.push_back(std::make_shared<ProjectionModifyNew>(chart, number_of_points, number_of_dimensions, minimum_column_basis, forced_column_bases)); return projections_.back(); }
 
     }; // class ProjectionsModify
 

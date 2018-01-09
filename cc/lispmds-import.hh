@@ -187,8 +187,8 @@ namespace acmacs::chart
     class LispmdsProjection : public Projection
     {
       public:
-        inline LispmdsProjection(const acmacs::lispmds::value& aData, size_t aIndex, size_t aNumberOfAntigens, size_t aNumberOfSera)
-            : mData{aData}, mIndex{aIndex}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} { check(); }
+        inline LispmdsProjection(const Chart& chart, const acmacs::lispmds::value& aData, size_t aIndex, size_t aNumberOfAntigens, size_t aNumberOfSera)
+            : Projection(chart), mData{aData}, mIndex{aIndex}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} { check(); }
 
         void check() const;
         double stress() const override;
@@ -219,7 +219,7 @@ namespace acmacs::chart
     class LispmdsProjections : public Projections
     {
       public:
-        inline LispmdsProjections(const acmacs::lispmds::value& aData) : mData{aData}, projections_(size(), nullptr) {}
+        inline LispmdsProjections(const Chart& chart, const acmacs::lispmds::value& aData) : Projections(chart), mData{aData}, projections_(size(), nullptr) {}
 
         bool empty() const override;
         size_t size() const override;

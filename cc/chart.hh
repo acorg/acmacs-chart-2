@@ -356,9 +356,10 @@ namespace acmacs::chart
     {
       public:
         virtual ~Projection();
-        Projection() = default;
+        Projection(const Chart& chart) : chart_(chart) {}
         Projection(const Projection&) = delete;
 
+        virtual size_t projection_no() const;
         virtual std::string make_info() const;
         virtual double stress() const = 0;
         virtual std::string comment() const = 0;
@@ -380,8 +381,14 @@ namespace acmacs::chart
         template <typename Float> inline double calculate_stress(const Stress<Float>& stress) const { return static_cast<double>(stress.value(*layout())); }
         template <typename Float> inline std::vector<Float> calculate_gradient(const Stress<Float>& stress) const { return stress.gradient(*layout()); }
 
-        template <typename Float> double calculate_stress(const Chart& chart, bool multiply_antigen_titer_until_column_adjust = true) const;
-        template <typename Float> std::vector<Float> calculate_gradient(const Chart& chart, bool multiply_antigen_titer_until_column_adjust = true) const;
+        template <typename Float> double calculate_stress(bool multiply_antigen_titer_until_column_adjust = true) const;
+        template <typename Float> std::vector<Float> calculate_gradient(bool multiply_antigen_titer_until_column_adjust = true) const;
+
+        // Chart& chart() { return const_cast<Chart&>(chart_); }
+        const Chart& chart() const { return chart_; }
+
+     private:
+        const Chart& chart_;
 
     }; // class Projection
 
@@ -391,17 +398,24 @@ namespace acmacs::chart
     {
       public:
         virtual ~Projections();
-        Projections() = default;
+        Projections(const Chart& chart) : chart_(chart) {}
         Projections(const Projections&) = delete;
 
         virtual bool empty() const = 0;
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Projection> operator[](size_t aIndex) const = 0;
         using iterator = internal::iterator<Projections, std::shared_ptr<Projection>>;
-        inline iterator begin() const { return {*this, 0}; }
-        inline iterator end() const { return {*this, size()}; }
+        iterator begin() const { return {*this, 0}; }
+        iterator end() const { return {*this, size()}; }
+        virtual size_t projection_no(const Projection* projection) const;
 
         virtual std::string make_info() const;
+
+          // Chart& chart() { return const_cast<Chart&>(chart_); }
+        const Chart& chart() const { return chart_; }
+
+     private:
+        const Chart& chart_;
 
     }; // class Projections
 
@@ -495,14 +509,14 @@ namespace acmacs::chart
     using ProjectionsP = std::shared_ptr<Projections>;
     using PlotSpecP = std::shared_ptr<PlotSpec>;
 
-    template <typename Float> inline double Projection::calculate_stress(const Chart& chart, bool multiply_antigen_titer_until_column_adjust) const
+    template <typename Float> inline double Projection::calculate_stress(bool multiply_antigen_titer_until_column_adjust) const
     {
-        return calculate_stress(stress_factory<Float>(chart, *this, multiply_antigen_titer_until_column_adjust));
+        return calculate_stress(stress_factory<Float>(chart(), *this, multiply_antigen_titer_until_column_adjust));
     }
 
-    template <typename Float> std::vector<Float> Projection::calculate_gradient(const Chart& chart, bool multiply_antigen_titer_until_column_adjust) const
+    template <typename Float> std::vector<Float> Projection::calculate_gradient(bool multiply_antigen_titer_until_column_adjust) const
     {
-        return calculate_gradient(stress_factory<Float>(chart, *this, multiply_antigen_titer_until_column_adjust));
+        return calculate_gradient(stress_factory<Float>(chart(), *this, multiply_antigen_titer_until_column_adjust));
     }
 
 } // namespace acmacs::chart

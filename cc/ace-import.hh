@@ -192,7 +192,7 @@ namespace acmacs::chart
     class AceProjection : public Projection
     {
       public:
-        inline AceProjection(const rjson::object& aData) : mData{aData} {}
+        inline AceProjection(const Chart& chart, const rjson::object& aData) : Projection(chart), mData{aData} {}
 
         inline double stress() const override { return mData.get_or_default("s", 0.0); }
         std::shared_ptr<Layout> layout() const override;
@@ -220,14 +220,14 @@ namespace acmacs::chart
     class AceProjections : public Projections
     {
       public:
-        inline AceProjections(const rjson::array& aData) : mData{aData}, projections_(aData.size(), nullptr) {}
+        inline AceProjections(const Chart& chart, const rjson::array& aData) : Projections(chart), mData{aData}, projections_(aData.size(), nullptr) {}
 
         inline bool empty() const override { return projections_.empty(); }
         inline size_t size() const override { return projections_.size(); }
         inline ProjectionP operator[](size_t aIndex) const override
             {
                 if (!projections_[aIndex])
-                    projections_[aIndex] = std::make_shared<AceProjection>(mData[aIndex]);
+                    projections_[aIndex] = std::make_shared<AceProjection>(chart(), mData[aIndex]);
                 return projections_[aIndex];
             }
 

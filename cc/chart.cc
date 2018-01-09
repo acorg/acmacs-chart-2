@@ -302,6 +302,14 @@ std::string acmacs::chart::Info::make_name() const
 
 // ----------------------------------------------------------------------
 
+size_t acmacs::chart::Projection::projection_no() const
+{
+    return chart().projections()->projection_no(this);
+
+} // acmacs::chart::Projection::projection_no
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Projection::make_info() const
 {
     auto lt = layout();
@@ -329,7 +337,20 @@ std::string acmacs::chart::Projections::make_info() const
 
 // ----------------------------------------------------------------------
 
-inline std::string name_abbreviated(std::string aName)
+size_t acmacs::chart::Projections::projection_no(const acmacs::chart::Projection* projection) const
+{
+    for (size_t index = 0; index < size(); ++index) {
+        if (operator[](index).get() == projection)
+            return index;
+    }
+    throw invalid_data("cannot find projection_no");
+
+} // acmacs::chart::Projections::projection_no
+
+// ----------------------------------------------------------------------
+
+std::string name_abbreviated(std::string aName);
+std::string name_abbreviated(std::string aName)
 {
     try {
         std::string virus_type, host, location, isolation, year, passage;

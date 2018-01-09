@@ -214,7 +214,7 @@ ColumnBasesP LispmdsChart::forced_column_bases() const
 ProjectionsP LispmdsChart::projections() const
 {
     if (!projections_)
-        projections_ = std::make_shared<LispmdsProjections>(mData);
+        projections_ = std::make_shared<LispmdsProjections>(*this, mData);
     return projections_;
 
 } // LispmdsChart::projections
@@ -684,7 +684,7 @@ size_t LispmdsProjections::size() const
 ProjectionP LispmdsProjections::operator[](size_t aIndex) const
 {
     if (!projections_[aIndex])
-        projections_[aIndex] = std::make_shared<LispmdsProjection>(mData, aIndex, number_of_antigens(mData), number_of_sera(mData));
+        projections_[aIndex] = std::make_shared<LispmdsProjection>(chart(), mData, aIndex, number_of_antigens(mData), number_of_sera(mData));
     return projections_[aIndex];
 
 } // LispmdsProjections::operator[]

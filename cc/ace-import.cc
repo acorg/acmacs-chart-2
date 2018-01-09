@@ -116,7 +116,7 @@ ColumnBasesP AceChart::forced_column_bases() const
 ProjectionsP AceChart::projections() const
 {
     if (!projections_)
-        projections_ = std::make_shared<AceProjections>(mData["c"].get_or_empty_array("P"));
+        projections_ = std::make_shared<AceProjections>(*this, mData["c"].get_or_empty_array("P"));
     return projections_;
 
 } // AceChart::projections
