@@ -499,14 +499,14 @@ void LispmdsProjection::check() const
 
 // ----------------------------------------------------------------------
 
-double LispmdsProjection::stress() const
+std::optional<double> LispmdsProjection::stored_stress() const
 {
-    return std::visit([](auto&& arg) -> double {
+    return std::visit([](auto&& arg) -> std::optional<double> {
         using T = std::decay_t<decltype(arg)>;
         if constexpr (std::is_same_v<T, acmacs::lispmds::number>)
-            return arg;
+            return static_cast<double>(arg);
         else
-            return 0;
+            return {};
     }, projection_data(mData, mIndex)[1]);
 
 } // LispmdsProjection::stress

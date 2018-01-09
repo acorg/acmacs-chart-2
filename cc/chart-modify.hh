@@ -256,7 +256,7 @@ namespace acmacs::chart
         ProjectionModifyMain(ProjectionP main) : ProjectionModify(main->chart()), main_{main} {}
         ProjectionModifyMain(const ProjectionModifyMain& aSource) : ProjectionModify(aSource), main_(aSource.main_) {}
 
-        double stress() const override { return modified() ? 0.0 : main_->stress(); } // no stress if projection was modified
+        std::optional<double> stored_stress() const override { if (modified()) return {}; else return main_->stored_stress(); } // no stress if projection was modified
         std::shared_ptr<Layout> layout() const override { return modified() ? layout_modified() : main_->layout(); }
         std::shared_ptr<Layout> transformed_layout() const override { return modified() ? transformed_layout_modified() : main_->transformed_layout(); }
         std::string comment() const override { return main_->comment(); }
@@ -301,7 +301,7 @@ namespace acmacs::chart
             {
             }
 
-        double stress() const override { return 0.0; }
+        std::optional<double> stored_stress() const override { return {}; }
         std::shared_ptr<Layout> layout() const override { return layout_modified(); }
         std::shared_ptr<Layout> transformed_layout() const override { return transformed_layout_modified(); }
         std::string comment() const override { return {}; }

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <cmath>
+#include <optional>
 
 #include "acmacs-base/range.hh"
 #include "acmacs-base/color.hh"
@@ -352,6 +353,9 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+    enum class RecalculateStress { no, if_necessary, yes };
+    constexpr const double InvalidStress{-1.0};
+
     class Projection
     {
       public:
@@ -361,7 +365,8 @@ namespace acmacs::chart
 
         virtual size_t projection_no() const;
         virtual std::string make_info() const;
-        virtual double stress() const = 0;
+        virtual std::optional<double> stored_stress() const = 0;
+        virtual double stress(RecalculateStress recalculate = RecalculateStress::if_necessary) const;
         virtual std::string comment() const = 0;
         virtual size_t number_of_dimensions() const = 0;
         virtual size_t number_of_points() const = 0;

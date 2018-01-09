@@ -194,7 +194,7 @@ namespace acmacs::chart
       public:
         inline AceProjection(const Chart& chart, const rjson::object& aData) : Projection(chart), mData{aData} {}
 
-        inline double stress() const override { return mData.get_or_default("s", 0.0); }
+        inline std::optional<double> stored_stress() const override { return mData.get<double>("s"); }
         std::shared_ptr<Layout> layout() const override;
         inline std::string comment() const override { return mData.get_or_default("c", ""); }
         inline size_t number_of_points() const override { return mData.get_or_empty_array("l").size(); }

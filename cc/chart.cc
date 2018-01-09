@@ -326,6 +326,28 @@ std::string acmacs::chart::Projection::make_info() const
 
 // ----------------------------------------------------------------------
 
+double acmacs::chart::Projection::stress(acmacs::chart::RecalculateStress recalculate) const
+{
+    switch (recalculate) {
+      case RecalculateStress::yes:
+          return calculate_stress<double>();
+      case RecalculateStress::if_necessary:
+          if (const auto s = stored_stress(); s)
+              return *s;
+          else
+              return calculate_stress<double>();
+      case RecalculateStress::no:
+          if (const auto s = stored_stress(); s)
+              return *s;
+          else
+              return InvalidStress;
+    }
+    throw invalid_data("Projection::stress: internal");
+
+} // acmacs::chart::Projection::stress
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Projections::make_info() const
 {
     std::string result = "Projections: " + std::to_string(size());

@@ -191,7 +191,7 @@ namespace acmacs::chart
             : Projection(chart), mData{aData}, mIndex{aIndex}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} { check(); }
 
         void check() const;
-        double stress() const override;
+        std::optional<double> stored_stress() const override;
         std::shared_ptr<Layout> layout() const override;
         inline std::string comment() const override { return {}; }
         inline size_t number_of_points() const override { return mNumberOfAntigens + mNumberOfSera; }
