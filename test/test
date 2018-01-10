@@ -27,6 +27,7 @@ cd "$TESTDIR"
 ./test-modify-projection
 ./test-modify-plot-spec
 ./test-convert
+./test-stress
 
 # ../bin/test-ace ./test.ace
 # ../bin/acmacs-chart-info ./test.ace

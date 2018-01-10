@@ -39,9 +39,11 @@ namespace acmacs::chart
      public:
         Stress(const Projection& projection, bool multiply_antigen_titer_until_column_adjust);
 
-        Float value(const std::vector<Float>& aArgument) const;
+        Float value(const Float* first, const Float* /* unused */ = nullptr) const;
         Float value(const acmacs::LayoutInterface& aLayout) const;
-        std::vector<Float> gradient(const std::vector<Float>& aArgument) const;
+        std::vector<Float> gradient(const Float* first, const Float* last) const;
+        void gradient(const Float* first, const Float* last, Float* gradient_first) const;
+        Float value_gradient(const Float* first, const Float* last, Float* gradient_first) const;
         std::vector<Float> gradient(const acmacs::LayoutInterface& aLayout) const;
 
         inline const TableDistances<Float>& table_distances() const { return table_distances_; }
@@ -53,8 +55,8 @@ namespace acmacs::chart
         TableDistances<Float> table_distances_;
         StressParameters parameters_;
 
-        std::vector<Float> gradient_plain(const std::vector<Float>& aArgument) const;
-        std::vector<Float> gradient_with_unmovable(const std::vector<Float>& aArgument) const;
+        void gradient_plain(const Float* first, const Float* last, Float* gradient_first) const;
+        void gradient_with_unmovable(const Float* first, const Float* last, Float* gradient_first) const;
 
     }; // class Stress
 

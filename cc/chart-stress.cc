@@ -71,27 +71,27 @@ int main(int argc, char* const argv[])
             else {
                 auto stress = chart->make_stress<double>(args["--projection"]);
                 if (args["--time"])
-                    std::cerr << "stress d: " << acmacs::to_string(projection->calculate_stress(stress)) << "   per second: " << measure(projection, stress) << '\n';
+                    std::cout << "stress d: " << acmacs::to_string(projection->calculate_stress(stress)) << "   per second: " << measure(projection, stress) << '\n';
                 else
-                    std::cerr << "stress d: " << acmacs::to_string(projection->calculate_stress(stress)) << '\n';
+                    std::cout << "stress d: " << acmacs::to_string(projection->calculate_stress(stress)) << '\n';
                 const auto gradient = projection->calculate_gradient(stress);
                 const auto gradient_max = std::accumulate(gradient.begin(), gradient.end(), 0.0, [](auto mx, auto val) { return std::max(mx, std::abs(val)); });
                 if (args["--time"])
-                    std::cerr << "gradie d: " << acmacs::to_string(gradient_max) << "   per second: " << measure_gradient(projection, stress) << '\n';
+                    std::cout << "gradie d: " << acmacs::to_string(gradient_max) << "   per second: " << measure_gradient(projection, stress) << '\n';
                 else
-                    std::cerr << "gradie d: " << acmacs::to_string(gradient_max) << '\n';
+                    std::cout << "gradie d: " << acmacs::to_string(gradient_max) << '\n';
 
                 auto stress_f = chart->make_stress<float>(args["--projection"]);
                 if (args["--time"])
-                    std::cerr << "stress f: " << acmacs::to_string(projection->calculate_stress(stress_f)) << "   per second: " << measure(projection, stress_f) << '\n';
+                    std::cout << "stress f: " << acmacs::to_string(projection->calculate_stress(stress_f)) << "   per second: " << measure(projection, stress_f) << '\n';
                 else
-                    std::cerr << "stress f: " << acmacs::to_string(projection->calculate_stress(stress_f)) << '\n';
+                    std::cout << "stress f: " << acmacs::to_string(projection->calculate_stress(stress_f)) << '\n';
                 const auto gradient_f = projection->calculate_gradient(stress_f);
                 const auto gradient_f_max = std::accumulate(gradient_f.begin(), gradient_f.end(), 0.0F, [](auto mx, auto val) { return std::max(mx, std::abs(val)); });
                 if (args["--time"])
-                    std::cerr << "gradie f: " << acmacs::to_string(gradient_f_max) << "   per second: " << measure_gradient(projection, stress_f) << '\n';
+                    std::cout << "gradie f: " << acmacs::to_string(gradient_f_max) << "   per second: " << measure_gradient(projection, stress_f) << '\n';
                 else
-                    std::cerr << "gradie f: " << acmacs::to_string(gradient_f_max) << '\n';
+                    std::cout << "gradie f: " << acmacs::to_string(gradient_f_max) << '\n';
             }
         }
     }
