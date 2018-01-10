@@ -6,7 +6,32 @@
 
 // ----------------------------------------------------------------------
 
-std::vector<acmacs::chart::Titer> acmacs::chart::rjson_import::titers_for_layers(const rjson::array& layers, size_t aAntigenNo, size_t aSerumNo)
+size_t acmacs::chart::RjsonTiters::number_of_sera() const
+{
+    if (!number_of_sera_) {
+        if (auto [present, list] = data_.get_array_if(keys_.list); present) {
+            number_of_sera_ = static_cast<const rjson::array&>(list[0]).size();
+        }
+        else {
+            const rjson::array& d = data_[keys_.dict];
+            auto max_index = [](const rjson::object& obj) -> size_t {
+                                 size_t result = 0;
+                                 for (auto key_value: obj) {
+                                     if (const size_t ind = std::stoul(key_value.first); ind > result)
+                                         result = ind;
+                                 }
+                                 return result;
+                             };
+            number_of_sera_ = max_index(*std::max_element(d.begin(), d.end(), [max_index](const rjson::object& a, const rjson::object& b) { return max_index(a) < max_index(b); })) + 1;
+        }
+    }
+    return *number_of_sera_;
+
+} // acmacs::chart::RjsonTiters::number_of_sera
+
+// ----------------------------------------------------------------------
+
+std::vector<acmacs::chart::Titer> acmacs::chart::RjsonTiters::titers_for_layers(const rjson::array& layers, size_t aAntigenNo, size_t aSerumNo) const
 {
     if (layers.empty())
         throw acmacs::chart::data_not_available("no layers");
@@ -22,36 +47,14 @@ std::vector<acmacs::chart::Titer> acmacs::chart::rjson_import::titers_for_layers
     }
     return result;
 
-} // acmacs::chart::rjson_import::titers_for_layers
+} // acmacs::chart::RjsonTiters::titers_for_layers
 
 // ----------------------------------------------------------------------
 
-size_t acmacs::chart::rjson_import::number_of_sera(const rjson::object& data, const char* list_key, const char* dict_key)
-{
-    if (auto [present, list] = data.get_array_if(list_key); present) {
-        return static_cast<const rjson::array&>(list[0]).size();
-    }
-    else {
-        const rjson::array& d = data[dict_key];
-        auto max_index = [](const rjson::object& obj) -> size_t {
-                             size_t result = 0;
-                             for (auto key_value: obj) {
-                                 if (const size_t ind = std::stoul(key_value.first); ind > result)
-                                     result = ind;
-                             }
-                             return result;
-                         };
-        return max_index(*std::max_element(d.begin(), d.end(), [max_index](const rjson::object& a, const rjson::object& b) { return max_index(a) < max_index(b); })) + 1;
-    }
-
-} // acmacs::chart::rjson_import::number_of_sera
-
-// ----------------------------------------------------------------------
-
-size_t acmacs::chart::rjson_import::number_of_non_dont_cares(const rjson::object& data, const char* list_key, const char* dict_key)
+size_t acmacs::chart::RjsonTiters::number_of_non_dont_cares() const
 {
     size_t result = 0;
-    if (auto [present, list] = data.get_array_if(list_key); present) {
+    if (auto [present, list] = data_.get_array_if(keys_.list); present) {
         for (const rjson::array& row: list) {
             for (const Titer titer: row) {
                 if (!titer.is_dont_care())
@@ -60,12 +63,12 @@ size_t acmacs::chart::rjson_import::number_of_non_dont_cares(const rjson::object
         }
     }
     else {
-        const rjson::array& d = data[dict_key];
+        const rjson::array& d = data_[keys_.dict];
         result = std::accumulate(d.begin(), d.end(), 0U, [](size_t a, const rjson::object& row) -> size_t { return a + row.size(); });
     }
     return result;
 
-} // acmacs::chart::rjson_import::number_of_non_dont_cares
+} // acmacs::chart::RjsonTiters::number_of_non_dont_cares
 
 // ----------------------------------------------------------------------
 
@@ -127,7 +130,7 @@ template <typename Float> static void update_dict(const rjson::array& data, acma
 
 } // update_dict
 
-template <typename Float> void acmacs::chart::rjson_import::update(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<Float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points)
+template <typename Float> void acmacs::chart::rjson_import::update(const rjson::object& data, const std::string& list_key, const std::string& dict_key, TableDistances<Float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points)
 {
     table_distances.dodgy_is_regular(parameters.dodgy_titer_is_regular);
     if (auto [present, list] = data.get_array_if(list_key); present)
@@ -137,8 +140,8 @@ template <typename Float> void acmacs::chart::rjson_import::update(const rjson::
 
 } // acmacs::chart::rjson_import::update
 
-template void acmacs::chart::rjson_import::update<float>(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
-template void acmacs::chart::rjson_import::update<double>(const rjson::object& data, const char* list_key, const char* dict_key, TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
+template void acmacs::chart::rjson_import::update<float>(const rjson::object& data, const std::string& list_key, const std::string& dict_key, TableDistances<float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
+template void acmacs::chart::rjson_import::update<double>(const rjson::object& data, const std::string& list_key, const std::string& dict_key, TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
 
 // ----------------------------------------------------------------------
 /// Local Variables:

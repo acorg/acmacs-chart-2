@@ -1,8 +1,7 @@
 #pragma once
 
-#include "acmacs-base/rjson.hh"
-#include "acmacs-chart-2/chart.hh"
 #include "acmacs-chart-2/verify.hh"
+#include "acmacs-chart-2/rjson-import.hh"
 
 // ----------------------------------------------------------------------
 
@@ -144,31 +143,13 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class AceTiters : public Titers
+    class AceTiters : public RjsonTiters
     {
       public:
-        inline AceTiters(const rjson::object& aData) : mData{aData} {}
-
-        Titer titer(size_t aAntigenNo, size_t aSerumNo) const override;
-        Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override;
-        std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const override;
-        inline size_t number_of_layers() const override { return mData.get_or_empty_array("L").size(); }
-        size_t number_of_antigens() const override;
-        size_t number_of_sera() const override;
-        size_t number_of_non_dont_cares() const override;
-
-          // support for fast exporting into ace, if source was ace or acd1
-        inline const rjson::array& rjson_list_list() const override { const rjson::array& r = mData.get_or_empty_array("l"); if (r.empty()) throw data_not_available{"no \"l\""}; return r; }
-        inline const rjson::array& rjson_list_dict() const override { const rjson::array& r = mData.get_or_empty_array("d"); if (r.empty()) throw data_not_available{"no \"d\""}; return r; }
-        inline const rjson::array& rjson_layers() const override { const rjson::array& r = mData.get_or_empty_array("L"); if (r.empty()) throw data_not_available{"no \"L\""}; return r; }
-
-        void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const override;
-        void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const override;
+        inline AceTiters(const rjson::object& data) : RjsonTiters(data, s_keys_) {}
 
      private:
-        const rjson::object& mData;
-
-        inline const rjson::object& layer(size_t aLayerNo) const { return rjson_layers()[aLayerNo]; }
+        static const Keys s_keys_;
 
     }; // class AceTiters
 

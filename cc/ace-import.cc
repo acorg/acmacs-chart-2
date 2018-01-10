@@ -10,10 +10,21 @@
 #include "acmacs-base/virus-name.hh"
 #include "acmacs-chart-2/ace-import.hh"
 #include "acmacs-chart-2/ace.hh"
-#include "acmacs-chart-2/rjson-import.hh"
 
 using namespace std::string_literals;
 using namespace acmacs::chart;
+
+// ----------------------------------------------------------------------
+
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
+#endif
+
+const acmacs::chart::RjsonTiters::Keys acmacs::chart::AceTiters::s_keys_{"l", "d", "L"};
+
+#pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------
 
@@ -245,83 +256,6 @@ void AceAntigens::make_name_index() const
     }
 
 } // AceAntigens::make_name_index
-
-// ----------------------------------------------------------------------
-
-Titer AceTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
-{
-    if (auto [present, list] = mData.get_array_if("l"); present) {
-        return list[aAntigenNo][aSerumNo];
-    }
-    else {
-        return rjson_import::titer_in_d(mData["d"], aAntigenNo, aSerumNo);
-    }
-
-} // AceTiters::titer
-
-// ----------------------------------------------------------------------
-
-Titer AceTiters::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const
-{
-    return rjson_import::titer_in_d(mData["L"][aLayerNo], aAntigenNo, aSerumNo);
-
-} // AceTiters::titer_of_layer
-
-// ----------------------------------------------------------------------
-
-std::vector<Titer> AceTiters::titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const
-{
-    return rjson_import::titers_for_layers(mData.get_or_empty_array("L"), aAntigenNo, aSerumNo);
-
-} // AceTiters::titers_for_layers
-
-// ----------------------------------------------------------------------
-
-size_t AceTiters::number_of_antigens() const
-{
-    return rjson_import::number_of_antigens(mData, "l", "d");
-
-} // AceTiters::number_of_antigens
-
-// ----------------------------------------------------------------------
-
-size_t AceTiters::number_of_sera() const
-{
-    return rjson_import::number_of_sera(mData, "l", "d");
-
-} // AceTiters::number_of_sera
-
-// ----------------------------------------------------------------------
-
-size_t AceTiters::number_of_non_dont_cares() const
-{
-    return rjson_import::number_of_non_dont_cares(mData, "l", "d");
-
-} // AceTiters::number_of_non_dont_cares
-
-// ----------------------------------------------------------------------
-
-void AceTiters::update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const
-{
-    if (number_of_sera()) {
-        rjson_import::update(mData, "l", "d", table_distances, column_bases, parameters, number_of_antigens() + number_of_sera());
-    }
-    else {
-        throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
-    }
-
-} // AceTiters::update
-
-void AceTiters::update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const
-{
-    if (number_of_sera()) {
-        rjson_import::update(mData, "l", "d", table_distances, column_bases, parameters, number_of_antigens() + number_of_sera());
-    }
-    else {
-        throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
-    }
-
-} // AceTiters::update
 
 // ----------------------------------------------------------------------
 

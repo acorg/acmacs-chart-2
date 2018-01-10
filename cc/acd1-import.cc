@@ -9,7 +9,6 @@
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/virus-name.hh"
 #include "acmacs-chart-2/acd1-import.hh"
-#include "acmacs-chart-2/rjson-import.hh"
 
 using namespace std::string_literals;
 using namespace acmacs::chart;
@@ -19,6 +18,18 @@ constexpr const double LabelScale = 10.0;
 
 static std::string convert_to_json(const std::string_view& aData);
 static void convert_set(std::string& aData, const std::vector<size_t>& aPerhapsSet);
+
+// ----------------------------------------------------------------------
+
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
+#endif
+
+const acmacs::chart::RjsonTiters::Keys acmacs::chart::Acd1Titers::s_keys_{"titers_list_of_list", "titers_list_of_dict", "layers_dict_for_antigen"};
+
+#pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------
 
@@ -581,85 +592,6 @@ void Acd1Antigens::make_name_index() const
     }
 
 } // Acd1Antigens::make_name_index
-
-// ----------------------------------------------------------------------
-
-Titer Acd1Titers::titer(size_t aAntigenNo, size_t aSerumNo) const
-{
-    if (auto [present, list] = mData.get_array_if("titers_list_of_list"); present) {
-        return list[aAntigenNo][aSerumNo];
-    }
-    else {
-        return rjson_import::titer_in_d(mData["titers_list_of_dict"], aAntigenNo, aSerumNo);
-    }
-
-} // Acd1Titers::titer
-
-// ----------------------------------------------------------------------
-
-Titer Acd1Titers::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const
-{
-    return rjson_import::titer_in_d(mData["layers_dict_for_antigen"][aLayerNo], aAntigenNo, aSerumNo);
-
-} // Acd1Titers::titer_of_layer
-
-// ----------------------------------------------------------------------
-
-std::vector<Titer> Acd1Titers::titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const
-{
-    return rjson_import::titers_for_layers(mData.get_or_empty_array("layers_dict_for_antigen"), aAntigenNo, aSerumNo);
-
-} // Acd1Titers::titers_for_layers
-
-// ----------------------------------------------------------------------
-
-size_t Acd1Titers::number_of_antigens() const
-{
-    return rjson_import::number_of_antigens(mData, "titers_list_of_list", "titers_list_of_dict");
-
-} // Acd1Titers::number_of_antigens
-
-// ----------------------------------------------------------------------
-
-size_t Acd1Titers::number_of_sera() const
-{
-    return rjson_import::number_of_sera(mData, "titers_list_of_list", "titers_list_of_dict");
-
-} // Acd1Titers::number_of_sera
-
-// ----------------------------------------------------------------------
-
-size_t Acd1Titers::number_of_non_dont_cares() const
-{
-    return rjson_import::number_of_non_dont_cares(mData, "titers_list_of_list", "titers_list_of_dict");
-
-} // Acd1Titers::number_of_non_dont_cares
-
-// ----------------------------------------------------------------------
-
-void Acd1Titers::update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const
-{
-    if (number_of_sera()) {
-        rjson_import::update(mData, "titers_list_of_list", "titers_list_of_dict", table_distances, column_bases, parameters, number_of_antigens() + number_of_sera());
-    }
-    else {
-        throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
-    }
-
-} // Acd1Titers::update
-
-// ----------------------------------------------------------------------
-
-void Acd1Titers::update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const
-{
-    if (number_of_sera()) {
-        rjson_import::update(mData, "titers_list_of_list", "titers_list_of_dict", table_distances, column_bases, parameters, number_of_antigens() + number_of_sera());
-    }
-    else {
-        throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
-    }
-
-} // Acd1Titers::update
 
 // ----------------------------------------------------------------------
 

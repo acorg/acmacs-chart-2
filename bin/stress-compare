@@ -9,7 +9,7 @@ if len(sys.argv) < 2:
 exit_code = 0
 for chart in sys.argv[1:]:
     c2_stress = float(subprocess.check_output("c2 chart-info.py --stress '{}' 2>/dev/null".format(chart), shell=True))
-    ad_stress = float(subprocess.check_output("ad --no-time chart-stress --double '{}'".format(chart), shell=True))
+    ad_stress = float(subprocess.check_output("ad --no-time chart-stress --double --precision 32 '{}'".format(chart), shell=True))
     diff = abs(c2_stress - ad_stress)
     if diff < 1e-5:
         print("OK:", chart, "diff:", diff)
