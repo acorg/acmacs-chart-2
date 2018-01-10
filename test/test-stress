@@ -23,8 +23,10 @@ trap failed ERR
 # ======================================================================
 
 cd "$TESTDIR"
-../dist/chart-stress ./test-2004-3.ace >"${TDIR}/test-2004-3.txt" 2>/dev/null
+../dist/chart-stress --double --precision 6 ./test-2004-3.ace >"${TDIR}/test-2004-3.txt" 2>/dev/null
+../dist/chart-stress --gradient-max --precision 6 ./test-2004-3.ace >>"${TDIR}/test-2004-3.txt" 2>/dev/null
 diff "${TDIR}/test-2004-3.txt" test-stress-expected-1.txt
-     # || (echo '********************'; cat "${TDIR}/test-2004-3.txt"; echo '********************'; false)
-../dist/chart-stress ./test.ace >"${TDIR}/test.txt" 2>/dev/null
+
+../dist/chart-stress --double --precision 6 ./test.ace >"${TDIR}/test.txt" 2>/dev/null
+../dist/chart-stress --gradient-max --precision 6 ./test.ace >>"${TDIR}/test.txt" 2>/dev/null
 diff "${TDIR}/test.txt" test-stress-expected-2.txt

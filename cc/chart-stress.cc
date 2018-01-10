@@ -45,6 +45,8 @@ int main(int argc, char* const argv[])
                 {"--double", false, "just report stress (double)"},
                 {"--float", false, "just report stress (float)"},
                 {"--gradient", false, "just report gradient (double)"},
+                {"--gradient-max", false, "just report gradient max (double)"},
+                {"--precision", 5U, "stress/gradient report precision (double)"},
                 {"--time", false, "test speed"},
                 {"--verbose", false},
                 {"-h", false},
@@ -60,13 +62,21 @@ int main(int argc, char* const argv[])
             auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
             auto projection = chart->projection(args["--projection"]);
             if (args["--double"]) {
-                std::cout << acmacs::to_string(projection->calculate_stress<double>()) << '\n';
+                  // std::cout << acmacs::to_string(projection->calculate_stress<double>()) << '\n';
+                std::cout << std::setprecision(args["--precision"]) << projection->calculate_stress<double>() << '\n';
             }
             else if (args["--float"]) {
-                std::cout << acmacs::to_string(projection->calculate_stress<float>()) << '\n';
+                std::cout << std::setprecision(args["--precision"]) << acmacs::to_string(projection->calculate_stress<float>()) << '\n';
             }
             else if (args["--gradient"]) {
-                std::cout << acmacs::to_string(projection->calculate_gradient<double>()) << '\n';
+                  // std::cout << acmacs::to_string(projection->calculate_gradient<double>()) << '\n';
+                std::cout << projection->calculate_gradient<double>() << '\n';
+            }
+            else if (args["--gradient-max"]) {
+                const auto gradient = projection->calculate_gradient<double>();
+                const auto gradient_max = std::accumulate(gradient.begin(), gradient.end(), 0.0, [](auto mx, auto val) { return std::max(mx, std::abs(val)); });
+                  // std::cout << acmacs::to_string(projection->calculate_gradient<double>()) << '\n';
+                std::cout << std::setprecision(args["--precision"]) << gradient_max << '\n';
             }
             else {
                 auto stress = chart->make_stress<double>(args["--projection"]);

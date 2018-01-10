@@ -26,7 +26,7 @@ SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize
 
 ALGLIB = alglib-3.13.0
 ALGLIB_SOURCES = optimization.cpp ap.cpp alglibinternal.cpp linalg.cpp alglibmisc.cpp
-ALGLIB_CXXFLAGS = -DAE_COMPILE_MINLBFGS -g -MMD -O3 -mavx -mtune=intel -fPIC -std=c++11 -Icc -Wall
+ALGLIB_CXXFLAGS = -DAE_COMPILE_MINLBFGS -g -MMD -O3 -mavx -mtune=intel -fPIC -std=c++11 -Icc -Wall -Wno-maybe-uninitialized
 
 # ----------------------------------------------------------------------
 
