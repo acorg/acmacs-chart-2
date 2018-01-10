@@ -175,6 +175,16 @@ void ProjectionModify::randomize_layout(LayoutRandomizer& randomizer)
 } // ProjectionModify::randomize_layout
 
 // ----------------------------------------------------------------------
+
+void ProjectionModify::relax(acmacs::chart::OptimizationMethod optimization_method, bool multiply_antigen_titer_until_column_adjust)
+{
+    modify();
+    auto layout = layout_modified();
+    acmacs::chart::optimize(optimization_method, stress_factory<double>(chart(), *this, multiply_antigen_titer_until_column_adjust), layout->data(), layout->data() + layout->size());
+
+} // ProjectionModify::relax
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

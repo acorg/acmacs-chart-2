@@ -33,6 +33,7 @@ int main(int argc, char* const argv[])
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
             auto projection = chart.projections_modify()->new_from_scratch(args["-d"], args["-m"].str());
             projection->randomize_layout(args["--md"]);
+            projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs);
             std::cout << chart.make_info() << '\n';
             if (args.number_of_arguments() > 1)
                 acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);

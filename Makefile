@@ -19,10 +19,14 @@ TARGETS = \
     $(DIST)/chart-stress \
     $(DIST)/chart-relax
 
-SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc \
+SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc \
     rjson-import.cc \
     factory-import.cc ace-import.cc acd1-import.cc lispmds-import.cc lispmds-token.cc \
     factory-export.cc ace-export.cc lispmds-export.cc lispmds-encode.cc chart-modify.cc
+
+ALGLIB = alglib-3.13.0
+ALGLIB_SOURCES = optimization.cpp ap.cpp alglibinternal.cpp linalg.cpp alglibmisc.cpp
+ALGLIB_CXXFLAGS = -DAE_COMPILE_MINLBFGS -g -MMD -O3 -mavx -mtune=intel -fPIC -std=c++11 -Icc -Wall
 
 # ----------------------------------------------------------------------
 
@@ -65,13 +69,17 @@ include $(ACMACSD_ROOT)/share/makefiles/Makefile.rtags
 
 # ----------------------------------------------------------------------
 
-$(ACMACS_CHART_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SOURCES)) | $(DIST) $(LOCATION_DB_LIB)
+$(ACMACS_CHART_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SOURCES)) $(patsubst %.cpp,$(BUILD)/%.o,$(ALGLIB_SOURCES)) | $(DIST) $(LOCATION_DB_LIB)
 	@printf "%-16s %s\n" "SHARED" $@
 	@$(call make_shared,libacmacschart,$(ACMACS_CHART_LIB_MAJOR),$(ACMACS_CHART_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 $(DIST)/%: $(BUILD)/%.o | $(ACMACS_CHART_LIB)
 	@printf "%-16s %s\n" "LINK" $@
 	@$(CXX) $(LDFLAGS) -o $@ $^ $(ACMACS_CHART_LIB) $(LDLIBS) $(AD_RPATH)
+
+$(BUILD)/%.o: cc/$(ALGLIB)/%.cpp | $(BUILD) install-headers
+	@echo $(CXX_NAME) $(ALGLIB_CXXFLAGS) $<
+	@$(CXX) $(ALGLIB_CXXFLAGS) -c -o $@ $(abspath $<)
 
 # ======================================================================
 ### Local Variables:

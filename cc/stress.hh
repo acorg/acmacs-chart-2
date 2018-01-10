@@ -6,11 +6,7 @@
 
 // ----------------------------------------------------------------------
 
-namespace acmacs
-{
-    class LayoutInterface;
-
-} // namespace acmacs
+namespace acmacs { class LayoutInterface; }
 
 namespace acmacs::chart
 {

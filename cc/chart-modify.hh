@@ -2,6 +2,7 @@
 
 #include "acmacs-chart-2/chart.hh"
 #include "acmacs-chart-2/randomizer.hh"
+#include "acmacs-chart-2/optimize.hh"
 
 // ----------------------------------------------------------------------
 
@@ -226,15 +227,16 @@ namespace acmacs::chart
         void flip_east_west() { flip(0, 1); }
         void flip_north_south() { flip(1, 0); }
 
-        void randomize_layout(double max_distance_multiplier = 1.0);
-        void randomize_layout(LayoutRandomizer& randomizer);
+        virtual void randomize_layout(double max_distance_multiplier = 1.0);
+        virtual void randomize_layout(LayoutRandomizer& randomizer);
+        virtual void relax(OptimizationMethod optimization_method, bool multiply_antigen_titer_until_column_adjust = true);
 
      protected:
         virtual void modify() {}
         virtual bool modified() const { return true; }
         bool layout_present() const { return static_cast<bool>(layout_); }
         void clone_from(const Projection& aSource) { layout_ = std::make_shared<acmacs::Layout>(*aSource.layout()); transformation_ = aSource.transformation(); transformed_layout_.reset(); }
-        std::shared_ptr<Layout> layout_modified() const { return layout_; }
+        std::shared_ptr<acmacs::Layout> layout_modified() const { return layout_; }
         std::shared_ptr<Layout> transformed_layout_modified() const { if (!transformed_layout_) transformed_layout_.reset(layout_->transform(transformation_)); return transformed_layout_; }
         size_t number_of_points_modified() const { return layout_->number_of_points(); }
         size_t number_of_dimensions_modified() const { return layout_->number_of_dimensions(); }
@@ -242,7 +244,7 @@ namespace acmacs::chart
         void new_layout(size_t number_of_points, size_t number_of_dimensions) { layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions); transformation_.reset(); transformed_layout_.reset(); }
 
      private:
-        std::shared_ptr<Layout> layout_;
+        std::shared_ptr<acmacs::Layout> layout_;
         Transformation transformation_;
         mutable std::shared_ptr<acmacs::chart::Layout> transformed_layout_;
 
