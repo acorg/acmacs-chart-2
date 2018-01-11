@@ -217,7 +217,7 @@ double acmacs::chart::Titers::max_distance(const acmacs::chart::ColumnBases& col
     else {
         throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
     }
-    std::cerr << "Titers::max_distance: " << max_distance << '\n';
+    // std::cerr << "Titers::max_distance: " << max_distance << '\n';
     return max_distance;
 
 } // acmacs::chart::Titers::max_distance
