@@ -15,7 +15,7 @@
 
 // ----------------------------------------------------------------------
 
-static void alglib_lbfgs_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last);
+static void alglib_lbfgs_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, bool rough);
 
 // ----------------------------------------------------------------------
 
@@ -38,14 +38,14 @@ std::ostream& acmacs::chart::operator<<(std::ostream& out, const acmacs::chart::
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::OptimizationStatus acmacs::chart::optimize(OptimizationMethod optimization_method, const Stress<double>& stress, double* arg_first, double* arg_last)
+acmacs::chart::OptimizationStatus acmacs::chart::optimize(OptimizationMethod optimization_method, const Stress<double>& stress, double* arg_first, double* arg_last, bool rough)
 {
     OptimizationStatus status;
     status.initial_stress = stress.value(arg_first);
     const auto start = std::chrono::high_resolution_clock::now();
     switch (optimization_method) {
       case OptimizationMethod::alglib_lbfgs:
-          alglib_lbfgs_optimize(status, stress, arg_first, arg_last);
+          alglib_lbfgs_optimize(status, stress, arg_first, arg_last, rough);
           break;
     }
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
@@ -82,13 +82,13 @@ static const char* alglib_lbfgs_optimize_termination_types[] = {
     "unknown termination type",
 };
 
-void alglib_lbfgs_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last)
+void alglib_lbfgs_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, bool rough)
 {
     using namespace alglib;
 
-    const double epsg = 1e-10;
+    const double epsg = rough ? 0.5 : 1e-10;
     const double epsf = 0;
-    const double epsx = 0;
+    const double epsx = rough ? 1e-3 : 0;
     const double stpmax = 0.1;
     const ae_int_t max_iterations = 0;
 

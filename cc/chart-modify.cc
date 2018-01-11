@@ -176,11 +176,23 @@ void ProjectionModify::randomize_layout(LayoutRandomizer& randomizer)
 
 // ----------------------------------------------------------------------
 
-OptimizationStatus ProjectionModify::relax(acmacs::chart::OptimizationMethod optimization_method, bool multiply_antigen_titer_until_column_adjust)
+void ProjectionModify::set_layout(const acmacs::Layout& layout)
+{
+    modify();
+    auto target_layout = layout_modified();
+    if (layout.size() != target_layout->size())
+        throw invalid_data("ProjectionModify::set_layout: wrong layout size");
+    *target_layout = layout;
+
+} // ProjectionModify::set_layout
+
+// ----------------------------------------------------------------------
+
+OptimizationStatus ProjectionModify::relax(acmacs::chart::OptimizationMethod optimization_method, bool rough, bool multiply_antigen_titer_until_column_adjust)
 {
     modify();
     auto layout = layout_modified();
-    return acmacs::chart::optimize(optimization_method, stress_factory<double>(chart(), *this, multiply_antigen_titer_until_column_adjust), layout->data(), layout->data() + layout->size());
+    return acmacs::chart::optimize(optimization_method, stress_factory<double>(chart(), *this, multiply_antigen_titer_until_column_adjust), layout->data(), layout->data() + layout->size(), rough);
 
 } // ProjectionModify::relax
 

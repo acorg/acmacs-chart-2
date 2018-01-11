@@ -30,7 +30,7 @@ namespace acmacs::chart
 
     std::ostream& operator<<(std::ostream& out, const OptimizationStatus& status);
 
-    OptimizationStatus optimize(OptimizationMethod optimization_method, const Stress<double>& stress, double* arg_first, double* arg_last);
+    OptimizationStatus optimize(OptimizationMethod optimization_method, const Stress<double>& stress, double* arg_first, double* arg_last, bool rough = false);
 
 } // namespace acmacs::chart
 

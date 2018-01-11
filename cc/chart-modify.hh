@@ -229,7 +229,8 @@ namespace acmacs::chart
 
         virtual void randomize_layout(double max_distance_multiplier = 1.0);
         virtual void randomize_layout(LayoutRandomizer& randomizer);
-        virtual OptimizationStatus relax(OptimizationMethod optimization_method, bool multiply_antigen_titer_until_column_adjust = true);
+        virtual void set_layout(const acmacs::Layout& layout);
+        virtual OptimizationStatus relax(OptimizationMethod optimization_method, bool rough = false, bool multiply_antigen_titer_until_column_adjust = true);
 
      protected:
         virtual void modify() {}
