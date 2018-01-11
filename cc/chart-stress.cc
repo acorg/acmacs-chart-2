@@ -14,7 +14,7 @@ template <typename Float> double measure(acmacs::chart::ProjectionP projection, 
     const auto start = acmacs::timestamp();
     double duration{0};
     size_t count = 0;
-    for (; duration < test_duration; duration = acmacs::elapsed(start)) {
+    for (; duration < test_duration; duration = acmacs::elapsed_seconds(start)) {
         for (size_t i = 0; i < 300; ++i, ++count)
             projection->calculate_stress(stress);
     }
@@ -27,7 +27,7 @@ template <typename Float> double measure_gradient(acmacs::chart::ProjectionP pro
     const auto start = acmacs::timestamp();
     double duration{0};
     size_t count = 0;
-    for (; duration < test_duration; duration = acmacs::elapsed(start)) {
+    for (; duration < test_duration; duration = acmacs::elapsed_seconds(start)) {
         for (size_t i = 0; i < 300; ++i, ++count)
             projection->calculate_gradient(stress);
     }

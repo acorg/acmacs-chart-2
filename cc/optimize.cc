@@ -1,4 +1,5 @@
 #include "acmacs-base/layout.hh"
+#include "acmacs-base/timeit.hh"
 #include "acmacs-chart-2/optimize.hh"
 #include "acmacs-chart-2/stress.hh"
 
@@ -29,7 +30,7 @@ std::ostream& acmacs::chart::operator<<(std::ostream& out, const acmacs::chart::
         << "iterations: " << status.number_of_iterations << '\n'
         << "stress calculations: " << status.number_of_stress_calculations << '\n'
         << "method: " << s_optimization_method[static_cast<size_t>(status.method)] << '\n'
-        << "time: " << status.time.count() << "us"
+        << "time: " << acmacs::format(status.time)
             ;
     return out;
 
