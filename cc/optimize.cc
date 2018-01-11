@@ -14,19 +14,42 @@
 
 // ----------------------------------------------------------------------
 
-static void alglib_lbfgs_optimize(const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last);
+static void alglib_lbfgs_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last);
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::optimize(OptimizationMethod optimization_method, const Stress<double>& stress, double* arg_first, double* arg_last)
+static const char* const s_optimization_method[] = {
+    "alglib_lbfgs",
+};
+
+std::ostream& acmacs::chart::operator<<(std::ostream& out, const acmacs::chart::OptimizationStatus& status)
 {
-    std::cout << "initial stress: " << stress.value(arg_first) << ' ' << *arg_first << '\n';
+    out << "stress: " << status.final_stress << " <-- " << status.initial_stress << '\n'
+        << "termination: " << status.termination_report << '\n'
+        << "iterations: " << status.number_of_iterations << '\n'
+        << "stress calculations: " << status.number_of_stress_calculations << '\n'
+        << "method: " << s_optimization_method[static_cast<size_t>(status.method)] << '\n'
+        << "time: " << status.time.count() << "us"
+            ;
+    return out;
+
+} // acmacs::chart::operator<<
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::OptimizationStatus acmacs::chart::optimize(OptimizationMethod optimization_method, const Stress<double>& stress, double* arg_first, double* arg_last)
+{
+    OptimizationStatus status;
+    status.initial_stress = stress.value(arg_first);
+    const auto start = std::chrono::high_resolution_clock::now();
     switch (optimization_method) {
       case OptimizationMethod::alglib_lbfgs:
-          alglib_lbfgs_optimize(stress, arg_first, arg_last);
+          alglib_lbfgs_optimize(status, stress, arg_first, arg_last);
           break;
     }
-    std::cout << "final stress: " << stress.value(arg_first) << ' ' << *arg_first << '\n';
+    status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
+    status.final_stress = stress.value(arg_first);
+    return status;
 
 } // acmacs::chart::optimize
 
@@ -58,7 +81,7 @@ static const char* alglib_lbfgs_optimize_termination_types[] = {
     "unknown termination type",
 };
 
-void alglib_lbfgs_optimize(const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last)
+void alglib_lbfgs_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last)
 {
     using namespace alglib;
 
@@ -85,9 +108,9 @@ void alglib_lbfgs_optimize(const acmacs::chart::Stress<double>& stress, double* 
         throw acmacs::chart::optimization_error(msg);
     }
 
-    std::cout << "terminationtype: " << alglib_lbfgs_optimize_termination_types[(rep.terminationtype > 0 && rep.terminationtype < 9) ? rep.terminationtype - 1 : 8] << '\n';
-    std::cout << "iterations: " << rep.iterationscount << '\n';
-    std::cout << "stress calculations: " << rep.nfev << '\n';
+    status.termination_report = alglib_lbfgs_optimize_termination_types[(rep.terminationtype > 0 && rep.terminationtype < 9) ? rep.terminationtype - 1 : 8];
+    status.number_of_iterations = static_cast<size_t>(rep.iterationscount);
+    status.number_of_stress_calculations = static_cast<size_t>(rep.nfev);
 
 } // alglib_lbfgs_optimize
 

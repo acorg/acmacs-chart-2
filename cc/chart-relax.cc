@@ -35,7 +35,8 @@ int main(int argc, char* const argv[])
             for (size_t no = 0; no < static_cast<size_t>(args["-n"]); ++no) {
                 auto projection = chart.projections_modify()->new_from_scratch(args["-d"], args["-m"].str());
                 projection->randomize_layout(args["--md"]);
-                projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs);
+                const auto status = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs);
+                std::cout << status << '\n';
             }
             std::cout << chart.make_info() << '\n';
             if (args.number_of_arguments() > 1)
