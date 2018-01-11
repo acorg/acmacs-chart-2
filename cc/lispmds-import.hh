@@ -188,7 +188,7 @@ namespace acmacs::chart
     {
       public:
         inline LispmdsProjection(const Chart& chart, const acmacs::lispmds::value& aData, size_t aIndex, size_t aNumberOfAntigens, size_t aNumberOfSera)
-            : Projection(chart), mData{aData}, mIndex{aIndex}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} { check(); }
+            : Projection(chart), mData{aData}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} { set_projection_no(aIndex); check(); }
 
         void check() const;
         std::optional<double> stored_stress() const override;
@@ -208,7 +208,6 @@ namespace acmacs::chart
 
      private:
         const acmacs::lispmds::value& mData;
-        size_t mIndex;
         size_t mNumberOfAntigens, mNumberOfSera;
         mutable std::shared_ptr<Layout> layout_;
 

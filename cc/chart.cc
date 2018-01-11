@@ -302,14 +302,6 @@ std::string acmacs::chart::Info::make_name() const
 
 // ----------------------------------------------------------------------
 
-size_t acmacs::chart::Projection::projection_no() const
-{
-    return chart().projections()->projection_no(this);
-
-} // acmacs::chart::Projection::projection_no
-
-// ----------------------------------------------------------------------
-
 std::string acmacs::chart::Projection::make_info() const
 {
     auto lt = layout();
@@ -359,15 +351,17 @@ std::string acmacs::chart::Projections::make_info() const
 
 // ----------------------------------------------------------------------
 
-size_t acmacs::chart::Projections::projection_no(const acmacs::chart::Projection* projection) const
-{
-    for (size_t index = 0; index < size(); ++index) {
-        if (operator[](index).get() == projection)
-            return index;
-    }
-    throw invalid_data("cannot find projection_no");
+// size_t acmacs::chart::Projections::projection_no(const acmacs::chart::Projection* projection) const
+// {
+//     std::cerr << "projection_no " << projection << '\n';
+//     for (size_t index = 0; index < size(); ++index) {
+//         std::cerr << "p " << index << ' ' << operator[](index).get() << '\n';
+//         if (operator[](index).get() == projection)
+//             return index;
+//     }
+//     throw invalid_data("cannot find projection_no, total projections: " + std::to_string(size()));
 
-} // acmacs::chart::Projections::projection_no
+// } // acmacs::chart::Projections::projection_no
 
 // ----------------------------------------------------------------------
 

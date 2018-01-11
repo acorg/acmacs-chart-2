@@ -489,10 +489,10 @@ void LispmdsProjection::check() const
 {
     try {
         if (auto nd = layout()->number_of_dimensions(); nd > 5)
-            throw import_error("[lispmds] projection " + acmacs::to_string(mIndex) + " has unsupported number of dimensions: " + acmacs::to_string(nd));
+            throw import_error("[lispmds] projection " + acmacs::to_string(projection_no()) + " has unsupported number of dimensions: " + acmacs::to_string(nd));
     }
     catch (std::exception& err) {
-        throw import_error("[lispmds] projection " + acmacs::to_string(mIndex) + " reading error: " + err.what());
+        throw import_error("[lispmds] projection " + acmacs::to_string(projection_no()) + " reading error: " + err.what());
     }
 
 } // LispmdsProjection::check
@@ -507,7 +507,7 @@ std::optional<double> LispmdsProjection::stored_stress() const
             return static_cast<double>(arg);
         else
             return {};
-    }, projection_data(mData, mIndex)[1]);
+    }, projection_data(mData, projection_no())[1]);
 
 } // LispmdsProjection::stress
 
@@ -542,7 +542,7 @@ class LispmdsLayout : public acmacs::Layout
 std::shared_ptr<Layout> LispmdsProjection::layout() const
 {
     if (!layout_)
-        layout_ = std::make_shared<LispmdsLayout>(projection_layout(mData, mIndex), mNumberOfAntigens, mNumberOfSera);
+        layout_ = std::make_shared<LispmdsLayout>(projection_layout(mData, projection_no()), mNumberOfAntigens, mNumberOfSera);
     return layout_;
 
 } // LispmdsProjection::layout
@@ -551,7 +551,7 @@ std::shared_ptr<Layout> LispmdsProjection::layout() const
 
 size_t LispmdsProjection::number_of_dimensions() const
 {
-    return projection_layout(mData, mIndex)[0].size();
+    return projection_layout(mData, projection_no())[0].size();
 
 } // LispmdsProjection::number_of_dimensions
 
@@ -559,7 +559,7 @@ size_t LispmdsProjection::number_of_dimensions() const
 
 ColumnBasesP LispmdsProjection::forced_column_bases() const
 {
-    return ::forced_column_bases(mData, mIndex).first;
+    return ::forced_column_bases(mData, projection_no()).first;
 
 } // LispmdsProjection::forced_column_bases
 
@@ -567,7 +567,7 @@ ColumnBasesP LispmdsProjection::forced_column_bases() const
 
 acmacs::chart::MinimumColumnBasis LispmdsProjection::minimum_column_basis() const
 {
-    return ::forced_column_bases(mData, mIndex).second;
+    return ::forced_column_bases(mData, projection_no()).second;
 
 } // LispmdsProjection::minimum_column_basis
 
@@ -647,7 +647,7 @@ PointIndexList LispmdsProjection::disconnected() const
 AvidityAdjusts LispmdsProjection::avidity_adjusts() const
 {
     const auto num_points = layout()->number_of_points();
-    const acmacs::lispmds::list& cb = projection_layout(mData, mIndex)[num_points][0][1];
+    const acmacs::lispmds::list& cb = projection_layout(mData, projection_no())[num_points][0][1];
     AvidityAdjusts result(num_points);
     for (size_t i = 0; i < num_points; ++i)
         result[i] = std::exp2(static_cast<double>(std::get<acmacs::lispmds::number>(cb[num_points + i])));

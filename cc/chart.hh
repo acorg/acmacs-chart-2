@@ -363,7 +363,7 @@ namespace acmacs::chart
         Projection(const Chart& chart) : chart_(chart) {}
         Projection(const Projection&) = delete;
 
-        virtual size_t projection_no() const;
+        virtual size_t projection_no() const { if (!projection_no_) throw invalid_data("no projection_no"); return *projection_no_; }
         virtual std::string make_info() const;
         virtual std::optional<double> stored_stress() const = 0;
         virtual double stress(RecalculateStress recalculate = RecalculateStress::if_necessary) const;
@@ -391,9 +391,12 @@ namespace acmacs::chart
 
         // Chart& chart() { return const_cast<Chart&>(chart_); }
         const Chart& chart() const { return chart_; }
+        void set_projection_no(size_t projection_no) { projection_no_ = projection_no; }
 
      private:
         const Chart& chart_;
+        std::optional<size_t> projection_no_;
+
 
     }; // class Projection
 
@@ -412,7 +415,7 @@ namespace acmacs::chart
         using iterator = internal::iterator<Projections, std::shared_ptr<Projection>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
-        virtual size_t projection_no(const Projection* projection) const;
+        // virtual size_t projection_no(const Projection* projection) const;
 
         virtual std::string make_info() const;
 

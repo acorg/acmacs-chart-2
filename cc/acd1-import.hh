@@ -188,18 +188,19 @@ namespace acmacs::chart
     class Acd1Projection : public Projection
     {
       public:
-        inline Acd1Projection(const Chart& chart, const rjson::object& aData) : Projection(chart), mData{aData} {}
+        Acd1Projection(const Chart& chart, const rjson::object& aData) : Projection(chart), mData{aData} {}
+        Acd1Projection(const Chart& chart, const rjson::object& aData, size_t projection_no) : Acd1Projection(chart, aData) { set_projection_no(projection_no); }
 
-        inline std::optional<double> stored_stress() const override { return mData.get<double>("stress"); }
+        std::optional<double> stored_stress() const override { return mData.get<double>("stress"); }
         std::shared_ptr<Layout> layout() const override;
         std::string comment() const override;
-        inline size_t number_of_points() const override { return mData.get_or_empty_array("layout").size(); }
+        size_t number_of_points() const override { return mData.get_or_empty_array("layout").size(); }
         size_t number_of_dimensions() const override;
-        inline MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("minimum_column_basis", "none"); }
+        MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("minimum_column_basis", "none"); }
         ColumnBasesP forced_column_bases() const override;
         acmacs::Transformation transformation() const override;
-        inline bool dodgy_titer_is_regular() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("dodgy_titer_is_regular", false); }
-        inline double stress_diff_to_stop() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("stress_diff_to_stop", 0.0); }
+        bool dodgy_titer_is_regular() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("dodgy_titer_is_regular", false); }
+        double stress_diff_to_stop() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("stress_diff_to_stop", 0.0); }
         PointIndexList unmovable() const override;
         PointIndexList disconnected() const override;
         PointIndexList unmovable_in_the_last_dimension() const override;
@@ -223,7 +224,7 @@ namespace acmacs::chart
         inline ProjectionP operator[](size_t aIndex) const override
             {
                 if (!projections_[aIndex])
-                    projections_[aIndex] = std::make_shared<Acd1Projection>(chart(), mData[aIndex]);
+                    projections_[aIndex] = std::make_shared<Acd1Projection>(chart(), mData[aIndex], aIndex);
                 return projections_[aIndex];
             }
 
