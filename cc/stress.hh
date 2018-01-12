@@ -47,7 +47,7 @@ namespace acmacs::chart
         inline const StressParameters& parameters() const { return parameters_; }
 
      private:
-        const size_t number_of_dimensions_;
+        size_t number_of_dimensions_;
         TableDistances<Float> table_distances_;
         StressParameters parameters_;
 

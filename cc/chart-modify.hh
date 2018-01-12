@@ -227,6 +227,8 @@ namespace acmacs::chart
         void flip_east_west() { flip(0, 1); }
         void flip_north_south() { flip(1, 0); }
 
+        std::shared_ptr<acmacs::Layout> layout_modified() { modify(); return layout_; }
+        std::shared_ptr<acmacs::Layout> layout_modified() const { return layout_; }
         virtual void randomize_layout(double max_distance_multiplier = 1.0);
         virtual void randomize_layout(LayoutRandomizer& randomizer);
         virtual void set_layout(const acmacs::Layout& layout);
@@ -237,7 +239,6 @@ namespace acmacs::chart
         virtual bool modified() const { return true; }
         bool layout_present() const { return static_cast<bool>(layout_); }
         void clone_from(const Projection& aSource) { layout_ = std::make_shared<acmacs::Layout>(*aSource.layout()); transformation_ = aSource.transformation(); transformed_layout_.reset(); }
-        std::shared_ptr<acmacs::Layout> layout_modified() const { return layout_; }
         std::shared_ptr<Layout> transformed_layout_modified() const { if (!transformed_layout_) transformed_layout_.reset(layout_->transform(transformation_)); return transformed_layout_; }
         size_t number_of_points_modified() const { return layout_->number_of_points(); }
         size_t number_of_dimensions_modified() const { return layout_->number_of_dimensions(); }

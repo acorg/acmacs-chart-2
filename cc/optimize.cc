@@ -20,7 +20,7 @@ static void alglib_lbfgs_optimize(acmacs::chart::OptimizationStatus& status, con
 // ----------------------------------------------------------------------
 
 static const char* const s_optimization_method[] = {
-    "alglib_lbfgs",
+    "alglib_lbfgs_pca",
 };
 
 std::ostream& acmacs::chart::operator<<(std::ostream& out, const acmacs::chart::OptimizationStatus& status)

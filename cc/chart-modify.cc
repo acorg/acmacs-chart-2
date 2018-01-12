@@ -190,7 +190,6 @@ void ProjectionModify::set_layout(const acmacs::Layout& layout)
 
 OptimizationStatus ProjectionModify::relax(acmacs::chart::OptimizationMethod optimization_method, bool rough, bool multiply_antigen_titer_until_column_adjust)
 {
-    modify();
     auto layout = layout_modified();
     return acmacs::chart::optimize(optimization_method, stress_factory<double>(chart(), *this, multiply_antigen_titer_until_column_adjust), layout->data(), layout->data() + layout->size(), rough);
 

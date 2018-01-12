@@ -2,6 +2,7 @@
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/string.hh"
+#include "acmacs-base/string-split.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/filesystem.hh"
 #include "acmacs-chart-2/factory-import.hh"
@@ -13,6 +14,7 @@
 static void test_rough(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier);
 static void test_randomization(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier);
 static void optimize_n(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier, bool rough);
+static void optimize_n(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, const std::vector<size_t>& dimension_schedule, double max_distance_multiplier, bool rough);
 
 // ----------------------------------------------------------------------
 
@@ -22,7 +24,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv, {
                 {"-n", 1U, "number of optimizations"},
-                {"-d", 2U, "number of dimensions"},
+                {"-d", "2", "number of dimensions (comma separated values for dimension annealing)"},
                 {"-m", "none", "minimum column basis"},
                 {"--md", 1.0, "max distance multiplier"},
                 {"--rough", false},
@@ -41,14 +43,16 @@ int main(int argc, char* const argv[])
         else {
             const report_time report = args["--time"] ? report_time::Yes : report_time::No;
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
+            const auto dimension_schedule = acmacs::string::split_into_uint(args["-d"].str(), ",");
+            const auto number_of_dimensions = dimension_schedule.back();
             if (args["--rough-test"]) {
-                test_rough(chart, args["-n"], args["-m"].str(), args["-d"], args["--md"]);
+                test_rough(chart, args["-n"], args["-m"].str(), number_of_dimensions, args["--md"]);
             }
             else if (args["--randomization-test"]) {
-                test_randomization(chart, args["-n"], args["-m"].str(), args["-d"], args["--md"]);
+                test_randomization(chart, args["-n"], args["-m"].str(), number_of_dimensions, args["--md"]);
             }
             else {
-                optimize_n(chart, args["-n"], args["-m"].str(), args["-d"], args["--md"], args["--rough"]);
+                optimize_n(chart, args["-n"], args["-m"].str(), dimension_schedule, args["--md"], args["--rough"]);
                 chart.projections_modify()->sort();
                 std::cout << chart.make_info() << '\n';
                 if (args.number_of_arguments() > 1)
@@ -153,6 +157,33 @@ void optimize_n(acmacs::chart::ChartModify& chart, size_t attempts, std::string 
         else
             std::cout << std::setprecision(12) << status.final_stress << " time: " << acmacs::format(status.time) << " iters: " << status.number_of_iterations << " nstress: " << status.number_of_stress_calculations << '\n';
     }
+
+} // optimize_n
+
+// ----------------------------------------------------------------------
+
+void optimize_n(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, const std::vector<size_t>& dimension_schedule, double max_distance_multiplier, bool rough)
+{
+    if (dimension_schedule.size() == 1) {
+        optimize_n(chart, attempts, min_col_basis, dimension_schedule.front(), max_distance_multiplier, rough);
+        return;
+    }
+
+    for (size_t no = 0; no < attempts; ++no) {
+        auto projection = chart.projections_modify()->new_from_scratch(dimension_schedule.front(), min_col_basis);
+        projection->randomize_layout(max_distance_multiplier);
+        auto layout = projection->layout_modified();
+        auto stress = acmacs::chart::stress_factory<double>(chart, *projection, true /* multiply_antigen_titer_until_column_adjust */);
+        for (size_t num_dims: dimension_schedule) {
+            if (num_dims > projection->number_of_dimensions())
+                throw std::runtime_error("invalid dimension_schedule: " + acmacs::to_string(dimension_schedule));
+            if (num_dims < projection->number_of_dimensions()) {
+            }
+            const auto status = acmacs::chart::optimize(acmacs::chart::OptimizationMethod::alglib_lbfgs_pca, stress, layout->data(), layout->data() + layout->size(), rough);
+            std::cout << std::setprecision(12) << status.final_stress << " time: " << acmacs::format(status.time) << " iters: " << status.number_of_iterations << " nstress: " << status.number_of_stress_calculations << '\n';
+        }
+    }
+      //return acmacs::chart::optimize(optimization_method, stress_factory<double>(chart(), *this, multiply_antigen_titer_until_column_adjust), layout->data(), layout->data() + layout->size(), rough);
 
 } // optimize_n
 
