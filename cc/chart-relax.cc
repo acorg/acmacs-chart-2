@@ -83,7 +83,7 @@ void test_randomization(acmacs::chart::ChartModify& chart, size_t attempts, std:
                 best_layout = *projection->layout();
             }
         }
-        const auto status = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs, false);
+        const auto status = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs_pca, false);
         std::cout << "final " << std::setprecision(12) << status.final_stress << " time: " << acmacs::format(status.time) << " iters: " << status.number_of_iterations << " nstress: " << status.number_of_stress_calculations << ' ' << status.termination_report << '\n';
     }
 
@@ -100,9 +100,9 @@ void test_rough(acmacs::chart::ChartModify& chart, size_t attempts, std::string 
     double speed_ratio_sum = 0;
     for (size_t no = 0; no < attempts; ++no) {
         projection->randomize_layout(max_distance_multiplier);
-        const auto status = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs, true);
+        const auto status = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs_pca, true);
         std::cout << "rough " << std::setprecision(12) << status.final_stress << " time: " << acmacs::format(status.time) << " iters: " << status.number_of_iterations << " nstress: " << status.number_of_stress_calculations << ' ' << status.termination_report << '\n';
-        const auto status2 = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs, false);
+        const auto status2 = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs_pca, false);
         std::cout << "fin   " << std::setprecision(12) << status2.final_stress << " time: " << acmacs::format(status2.time) << " iters: " << status2.number_of_iterations << " nstress: " << status2.number_of_stress_calculations << ' ' << status.termination_report << '\n';
         const double speed_ratio = static_cast<double>(status.time.count()) / (status.time + status2.time).count();
           // std::cout << "  rough speed ratio: " << speed_ratio << '\n';
@@ -133,7 +133,7 @@ void test_rough(acmacs::chart::ChartModify& chart, size_t attempts, std::string 
 
       // acmacs::Layout starting{*projection->layout()};
       // projection->set_layout(starting);
-      // const auto status3 = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs, false);
+      // const auto status3 = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs_pca, false);
       // std::cout << "final " << std::setprecision(12) << status3.final_stress << " time: " << acmacs::format(status3.time) << " iters: " << status3.number_of_iterations << " nstress: " << status3.number_of_stress_calculations << '\n';
       // std::cout << "stress diff: " << (status.final_stress - status3.final_stress) << '\n';
 
@@ -147,7 +147,7 @@ void optimize_n(acmacs::chart::ChartModify& chart, size_t attempts, std::string 
           // Timeit ti("randomize and relax: ");
         auto projection = chart.projections_modify()->new_from_scratch(num_dims, min_col_basis);
         projection->randomize_layout(max_distance_multiplier);
-        const auto status = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs, rough);
+        const auto status = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs_pca, rough);
         if (attempts == 1)
             std::cout << status << '\n';
         else

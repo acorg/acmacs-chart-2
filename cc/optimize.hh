@@ -11,7 +11,7 @@ namespace acmacs::chart
 {
     template <typename Float> class Stress;
 
-    enum class OptimizationMethod { alglib_lbfgs };
+    enum class OptimizationMethod { alglib_lbfgs_pca };
 
     class optimization_error : public std::runtime_error { public: inline optimization_error(std::string msg) : std::runtime_error("invalid_data: " + msg) {} };
 

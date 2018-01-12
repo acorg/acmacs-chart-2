@@ -44,7 +44,7 @@ acmacs::chart::OptimizationStatus acmacs::chart::optimize(OptimizationMethod opt
     status.initial_stress = stress.value(arg_first);
     const auto start = std::chrono::high_resolution_clock::now();
     switch (optimization_method) {
-      case OptimizationMethod::alglib_lbfgs:
+      case OptimizationMethod::alglib_lbfgs_pca:
           alglib_lbfgs_optimize(status, stress, arg_first, arg_last, rough);
           break;
     }
