@@ -11,11 +11,16 @@
 #define AE_COMPILE_MINLBFGS
 #include "alglib-3.13.0/optimization.h"
 #undef AE_COMPILE_MINLBFGS
+
+#define AE_COMPILE_PCA
+#include "alglib-3.13.0/dataanalysis.h"
+#undef AE_COMPILE_PCA
 #pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------
 
 static void alglib_lbfgs_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, bool rough);
+static void alglib_pca(size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
 
 // ----------------------------------------------------------------------
 
@@ -129,6 +134,34 @@ void alglib_lbfgs_optimize_grad(const alglib::real_1d_array& x, double& func, al
 } // alglib_lbfgs_optimize_grad
 
 // ----------------------------------------------------------------------
+
+acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(acmacs::chart::OptimizationMethod optimization_method, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
+{
+    DimensionAnnelingStatus status;
+    const auto start = std::chrono::high_resolution_clock::now();
+    switch (optimization_method) {
+      case OptimizationMethod::alglib_lbfgs_pca:
+          alglib_pca(source_number_of_dimensions, target_number_of_dimensions, arg_first, arg_last);
+          break;
+    }
+    status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
+    return status;
+
+} // acmacs::chart::pca
+
+// ----------------------------------------------------------------------
+
+void alglib_pca(size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
+{
+    const double eps{0};
+    const alglib::ae_int_t maxits{0};
+
+      // alglib::pcatruncatedsubspace(const real_2d_array &x, const ae_int_t npoints, source_number_of_dimensions, target_number_of_dimensions, eps, maxits, real_1d_array& s2, real_2d_array& v);
+
+} // alglib_pca
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:

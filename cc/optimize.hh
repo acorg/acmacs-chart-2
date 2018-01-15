@@ -15,9 +15,10 @@ namespace acmacs::chart
 
     class optimization_error : public std::runtime_error { public: inline optimization_error(std::string msg) : std::runtime_error("invalid_data: " + msg) {} };
 
-    class OptimizationStatus
+// ----------------------------------------------------------------------
+
+    struct OptimizationStatus
     {
-     public:
         OptimizationMethod method;
         size_t number_of_iterations;
         size_t number_of_stress_calculations;
@@ -31,6 +32,15 @@ namespace acmacs::chart
     std::ostream& operator<<(std::ostream& out, const OptimizationStatus& status);
 
     OptimizationStatus optimize(OptimizationMethod optimization_method, const Stress<double>& stress, double* arg_first, double* arg_last, bool rough = false);
+
+// ----------------------------------------------------------------------
+
+    struct DimensionAnnelingStatus
+    {
+        std::chrono::microseconds time;
+    };
+
+    DimensionAnnelingStatus dimension_annealing(OptimizationMethod optimization_method, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
 
 } // namespace acmacs::chart
 
