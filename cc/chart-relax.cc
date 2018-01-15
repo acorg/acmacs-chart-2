@@ -181,13 +181,16 @@ void optimize_n(acmacs::chart::ChartModify& chart, size_t attempts, std::string 
                 throw std::runtime_error("invalid dimension_schedule: " + acmacs::to_string(dimension_schedule));
             if (num_dims < projection->number_of_dimensions()) {
                 acmacs::chart::dimension_annealing(method, projection->number_of_dimensions(), num_dims, layout->data(), layout->data() + layout->size());
-                  // layout->change_number_of_dimensions(num_dims);
+                layout->change_number_of_dimensions(num_dims);
+                stress.change_number_of_dimensions(num_dims);
             }
             const auto status = acmacs::chart::optimize(method, stress, layout->data(), layout->data() + layout->size(), rough);
-            std::cout << std::setprecision(12) << status.final_stress << " time: " << acmacs::format(status.time) << " iters: " << status.number_of_iterations << " nstress: " << status.number_of_stress_calculations << '\n';
+            std::cout << std::setprecision(12)
+                      // << status.initial_stress << " --> "
+                      << status.final_stress << " dims: " << layout->number_of_dimensions()
+                      << " time: " << acmacs::format(status.time) << " iters: " << status.number_of_iterations << " nstress: " << status.number_of_stress_calculations << '\n';
         }
     }
-      //return acmacs::chart::optimize(optimization_method, stress_factory<double>(chart(), *this, multiply_antigen_titer_until_column_adjust), layout->data(), layout->data() + layout->size(), rough);
 
 } // optimize_n
 

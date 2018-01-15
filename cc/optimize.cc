@@ -10,11 +10,14 @@
 #endif
 #define AE_COMPILE_MINLBFGS
 #include "alglib-3.13.0/optimization.h"
+// rmatrixgemm()
+#include "alglib-3.13.0/linalg.h"
 #undef AE_COMPILE_MINLBFGS
 
 #define AE_COMPILE_PCA
 #include "alglib-3.13.0/dataanalysis.h"
 #undef AE_COMPILE_PCA
+
 #pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------
@@ -155,8 +158,30 @@ void alglib_pca(size_t source_number_of_dimensions, size_t target_number_of_dime
 {
     const double eps{0};
     const alglib::ae_int_t maxits{0};
+    const alglib::ae_int_t number_of_points = (arg_last - arg_first) / static_cast<alglib::ae_int_t>(source_number_of_dimensions);
 
-      // alglib::pcatruncatedsubspace(const real_2d_array &x, const ae_int_t npoints, source_number_of_dimensions, target_number_of_dimensions, eps, maxits, real_1d_array& s2, real_2d_array& v);
+    alglib::real_2d_array x;
+    x.attach_to_ptr(number_of_points, static_cast<alglib::ae_int_t>(source_number_of_dimensions), arg_first);
+    alglib::real_1d_array s2; // output Variance values corresponding to basis vectors.
+    s2.setlength(static_cast<alglib::ae_int_t>(target_number_of_dimensions));
+    alglib::real_2d_array v;  // output matrix to transform x to target
+    v.setlength(static_cast<alglib::ae_int_t>(source_number_of_dimensions), static_cast<alglib::ae_int_t>(target_number_of_dimensions));
+
+    alglib::pcatruncatedsubspace(x, number_of_points, static_cast<alglib::ae_int_t>(source_number_of_dimensions), static_cast<alglib::ae_int_t>(target_number_of_dimensions), eps, maxits, s2, v);
+
+      // x * v -> t
+      // https://www.tol-project.org/svn/tolp/OfficialTolArchiveNetwork/AlgLib/CppTools/source/alglib/manual.cpp.html#example_ablas_d_gemm
+      // https://stackoverflow.com/questions/5607631/matrix-multiplication-alglib
+    alglib::real_2d_array t;
+    t.setlength(number_of_points, static_cast<alglib::ae_int_t>(target_number_of_dimensions));
+    alglib::rmatrixgemm(number_of_points, static_cast<alglib::ae_int_t>(target_number_of_dimensions), static_cast<alglib::ae_int_t>(source_number_of_dimensions), 1.0, x, 0, 0, 0, v, 0, 0, 0, 0, t, 0, 0);
+
+    double* target = arg_first;
+    for (alglib::ae_int_t p_no = 0;  p_no < number_of_points; ++p_no) {
+        for (alglib::ae_int_t dim_no = 0; dim_no < static_cast<alglib::ae_int_t>(target_number_of_dimensions); ++dim_no) {
+            *target++ = t(p_no, dim_no);
+        }
+    }
 
 } // alglib_pca
 

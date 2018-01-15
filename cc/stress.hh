@@ -41,6 +41,7 @@ namespace acmacs::chart
         void gradient(const Float* first, const Float* last, Float* gradient_first) const;
         Float value_gradient(const Float* first, const Float* last, Float* gradient_first) const;
         std::vector<Float> gradient(const acmacs::LayoutInterface& aLayout) const;
+        void change_number_of_dimensions(size_t num_dim) { number_of_dimensions_ = num_dim; }
 
         inline const TableDistances<Float>& table_distances() const { return table_distances_; }
         inline TableDistances<Float>& table_distances() { return table_distances_; }
