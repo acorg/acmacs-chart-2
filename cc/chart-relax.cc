@@ -13,6 +13,7 @@
 
 static void test_rough(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier);
 static void test_randomization(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier);
+static void test_dimension(acmacs::chart::ChartModify& chart, std::string min_col_basis, double max_distance_multiplier);
 static void optimize_n(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier, bool rough);
 static void optimize_n(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, const std::vector<size_t>& dimension_schedule, double max_distance_multiplier, bool rough);
 
@@ -30,6 +31,7 @@ int main(int argc, char* const argv[])
                 {"--rough", false},
                 {"--rough-test", false},
                 {"--randomization-test", false},
+                {"--dimension-test", false},
                 {"--time", false, "report time of loading chart"},
                 {"--verbose", false},
                 {"-h", false},
@@ -50,6 +52,9 @@ int main(int argc, char* const argv[])
             }
             else if (args["--randomization-test"]) {
                 test_randomization(chart, args["-n"], args["-m"].str(), number_of_dimensions, args["--md"]);
+            }
+            else if (args["--dimension-test"]) {
+                test_dimension(chart, args["-m"].str(), args["--md"]);
             }
             else {
                 optimize_n(chart, args["-n"], args["-m"].str(), dimension_schedule, args["--md"], args["--rough"]);
@@ -142,6 +147,19 @@ void test_rough(acmacs::chart::ChartModify& chart, size_t attempts, std::string 
       // std::cout << "stress diff: " << (status.final_stress - status3.final_stress) << '\n';
 
 } // test_rough
+
+// ----------------------------------------------------------------------
+
+void test_dimension(acmacs::chart::ChartModify& chart, std::string min_col_basis, double max_distance_multiplier)
+{
+    for (size_t dims = 1; dims < chart.number_of_antigens(); ++dims) {
+        auto projection = chart.projections_modify()->new_from_scratch(dims, min_col_basis);
+        projection->randomize_layout(max_distance_multiplier);
+        const auto status = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs_pca, true);
+        std::cout << std::setw(3) << dims << " " << std::setprecision(12) << status.final_stress << " time: " << acmacs::format(status.time) << " iters: " << status.number_of_iterations << " nstress: " << status.number_of_stress_calculations << '\n';
+    }
+
+} // test_dimension
 
 // ----------------------------------------------------------------------
 
