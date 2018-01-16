@@ -14,8 +14,8 @@
 static void test_rough(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier);
 static void test_randomization(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier);
 static void test_dimension(acmacs::chart::ChartModify& chart, std::string min_col_basis, double max_distance_multiplier);
-static void optimize_n(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier, bool rough);
-static void optimize_n(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, const std::vector<size_t>& dimension_schedule, double max_distance_multiplier, bool rough);
+static void optimize_n(acmacs::chart::OptimizationMethod method, acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier, bool rough);
+static void optimize_n(acmacs::chart::OptimizationMethod method, acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, const std::vector<size_t>& dimension_schedule, double max_distance_multiplier, bool rough);
 
 // ----------------------------------------------------------------------
 
@@ -27,8 +27,9 @@ int main(int argc, char* const argv[])
                 {"-n", 1U, "number of optimizations"},
                 {"-d", "2", "number of dimensions (comma separated values for dimension annealing)"},
                 {"-m", "none", "minimum column basis"},
-                {"--md", 1.0, "max distance multiplier"},
                 {"--rough", false},
+                {"--method", "lbfgs", "method: lbfgs, cg"},
+                {"--md", 1.0, "max distance multiplier"},
                 {"--rough-test", false},
                 {"--randomization-test", false},
                 {"--dimension-test", false},
@@ -47,6 +48,15 @@ int main(int argc, char* const argv[])
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
             const auto dimension_schedule = acmacs::string::split_into_uint(args["-d"].str(), ",");
             const auto number_of_dimensions = dimension_schedule.back();
+
+            acmacs::chart::OptimizationMethod method{acmacs::chart::OptimizationMethod::alglib_lbfgs_pca};
+            if (args["--method"] == "lbfgs")
+                method = acmacs::chart::OptimizationMethod::alglib_lbfgs_pca;
+            else if (args["--method"] == "cg")
+                method = acmacs::chart::OptimizationMethod::alglib_cg_pca;
+            else
+                throw std::runtime_error("unrecognized method, lbfgs or cg expected");
+
             if (args["--rough-test"]) {
                 test_rough(chart, args["-n"], args["-m"].str(), number_of_dimensions, args["--md"]);
             }
@@ -57,7 +67,7 @@ int main(int argc, char* const argv[])
                 test_dimension(chart, args["-m"].str(), args["--md"]);
             }
             else {
-                optimize_n(chart, args["-n"], args["-m"].str(), dimension_schedule, args["--md"], args["--rough"]);
+                optimize_n(method, chart, args["-n"], args["-m"].str(), dimension_schedule, args["--md"], args["--rough"]);
                 chart.projections_modify()->sort();
                 std::cout << chart.make_info() << '\n';
                 if (args.number_of_arguments() > 1)
@@ -163,13 +173,13 @@ void test_dimension(acmacs::chart::ChartModify& chart, std::string min_col_basis
 
 // ----------------------------------------------------------------------
 
-void optimize_n(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier, bool rough)
+void optimize_n(acmacs::chart::OptimizationMethod method, acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier, bool rough)
 {
     for (size_t no = 0; no < attempts; ++no) {
           // Timeit ti("randomize and relax: ");
         auto projection = chart.projections_modify()->new_from_scratch(num_dims, min_col_basis);
         projection->randomize_layout(max_distance_multiplier);
-        const auto status = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs_pca, rough);
+        const auto status = projection->relax(method, rough);
         if (attempts == 1)
             std::cout << status << '\n';
         else
@@ -180,14 +190,12 @@ void optimize_n(acmacs::chart::ChartModify& chart, size_t attempts, std::string 
 
 // ----------------------------------------------------------------------
 
-void optimize_n(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, const std::vector<size_t>& dimension_schedule, double max_distance_multiplier, bool rough)
+void optimize_n(acmacs::chart::OptimizationMethod method, acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, const std::vector<size_t>& dimension_schedule, double max_distance_multiplier, bool rough)
 {
     if (dimension_schedule.size() == 1) {
-        optimize_n(chart, attempts, min_col_basis, dimension_schedule.front(), max_distance_multiplier, rough);
+        optimize_n(method, chart, attempts, min_col_basis, dimension_schedule.front(), max_distance_multiplier, rough);
         return;
     }
-
-    const acmacs::chart::OptimizationMethod method{acmacs::chart::OptimizationMethod::alglib_lbfgs_pca};
 
     for (size_t no = 0; no < attempts; ++no) {
         auto projection = chart.projections_modify()->new_from_scratch(dimension_schedule.front(), min_col_basis);

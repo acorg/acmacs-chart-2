@@ -9,10 +9,12 @@
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif
 #define AE_COMPILE_MINLBFGS
+#define AE_COMPILE_MINCG
 #include "alglib-3.13.0/optimization.h"
 // rmatrixgemm()
 #include "alglib-3.13.0/linalg.h"
 #undef AE_COMPILE_MINLBFGS
+#undef AE_COMPILE_MINCG
 
 #define AE_COMPILE_PCA
 #include "alglib-3.13.0/dataanalysis.h"
@@ -23,6 +25,7 @@
 // ----------------------------------------------------------------------
 
 static void alglib_lbfgs_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, bool rough);
+static void alglib_cg_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, bool rough);
 static void alglib_pca(size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
 
 // ----------------------------------------------------------------------
@@ -54,6 +57,9 @@ acmacs::chart::OptimizationStatus acmacs::chart::optimize(OptimizationMethod opt
     switch (optimization_method) {
       case OptimizationMethod::alglib_lbfgs_pca:
           alglib_lbfgs_optimize(status, stress, arg_first, arg_last, rough);
+          break;
+      case OptimizationMethod::alglib_cg_pca:
+          alglib_cg_optimize(status, stress, arg_first, arg_last, rough);
           break;
     }
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
@@ -89,6 +95,8 @@ static const char* alglib_lbfgs_optimize_termination_types[] = {
     "(8) terminated by user who called minlbfgsrequesttermination(). X contains point which was \"current accepted\" when termination request was submitted.",
     "unknown termination type",
 };
+
+// ----------------------------------------------------------------------
 
 void alglib_lbfgs_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, bool rough)
 {
@@ -138,12 +146,46 @@ void alglib_lbfgs_optimize_grad(const alglib::real_1d_array& x, double& func, al
 
 // ----------------------------------------------------------------------
 
+void alglib_cg_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, bool rough)
+{
+    using namespace alglib;
+
+    const double epsg = rough ? 0.5 : 1e-10;
+    const double epsf = 0;
+    const double epsx = rough ? 1e-3 : 0;
+    const ae_int_t max_iterations = 0;
+
+    real_1d_array x;
+    x.attach_to_ptr(arg_last - arg_first, arg_first);
+
+    mincgstate state;
+    mincgcreate(x, state);
+    mincgsetcond(state, epsg, epsf, epsx, max_iterations);
+    mincgoptimize(state, &alglib_lbfgs_optimize_grad, nullptr, const_cast<void*>(reinterpret_cast<const void*>(&stress)));
+    mincgreport rep;
+    mincgresultsbuf(state, x, rep);
+
+    if (rep.terminationtype < 0) {
+        const char* msg = alglib_lbfgs_optimize_errors[std::abs(rep.terminationtype) <= 8 ? (std::abs(rep.terminationtype) - 1) : 8];
+        std::cerr << "alglib_cg_optimize error: " << msg << '\n';
+        throw acmacs::chart::optimization_error(msg);
+    }
+
+    status.termination_report = alglib_lbfgs_optimize_termination_types[(rep.terminationtype > 0 && rep.terminationtype < 9) ? rep.terminationtype - 1 : 8];
+    status.number_of_iterations = static_cast<size_t>(rep.iterationscount);
+    status.number_of_stress_calculations = static_cast<size_t>(rep.nfev);
+
+} // alglib_cg_optimize
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(acmacs::chart::OptimizationMethod optimization_method, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
 {
     DimensionAnnelingStatus status;
     const auto start = std::chrono::high_resolution_clock::now();
     switch (optimization_method) {
       case OptimizationMethod::alglib_lbfgs_pca:
+      case OptimizationMethod::alglib_cg_pca:
           alglib_pca(source_number_of_dimensions, target_number_of_dimensions, arg_first, arg_last);
           break;
     }
