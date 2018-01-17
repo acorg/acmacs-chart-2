@@ -231,7 +231,7 @@ namespace acmacs::chart
         std::shared_ptr<acmacs::Layout> layout_modified() const { return layout_; }
         virtual void randomize_layout(double max_distance_multiplier = 1.0);
         virtual void randomize_layout(LayoutRandomizer& randomizer);
-        virtual void set_layout(const acmacs::Layout& layout);
+        virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
         virtual OptimizationStatus relax(OptimizationMethod optimization_method, bool rough = false, bool multiply_antigen_titer_until_column_adjust = true);
 
      protected:

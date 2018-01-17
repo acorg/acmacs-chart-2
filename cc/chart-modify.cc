@@ -176,11 +176,11 @@ void ProjectionModify::randomize_layout(LayoutRandomizer& randomizer)
 
 // ----------------------------------------------------------------------
 
-void ProjectionModify::set_layout(const acmacs::Layout& layout)
+void ProjectionModify::set_layout(const acmacs::Layout& layout, bool allow_size_change)
 {
     modify();
     auto target_layout = layout_modified();
-    if (layout.size() != target_layout->size())
+    if (!allow_size_change && layout.size() != target_layout->size())
         throw invalid_data("ProjectionModify::set_layout: wrong layout size");
     *target_layout = layout;
 

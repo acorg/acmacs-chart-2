@@ -156,7 +156,7 @@ void test_rough(acmacs::chart::ChartModify& chart, size_t attempts, std::string 
         std::cout << "orders are DIFFERENT\norder_final: " << order_final << '\n';
 
       // acmacs::Layout starting{*projection->layout()};
-      // projection->set_layout(starting);
+      // projection->set_layout(starting, true);
       // const auto status3 = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs_pca, false);
       // std::cout << "final " << std::setprecision(12) << status3.final_stress << " time: " << acmacs::format(status3.time) << " iters: " << status3.number_of_iterations << " nstress: " << status3.number_of_stress_calculations << '\n';
       // std::cout << "stress diff: " << (status.final_stress - status3.final_stress) << '\n';
@@ -202,8 +202,8 @@ void test_lbfgs_cg(acmacs::chart::ChartModify& chart, std::string min_col_basis,
                   << " time: " << acmacs::format(status.time) << " iters: " << status.number_of_iterations << " nstress: " << status.number_of_stress_calculations << '\n';
     }
 
-    layout->change_number_of_dimensions(dimension_schedule.front());
-    projection->set_layout(starting);
+      // layout->change_number_of_dimensions(dimension_schedule.front(), true);
+    projection->set_layout(starting, true);
     stress.change_number_of_dimensions(dimension_schedule.front());
     method = acmacs::chart::OptimizationMethod::alglib_cg_pca;
 
@@ -221,12 +221,6 @@ void test_lbfgs_cg(acmacs::chart::ChartModify& chart, std::string min_col_basis,
                   << status.final_stress << " dims: " << layout->number_of_dimensions()
                   << " time: " << acmacs::format(status.time) << " iters: " << status.number_of_iterations << " nstress: " << status.number_of_stress_calculations << '\n';
     }
-
-    // const auto status1 = projection->relax(acmacs::chart::OptimizationMethod::alglib_lbfgs_pca, rough);
-    // std::cout << "lbgs " << std::setprecision(12) << status1.final_stress << " time: " << acmacs::format(status1.time) << " iters: " << status1.number_of_iterations << " nstress: " << status1.number_of_stress_calculations << '\n';
-    // projection->set_layout(starting);
-    // const auto status2 = projection->relax(acmacs::chart::OptimizationMethod::alglib_cg_pca, rough);
-    // std::cout << "cg   " << std::setprecision(12) << status2.final_stress << " time: " << acmacs::format(status2.time) << " iters: " << status2.number_of_iterations << " nstress: " << status2.number_of_stress_calculations << '\n';
 
 } // test_lbfgs_cg
 
