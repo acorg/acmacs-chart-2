@@ -32,9 +32,9 @@ namespace std
 
 // ----------------------------------------------------------------------
 
-template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_factory(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, bool multiply_antigen_titer_until_column_adjust)
+template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_factory(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult)
 {
-    Stress<Float> stress(projection, multiply_antigen_titer_until_column_adjust);
+    Stress<Float> stress(projection, mult);
     auto cb = projection.forced_column_bases();
     if (!cb)
         cb = chart.column_bases(projection.minimum_column_basis());
@@ -74,10 +74,10 @@ template <typename Float> static inline Float map_distance(const Float* first, c
 
 // ----------------------------------------------------------------------
 
-template <typename Float> acmacs::chart::Stress<Float>::Stress(const Projection& projection, bool multiply_antigen_titer_until_column_adjust)
+template <typename Float> acmacs::chart::Stress<Float>::Stress(const Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult)
     : number_of_dimensions_(projection.number_of_dimensions()),
       parameters_(projection.number_of_points(), projection.unmovable(), projection.disconnected(), projection.unmovable_in_the_last_dimension(),
-                  multiply_antigen_titer_until_column_adjust, projection.avidity_adjusts(), projection.dodgy_titer_is_regular())
+                  mult, projection.avidity_adjusts(), projection.dodgy_titer_is_regular())
 {
 } // acmacs::chart::Stress<Float>::Stress
 
@@ -236,8 +236,8 @@ template <typename Float> void acmacs::chart::Stress<Float>::gradient_with_unmov
 
 template class acmacs::chart::Stress<float>;
 template class acmacs::chart::Stress<double>;
-template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, bool multiply_antigen_titer_until_column_adjust);
-template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, bool multiply_antigen_titer_until_column_adjust);
+template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult);
+template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult);
 
 // ----------------------------------------------------------------------
 /// Local Variables:

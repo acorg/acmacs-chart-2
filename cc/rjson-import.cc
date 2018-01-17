@@ -104,7 +104,7 @@ template <typename Float> static void update_list(const rjson::array& data, acma
             for (auto serum_no : acmacs::range(row.size())) {
                 const auto p2 = serum_no + data.size();
                 if (!parameters.disconnected.exist(p2)) {
-                    table_distances.update(row[serum_no], p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.multiply_antigen_titer_until_column_adjust);
+                    table_distances.update(row[serum_no], p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);
                 }
             }
         }
@@ -122,7 +122,7 @@ template <typename Float> static void update_dict(const rjson::array& data, acma
                 const auto serum_no = std::stoul(serum_no_s);
                 const auto p2 = serum_no + data.size();
                 if (!parameters.disconnected.exist(p2)) {
-                    table_distances.update(titer_s, p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.multiply_antigen_titer_until_column_adjust);
+                    table_distances.update(titer_s, p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);
                 }
             }
         }

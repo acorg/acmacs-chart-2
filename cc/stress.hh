@@ -1,5 +1,6 @@
 #pragma once
 
+#include "acmacs-chart-2/optimize-options.hh"
 #include "acmacs-chart-2/table-distances.hh"
 #include "acmacs-chart-2/point-index-list.hh"
 #include "acmacs-chart-2/avidity-adjusts.hh"
@@ -15,16 +16,16 @@ namespace acmacs::chart
 
     struct StressParameters
     {
-        inline StressParameters(size_t a_number_of_points, PointIndexList&& a_unmovable, PointIndexList&& a_disconnected, PointIndexList&& a_unmovable_in_the_last_dimension, bool a_multiply_antigen_titer_until_column_adjust, AvidityAdjusts&& a_avidity_adjusts, bool a_dodgy_titer_is_regular)
+        inline StressParameters(size_t a_number_of_points, PointIndexList&& a_unmovable, PointIndexList&& a_disconnected, PointIndexList&& a_unmovable_in_the_last_dimension, multiply_antigen_titer_until_column_adjust a_mult, AvidityAdjusts&& a_avidity_adjusts, bool a_dodgy_titer_is_regular)
             : number_of_points(a_number_of_points), unmovable(std::move(a_unmovable)), disconnected(std::move(a_disconnected)),
-              unmovable_in_the_last_dimension(std::move(a_unmovable_in_the_last_dimension)), multiply_antigen_titer_until_column_adjust(a_multiply_antigen_titer_until_column_adjust),
+              unmovable_in_the_last_dimension(std::move(a_unmovable_in_the_last_dimension)), mult(a_mult),
               avidity_adjusts(std::move(a_avidity_adjusts)), dodgy_titer_is_regular(a_dodgy_titer_is_regular) {}
 
         size_t number_of_points;
         PointIndexList unmovable;
         PointIndexList disconnected;
         PointIndexList unmovable_in_the_last_dimension;
-        bool multiply_antigen_titer_until_column_adjust;
+        multiply_antigen_titer_until_column_adjust mult;
         AvidityAdjusts avidity_adjusts;
         bool dodgy_titer_is_regular;
 
@@ -33,7 +34,7 @@ namespace acmacs::chart
     template <typename Float> class Stress
     {
      public:
-        Stress(const Projection& projection, bool multiply_antigen_titer_until_column_adjust);
+        Stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
 
         Float value(const Float* first, const Float* /* unused */ = nullptr) const;
         Float value(const acmacs::LayoutInterface& aLayout) const;
@@ -57,7 +58,7 @@ namespace acmacs::chart
 
     }; // class Stress
 
-    template <typename Float> Stress<Float> stress_factory(const Chart& chart, const Projection& projection, bool multiply_antigen_titer_until_column_adjust);
+    template <typename Float> Stress<Float> stress_factory(const Chart& chart, const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
 
     extern template class Stress<float>;
     extern template class Stress<double>;
@@ -65,8 +66,8 @@ namespace acmacs::chart
       // g++7 does not like extern template below
 #else
       // clang5 wants those externs (otherwise warning -Wundefined-func-template)
-    extern template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, bool multiply_antigen_titer_until_column_adjust);
-    extern template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, bool multiply_antigen_titer_until_column_adjust);
+    extern template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, multiply_antigen_titer_until_column_adjust mult);
+    extern template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, multiply_antigen_titer_until_column_adjust mult);
 #endif
 
 } // namespace acmacs::chart

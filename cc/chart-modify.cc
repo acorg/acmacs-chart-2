@@ -187,15 +187,6 @@ void ProjectionModify::set_layout(const acmacs::Layout& layout, bool allow_size_
 } // ProjectionModify::set_layout
 
 // ----------------------------------------------------------------------
-
-OptimizationStatus ProjectionModify::relax(acmacs::chart::OptimizationMethod optimization_method, bool rough, bool multiply_antigen_titer_until_column_adjust)
-{
-    auto layout = layout_modified();
-    return acmacs::chart::optimize(optimization_method, stress_factory<double>(chart(), *this, multiply_antigen_titer_until_column_adjust), layout->data(), layout->data() + layout->size(), rough);
-
-} // ProjectionModify::relax
-
-// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

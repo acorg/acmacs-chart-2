@@ -175,7 +175,7 @@ template <typename Float> static void update(const acmacs::chart::Titers& titers
                 for (auto p2 : acmacs::range(titers.number_of_antigens(), number_of_points)) {
                     if (!parameters.disconnected.exist(p2)) {
                         const auto serum_no = p2 - titers.number_of_antigens();
-                        table_distances.update(titers.titer(p1, serum_no), p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.multiply_antigen_titer_until_column_adjust);
+                        table_distances.update(titers.titer(p1, serum_no), p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);
                     }
                 }
             }

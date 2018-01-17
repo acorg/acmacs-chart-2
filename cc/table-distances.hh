@@ -24,11 +24,11 @@ namespace acmacs::chart
 
         inline void dodgy_is_regular(bool dodgy_is_regular) { dodgy_is_regular_ = dodgy_is_regular; }
 
-        void update(const acmacs::chart::Titer& titer, size_t p1, size_t p2, double column_basis, double adjust, bool multiply_antigen_titer_until_column_adjust)
+        void update(const acmacs::chart::Titer& titer, size_t p1, size_t p2, double column_basis, double adjust, multiply_antigen_titer_until_column_adjust mult)
             {
                 try {
                     auto distance = column_basis - titer.logged() - adjust;
-                    if (distance < 0 && multiply_antigen_titer_until_column_adjust)
+                    if (distance < 0 && mult == multiply_antigen_titer_until_column_adjust::yes)
                         distance = 0;
                     add_value(titer.type(), p1, p2, static_cast<Float>(distance));
                 }

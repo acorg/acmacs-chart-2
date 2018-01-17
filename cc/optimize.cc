@@ -1,7 +1,7 @@
 #include "acmacs-base/layout.hh"
 #include "acmacs-base/timeit.hh"
-#include "acmacs-chart-2/optimize.hh"
 #include "acmacs-chart-2/stress.hh"
+#include "acmacs-chart-2/chart-modify.hh"
 
 #pragma GCC diagnostic push
 #ifdef __clang__
@@ -24,24 +24,89 @@
 
 // ----------------------------------------------------------------------
 
-static void alglib_lbfgs_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, bool rough);
-static void alglib_cg_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, bool rough);
+static void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
+static void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
 static void alglib_pca(size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::optimization_status acmacs::chart::optimize(const acmacs::chart::Chart& chart, acmacs::chart::ProjectionModify& projection, acmacs::chart::optimization_options options)
+{
+    auto layout = projection.layout_modified();
+    auto stress = acmacs::chart::stress_factory<double>(chart, projection, options.mult);
+    const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
+    return status;
+
+} // acmacs::chart::optimize
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::optimization_status acmacs::chart::optimize(const Chart& chart, ProjectionModify& projection, const acmacs::chart::dimension_schedule& schedule, acmacs::chart::optimization_options options)
+{
+    if (schedule.initial() != projection.number_of_dimensions())
+        throw std::runtime_error("acmacs::chart::optimize existing with dimension_schedule: invalid number_of_dimensions in schedule");
+
+    const auto start = std::chrono::high_resolution_clock::now();
+    optimization_status status(options.method);
+    auto layout = projection.layout_modified();
+    auto stress = acmacs::chart::stress_factory<double>(chart, projection, options.mult);
+
+    bool initial_opt = true;
+    for (size_t num_dims: schedule) {
+        if (!initial_opt) {
+            dimension_annealing(options.method, projection.number_of_dimensions(), num_dims, layout->data(), layout->data() + layout->size());
+            layout->change_number_of_dimensions(num_dims);
+            stress.change_number_of_dimensions(num_dims);
+        }
+        const auto sub_status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
+        if (initial_opt) {
+            status.initial_stress = sub_status.initial_stress;
+            status.termination_report = sub_status.termination_report;
+        }
+        else {
+            status.termination_report += "\n" + sub_status.termination_report;
+        }
+        status.final_stress = sub_status.final_stress;
+        status.number_of_iterations += sub_status.number_of_iterations;
+        status.number_of_stress_calculations += sub_status.number_of_stress_calculations;
+        initial_opt = false;
+    }
+    status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
+    return status;
+
+} // acmacs::chart::optimize
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::ChartModify& chart, MinimumColumnBasis minimum_column_basis, const acmacs::chart::dimension_schedule& schedule, acmacs::chart::optimization_options options)
+{
+    auto projection = chart.projections_modify()->new_from_scratch(schedule.initial(), minimum_column_basis);
+    projection->randomize_layout(options.max_distance_multiplier);
+    return optimize(chart, *projection, schedule, options);
+
+} // acmacs::chart::optimize
+
+// ----------------------------------------------------------------------
+
 static const char* const s_optimization_method[] = {
-    "alglib_lbfgs_pca",
+    "alglib_lbfgs_pca", "alglib_cg_pca",
 };
 
-std::ostream& acmacs::chart::operator<<(std::ostream& out, const acmacs::chart::OptimizationStatus& status)
+std::ostream& acmacs::chart::operator<<(std::ostream& out, const acmacs::chart::optimization_status& status)
 {
-    out << "stress: " << status.final_stress << " <-- " << status.initial_stress << '\n'
-        << "termination: " << status.termination_report << '\n'
-        << "iterations: " << status.number_of_iterations << '\n'
-        << "stress calculations: " << status.number_of_stress_calculations << '\n'
-        << "method: " << s_optimization_method[static_cast<size_t>(status.method)] << '\n'
-        << "time: " << acmacs::format(status.time)
+    // out << "stress: " << status.final_stress << " <-- " << status.initial_stress << '\n'
+    //     << "termination: " << status.termination_report << '\n'
+    //     << "iterations: " << status.number_of_iterations << '\n'
+    //     << "stress calculations: " << status.number_of_stress_calculations << '\n'
+    //     << "method: " << s_optimization_method[static_cast<size_t>(status.method)] << '\n'
+    //     << "time: " << acmacs::format(status.time)
+    //         ;
+
+    out << s_optimization_method[static_cast<size_t>(status.method)] << ' ' << std::setprecision(12) << status.final_stress << " <- " << status.initial_stress
+        << " time: " << acmacs::format(status.time)
+        << " iter: " << status.number_of_iterations
+        << " nstress: " << status.number_of_stress_calculations
+              // << " term: " << status.termination_report
             ;
     return out;
 
@@ -49,17 +114,17 @@ std::ostream& acmacs::chart::operator<<(std::ostream& out, const acmacs::chart::
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::OptimizationStatus acmacs::chart::optimize(OptimizationMethod optimization_method, const Stress<double>& stress, double* arg_first, double* arg_last, bool rough)
+acmacs::chart::optimization_status acmacs::chart::optimize(optimization_method optimization_method, const Stress<double>& stress, double* arg_first, double* arg_last, optimization_precision precision)
 {
-    OptimizationStatus status;
+    optimization_status status(optimization_method);
     status.initial_stress = stress.value(arg_first);
     const auto start = std::chrono::high_resolution_clock::now();
     switch (optimization_method) {
-      case OptimizationMethod::alglib_lbfgs_pca:
-          alglib_lbfgs_optimize(status, stress, arg_first, arg_last, rough);
+      case optimization_method::alglib_lbfgs_pca:
+          alglib_lbfgs_optimize(status, stress, arg_first, arg_last, precision);
           break;
-      case OptimizationMethod::alglib_cg_pca:
-          alglib_cg_optimize(status, stress, arg_first, arg_last, rough);
+      case optimization_method::alglib_cg_pca:
+          alglib_cg_optimize(status, stress, arg_first, arg_last, precision);
           break;
     }
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
@@ -98,13 +163,13 @@ static const char* alglib_lbfgs_optimize_termination_types[] = {
 
 // ----------------------------------------------------------------------
 
-void alglib_lbfgs_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, bool rough)
+void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision)
 {
     using namespace alglib;
 
-    const double epsg = rough ? 0.5 : 1e-10;
+    const double epsg = precision == acmacs::chart::optimization_precision::rough ? 0.5 : 1e-10;
     const double epsf = 0;
-    const double epsx = rough ? 1e-3 : 0;
+    const double epsx = precision == acmacs::chart::optimization_precision::rough ? 1e-3 : 0;
     const double stpmax = 0.1;
     const ae_int_t max_iterations = 0;
 
@@ -146,13 +211,13 @@ void alglib_lbfgs_optimize_grad(const alglib::real_1d_array& x, double& func, al
 
 // ----------------------------------------------------------------------
 
-void alglib_cg_optimize(acmacs::chart::OptimizationStatus& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, bool rough)
+void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision)
 {
     using namespace alglib;
 
-    const double epsg = rough ? 0.5 : 1e-10;
+    const double epsg = precision == acmacs::chart::optimization_precision::rough ? 0.5 : 1e-10;
     const double epsf = 0;
-    const double epsx = rough ? 1e-3 : 0;
+    const double epsx = precision == acmacs::chart::optimization_precision::rough ? 1e-3 : 0;
     const ae_int_t max_iterations = 0;
 
     real_1d_array x;
@@ -179,13 +244,13 @@ void alglib_cg_optimize(acmacs::chart::OptimizationStatus& status, const acmacs:
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(acmacs::chart::OptimizationMethod optimization_method, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
+acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(acmacs::chart::optimization_method optimization_method, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
 {
     DimensionAnnelingStatus status;
     const auto start = std::chrono::high_resolution_clock::now();
     switch (optimization_method) {
-      case OptimizationMethod::alglib_lbfgs_pca:
-      case OptimizationMethod::alglib_cg_pca:
+      case optimization_method::alglib_lbfgs_pca:
+      case optimization_method::alglib_cg_pca:
           alglib_pca(source_number_of_dimensions, target_number_of_dimensions, arg_first, arg_last);
           break;
     }

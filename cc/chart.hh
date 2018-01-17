@@ -386,8 +386,8 @@ namespace acmacs::chart
         template <typename Float> inline double calculate_stress(const Stress<Float>& stress) const { return static_cast<double>(stress.value(*layout())); }
         template <typename Float> inline std::vector<Float> calculate_gradient(const Stress<Float>& stress) const { return stress.gradient(*layout()); }
 
-        template <typename Float> double calculate_stress(bool multiply_antigen_titer_until_column_adjust = true) const;
-        template <typename Float> std::vector<Float> calculate_gradient(bool multiply_antigen_titer_until_column_adjust = true) const;
+        template <typename Float> double calculate_stress(multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const;
+        template <typename Float> std::vector<Float> calculate_gradient(multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const;
 
         // Chart& chart() { return const_cast<Chart&>(chart_); }
         const Chart& chart() const { return chart_; }
@@ -493,9 +493,9 @@ namespace acmacs::chart
 
         void set_homologous(bool force, std::shared_ptr<Sera> aSera = nullptr) const;
 
-        template <typename Float> Stress<Float> make_stress(const Projection& projection, bool multiply_antigen_titer_until_column_adjust = true) const
+        template <typename Float> Stress<Float> make_stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const
             {
-                return stress_factory<Float>(*this, projection, multiply_antigen_titer_until_column_adjust);
+                return stress_factory<Float>(*this, projection, mult);
             }
 
         template <typename Float> inline Stress<Float> make_stress(size_t aProjectionNo) const { return make_stress<Float>(*projection(aProjectionNo)); }
@@ -517,14 +517,14 @@ namespace acmacs::chart
     using ProjectionsP = std::shared_ptr<Projections>;
     using PlotSpecP = std::shared_ptr<PlotSpec>;
 
-    template <typename Float> inline double Projection::calculate_stress(bool multiply_antigen_titer_until_column_adjust) const
+    template <typename Float> inline double Projection::calculate_stress(multiply_antigen_titer_until_column_adjust mult) const
     {
-        return calculate_stress(stress_factory<Float>(chart(), *this, multiply_antigen_titer_until_column_adjust));
+        return calculate_stress(stress_factory<Float>(chart(), *this, mult));
     }
 
-    template <typename Float> std::vector<Float> Projection::calculate_gradient(bool multiply_antigen_titer_until_column_adjust) const
+    template <typename Float> std::vector<Float> Projection::calculate_gradient(multiply_antigen_titer_until_column_adjust mult) const
     {
-        return calculate_gradient(stress_factory<Float>(chart(), *this, multiply_antigen_titer_until_column_adjust));
+        return calculate_gradient(stress_factory<Float>(chart(), *this, mult));
     }
 
 } // namespace acmacs::chart
