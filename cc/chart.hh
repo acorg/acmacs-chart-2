@@ -442,6 +442,7 @@ namespace acmacs::chart
         virtual Color error_line_negative_color() const = 0;
         virtual PointStyle style(size_t aPointNo) const = 0;
         virtual std::vector<PointStyle> all_styles() const = 0;
+        virtual size_t number_of_points() const = 0;
 
     }; // class PlotSpec
 

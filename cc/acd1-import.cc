@@ -793,6 +793,18 @@ std::vector<acmacs::PointStyle> Acd1PlotSpec::all_styles() const
 
 // ----------------------------------------------------------------------
 
+size_t Acd1PlotSpec::number_of_points() const
+{
+    const rjson::array& indices = mData.get_or_empty_array("points");
+    if (!indices.empty())
+        return indices.size();
+    else
+        return mChart.number_of_points();
+
+} // Acd1PlotSpec::number_of_points
+
+// ----------------------------------------------------------------------
+
 acmacs::PointStyle Acd1PlotSpec::extract(const rjson::object& aSrc, size_t aPointNo, size_t aStyleNo) const
 {
     acmacs::PointStyle result;

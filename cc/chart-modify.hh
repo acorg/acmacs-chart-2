@@ -381,6 +381,7 @@ namespace acmacs::chart
         Color error_line_negative_color() const override { return main_->error_line_negative_color(); }
         PointStyle style(size_t aPointNo) const override { return modified() ? style_modified(aPointNo) : main_->style(aPointNo); }
         std::vector<PointStyle> all_styles() const override { return modified() ? styles_ : main_->all_styles(); }
+        size_t number_of_points() const override { return modified() ? styles_.size() : main_->number_of_points(); }
 
         DrawingOrder drawing_order() const override
             {
@@ -414,7 +415,6 @@ namespace acmacs::chart
      protected:
         virtual bool modified() const { return modified_; }
         virtual void modify() { if (!modified()) clone_from(*main_); }
-        size_t number_of_points() const { return styles_.size(); }
         void clone_from(const PlotSpec& aSource) { modified_ = true; styles_ = aSource.all_styles(); drawing_order_ = aSource.drawing_order(); drawing_order_.fill_if_empty(number_of_points()); }
         const PointStyle& style_modified(size_t point_no) const { return styles_.at(point_no); }
         void validate_point_no(size_t point_no) const { if (point_no >= number_of_points()) throw std::runtime_error("Invalid point number: " + acmacs::to_string(point_no) + ", expected integer in range 0.." + acmacs::to_string(number_of_points() - 1) + ", inclusive"); }

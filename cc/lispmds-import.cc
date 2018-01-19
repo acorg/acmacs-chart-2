@@ -760,6 +760,20 @@ std::vector<acmacs::PointStyle> LispmdsPlotSpec::all_styles() const
 
 // ----------------------------------------------------------------------
 
+size_t LispmdsPlotSpec::number_of_points() const
+{
+    try {
+        return mData[0][1].size() + mData[0][2].size();
+    }
+    catch (std::exception& err) {
+        std::cerr << "WARNING: [lispmds]: cannot get point styles: " << err.what() << '\n';
+        return 0;
+    }
+
+} // LispmdsPlotSpec::number_of_points
+
+// ----------------------------------------------------------------------
+
 void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, size_t aPointNo) const
 {
     std::string name = aPointNo < number_of_antigens(mData)

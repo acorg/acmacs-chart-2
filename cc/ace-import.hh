@@ -232,6 +232,7 @@ namespace acmacs::chart
         Color error_line_negative_color() const override;
         PointStyle style(size_t aPointNo) const override;
         std::vector<PointStyle> all_styles() const override;
+        size_t number_of_points() const override;
 
      private:
         const rjson::object& mData;
