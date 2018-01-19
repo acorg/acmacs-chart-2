@@ -417,7 +417,13 @@ namespace acmacs::chart
         virtual void modify() { if (!modified()) clone_from(*main_); }
         void clone_from(const PlotSpec& aSource) { modified_ = true; styles_ = aSource.all_styles(); drawing_order_ = aSource.drawing_order(); drawing_order_.fill_if_empty(number_of_points()); }
         const PointStyle& style_modified(size_t point_no) const { return styles_.at(point_no); }
-        void validate_point_no(size_t point_no) const { if (point_no >= number_of_points()) throw std::runtime_error("Invalid point number: " + acmacs::to_string(point_no) + ", expected integer in range 0.." + acmacs::to_string(number_of_points() - 1) + ", inclusive"); }
+
+        void validate_point_no(size_t point_no) const
+            {
+                // std::cerr << "DEBUG: PlotSpecModify::validate_point_no: number_of_points main: " << main_->number_of_points() << " modified: " << modified() << " number_of_points: " << number_of_points() << DEBUG_LINE_FUNC << '\n';
+                if (point_no >= number_of_points())
+                    throw std::runtime_error("Invalid point number: " + acmacs::to_string(point_no) + ", expected integer in range 0.." + acmacs::to_string(number_of_points() - 1) + ", inclusive");
+            }
 
      private:
         PlotSpecP main_;
