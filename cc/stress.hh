@@ -44,9 +44,11 @@ namespace acmacs::chart
         std::vector<Float> gradient(const acmacs::LayoutInterface& aLayout) const;
         void change_number_of_dimensions(size_t num_dim) { number_of_dimensions_ = num_dim; }
 
-        inline const TableDistances<Float>& table_distances() const { return table_distances_; }
-        inline TableDistances<Float>& table_distances() { return table_distances_; }
-        inline const StressParameters& parameters() const { return parameters_; }
+        const TableDistances<Float>& table_distances() const { return table_distances_; }
+        TableDistances<Float>& table_distances() { return table_distances_; }
+        const StressParameters& parameters() const { return parameters_; }
+
+        void set_coordinates_of_disconnected(Float* first, Float value) const;
 
      private:
         size_t number_of_dimensions_;

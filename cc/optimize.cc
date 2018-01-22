@@ -173,6 +173,9 @@ void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acm
     const double stpmax = 0.1;
     const ae_int_t max_iterations = 0;
 
+      // alglib does not like NaN coordinates of disconnected points, set them to 0
+    stress.set_coordinates_of_disconnected(arg_first, 0.0);
+
     real_1d_array x;
     x.attach_to_ptr(arg_last - arg_first, arg_first);
 
@@ -183,6 +186,9 @@ void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acm
     minlbfgsoptimize(state, &alglib_lbfgs_optimize_grad, nullptr, const_cast<void*>(reinterpret_cast<const void*>(&stress)));
     minlbfgsreport rep;
     minlbfgsresultsbuf(state, x, rep);
+
+      // return back NaN for disconnected points
+    stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN());
 
     if (rep.terminationtype < 0) {
         const char* msg = alglib_lbfgs_optimize_errors[std::abs(rep.terminationtype) <= 8 ? (std::abs(rep.terminationtype) - 1) : 8];
@@ -220,6 +226,9 @@ void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs
     const double epsx = precision == acmacs::chart::optimization_precision::rough ? 1e-3 : 0;
     const ae_int_t max_iterations = 0;
 
+      // alglib does not like NaN coordinates of disconnected points, set them to 0
+    stress.set_coordinates_of_disconnected(arg_first, 0.0);
+
     real_1d_array x;
     x.attach_to_ptr(arg_last - arg_first, arg_first);
 
@@ -229,6 +238,9 @@ void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs
     mincgoptimize(state, &alglib_lbfgs_optimize_grad, nullptr, const_cast<void*>(reinterpret_cast<const void*>(&stress)));
     mincgreport rep;
     mincgresultsbuf(state, x, rep);
+
+      // return back NaN for disconnected points
+    stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN());
 
     if (rep.terminationtype < 0) {
         const char* msg = alglib_lbfgs_optimize_errors[std::abs(rep.terminationtype) <= 8 ? (std::abs(rep.terminationtype) - 1) : 8];

@@ -42,7 +42,7 @@ int main(int argc, char* const argv[])
             else
                 throw std::runtime_error("unrecognized method, lbfgs or cg expected");
 
-            auto projection = chart.projection_modify(args["projection"]);
+            auto projection = chart.projection_modify(args["--projection"]);
             const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
             std::cout << status << '\n';
 

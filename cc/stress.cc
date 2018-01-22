@@ -234,6 +234,17 @@ template <typename Float> void acmacs::chart::Stress<Float>::gradient_with_unmov
 
 // ----------------------------------------------------------------------
 
+template <typename Float> void acmacs::chart::Stress<Float>::set_coordinates_of_disconnected(Float* first, Float value) const
+{
+    for (auto p_no: parameters_.disconnected) {
+        for (size_t dim = 0; dim < number_of_dimensions_; ++dim)
+            *(first + p_no * number_of_dimensions_ + dim) = value;
+    }
+
+} // acmacs::chart::Stress<Float>::set_coordinates_of_disconnected
+
+// ----------------------------------------------------------------------
+
 template class acmacs::chart::Stress<float>;
 template class acmacs::chart::Stress<double>;
 template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult);
