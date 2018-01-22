@@ -167,7 +167,7 @@ std::string coordinates(std::shared_ptr<acmacs::chart::Layout> aLayout, size_t n
                 result.append(1, ' ');
             const auto c = aLayout->coordinate(point_no, dim);
             if (std::isnan(c))
-                result.append("-1000"); // disconnected point
+                result.append("0"); // disconnected point
             else
                 result.append(acmacs::to_string(c));
         }
