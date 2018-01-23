@@ -32,13 +32,13 @@ namespace std
 
 // ----------------------------------------------------------------------
 
-template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_factory(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult)
+template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_factory(const acmacs::chart::Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult)
 {
     Stress<Float> stress(projection, mult);
     auto cb = projection.forced_column_bases();
     if (!cb)
-        cb = chart.column_bases(projection.minimum_column_basis());
-    chart.titers()->update(stress.table_distances(), *cb, stress.parameters());
+        cb = projection.chart().column_bases(projection.minimum_column_basis());
+    projection.chart().titers()->update(stress.table_distances(), *cb, stress.parameters());
       // stress.table_distances().report();
     return stress;
 
@@ -247,8 +247,8 @@ template <typename Float> void acmacs::chart::Stress<Float>::set_coordinates_of_
 
 template class acmacs::chart::Stress<float>;
 template class acmacs::chart::Stress<double>;
-template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult);
-template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult);
+template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult);
+template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult);
 
 // ----------------------------------------------------------------------
 /// Local Variables:

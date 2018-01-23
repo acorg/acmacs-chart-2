@@ -232,7 +232,7 @@ namespace acmacs::chart
         virtual void randomize_layout(double max_distance_multiplier = 1.0);
         virtual void randomize_layout(LayoutRandomizer& randomizer);
         virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
-        virtual optimization_status relax(acmacs::chart::optimization_options options) { return acmacs::chart::optimize(chart(), *this, options); }
+        virtual optimization_status relax(acmacs::chart::optimization_options options) { return acmacs::chart::optimize(*this, options); }
 
      protected:
         virtual void modify() {}

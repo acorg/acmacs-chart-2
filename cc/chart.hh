@@ -496,7 +496,7 @@ namespace acmacs::chart
 
         template <typename Float> Stress<Float> make_stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const
             {
-                return stress_factory<Float>(*this, projection, mult);
+                return stress_factory<Float>(projection, mult);
             }
 
         template <typename Float> inline Stress<Float> make_stress(size_t aProjectionNo) const { return make_stress<Float>(*projection(aProjectionNo)); }
@@ -520,12 +520,12 @@ namespace acmacs::chart
 
     template <typename Float> inline double Projection::calculate_stress(multiply_antigen_titer_until_column_adjust mult) const
     {
-        return calculate_stress(stress_factory<Float>(chart(), *this, mult));
+        return calculate_stress(stress_factory<Float>(*this, mult));
     }
 
     template <typename Float> std::vector<Float> Projection::calculate_gradient(multiply_antigen_titer_until_column_adjust mult) const
     {
-        return calculate_gradient(stress_factory<Float>(chart(), *this, mult));
+        return calculate_gradient(stress_factory<Float>(*this, mult));
     }
 
 } // namespace acmacs::chart

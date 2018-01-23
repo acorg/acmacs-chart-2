@@ -30,10 +30,10 @@ static void alglib_pca(size_t source_number_of_dimensions, size_t target_number_
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::optimization_status acmacs::chart::optimize(const acmacs::chart::Chart& chart, acmacs::chart::ProjectionModify& projection, acmacs::chart::optimization_options options)
+acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::ProjectionModify& projection, acmacs::chart::optimization_options options)
 {
     auto layout = projection.layout_modified();
-    auto stress = acmacs::chart::stress_factory<double>(chart, projection, options.mult);
+    auto stress = acmacs::chart::stress_factory<double>(projection, options.mult);
     const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
     return status;
 
@@ -41,7 +41,7 @@ acmacs::chart::optimization_status acmacs::chart::optimize(const acmacs::chart::
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::optimization_status acmacs::chart::optimize(const Chart& chart, ProjectionModify& projection, const acmacs::chart::dimension_schedule& schedule, acmacs::chart::optimization_options options)
+acmacs::chart::optimization_status acmacs::chart::optimize(ProjectionModify& projection, const acmacs::chart::dimension_schedule& schedule, acmacs::chart::optimization_options options)
 {
     if (schedule.initial() != projection.number_of_dimensions())
         throw std::runtime_error("acmacs::chart::optimize existing with dimension_schedule: invalid number_of_dimensions in schedule");
@@ -49,7 +49,7 @@ acmacs::chart::optimization_status acmacs::chart::optimize(const Chart& chart, P
     const auto start = std::chrono::high_resolution_clock::now();
     optimization_status status(options.method);
     auto layout = projection.layout_modified();
-    auto stress = acmacs::chart::stress_factory<double>(chart, projection, options.mult);
+    auto stress = acmacs::chart::stress_factory<double>(projection, options.mult);
 
     bool initial_opt = true;
     for (size_t num_dims: schedule) {
@@ -82,7 +82,7 @@ acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::ChartM
 {
     auto projection = chart.projections_modify()->new_from_scratch(schedule.initial(), minimum_column_basis);
     projection->randomize_layout(options.max_distance_multiplier);
-    return optimize(chart, *projection, schedule, options);
+    return optimize(*projection, schedule, options);
 
 } // acmacs::chart::optimize
 

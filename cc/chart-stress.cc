@@ -91,17 +91,17 @@ int main(int argc, char* const argv[])
                 else
                     std::cout << "gradie d: " << acmacs::to_string(gradient_max) << '\n';
 
-                auto stress_f = chart->make_stress<float>(args["--projection"]);
-                if (args["--time"])
-                    std::cout << "stress f: " << acmacs::to_string(projection->calculate_stress(stress_f)) << "   per second: " << measure(projection, stress_f) << '\n';
-                else
-                    std::cout << "stress f: " << acmacs::to_string(projection->calculate_stress(stress_f)) << '\n';
-                const auto gradient_f = projection->calculate_gradient(stress_f);
-                const auto gradient_f_max = std::accumulate(gradient_f.begin(), gradient_f.end(), 0.0F, [](auto mx, auto val) { return std::max(mx, std::abs(val)); });
-                if (args["--time"])
-                    std::cout << "gradie f: " << acmacs::to_string(gradient_f_max) << "   per second: " << measure_gradient(projection, stress_f) << '\n';
-                else
-                    std::cout << "gradie f: " << acmacs::to_string(gradient_f_max) << '\n';
+                // auto stress_f = chart->make_stress<float>(args["--projection"]);
+                // if (args["--time"])
+                //     std::cout << "stress f: " << acmacs::to_string(projection->calculate_stress(stress_f)) << "   per second: " << measure(projection, stress_f) << '\n';
+                // else
+                //     std::cout << "stress f: " << acmacs::to_string(projection->calculate_stress(stress_f)) << '\n';
+                // const auto gradient_f = projection->calculate_gradient(stress_f);
+                // const auto gradient_f_max = std::accumulate(gradient_f.begin(), gradient_f.end(), 0.0F, [](auto mx, auto val) { return std::max(mx, std::abs(val)); });
+                // if (args["--time"])
+                //     std::cout << "gradie f: " << acmacs::to_string(gradient_f_max) << "   per second: " << measure_gradient(projection, stress_f) << '\n';
+                // else
+                //     std::cout << "gradie f: " << acmacs::to_string(gradient_f_max) << '\n';
             }
         }
     }

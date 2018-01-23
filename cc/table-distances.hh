@@ -22,7 +22,7 @@ namespace acmacs::chart
 
         using entries_t = std::vector<Entry>;
 
-        inline void dodgy_is_regular(bool dodgy_is_regular) { dodgy_is_regular_ = dodgy_is_regular; }
+        void dodgy_is_regular(bool dodgy_is_regular) { dodgy_is_regular_ = dodgy_is_regular; }
 
         void update(const acmacs::chart::Titer& titer, size_t p1, size_t p2, double column_basis, double adjust, multiply_antigen_titer_until_column_adjust mult)
             {
@@ -39,8 +39,8 @@ namespace acmacs::chart
 
           // inline void report() const { std::cerr << "TableDistances regular: " << regular_.size() << "  less-than: " << less_than_.size() << '\n'; }
 
-        inline const entries_t& regular() const { return regular_; }
-        inline const entries_t& less_than() const { return less_than_; }
+        const entries_t& regular() const { return regular_; }
+        const entries_t& less_than() const { return less_than_; }
 
      private:
         bool dodgy_is_regular_ = false;

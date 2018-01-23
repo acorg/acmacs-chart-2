@@ -42,9 +42,9 @@ namespace acmacs::chart
 // ----------------------------------------------------------------------
 
       // optimizes existing projection without dimension annealing
-    optimization_status optimize(const Chart& chart, ProjectionModify& projection, optimization_options options = optimization_options{});
+    optimization_status optimize(ProjectionModify& projection, optimization_options options = optimization_options{});
       // optimizes existing projection with dimension annealing
-    optimization_status optimize(const Chart& chart, ProjectionModify& projection, const dimension_schedule& schedule, optimization_options options = optimization_options{});
+    optimization_status optimize(ProjectionModify& projection, const dimension_schedule& schedule, optimization_options options = optimization_options{});
       // creates new projection and optimizes it with or without dimension annealing
     optimization_status optimize(ChartModify& chart, MinimumColumnBasis minimum_column_basis, const dimension_schedule& schedule, optimization_options options = optimization_options{});
 

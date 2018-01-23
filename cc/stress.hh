@@ -60,7 +60,7 @@ namespace acmacs::chart
 
     }; // class Stress
 
-    template <typename Float> Stress<Float> stress_factory(const Chart& chart, const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
+    template <typename Float> Stress<Float> stress_factory(const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
 
     extern template class Stress<float>;
     extern template class Stress<double>;
@@ -68,8 +68,8 @@ namespace acmacs::chart
       // g++7 does not like extern template below
 #else
       // clang5 wants those externs (otherwise warning -Wundefined-func-template)
-    extern template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, multiply_antigen_titer_until_column_adjust mult);
-    extern template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, const acmacs::chart::Projection& projection, multiply_antigen_titer_until_column_adjust mult);
+    extern template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Projection& projection, multiply_antigen_titer_until_column_adjust mult);
+    extern template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Projection& projection, multiply_antigen_titer_until_column_adjust mult);
 #endif
 
 } // namespace acmacs::chart

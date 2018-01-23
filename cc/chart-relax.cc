@@ -179,12 +179,12 @@ void test_lbfgs_cg(acmacs::chart::ChartModify& chart, std::string min_col_basis,
     auto layout = projection->layout_modified();
     acmacs::Layout starting{*layout};
 
-    const auto status1 = acmacs::chart::optimize(chart, *projection, schedule, acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_lbfgs_pca, precision));
+    const auto status1 = acmacs::chart::optimize(*projection, schedule, acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_lbfgs_pca, precision));
     std::cout << status1 << '\n';
 
     projection->set_layout(starting, true);
 
-    const auto status2 = acmacs::chart::optimize(chart, *projection, schedule, acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_cg_pca, precision));
+    const auto status2 = acmacs::chart::optimize(*projection, schedule, acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_cg_pca, precision));
     std::cout << status2 << '\n';
 
 } // test_lbfgs_cg
@@ -216,7 +216,7 @@ void optimize_n(acmacs::chart::optimization_method method, acmacs::chart::ChartM
         auto projection = chart.projections_modify()->new_from_scratch(schedule.initial(), min_col_basis);
         projection->randomize_layout(max_distance_multiplier);
         auto layout = projection->layout_modified();
-        auto stress = acmacs::chart::stress_factory<double>(chart, *projection, acmacs::chart::multiply_antigen_titer_until_column_adjust::yes);
+        auto stress = acmacs::chart::stress_factory<double>(*projection, acmacs::chart::multiply_antigen_titer_until_column_adjust::yes);
         for (size_t num_dims: schedule) {
             if (num_dims > projection->number_of_dimensions())
                 throw std::runtime_error("invalid schedule: " + acmacs::to_string(schedule));
