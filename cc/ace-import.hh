@@ -15,7 +15,7 @@ namespace acmacs::chart
     class AceChart : public Chart
     {
       public:
-        inline AceChart(rjson::value&& aSrc) : mData{std::move(aSrc)} {}
+        AceChart(rjson::value&& aSrc) : mData{std::move(aSrc)} {}
 
         InfoP info() const override;
         AntigensP antigens() const override;
@@ -43,18 +43,18 @@ namespace acmacs::chart
     class AceInfo : public Info
     {
       public:
-        inline AceInfo(const rjson::value& aData) : mData{aData} {}
+        AceInfo(const rjson::value& aData) : mData{aData} {}
 
         std::string name(Compute aCompute = Compute::No) const override;
-        inline std::string virus(Compute aCompute = Compute::No) const override { return make_field("v", "+", aCompute); }
-        inline std::string virus_type(Compute aCompute = Compute::Yes) const override { return make_field("V", "+", aCompute); }
-        inline std::string subset(Compute aCompute = Compute::No) const override { return make_field("s", "+", aCompute); }
-        inline std::string assay(Compute aCompute = Compute::No) const override { return make_field("A", "+", aCompute); }
-        inline std::string lab(Compute aCompute = Compute::No) const override { return make_field("l", "+", aCompute); }
-        inline std::string rbc_species(Compute aCompute = Compute::No) const override { return make_field("r", "+", aCompute); }
+        std::string virus(Compute aCompute = Compute::No) const override { return make_field("v", "+", aCompute); }
+        std::string virus_type(Compute aCompute = Compute::Yes) const override { return make_field("V", "+", aCompute); }
+        std::string subset(Compute aCompute = Compute::No) const override { return make_field("s", "+", aCompute); }
+        std::string assay(Compute aCompute = Compute::No) const override { return make_field("A", "+", aCompute); }
+        std::string lab(Compute aCompute = Compute::No) const override { return make_field("l", "+", aCompute); }
+        std::string rbc_species(Compute aCompute = Compute::No) const override { return make_field("r", "+", aCompute); }
         std::string date(Compute aCompute = Compute::No) const override;
-        inline size_t number_of_sources() const override { return mData.get_or_empty_array("S").size(); }
-        inline InfoP source(size_t aSourceNo) const override { return std::make_shared<AceInfo>(mData.get_or_empty_array("S")[aSourceNo]); }
+        size_t number_of_sources() const override { return mData.get_or_empty_array("S").size(); }
+        InfoP source(size_t aSourceNo) const override { return std::make_shared<AceInfo>(mData.get_or_empty_array("S")[aSourceNo]); }
 
      private:
         const rjson::value& mData;
@@ -68,17 +68,17 @@ namespace acmacs::chart
     class AceAntigen : public Antigen
     {
       public:
-        inline AceAntigen(const rjson::object& aData) : mData{aData} {}
+        AceAntigen(const rjson::object& aData) : mData{aData} {}
 
-        inline Name name() const override { return mData["N"]; }
-        inline Date date() const override { return mData.get_or_default("D", ""); }
-        inline Passage passage() const override { return mData.get_or_default("P", ""); }
+        Name name() const override { return mData["N"]; }
+        Date date() const override { return mData.get_or_default("D", ""); }
+        Passage passage() const override { return mData.get_or_default("P", ""); }
         BLineage lineage() const override;
-        inline Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
-        inline LabIds lab_ids() const override { return mData.get_or_empty_array("l"); }
-        inline Clades clades() const override { return mData.get_or_empty_array("c"); }
-        inline Annotations annotations() const override { return mData.get_or_empty_array("a"); }
-        inline bool reference() const override { return mData.get_or_default("S", "").find("R") != std::string::npos; }
+        Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
+        LabIds lab_ids() const override { return mData.get_or_empty_array("l"); }
+        Clades clades() const override { return mData.get_or_empty_array("c"); }
+        Annotations annotations() const override { return mData.get_or_empty_array("a"); }
+        bool reference() const override { return mData.get_or_default("S", "").find("R") != std::string::npos; }
 
      private:
         const rjson::object& mData;
@@ -90,17 +90,17 @@ namespace acmacs::chart
     class AceSerum : public Serum
     {
       public:
-        inline AceSerum(const rjson::object& aData) : mData{aData} {}
+        AceSerum(const rjson::object& aData) : mData{aData} {}
 
-        inline Name name() const override { return mData["N"]; }
-        inline Passage passage() const override { return mData.get_or_default("P", ""); }
+        Name name() const override { return mData["N"]; }
+        Passage passage() const override { return mData.get_or_default("P", ""); }
         BLineage lineage() const override;
-        inline Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
-        inline Annotations annotations() const override { return mData.get_or_empty_array("a"); }
-        inline SerumId serum_id() const override { return mData.get_or_default("I", ""); }
-        inline SerumSpecies serum_species() const override { return mData.get_or_default("s", ""); }
-        inline PointIndexList homologous_antigens() const override { return mData.get_or_empty_array("h"); }
-        inline void set_homologous(const std::vector<size_t>& ags) const override { const_cast<rjson::object&>(mData).set_field("h", rjson::array(rjson::array::use_iterator, ags.begin(), ags.end())); }
+        Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
+        Annotations annotations() const override { return mData.get_or_empty_array("a"); }
+        SerumId serum_id() const override { return mData.get_or_default("I", ""); }
+        SerumSpecies serum_species() const override { return mData.get_or_default("s", ""); }
+        PointIndexList homologous_antigens() const override { return mData.get_or_empty_array("h"); }
+        void set_homologous(const std::vector<size_t>& ags) const override { const_cast<rjson::object&>(mData).set_field("h", rjson::array(rjson::array::use_iterator, ags.begin(), ags.end())); }
 
      private:
         const rjson::object& mData;
@@ -112,10 +112,10 @@ namespace acmacs::chart
     class AceAntigens : public Antigens
     {
      public:
-        inline AceAntigens(const rjson::array& aData, ace::name_index_t& aAntigenNameIndex) : mData{aData}, mAntigenNameIndex{aAntigenNameIndex} {}
+        AceAntigens(const rjson::array& aData, ace::name_index_t& aAntigenNameIndex) : mData{aData}, mAntigenNameIndex{aAntigenNameIndex} {}
 
-        inline size_t size() const override { return mData.size(); }
-        inline AntigenP operator[](size_t aIndex) const override { return std::make_shared<AceAntigen>(mData[aIndex]); }
+        size_t size() const override { return mData.size(); }
+        AntigenP operator[](size_t aIndex) const override { return std::make_shared<AceAntigen>(mData[aIndex]); }
         std::optional<size_t> find_by_full_name(std::string aFullName) const override;
 
      private:
@@ -131,10 +131,10 @@ namespace acmacs::chart
     class AceSera : public Sera
     {
       public:
-        inline AceSera(const rjson::array& aData) : mData{aData} {}
+        AceSera(const rjson::array& aData) : mData{aData} {}
 
-        inline size_t size() const override { return mData.size(); }
-        inline SerumP operator[](size_t aIndex) const override { return std::make_shared<AceSerum>(mData[aIndex]); }
+        size_t size() const override { return mData.size(); }
+        SerumP operator[](size_t aIndex) const override { return std::make_shared<AceSerum>(mData[aIndex]); }
 
      private:
         const rjson::array& mData;
@@ -146,7 +146,7 @@ namespace acmacs::chart
     class AceTiters : public RjsonTiters
     {
       public:
-        inline AceTiters(const rjson::object& data) : RjsonTiters(data, s_keys_) {}
+        AceTiters(const rjson::object& data) : RjsonTiters(data, s_keys_) {}
 
      private:
         static const Keys s_keys_;
@@ -158,10 +158,10 @@ namespace acmacs::chart
     class AceColumnBases : public ColumnBases
     {
       public:
-        inline AceColumnBases(const rjson::array& aData) : mData{aData} {}
+        AceColumnBases(const rjson::array& aData) : mData{aData} {}
 
-        inline double column_basis(size_t aSerumNo) const override { return mData[aSerumNo]; }
-        inline size_t size() const override { return mData.size(); }
+        double column_basis(size_t aSerumNo) const override { return mData[aSerumNo]; }
+        size_t size() const override { return mData.size(); }
 
      private:
         const rjson::array& mData;
@@ -202,11 +202,11 @@ namespace acmacs::chart
     class AceProjections : public Projections
     {
       public:
-        inline AceProjections(const Chart& chart, const rjson::array& aData) : Projections(chart), mData{aData}, projections_(aData.size(), nullptr) {}
+        AceProjections(const Chart& chart, const rjson::array& aData) : Projections(chart), mData{aData}, projections_(aData.size(), nullptr) {}
 
-        inline bool empty() const override { return projections_.empty(); }
-        inline size_t size() const override { return projections_.size(); }
-        inline ProjectionP operator[](size_t aIndex) const override
+        bool empty() const override { return projections_.empty(); }
+        size_t size() const override { return projections_.size(); }
+        ProjectionP operator[](size_t aIndex) const override
             {
                 if (!projections_[aIndex])
                     projections_[aIndex] = std::make_shared<AceProjection>(chart(), mData[aIndex], aIndex);
@@ -224,10 +224,10 @@ namespace acmacs::chart
     class AcePlotSpec : public PlotSpec
     {
       public:
-        inline AcePlotSpec(const rjson::object& aData, const AceChart& aChart) : mData{aData}, mChart{aChart} {}
+        AcePlotSpec(const rjson::object& aData, const AceChart& aChart) : mData{aData}, mChart{aChart} {}
 
-        inline bool empty() const override { return mData.empty(); }
-        inline DrawingOrder drawing_order() const override { return mData.get_or_empty_array("d"); }
+        bool empty() const override { return mData.empty(); }
+        DrawingOrder drawing_order() const override { return mData.get_or_empty_array("d"); }
         Color error_line_positive_color() const override;
         Color error_line_negative_color() const override;
         PointStyle style(size_t aPointNo) const override;

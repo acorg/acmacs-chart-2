@@ -147,6 +147,8 @@ namespace acmacs::chart
 
         std::vector<Titer> titers_for_layers(const rjson::array& layers, size_t aAntigenNo, size_t aSerumNo) const;
 
+        const rjson::object& data() const { return data_; }
+
      private:
         const rjson::object& data_;
         const Keys& keys_;
