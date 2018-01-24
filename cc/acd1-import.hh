@@ -218,7 +218,6 @@ namespace acmacs::chart
 
         MinimumColumnBasis minimum_column_basis() const override
             {
-                  //return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("minimum_column_basis", "none");
                 try {
                     return mData.get_or_empty_object("stress_evaluator_parameters")["minimum_column_basis"].str();
                 }
