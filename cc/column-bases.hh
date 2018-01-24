@@ -11,39 +11,23 @@ namespace acmacs::chart
     class MinimumColumnBasis
     {
      public:
-        inline MinimumColumnBasis(double aValue = 0) : mValue{aValue} {}
-        inline MinimumColumnBasis(const MinimumColumnBasis&) = default;
-        inline MinimumColumnBasis(std::string aValue) { from(aValue); }
-        inline MinimumColumnBasis& operator=(double aValue) { mValue = aValue; return *this; }
-        inline MinimumColumnBasis& operator=(const MinimumColumnBasis&) = default;
-        inline MinimumColumnBasis& operator=(std::string aValue) { from(aValue); return *this; }
+        MinimumColumnBasis(double value = 0) : value_{value} {}
+        MinimumColumnBasis(const MinimumColumnBasis&) = default;
+        MinimumColumnBasis(std::string value) { from(value); }
+        MinimumColumnBasis& operator=(double value) { value_ = value; return *this; }
+        MinimumColumnBasis& operator=(const MinimumColumnBasis&) = default;
+        MinimumColumnBasis& operator=(std::string value) { from(value); return *this; }
 
-        inline constexpr bool is_none() const { return float_zero(mValue); }
+        constexpr bool is_none() const { return float_zero(value_); }
 
-        inline constexpr operator double() const noexcept { return mValue; }
+        constexpr operator double() const noexcept { return value_; }
 
-        inline operator std::string() const noexcept
-            {
-                if (is_none())
-                    return "none";
-                else if (float_equal(mValue, 7.0))
-                    return "1280";
-                else
-                    return acmacs::to_string(mValue);
-            }
+        operator std::string() const noexcept;
 
      private:
-        double mValue;
+        double value_;
 
-        inline void from(std::string aValue)
-            {
-                if (aValue.empty() || aValue == "none")
-                    mValue = 0;
-                else if (aValue == "1280")
-                    mValue = 7;
-                else
-                    throw std::runtime_error{"Unrecognized minimum_column_basis value: " + aValue};
-            }
+        void from(std::string value);
 
     }; // class MinimumColumnBasis
 

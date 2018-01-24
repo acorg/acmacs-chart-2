@@ -17,6 +17,34 @@ std::string acmacs::to_string(const acmacs::chart::ColumnBases& aColumnBases)
 
 // ----------------------------------------------------------------------
 
+void acmacs::chart::MinimumColumnBasis::from(std::string value)
+{
+    if (value.empty() || value == "none") {
+        value_ = 0;
+    }
+    else if (value.find('.') != std::string::npos) {
+        value_ = std::stod(value);
+    }
+    else {
+        value_ = std::stol(value);
+        if (value_ > 9)
+            value_ = std::log2(value_ / 10.0);
+    }
+    if (value_ < 0 || value_ > 30)
+        throw std::runtime_error{"Unrecognized minimum_column_basis value: " + value};
+
+} // acmacs::chart::MinimumColumnBasis::from
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::MinimumColumnBasis::operator std::string() const noexcept
+{
+    if (is_none())
+        return "none";
+    else
+        return acmacs::to_string(std::lround(std::exp2(value_) * 10.0));
+
+} // operator std::string
 
 // ----------------------------------------------------------------------
 /// Local Variables:
