@@ -47,7 +47,7 @@ int main(int argc, char* const argv[])
 
             const size_t number_of_attempts = args["-n"];
             for (size_t attempt = 0; attempt < number_of_attempts; ++attempt) {
-                const auto status = chart.relax(args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]));
+                auto [status, projection] = chart.relax(args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]));
                 std::cout << status << '\n';
             }
             chart.projections_modify()->sort();

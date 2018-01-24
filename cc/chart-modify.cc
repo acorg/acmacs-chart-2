@@ -151,7 +151,7 @@ PlotSpecModifyP ChartModify::plot_spec_modify()
 
 // ----------------------------------------------------------------------
 
-optimization_status ChartModify::relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, optimization_options options)
+std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, optimization_options options)
 {
     const auto start = std::chrono::high_resolution_clock::now();
     const size_t start_num_dim = dimension_annealing && number_of_dimensions < 5 ? 5 : number_of_dimensions;
@@ -172,7 +172,7 @@ optimization_status ChartModify::relax(MinimumColumnBasis minimum_column_basis, 
         status.final_stress = status2.final_stress;
     }
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
-    return status;
+    return {status, projection};
 
 } // ChartModify::relax
 
