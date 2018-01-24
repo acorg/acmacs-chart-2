@@ -151,6 +151,33 @@ PlotSpecModifyP ChartModify::plot_spec_modify()
 
 // ----------------------------------------------------------------------
 
+optimization_status ChartModify::relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, optimization_options options)
+{
+    const auto start = std::chrono::high_resolution_clock::now();
+    const size_t start_num_dim = dimension_annealing && number_of_dimensions < 5 ? 5 : number_of_dimensions;
+    auto projection = projections_modify()->new_from_scratch(start_num_dim, minimum_column_basis);
+    auto layout = projection->layout_modified();
+    auto stress = acmacs::chart::stress_factory<double>(*projection, options.mult);
+    projection->randomize_layout(options.max_distance_multiplier);
+    auto status = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
+    if (start_num_dim > number_of_dimensions) {
+        acmacs::chart::dimension_annealing(options.method, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
+        layout->change_number_of_dimensions(number_of_dimensions);
+        stress.change_number_of_dimensions(number_of_dimensions);
+        const auto status2 = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
+        status.number_of_iterations += status2.number_of_iterations;
+        status.number_of_stress_calculations += status2.number_of_stress_calculations;
+        status.termination_report = status2.termination_report;
+        status.initial_stress = status2.initial_stress;
+        status.final_stress = status2.final_stress;
+    }
+    status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
+    return status;
+
+} // ChartModify::relax
+
+// ----------------------------------------------------------------------
+
 void ProjectionModify::randomize_layout(double max_distance_multiplier)
 {
     auto cb = forced_column_bases();

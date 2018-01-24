@@ -17,6 +17,7 @@ TARGETS = \
     $(DIST)/chart-modify-plot-spec \
     $(DIST)/chart-titer-merging-report \
     $(DIST)/chart-stress \
+    $(DIST)/chart-relax-test \
     $(DIST)/chart-relax \
     $(DIST)/chart-relax-existing
 
