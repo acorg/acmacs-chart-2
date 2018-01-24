@@ -11,15 +11,6 @@
 
 // ----------------------------------------------------------------------
 
-static void test_rough(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier);
-static void test_randomization(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier);
-static void test_dimension(acmacs::chart::ChartModify& chart, std::string min_col_basis, double max_distance_multiplier);
-static void test_lbfgs_cg(acmacs::chart::ChartModify& chart, std::string min_col_basis, const acmacs::chart::dimension_schedule& schedule, double max_distance_multiplier, acmacs::chart::optimization_precision precision);
-static void optimize_n(acmacs::chart::optimization_method method, acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims, double max_distance_multiplier, acmacs::chart::optimization_precision precision);
-static void optimize_n(acmacs::chart::optimization_method method, acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, const acmacs::chart::dimension_schedule& schedule, double max_distance_multiplier, acmacs::chart::optimization_precision precision);
-
-// ----------------------------------------------------------------------
-
 int main(int argc, char* const argv[])
 {
     int exit_code = 0;
