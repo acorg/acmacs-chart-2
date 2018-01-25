@@ -322,12 +322,12 @@ double acmacs::chart::Projection::stress(acmacs::chart::RecalculateStress recalc
 {
     switch (recalculate) {
       case RecalculateStress::yes:
-          return calculate_stress<double>();
+          return recalculate_stress();
       case RecalculateStress::if_necessary:
           if (const auto s = stored_stress(); s)
               return *s;
           else
-              return calculate_stress<double>();
+              return recalculate_stress();
       case RecalculateStress::no:
           if (const auto s = stored_stress(); s)
               return *s;

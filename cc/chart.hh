@@ -383,8 +383,8 @@ namespace acmacs::chart
         virtual AvidityAdjusts avidity_adjusts() const = 0; // antigens_sera_titers_multipliers, double for each point
           // antigens_sera_gradient_multipliers, double for each point
 
-        template <typename Float> inline double calculate_stress(const Stress<Float>& stress) const { return static_cast<double>(stress.value(*layout())); }
-        template <typename Float> inline std::vector<Float> calculate_gradient(const Stress<Float>& stress) const { return stress.gradient(*layout()); }
+        template <typename Float> double calculate_stress(const Stress<Float>& stress) const { return static_cast<double>(stress.value(*layout())); }
+        template <typename Float> std::vector<Float> calculate_gradient(const Stress<Float>& stress) const { return stress.gradient(*layout()); }
 
         template <typename Float> double calculate_stress(multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const;
         template <typename Float> std::vector<Float> calculate_gradient(multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const;
@@ -392,6 +392,9 @@ namespace acmacs::chart
         // Chart& chart() { return const_cast<Chart&>(chart_); }
         const Chart& chart() const { return chart_; }
         void set_projection_no(size_t projection_no) { projection_no_ = projection_no; }
+
+     protected:
+        virtual double recalculate_stress() const { return calculate_stress<double>(); }
 
      private:
         const Chart& chart_;

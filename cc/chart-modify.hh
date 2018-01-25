@@ -222,6 +222,7 @@ namespace acmacs::chart
                 }
             }
 
+        std::optional<double> stored_stress() const override { return stress_; }
         void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { modify(); layout_->set(aPointNo, aCoordinates); transformed_layout_.reset(); }
         void rotate_radians(double aAngle) { modify(); transformation_.rotate(aAngle); transformed_layout_.reset(); }
         void rotate_degrees(double aAngle) { rotate_radians(aAngle * M_PI / 180.0); }
@@ -234,11 +235,17 @@ namespace acmacs::chart
         virtual void randomize_layout(double max_distance_multiplier = 1.0);
         virtual void randomize_layout(LayoutRandomizer& randomizer);
         virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
-        virtual optimization_status relax(acmacs::chart::optimization_options options) { return acmacs::chart::optimize(*this, options); }
+        virtual optimization_status relax(acmacs::chart::optimization_options options)
+            {
+                const auto status = acmacs::chart::optimize(*this, options);
+                stress_ = status.final_stress;
+                return status;
+            }
 
      protected:
-        virtual void modify() {}
+        virtual void modify() { stress_.reset(); }
         virtual bool modified() const { return true; }
+        double recalculate_stress() const override { stress_ = Projection::recalculate_stress(); return *stress_; }
         bool layout_present() const { return static_cast<bool>(layout_); }
         void clone_from(const Projection& aSource) { layout_ = std::make_shared<acmacs::Layout>(*aSource.layout()); transformation_ = aSource.transformation(); transformed_layout_.reset(); }
         std::shared_ptr<Layout> transformed_layout_modified() const { if (!transformed_layout_) transformed_layout_.reset(layout_->transform(transformation_)); return transformed_layout_; }
@@ -251,6 +258,7 @@ namespace acmacs::chart
         std::shared_ptr<acmacs::Layout> layout_;
         Transformation transformation_;
         mutable std::shared_ptr<acmacs::chart::Layout> transformed_layout_;
+        mutable std::optional<double> stress_;
 
         friend class ProjectionsModify;
         virtual ProjectionModifyP clone() const = 0;
@@ -265,7 +273,7 @@ namespace acmacs::chart
         ProjectionModifyMain(ProjectionP main) : ProjectionModify(main->chart()), main_{main} {}
         ProjectionModifyMain(const ProjectionModifyMain& aSource) : ProjectionModify(aSource), main_(aSource.main_) {}
 
-        std::optional<double> stored_stress() const override { if (modified()) return {}; else return main_->stored_stress(); } // no stress if projection was modified
+        std::optional<double> stored_stress() const override { if (modified()) return ProjectionModify::stored_stress(); else return main_->stored_stress(); } // no stress if projection was modified
         std::shared_ptr<Layout> layout() const override { return modified() ? layout_modified() : main_->layout(); }
         std::shared_ptr<Layout> transformed_layout() const override { return modified() ? transformed_layout_modified() : main_->transformed_layout(); }
         std::string comment() const override { return main_->comment(); }
@@ -283,7 +291,7 @@ namespace acmacs::chart
 
      protected:
         bool modified() const override { return layout_present(); }
-        void modify() override { if (!modified()) clone_from(*main_); }
+        void modify() override { ProjectionModify::modify(); if (!modified()) clone_from(*main_);  }
 
      private:
         ProjectionP main_;
@@ -310,7 +318,6 @@ namespace acmacs::chart
             {
             }
 
-        std::optional<double> stored_stress() const override { return {}; }
         std::shared_ptr<Layout> layout() const override { return layout_modified(); }
         std::shared_ptr<Layout> transformed_layout() const override { return transformed_layout_modified(); }
         std::string comment() const override { return {}; }
