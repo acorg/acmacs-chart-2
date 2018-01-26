@@ -21,6 +21,15 @@ namespace acmacs::chart
                 : index_(index), name_(antigen.name()), passage_(antigen.passage()), reassortant_(antigen.reassortant()), annotations_(antigen.annotations()) {}
             PrimaryEntry& operator=(PrimaryEntry&&) = default;
 
+            bool operator<(const PrimaryEntry& rhs) const
+                {
+                    if (auto n_c = name_.compare(rhs.name_); n_c != 0)
+                        return n_c;
+                    if (auto r_c = reassortant_.compare(rhs.reassortant_); r_c != 0)
+                        return r_c;
+                    return false;
+                }
+
          private:
             size_t index_;
             Name name_;

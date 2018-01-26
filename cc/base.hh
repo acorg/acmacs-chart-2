@@ -17,28 +17,34 @@ namespace acmacs::chart
         class string_data
         {
          public:
-            inline string_data() = default;
-            inline string_data(const std::string& aSrc) : mData{aSrc} {}
-            inline string_data(const std::string_view& aSrc) : mData{aSrc} {}
-            inline string_data(std::string&& aSrc) : mData{std::move(aSrc)} {}
-            inline string_data(const char* aSrc) : mData{aSrc} {}
-            inline string_data(const rjson::value& aSrc) : mData{aSrc.str()} {}
-            inline string_data(const string_data& aSrc) = default;
-            inline string_data(string_data&& aSrc) = default;
-            inline string_data& operator=(const std::string& aSrc) { mData = aSrc; return *this; }
-            inline string_data& operator=(std::string&& aSrc) { mData = std::move(aSrc); return *this; }
-            inline string_data& operator=(const string_data& aSrc) = default;
-            inline string_data& operator=(string_data&& aSrc) = default;
+            string_data() = default;
+            string_data(const std::string& aSrc) : mData{aSrc} {}
+            string_data(const std::string_view& aSrc) : mData{aSrc} {}
+            string_data(std::string&& aSrc) : mData{std::move(aSrc)} {}
+            string_data(const char* aSrc) : mData{aSrc} {}
+            string_data(const rjson::value& aSrc) : mData{aSrc.str()} {}
+            string_data(const string_data& aSrc) = default;
+            string_data(string_data&& aSrc) = default;
+            string_data& operator=(const std::string& aSrc) { mData = aSrc; return *this; }
+            string_data& operator=(std::string&& aSrc) { mData = std::move(aSrc); return *this; }
+            string_data& operator=(const string_data& aSrc) = default;
+            string_data& operator=(string_data&& aSrc) = default;
+            int compare(const string_data& a) const
+                {
+                    if (auto prefix_cmp = std::memcmp(data().data(), a.data().data(), std::min(size(), a.size())); prefix_cmp != 0)
+                        return prefix_cmp;
+                    return size() < a.size() ? -1 : 1;
+                }
 
-            inline bool empty() const noexcept { return mData.empty(); }
-            inline size_t size() const noexcept { return mData.size(); }
-            inline char operator[](size_t index) const noexcept { return mData[index]; }
-            inline bool operator == (const string_data& other) const { return data() == other.data(); }
-            inline bool operator != (const string_data& other) const { return !operator==(other); }
-            inline auto find(const char* s) const noexcept { return mData.find(s); }
+            bool empty() const noexcept { return mData.empty(); }
+            size_t size() const noexcept { return mData.size(); }
+            char operator[](size_t index) const noexcept { return mData[index]; }
+            bool operator == (const string_data& other) const { return data() == other.data(); }
+            bool operator != (const string_data& other) const { return !operator==(other); }
+            auto find(const char* s) const noexcept { return mData.find(s); }
 
-            constexpr inline const std::string& data() const noexcept { return mData; }
-            constexpr inline operator const std::string&() const noexcept { return mData; }
+            constexpr const std::string& data() const noexcept { return mData; }
+            constexpr operator const std::string&() const noexcept { return mData; }
 
          private:
             std::string mData;
@@ -52,30 +58,30 @@ namespace acmacs::chart
         template <typename T> class T_list_data
         {
          public:
-            inline T_list_data() = default;
-            inline T_list_data(size_t aSize) : mData(aSize) {}
-            inline T_list_data(const rjson::array& aSrc) : mData(aSrc.begin(), aSrc.end()) {}
-            inline T_list_data(const rjson::value& aSrc) : T_list_data(static_cast<const rjson::array&>(aSrc)) {}
-            inline T_list_data(const std::vector<T>& aSrc) : mData(aSrc) {}
-            template <typename Iter> inline T_list_data(Iter first, Iter last) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), [](const auto& src) -> T { return src; }); }
-            template <typename Iter> inline T_list_data(Iter first, Iter last, std::function<T (const typename Iter::value_type&)> convert) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), convert); }
+            T_list_data() = default;
+            T_list_data(size_t aSize) : mData(aSize) {}
+            T_list_data(const rjson::array& aSrc) : mData(aSrc.begin(), aSrc.end()) {}
+            T_list_data(const rjson::value& aSrc) : T_list_data(static_cast<const rjson::array&>(aSrc)) {}
+            T_list_data(const std::vector<T>& aSrc) : mData(aSrc) {}
+            template <typename Iter> T_list_data(Iter first, Iter last) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), [](const auto& src) -> T { return src; }); }
+            template <typename Iter> T_list_data(Iter first, Iter last, std::function<T (const typename Iter::value_type&)> convert) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), convert); }
 
-            constexpr inline bool empty() const { return mData.empty(); }
-            constexpr inline size_t size() const { return mData.size(); }
-            constexpr inline bool exist(const T& val) const { return std::find(mData.begin(), mData.end(), val) != mData.end(); }
-            constexpr inline const std::vector<T>& data() const noexcept { return mData; }
-            constexpr inline std::vector<T>& data() noexcept { return mData; }
-            constexpr inline operator const std::vector<T>&() const noexcept { return mData; }
-            constexpr inline T& operator[](size_t aIndex) { return mData.at(aIndex); }
-            constexpr inline const T& operator[](size_t aIndex) const { return mData.at(aIndex); }
-            constexpr inline auto begin() const { return mData.cbegin(); }
-            constexpr inline auto end() const { return mData.cend(); }
-            constexpr inline auto begin() { return mData.begin(); }
-            constexpr inline auto end() { return mData.end(); }
-            constexpr inline auto rbegin() { return mData.rbegin(); }
-            constexpr inline auto rend() { return mData.rend(); }
+            constexpr bool empty() const { return mData.empty(); }
+            constexpr size_t size() const { return mData.size(); }
+            constexpr bool exist(const T& val) const { return std::find(mData.begin(), mData.end(), val) != mData.end(); }
+            constexpr const std::vector<T>& data() const noexcept { return mData; }
+            constexpr std::vector<T>& data() noexcept { return mData; }
+            constexpr operator const std::vector<T>&() const noexcept { return mData; }
+            constexpr T& operator[](size_t aIndex) { return mData.at(aIndex); }
+            constexpr const T& operator[](size_t aIndex) const { return mData.at(aIndex); }
+            constexpr auto begin() const { return mData.cbegin(); }
+            constexpr auto end() const { return mData.cend(); }
+            constexpr auto begin() { return mData.begin(); }
+            constexpr auto end() { return mData.end(); }
+            constexpr auto rbegin() { return mData.rbegin(); }
+            constexpr auto rend() { return mData.rend(); }
 
-            inline bool operator==(const T_list_data<T>& other) const
+            bool operator==(const T_list_data<T>& other) const
                 {
                     if (size() != other.size())
                         return false;
@@ -85,10 +91,10 @@ namespace acmacs::chart
                     }
                     return true;
                 }
-            inline bool operator!=(const T_list_data<T>& other) const { return ! operator==(other); }
+            bool operator!=(const T_list_data<T>& other) const { return ! operator==(other); }
 
-            constexpr inline void push_back(const T& val) { mData.push_back(val); }
-            constexpr inline void push_back(T&& val) { mData.push_back(std::forward<T>(val)); }
+            constexpr void push_back(const T& val) { mData.push_back(val); }
+            constexpr void push_back(T&& val) { mData.push_back(std::forward<T>(val)); }
 
          private:
             std::vector<T> mData;
@@ -106,9 +112,9 @@ namespace acmacs::chart
          public:
             using T_list_data<std::string>::T_list_data;
 
-            inline std::string join() const { return ::string::join(" ", begin(), end()); }
-            inline void push_back(const std::string& val) { if (!val.empty()) T_list_data<std::string>::push_back(val); }
-            inline void push_back(std::string&& val) { if (!val.empty()) T_list_data<std::string>::push_back(std::move(val)); }
+            std::string join() const { return ::string::join(" ", begin(), end()); }
+            void push_back(const std::string& val) { if (!val.empty()) T_list_data<std::string>::push_back(val); }
+            void push_back(std::string&& val) { if (!val.empty()) T_list_data<std::string>::push_back(std::move(val)); }
 
         }; // class string_list_data
 
@@ -128,22 +134,22 @@ namespace acmacs::chart
             using difference_type = ssize_t;
             using iterator_category = std::random_access_iterator_tag;
 
-            constexpr inline iterator& operator++() { ++mIndex; return *this; }
-            constexpr inline iterator& operator+=(difference_type n) { mIndex += n; return *this; }
-            constexpr inline iterator& operator-=(difference_type n) { mIndex -= n; return *this; }
-            constexpr inline iterator operator-(difference_type n) { iterator temp = *this; return temp -= n; }
-            constexpr inline difference_type operator-(const iterator& rhs) { return mIndex - rhs.mIndex; }
-            constexpr inline bool operator==(const iterator& other) const { return &mParent == &other.mParent && mIndex == other.mIndex; }
-            constexpr inline bool operator!=(const iterator& other) const { return &mParent != &other.mParent || mIndex != other.mIndex; }
-            constexpr inline reference operator*() { return mParent[mIndex]; }
-            constexpr inline size_t index() const { return mIndex; }
-            constexpr inline bool operator<(const iterator& rhs) const { return mIndex < rhs.mIndex; }
-            constexpr inline bool operator<=(const iterator& rhs) const { return mIndex <= rhs.mIndex; }
-            constexpr inline bool operator>(const iterator& rhs) const { return mIndex > rhs.mIndex; }
-            constexpr inline bool operator>=(const iterator& rhs) const { return mIndex >= rhs.mIndex; }
+            constexpr iterator& operator++() { ++mIndex; return *this; }
+            constexpr iterator& operator+=(difference_type n) { mIndex += n; return *this; }
+            constexpr iterator& operator-=(difference_type n) { mIndex -= n; return *this; }
+            constexpr iterator operator-(difference_type n) { iterator temp = *this; return temp -= n; }
+            constexpr difference_type operator-(const iterator& rhs) { return mIndex - rhs.mIndex; }
+            constexpr bool operator==(const iterator& other) const { return &mParent == &other.mParent && mIndex == other.mIndex; }
+            constexpr bool operator!=(const iterator& other) const { return &mParent != &other.mParent || mIndex != other.mIndex; }
+            constexpr reference operator*() { return mParent[mIndex]; }
+            constexpr size_t index() const { return mIndex; }
+            constexpr bool operator<(const iterator& rhs) const { return mIndex < rhs.mIndex; }
+            constexpr bool operator<=(const iterator& rhs) const { return mIndex <= rhs.mIndex; }
+            constexpr bool operator>(const iterator& rhs) const { return mIndex > rhs.mIndex; }
+            constexpr bool operator>=(const iterator& rhs) const { return mIndex >= rhs.mIndex; }
 
          private:
-            inline iterator(const Parent& aParent, size_t aIndex) : mParent{aParent}, mIndex{aIndex} {}
+            iterator(const Parent& aParent, size_t aIndex) : mParent{aParent}, mIndex{aIndex} {}
 
             const Parent& mParent;
             size_t mIndex;
