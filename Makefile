@@ -19,7 +19,8 @@ TARGETS = \
     $(DIST)/chart-stress \
     $(DIST)/chart-relax-test \
     $(DIST)/chart-relax \
-    $(DIST)/chart-relax-existing
+    $(DIST)/chart-relax-existing \
+    $(DIST)/chart-common
 
 SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc \
     rjson-import.cc \
