@@ -29,12 +29,7 @@ namespace acmacs::chart
             string_data& operator=(std::string&& aSrc) { mData = std::move(aSrc); return *this; }
             string_data& operator=(const string_data& aSrc) = default;
             string_data& operator=(string_data&& aSrc) = default;
-            int compare(const string_data& a) const
-                {
-                    if (auto prefix_cmp = std::memcmp(data().data(), a.data().data(), std::min(size(), a.size())); prefix_cmp != 0)
-                        return prefix_cmp;
-                    return size() < a.size() ? -1 : 1;
-                }
+            int compare(const string_data& a) const { return ::string::compare(*this, a); }
 
             bool empty() const noexcept { return mData.empty(); }
             size_t size() const noexcept { return mData.size(); }

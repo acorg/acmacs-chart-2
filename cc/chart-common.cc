@@ -17,6 +17,7 @@ namespace acmacs::chart
         {
          public:
             PrimaryEntry() = default;
+            PrimaryEntry(PrimaryEntry&&) = default;
             PrimaryEntry(size_t index, const Antigen& antigen)
                 : index_(index), name_(antigen.name()), passage_(antigen.passage()), reassortant_(antigen.reassortant()), annotations_(antigen.annotations()) {}
             PrimaryEntry& operator=(PrimaryEntry&&) = default;
@@ -27,6 +28,10 @@ namespace acmacs::chart
                         return n_c;
                     if (auto r_c = reassortant_.compare(rhs.reassortant_); r_c != 0)
                         return r_c;
+                    if (auto a_c = string::compare(annotations_.join(), rhs.annotations_.join()); a_c != 0)
+                        return a_c;
+                    if (auto p_c = passage_.compare(rhs.passage_); p_c != 0)
+                        return p_c;
                     return false;
                 }
 
@@ -53,6 +58,7 @@ acmacs::chart::CommonAntigens::CommonAntigens(const acmacs::chart::Chart& primar
 {
     for (size_t index = 0; index < primary.number_of_antigens(); ++index)
         primary_[index] = PrimaryEntry(index, *(*primary.antigens())[index]);
+    std::sort(primary_.begin(), primary_.end());
 
 } // acmacs::chart::CommonAntigens::CommonAntigens
 
