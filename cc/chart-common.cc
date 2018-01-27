@@ -13,56 +13,116 @@ namespace acmacs::chart
     class CommonAntigens
     {
      public:
-        class PrimaryEntry
+        struct AntigenEntry
         {
-         public:
-            PrimaryEntry() = default;
-            PrimaryEntry(PrimaryEntry&&) = default;
-            PrimaryEntry(size_t index, const Antigen& antigen)
-                : index_(index), name_(antigen.name()), passage_(antigen.passage()), reassortant_(antigen.reassortant()), annotations_(antigen.annotations()) {}
-            PrimaryEntry& operator=(PrimaryEntry&&) = default;
+            AntigenEntry() = default;
+            AntigenEntry(AntigenEntry&&) = default;
+            AntigenEntry(size_t a_index, const Antigen& antigen)
+                : index(a_index), name(antigen.name()), passage(antigen.passage()), reassortant(antigen.reassortant()), annotations(antigen.annotations()) {}
+            AntigenEntry& operator=(AntigenEntry&&) = default;
 
-            bool operator<(const PrimaryEntry& rhs) const
+            bool operator<(const AntigenEntry& rhs) const
                 {
-                    if (auto n_c = name_.compare(rhs.name_); n_c != 0)
+                    if (auto n_c = name.compare(rhs.name); n_c != 0)
                         return n_c;
-                    if (auto r_c = reassortant_.compare(rhs.reassortant_); r_c != 0)
+                    if (auto r_c = reassortant.compare(rhs.reassortant); r_c != 0)
                         return r_c;
-                    if (auto a_c = string::compare(annotations_.join(), rhs.annotations_.join()); a_c != 0)
+                    if (auto a_c = string::compare(annotations.join(), rhs.annotations.join()); a_c != 0)
                         return a_c;
-                    if (auto p_c = passage_.compare(rhs.passage_); p_c != 0)
+                    if (auto p_c = passage.compare(rhs.passage); p_c != 0)
                         return p_c;
                     return false;
                 }
 
-         private:
-            size_t index_;
-            Name name_;
-            Passage passage_;
-            Reassortant reassortant_;
-            Annotations annotations_;
+            size_t index;
+            Name name;
+            Passage passage;
+            Reassortant reassortant;
+            Annotations annotations;
+
+        }; // class Antigen
+
+        class PrimaryEntry : public AntigenEntry
+        {
+         public:
+            using AntigenEntry::AntigenEntry;
+            using AntigenEntry::operator<;
+
 
         }; // class PrimaryEntry
 
+        class SecondaryEntry : public AntigenEntry
+        {
+         public:
+            using AntigenEntry::AntigenEntry;
+
+
+        }; // class SecondaryEntry
+
         CommonAntigens(const Chart& primary, const Chart& secondary);
+
 
      private:
         std::vector<PrimaryEntry> primary_;
+        std::vector<SecondaryEntry> secondary_;
+
+        using score_t = size_t;
+        enum class match_level_t { strict, relaxed, ignored, automatic };
+        score_t match(const AntigenEntry& primary, const AntigenEntry& secondary, match_level_t match_level) const;
 
     }; // class CommonAntigens
 
 } // namespace acmacs::chart
 
 acmacs::chart::CommonAntigens::CommonAntigens(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary)
-    : primary_(primary.number_of_antigens())
+    : primary_(primary.number_of_antigens()), secondary_(secondary.number_of_antigens())
 {
     for (size_t index = 0; index < primary.number_of_antigens(); ++index)
         primary_[index] = PrimaryEntry(index, *(*primary.antigens())[index]);
     std::sort(primary_.begin(), primary_.end());
 
+    for (size_t index = 0; index < secondary.number_of_antigens(); ++index)
+        secondary_[index] = SecondaryEntry(index, *(*secondary.antigens())[index]);
+
 } // acmacs::chart::CommonAntigens::CommonAntigens
 
 // ----------------------------------------------------------------------
+
+acmacs::chart::CommonAntigens::score_t acmacs::chart::CommonAntigens::match(const AntigenEntry& primary, const AntigenEntry& secondary, match_level_t match_level) const
+{
+    constexpr const score_t NO_MATCH = 0, PASSAGE_IGNORED = 1, EGG = 2, WITHOUT_DATE = 3, FULL_MATCH = 4;
+    score_t result{NO_MATCH};
+    if (primary.name == secondary.name && primary.reassortant == secondary.reassortant && primary.annotations == secondary.annotations && !primary.annotations.distinct()) {
+        switch (match_level) {
+          case match_level_t::ignored:
+              result = PASSAGE_IGNORED;
+              break;
+          case match_level_t::strict:
+          case match_level_t::relaxed:
+          case match_level_t::automatic:
+              if (primary.passage.empty() || secondary.passage.empty()) {
+                  if (primary.passage == secondary.passage && !primary.reassortant.empty() && !secondary.reassortant.empty()) // reassortant assumes egg passage
+                      result = EGG;
+                  else
+                      result = PASSAGE_IGNORED;
+              }
+              else if (primary.passage == secondary.passage)
+                  result = FULL_MATCH;
+              else if (primary.passage.without_date() == secondary.passage.without_date())
+                  result = WITHOUT_DATE;
+              else if (primary.passage.is_egg() == secondary.passage.is_egg())
+                  result = EGG;
+              else
+                  result = PASSAGE_IGNORED;
+              break;
+        }
+    }
+    return result;
+
+} // acmacs::chart::CommonAntigens::match
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 
