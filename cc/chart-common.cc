@@ -13,6 +13,11 @@ namespace acmacs::chart
     class CommonAntigens
     {
      public:
+        enum class match_level_t { strict, relaxed, ignored, automatic };
+
+        CommonAntigens(const Chart& primary, const Chart& secondary, match_level_t match_level);
+
+     private:
         struct AntigenEntry
         {
             AntigenEntry() = default;
@@ -34,57 +39,88 @@ namespace acmacs::chart
                     return false;
                 }
 
+            static bool less_without_passage(const AntigenEntry& lhs, const AntigenEntry& rhs)
+                {
+                    if (auto n_c = lhs.name.compare(rhs.name); n_c != 0)
+                        return n_c;
+                    if (auto r_c = lhs.reassortant.compare(rhs.reassortant); r_c != 0)
+                        return r_c;
+                    if (auto a_c = string::compare(lhs.annotations.join(), rhs.annotations.join()); a_c != 0)
+                        return a_c;
+                    return false;
+                }
+
             size_t index;
             Name name;
             Passage passage;
             Reassortant reassortant;
             Annotations annotations;
 
-        }; // class Antigen
+        }; // class AntigenEntry
 
-        class PrimaryEntry : public AntigenEntry
-        {
-         public:
-            using AntigenEntry::AntigenEntry;
-            using AntigenEntry::operator<;
-
-
-        }; // class PrimaryEntry
-
-        class SecondaryEntry : public AntigenEntry
-        {
-         public:
-            using AntigenEntry::AntigenEntry;
+        // class PrimaryEntry : public AntigenEntry
+        // {
+        //  public:
+        //     using AntigenEntry::AntigenEntry;
+        //     using AntigenEntry::operator<;
 
 
-        }; // class SecondaryEntry
+        // }; // class PrimaryEntry
 
-        CommonAntigens(const Chart& primary, const Chart& secondary);
+        // class SecondaryEntry : public AntigenEntry
+        // {
+        //  public:
+        //     using AntigenEntry::AntigenEntry;
 
 
-     private:
-        std::vector<PrimaryEntry> primary_;
-        std::vector<SecondaryEntry> secondary_;
+        // }; // class SecondaryEntry
 
         using score_t = size_t;
-        enum class match_level_t { strict, relaxed, ignored, automatic };
+
+        class MatchEntry
+        {
+         public:
+
+            size_t primary_index;
+            size_t secondary_index;
+            score_t score;
+
+        }; // class MatchEntry
+
+        std::vector<AntigenEntry> primary_;
+        std::vector<AntigenEntry> secondary_;
+        std::vector<MatchEntry> match_;
+
         score_t match(const AntigenEntry& primary, const AntigenEntry& secondary, match_level_t match_level) const;
+        void match(match_level_t match_level);
 
     }; // class CommonAntigens
 
 } // namespace acmacs::chart
 
-acmacs::chart::CommonAntigens::CommonAntigens(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary)
+acmacs::chart::CommonAntigens::CommonAntigens(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level)
     : primary_(primary.number_of_antigens()), secondary_(secondary.number_of_antigens())
 {
     for (size_t index = 0; index < primary.number_of_antigens(); ++index)
-        primary_[index] = PrimaryEntry(index, *(*primary.antigens())[index]);
+        primary_[index] = AntigenEntry(index, *(*primary.antigens())[index]);
     std::sort(primary_.begin(), primary_.end());
 
     for (size_t index = 0; index < secondary.number_of_antigens(); ++index)
-        secondary_[index] = SecondaryEntry(index, *(*secondary.antigens())[index]);
+        secondary_[index] = AntigenEntry(index, *(*secondary.antigens())[index]);
+
+    match(match_level);
 
 } // acmacs::chart::CommonAntigens::CommonAntigens
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::CommonAntigens::match(match_level_t match_level)
+{
+    for (const auto& secondary: secondary_) {
+        const auto [first, last] = std::equal_range(primary_.begin(), primary_.end(), secondary, AntigenEntry::less_without_passage);
+    }
+
+} // acmacs::chart::CommonAntigens::match
 
 // ----------------------------------------------------------------------
 
@@ -145,7 +181,7 @@ int main(int argc, char* const argv[])
             const report_time report = args["--time"] ? report_time::Yes : report_time::No;
             auto chart1 = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
             auto chart2 = acmacs::chart::import_from_file(args[1], acmacs::chart::Verify::None, report);
-            acmacs::chart::CommonAntigens(*chart1, *chart2);
+            acmacs::chart::CommonAntigens(*chart1, *chart2, acmacs::chart::CommonAntigens::match_level_t::automatic);
         }
     }
     catch (std::exception& err) {
