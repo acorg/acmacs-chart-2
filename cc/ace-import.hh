@@ -170,30 +170,31 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class AceProjection : public Projection
+    class AceProjection : public RjsonProjection
     {
       public:
-        AceProjection(const Chart& chart, const rjson::object& aData) : Projection(chart), mData{aData} {}
-        AceProjection(const Chart& chart, const rjson::object& aData, size_t projection_no) : AceProjection(chart, aData) { set_projection_no(projection_no); }
+        AceProjection(const Chart& chart, const rjson::object& aData) : RjsonProjection(chart, aData, s_keys_) {}
+        AceProjection(const Chart& chart, const rjson::object& aData, size_t projection_no) : RjsonProjection(chart, aData, s_keys_, projection_no) {}
 
-        std::optional<double> stored_stress() const override { return mData.get<double>("s"); }
-        std::shared_ptr<Layout> layout() const override;
-        std::string comment() const override { return mData.get_or_default("c", ""); }
-        size_t number_of_points() const override { return mData.get_or_empty_array("l").size(); }
-        size_t number_of_dimensions() const override;
-        MinimumColumnBasis minimum_column_basis() const override { return mData.get_or_default("m", "none"); }
+        // std::optional<double> stored_stress() const override { return mData.get<double>("s"); }
+        // std::shared_ptr<Layout> layout() const override;
+        // std::string comment() const override { return mData.get_or_default("c", ""); }
+        // size_t number_of_points() const override { return mData.get_or_empty_array("l").size(); }
+        // size_t number_of_dimensions() const override;
+        MinimumColumnBasis minimum_column_basis() const override { return data().get_or_default("m", "none"); }
         ColumnBasesP forced_column_bases() const override;
         acmacs::Transformation transformation() const override;
-        bool dodgy_titer_is_regular() const override { return mData.get_or_default("d", false); }
-        double stress_diff_to_stop() const override { return mData.get_or_default("d", 0.0); }
-        PointIndexList unmovable() const override { return mData.get_or_empty_array("U"); }
-        PointIndexList disconnected() const override { return mData.get_or_empty_array("D"); }
-        PointIndexList unmovable_in_the_last_dimension() const override { return mData.get_or_empty_array("u"); }
-        AvidityAdjusts avidity_adjusts() const override { return mData.get_or_empty_array("f"); }
+        bool dodgy_titer_is_regular() const override { return data().get_or_default("d", false); }
+        double stress_diff_to_stop() const override { return data().get_or_default("d", 0.0); }
+        PointIndexList unmovable() const override { return data().get_or_empty_array("U"); }
+        PointIndexList unmovable_in_the_last_dimension() const override { return data().get_or_empty_array("u"); }
+        AvidityAdjusts avidity_adjusts() const override { return data().get_or_empty_array("f"); }
+
+     protected:
+        PointIndexList make_disconnected() const override { return data().get_or_empty_array("D"); }
 
      private:
-        const rjson::object& mData;
-        mutable std::shared_ptr<Layout> layout_;
+        static const Keys s_keys_;
 
     }; // class AceProjections
 

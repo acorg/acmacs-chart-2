@@ -24,20 +24,25 @@ namespace acmacs::chart
 
 namespace acmacs::chart::rjson_import
 {
-
     inline size_t number_of_dimensions(const rjson::array& data) noexcept
     {
-        try {
-            for (const rjson::array& row: data) {
-                if (!row.empty())
-                    return row.size();
-            }
-        }
-        catch (rjson::field_not_found&) {
-        }
-        catch (std::bad_variant_access&) {
+        for (const rjson::array& row: data) {
+            if (!row.empty())
+                return row.size();
         }
         return 0;
+
+          // try {
+          //     for (const rjson::array& row: data) {
+          //         if (!row.empty())
+          //             return row.size();
+          //     }
+          // }
+          // catch (rjson::field_not_found&) {
+          // }
+          // catch (std::bad_variant_access&) {
+          // }
+          // return 0;
     }
 
 // ----------------------------------------------------------------------
@@ -157,6 +162,39 @@ namespace acmacs::chart
 
     }; // class RjsonTiters
 
+// ----------------------------------------------------------------------
+
+    class RjsonProjection : public Projection
+    {
+      public:
+        std::optional<double> stored_stress() const override { return data_.get<double>(keys_.stress); }
+        std::shared_ptr<Layout> layout() const override { if (!layout_) layout_ = std::make_shared<rjson_import::Layout>(data_.get_or_empty_array(keys_.layout)); return layout_; }
+        size_t number_of_dimensions() const override { return rjson_import::number_of_dimensions(data_.get_or_empty_array(keys_.layout)); }
+        std::string comment() const override { return data_.get_or_default(keys_.comment, ""); }
+        size_t number_of_points() const override { return data_.get_or_empty_array(keys_.layout).size(); }
+        PointIndexList disconnected() const override;
+
+     protected:
+        struct Keys
+        {
+            std::string stress;
+            std::string layout;
+            std::string comment;
+        };
+
+        RjsonProjection(const Chart& chart, const rjson::object& data, const Keys& keys) : Projection(chart), data_{data}, keys_{keys} {}
+        RjsonProjection(const Chart& chart, const rjson::object& data, const Keys& keys, size_t projection_no) : RjsonProjection(chart, data, keys) { set_projection_no(projection_no); }
+
+        const rjson::object& data() const { return data_; }
+
+        virtual PointIndexList make_disconnected() const = 0;
+
+     private:
+        const rjson::object& data_;
+        const Keys& keys_;
+        mutable std::shared_ptr<Layout> layout_;
+
+    }; // class RjsonProjection
 
 } // namespace acmacs::chart
 

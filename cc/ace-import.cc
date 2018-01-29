@@ -23,6 +23,7 @@ using namespace acmacs::chart;
 #endif
 
 const acmacs::chart::RjsonTiters::Keys acmacs::chart::AceTiters::s_keys_{"l", "d", "L"};
+const acmacs::chart::RjsonProjection::Keys acmacs::chart::AceProjection::s_keys_{"s", "l", "c"};
 
 #pragma GCC diagnostic pop
 
@@ -259,27 +260,27 @@ void AceAntigens::make_name_index() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Layout> AceProjection::layout() const
-{
-    if (!layout_)
-        layout_ = std::make_shared<rjson_import::Layout>(mData.get_or_empty_array("l"));
-    return layout_;
+// std::shared_ptr<Layout> AceProjection::layout() const
+// {
+//     if (!layout_)
+//         layout_ = std::make_shared<rjson_import::Layout>(mData.get_or_empty_array("l"));
+//     return layout_;
 
-} // AceProjection::layout
+// } // AceProjection::layout
 
 // ----------------------------------------------------------------------
 
-size_t AceProjection::number_of_dimensions() const
-{
-    return rjson_import::number_of_dimensions(mData["l"]);
+// size_t AceProjection::number_of_dimensions() const
+// {
+//     return rjson_import::number_of_dimensions(mData["l"]);
 
-} // AceProjection::number_of_dimensions
+// } // AceProjection::number_of_dimensions
 
 // ----------------------------------------------------------------------
 
 ColumnBasesP AceProjection::forced_column_bases() const
 {
-    if (const auto& cb = mData.get_or_empty_array("C"); !cb.empty())
+    if (const auto& cb = data().get_or_empty_array("C"); !cb.empty())
         return std::make_shared<AceColumnBases>(cb);
     return nullptr;
 
@@ -290,7 +291,7 @@ ColumnBasesP AceProjection::forced_column_bases() const
 acmacs::Transformation AceProjection::transformation() const
 {
     acmacs::Transformation result;
-    if (auto [present, array] = mData.get_array_if("t"); present) {
+    if (auto [present, array] = data().get_array_if("t"); present) {
         result.set(array[0], array[1], array[2], array[3]);
     }
     return result;

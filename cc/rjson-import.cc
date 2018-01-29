@@ -144,6 +144,26 @@ template void acmacs::chart::rjson_import::update<float>(const rjson::object& da
 template void acmacs::chart::rjson_import::update<double>(const rjson::object& data, const std::string& list_key, const std::string& dict_key, TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
 
 // ----------------------------------------------------------------------
+
+acmacs::chart::PointIndexList acmacs::chart::RjsonProjection::disconnected() const
+{
+    auto result = make_disconnected();
+    if (result.empty()) {
+          // infer disconnected from empty rows in layout
+        auto lt = layout();
+        for (size_t p_no = 0; p_no < lt->number_of_points(); ++p_no) {
+            if (!lt->point_has_coordinates(p_no))
+                result.push_back(p_no);
+        }
+    }
+    return result;
+
+} // acmacs::chart::RjsonProjection::disconnected
+
+// ----------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

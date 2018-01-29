@@ -196,30 +196,29 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class Acd1Projection : public Projection
+    class Acd1Projection : public RjsonProjection
     {
       public:
-        Acd1Projection(const Chart& chart, const rjson::object& aData) : Projection(chart), mData{aData} {}
-        Acd1Projection(const Chart& chart, const rjson::object& aData, size_t projection_no) : Acd1Projection(chart, aData) { set_projection_no(projection_no); }
+        Acd1Projection(const Chart& chart, const rjson::object& aData) : RjsonProjection(chart, aData, s_keys_) {}
+        Acd1Projection(const Chart& chart, const rjson::object& aData, size_t projection_no) : RjsonProjection(chart, aData, s_keys_, projection_no) {}
 
-        std::optional<double> stored_stress() const override { return mData.get<double>("stress"); }
-        std::shared_ptr<Layout> layout() const override;
-        std::string comment() const override;
-        size_t number_of_points() const override { return mData.get_or_empty_array("layout").size(); }
-        size_t number_of_dimensions() const override;
+        // std::optional<double> stored_stress() const override { return mData.get<double>("stress"); }
+        // std::shared_ptr<Layout> layout() const override;
+        // std::string comment() const override;
+        // size_t number_of_points() const override { return mData.get_or_empty_array("layout").size(); }
+        // size_t number_of_dimensions() const override;
         ColumnBasesP forced_column_bases() const override;
         acmacs::Transformation transformation() const override;
-        bool dodgy_titer_is_regular() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("dodgy_titer_is_regular", false); }
-        double stress_diff_to_stop() const override { return mData.get_or_empty_object("stress_evaluator_parameters").get_or_default("stress_diff_to_stop", 0.0); }
-        PointIndexList unmovable() const override;
-        PointIndexList disconnected() const override;
-        PointIndexList unmovable_in_the_last_dimension() const override;
+        bool dodgy_titer_is_regular() const override { return data().get_or_empty_object("stress_evaluator_parameters").get_or_default("dodgy_titer_is_regular", false); }
+        double stress_diff_to_stop() const override { return data().get_or_empty_object("stress_evaluator_parameters").get_or_default("stress_diff_to_stop", 0.0); }
+        PointIndexList unmovable() const override { return make_attributes(1); }
+        PointIndexList unmovable_in_the_last_dimension() const override  { return make_attributes(3); }
         AvidityAdjusts avidity_adjusts() const override;
 
         MinimumColumnBasis minimum_column_basis() const override
             {
                 try {
-                    return mData.get_or_empty_object("stress_evaluator_parameters")["minimum_column_basis"].str();
+                    return data().get_or_empty_object("stress_evaluator_parameters")["minimum_column_basis"].str();
                 }
                 catch (rjson::field_not_found&) {
                     if (const auto mcb = dynamic_cast<Acd1Titers&>(*chart().titers()).minimum_column_basis(); mcb)
@@ -229,9 +228,13 @@ namespace acmacs::chart
                 }
             }
 
+     protected:
+        PointIndexList make_disconnected() const override { return make_attributes(2); }
+
      private:
-        const rjson::object& mData;
-        mutable std::shared_ptr<Layout> layout_;
+        static const Keys s_keys_;
+
+        PointIndexList make_attributes(size_t aAttr) const;
 
     }; // class Acd1Projections
 

@@ -28,6 +28,7 @@ static void convert_set(std::string& aData, const std::vector<size_t>& aPerhapsS
 #endif
 
 const acmacs::chart::RjsonTiters::Keys acmacs::chart::Acd1Titers::s_keys_{"titers_list_of_list", "titers_list_of_dict", "layers_dict_for_antigen"};
+const acmacs::chart::RjsonProjection::Keys acmacs::chart::Acd1Projection::s_keys_{"stress", "layout", "comment"};
 
 #pragma GCC diagnostic pop
 
@@ -595,40 +596,40 @@ void Acd1Antigens::make_name_index() const
 
 // ----------------------------------------------------------------------
 
-std::string Acd1Projection::comment() const
-{
-    try {
-        return mData["comment"];
-    }
-    catch (std::exception&) {
-        return {};
-    }
+// std::string Acd1Projection::comment() const
+// {
+//     try {
+//         return mData["comment"];
+//     }
+//     catch (std::exception&) {
+//         return {};
+//     }
 
-} // Acd1Projection::comment
-
-// ----------------------------------------------------------------------
-
-std::shared_ptr<acmacs::chart::Layout> Acd1Projection::layout() const
-{
-    if (!layout_)
-        layout_ = std::make_shared<rjson_import::Layout>(mData.get_or_empty_array("layout"));
-    return layout_;
-
-} // Acd1Projection::layout
+// } // Acd1Projection::comment
 
 // ----------------------------------------------------------------------
 
-size_t Acd1Projection::number_of_dimensions() const
-{
-    return rjson_import::number_of_dimensions(mData["layout"]);
+// std::shared_ptr<acmacs::chart::Layout> Acd1Projection::layout() const
+// {
+//     if (!layout_)
+//         layout_ = std::make_shared<rjson_import::Layout>(mData.get_or_empty_array("layout"));
+//     return layout_;
 
-} // Acd1Projection::number_of_dimensions
+// } // Acd1Projection::layout
+
+// ----------------------------------------------------------------------
+
+// size_t Acd1Projection::number_of_dimensions() const
+// {
+//     return rjson_import::number_of_dimensions(mData["layout"]);
+
+// } // Acd1Projection::number_of_dimensions
 
 // ----------------------------------------------------------------------
 
 ColumnBasesP Acd1Projection::forced_column_bases() const
 {
-    const rjson::object& sep = mData.get_or_empty_object("stress_evaluator_parameters");
+    const rjson::object& sep = data().get_or_empty_object("stress_evaluator_parameters");
     if (const rjson::array& cb = sep.get_or_empty_array("column_bases"); !cb.empty())
         return std::make_shared<Acd1ColumnBases>(cb);
     if (const rjson::array& cb = sep.get_or_empty_array("columns_bases"); !cb.empty())
@@ -642,7 +643,7 @@ ColumnBasesP Acd1Projection::forced_column_bases() const
 acmacs::Transformation Acd1Projection::transformation() const
 {
     acmacs::Transformation result;
-    if (auto [present, array] = mData.get_array_if("transformation"); present) {
+    if (auto [present, array] = data().get_array_if("transformation"); present) {
         result.set(array[0][0], array[0][1], array[1][0], array[1][1]);
     }
     return result;
@@ -651,9 +652,9 @@ acmacs::Transformation Acd1Projection::transformation() const
 
 // ----------------------------------------------------------------------
 
-static inline PointIndexList make_attributes(const rjson::object& aData, size_t aAttr)
+PointIndexList Acd1Projection::make_attributes(size_t aAttr) const
 {
-    const rjson::object& attrs = aData.get_or_empty_object("stress_evaluator_parameters").get_or_empty_object("antigens_sera_attributes");
+    const rjson::object& attrs = data().get_or_empty_object("stress_evaluator_parameters").get_or_empty_object("antigens_sera_attributes");
     PointIndexList result;
     for (auto [ag_no, attr]: acmacs::enumerate(attrs.get_or_empty_array("antigens"))) {
         if (static_cast<size_t>(attr) == aAttr)
@@ -666,35 +667,42 @@ static inline PointIndexList make_attributes(const rjson::object& aData, size_t 
     }
 
     return result;
-}
 
-PointIndexList Acd1Projection::unmovable() const
-{
-    return make_attributes(mData, 1);
-
-} // Acd1Projection::unmovable
+} // Acd1Projection::make_attributes
 
 // ----------------------------------------------------------------------
 
-PointIndexList Acd1Projection::disconnected() const
-{
-    return make_attributes(mData, 2);
+// static inline PointIndexList make_attributes(const rjson::object& aData, size_t aAttr)
+// {
+// }
 
-} // Acd1Projection::disconnected
+// PointIndexList Acd1Projection::unmovable() const
+// {
+//     return make_attributes(mData, 1);
 
-// ----------------------------------------------------------------------
+// } // Acd1Projection::unmovable
 
-PointIndexList Acd1Projection::unmovable_in_the_last_dimension() const
-{
-    return make_attributes(mData, 3);
+// // ----------------------------------------------------------------------
 
-} // Acd1Projection::unmovable_in_the_last_dimension
+// PointIndexList Acd1Projection::disconnected() const
+// {
+//     return make_attributes(mData, 2);
+
+// } // Acd1Projection::disconnected
+
+// // ----------------------------------------------------------------------
+
+// PointIndexList Acd1Projection::unmovable_in_the_last_dimension() const
+// {
+//     return make_attributes(mData, 3);
+
+// } // Acd1Projection::unmovable_in_the_last_dimension
 
 // ----------------------------------------------------------------------
 
 AvidityAdjusts Acd1Projection::avidity_adjusts() const
 {
-    if (const rjson::object& titer_multipliers = mData.get_or_empty_object("stress_evaluator_parameters").get_or_empty_object("antigens_sera_titers_multipliers"); !titer_multipliers.empty()) {
+    if (const rjson::object& titer_multipliers = data().get_or_empty_object("stress_evaluator_parameters").get_or_empty_object("antigens_sera_titers_multipliers"); !titer_multipliers.empty()) {
         const rjson::array& antigens = titer_multipliers.get_or_empty_array("antigens");
         const rjson::array& sera = titer_multipliers.get_or_empty_array("sera");
         AvidityAdjusts aa(antigens.size() + sera.size());
