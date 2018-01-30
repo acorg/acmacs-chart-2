@@ -25,7 +25,8 @@ TARGETS = \
 SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc \
     rjson-import.cc \
     factory-import.cc ace-import.cc acd1-import.cc lispmds-import.cc lispmds-token.cc \
-    factory-export.cc ace-export.cc lispmds-export.cc lispmds-encode.cc chart-modify.cc
+    factory-export.cc ace-export.cc lispmds-export.cc lispmds-encode.cc chart-modify.cc \
+    common.cc
 
 ALGLIB = alglib-3.13.0
 ALGLIB_SOURCES = optimization.cpp ap.cpp alglibinternal.cpp linalg.cpp alglibmisc.cpp \
