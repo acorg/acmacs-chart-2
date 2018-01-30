@@ -26,7 +26,8 @@ namespace acmacs::chart
         };
 
         std::vector<common_t> antigens() const;
-        std::vector<common_t> sera() const;
+        std::vector<common_t> sera() const; // returns serum indexes (NOT point indexes)!
+        std::vector<common_t> points() const;
 
      private:
         class Impl;

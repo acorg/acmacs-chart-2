@@ -103,6 +103,7 @@ class CommonAntigensSera::Impl
         std::vector<AgSrEntry> secondary_;
         std::vector<MatchEntry> match_;
         size_t number_of_common_ = 0;
+        const size_t primary_base_, secondary_base_; // 0 for antigens, number_of_antigens for sera
         const size_t min_number_;   // for match_level_t::automatic threshold
 
      private:
@@ -127,7 +128,9 @@ class CommonAntigensSera::Impl
 // ----------------------------------------------------------------------
 
 template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level)
-    : primary_(primary.number_of_antigens()), secondary_(secondary.number_of_antigens()), min_number_{std::min(primary_.size(), secondary_.size())}
+    : primary_(primary.number_of_antigens()), secondary_(secondary.number_of_antigens()),
+      primary_base_{0}, secondary_base_{0},
+      min_number_{std::min(primary_.size(), secondary_.size())}
 {
     make(primary_, *primary.antigens());
     std::sort(primary_.begin(), primary_.end());
@@ -139,7 +142,9 @@ template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::Antige
 // ----------------------------------------------------------------------
 
 template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level)
-    : primary_(primary.number_of_sera()), secondary_(secondary.number_of_sera()), min_number_{std::min(primary_.size(), secondary_.size())}
+    : primary_(primary.number_of_sera()), secondary_(secondary.number_of_sera()),
+      primary_base_{primary.number_of_antigens()}, secondary_base_{secondary.number_of_antigens()},
+      min_number_{std::min(primary_.size(), secondary_.size())}
 {
     make(primary_, *primary.sera());
     std::sort(primary_.begin(), primary_.end());
@@ -368,6 +373,17 @@ std::vector<CommonAntigensSera::common_t> CommonAntigensSera::sera() const
     return impl_->sera_.common();
 
 } // CommonAntigensSera::sera
+
+// ----------------------------------------------------------------------
+
+std::vector<CommonAntigensSera::common_t> CommonAntigensSera::points() const
+{
+    auto result = impl_->antigens_.common();
+    for (auto [primary, secondary]: impl_->sera_.common())
+        result.emplace_back(primary + impl_->sera_.primary_base_, secondary + impl_->sera_.secondary_base_);
+    return result;
+
+} // CommonAntigensSera::points
 
 // ----------------------------------------------------------------------
 /// Local Variables:
