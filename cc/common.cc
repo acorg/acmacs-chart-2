@@ -62,11 +62,11 @@ class CommonAntigensSera::Impl
     {
         SerumEntry() = default;
         SerumEntry(SerumEntry&&) = default;
-        SerumEntry(size_t a_index, const Serum& serum) : CoreEntry(a_index, serum), serum_id(serum.serum_id()) {}
+        SerumEntry(size_t a_index, const Serum& serum) : CoreEntry(a_index, serum), serum_id(serum.serum_id()), passage(serum.passage()) {}
         SerumEntry& operator=(SerumEntry&&) = default;
 
-        std::string full_name() const { return ::string::join(" ", {name, reassortant, ::string::join(" ", annotations), serum_id}); }
-        size_t full_name_length() const { return name.size() + reassortant.size() + annotations.total_length() + serum_id.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations.size(); }
+        std::string full_name() const { return ::string::join(" ", {name, reassortant, ::string::join(" ", annotations), serum_id, passage}); }
+        size_t full_name_length() const { return name.size() + reassortant.size() + annotations.total_length() + serum_id.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations.size() + passage.size() + (passage.empty() ? 0 : 1); }
         bool operator<(const SerumEntry& rhs) const { return compare(*this, rhs) < 0; }
 
         static int compare(const SerumEntry& lhs, const SerumEntry& rhs)
@@ -77,6 +77,7 @@ class CommonAntigensSera::Impl
             }
 
         SerumId serum_id;
+        Passage passage;
 
     }; // class SerumEntry
 
@@ -263,6 +264,8 @@ template <> CommonAntigensSera::Impl::score_t CommonAntigensSera::Impl::ChartDat
     auto result = score_t::passage_serum_id_ignored;
     if (primary.serum_id == secondary.serum_id && !primary.serum_id.empty())
         result = score_t::full_match;
+    else if (!primary.passage.empty() && !secondary.passage.empty() && primary.passage.is_egg() == secondary.passage.is_egg())
+        result = score_t::egg;
     return result;
 
 } // CommonAntigensSera::Impl::ChartData<AntigenEntry>::match_not_ignored
