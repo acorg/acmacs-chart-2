@@ -278,11 +278,14 @@ template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry
 
     if (number_of_common_) {
         auto find_primary = [this](size_t index) -> const auto& { return *std::find_if(this->primary_.begin(), this->primary_.end(), [index](const auto& element) { return element.index == index; }); };
-        size_t primary_name_size = 0, secondary_name_size = 0, max_number_primary = 0, max_number_secondary = 0;
+        size_t primary_name_size = 0,
+                  // secondary_name_size = 0,
+                max_number_primary = 0,
+                max_number_secondary = 0;
         for (const auto& m: match_) {
             if (m.use) {
                 primary_name_size = std::max(primary_name_size, find_primary(m.primary_index).full_name_length());
-                secondary_name_size = std::max(secondary_name_size, secondary_[m.secondary_index].full_name_length());
+                  // secondary_name_size = std::max(secondary_name_size, secondary_[m.secondary_index].full_name_length());
                 max_number_primary = std::max(max_number_primary, m.primary_index);
                 max_number_secondary = std::max(max_number_secondary, m.secondary_index);
             }
@@ -293,9 +296,9 @@ template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry
         stream << "common " << prefix << ": " << number_of_common_ << '\n';
         for (const auto& m: match_) {
             if (m.use)
-                stream << std::setw(static_cast<int>(std::strlen(ignored_key))) << std::left << score_names[static_cast<size_t>(m.score)]
-                       << " [" << std::setw(num_digits_primary) << std::right << m.primary_index << ' ' << std::setw(static_cast<int>(primary_name_size)) << std::left << find_primary(m.primary_index).full_name()
-                       << "] [" << std::setw(num_digits_secondary) << std::right << m.secondary_index << ' ' << std::setw(static_cast<int>(secondary_name_size)) << std::left << secondary_[m.secondary_index].full_name() << "]\n";
+                stream << std::setw(static_cast<int>(std::strlen(ignored_key) + 1)) << std::left << score_names[static_cast<size_t>(m.score)]
+                       << std::setw(num_digits_primary) << std::right << m.primary_index << ' ' << std::setw(static_cast<int>(primary_name_size)) << std::left << find_primary(m.primary_index).full_name()
+                       << "|" << std::setw(num_digits_secondary) << std::right << m.secondary_index << ' ' << /* std::setw(static_cast<int>(secondary_name_size)) << std::left << */ secondary_[m.secondary_index].full_name() << '\n';
         }
     }
     else {
