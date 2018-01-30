@@ -97,6 +97,7 @@ class CommonAntigensSera::Impl
      public:
         ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level);
         void report(std::ostream& stream, const char* prefix, const char* ignored_key) const;
+        std::vector<CommonAntigensSera::common_t> common() const;
 
         std::vector<AgSrEntry> primary_;
         std::vector<AgSrEntry> secondary_;
@@ -309,6 +310,19 @@ template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry
 
 // ----------------------------------------------------------------------
 
+template <typename AgSrEntry> std::vector<CommonAntigensSera::common_t> CommonAntigensSera::Impl::ChartData<AgSrEntry>::common() const
+{
+    std::vector<CommonAntigensSera::common_t> result;
+    for (const auto& m: match_) {
+        if (m.use)
+            result.emplace_back(m.primary_index, m.secondary_index);
+    }
+    return result;
+
+} // CommonAntigensSera::Impl::ChartData<AgSrEntry>::common
+
+// ----------------------------------------------------------------------
+
 inline CommonAntigensSera::Impl::Impl(const Chart& primary, const Chart& secondary, match_level_t match_level)
     : antigens_(primary, secondary, match_level), sera_(primary, secondary, match_level)
 {
@@ -341,6 +355,19 @@ void CommonAntigensSera::report() const
 
 // ----------------------------------------------------------------------
 
+std::vector<CommonAntigensSera::common_t> CommonAntigensSera::antigens() const
+{
+    return impl_->antigens_.common();
+
+} // CommonAntigensSera::antigens
+
+// ----------------------------------------------------------------------
+
+std::vector<CommonAntigensSera::common_t> CommonAntigensSera::sera() const
+{
+    return impl_->sera_.common();
+
+} // CommonAntigensSera::sera
 
 // ----------------------------------------------------------------------
 /// Local Variables:

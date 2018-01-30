@@ -18,6 +18,16 @@ namespace acmacs::chart
 
         void report() const;
 
+        struct common_t
+        {
+            common_t(size_t p, size_t s) : primary(p), secondary(s) {}
+            size_t primary;
+            size_t secondary;
+        };
+
+        std::vector<common_t> antigens() const;
+        std::vector<common_t> sera() const;
+
      private:
         class Impl;
         std::unique_ptr<Impl> impl_;
