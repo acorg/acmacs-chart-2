@@ -66,6 +66,7 @@ class MatrixJProcrustesScaling : public MatrixJ
 
 static alglib::real_2d_array multiply(const MatrixJ& left, const alglib::real_2d_array& right);
 static alglib::real_2d_array multiply(const alglib::real_2d_array& left, const alglib::real_2d_array& right);
+static void multiply(alglib::real_2d_array& matrix, double scale);
 static alglib::real_2d_array multiply_left_transposed(const alglib::real_2d_array& left, const alglib::real_2d_array& right);
 static alglib::real_2d_array multiply_both_transposed(const alglib::real_2d_array& left, const alglib::real_2d_array& right);
 static alglib::real_2d_array transpose(const alglib::real_2d_array& matrix);
@@ -114,40 +115,40 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
         const auto m2 = multiply_left_transposed(x, m1);
         alglib::real_2d_array u, vt;
         singular_value_decomposition(m2, u, vt);
-        const auto transformation = multiply_both_transposed(vt, u);
+        auto transformation = multiply_both_transposed(vt, u);
         // std::cerr << "transformation0: " << transformation.tostring(8) << '\n';
 
           // calculate optimal scale parameter
         const auto denominator = multiply_left_transposed(y, m1);
         const auto trace_denominator = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&denominator](double sum, auto i) { return sum + denominator(i, i); });
         const auto m3 = multiply(y, transformation);
+        // std::cerr << "secondary: " << y.tostring(8) << '\n';
+        // std::cerr << "m3: " << m3.tostring(8) << '\n';
         const auto m4 = multiply(j, m3);
+        // std::cerr << "m4: " << m4.tostring(8) << '\n';
         const auto numerator = multiply_left_transposed(x, m4);
         const auto trace_numerator = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&numerator](double sum, auto i) { return sum + numerator(i, i); });
         const auto scale = trace_numerator / trace_denominator;
+        multiply(transformation, scale);
 
-        std::cerr << "scale: " << scale << " <= " << trace_numerator << " / " << trace_denominator << '\n';
-
-            // Vector W(N);
-            // V = Matrix<FloatType>::newMatrix(N, N, 0, 0, Matrix<FloatType>::mtDense);
-            // singularValueDecomposition(*Intermediate2, W, *V);
-            // T = multiplyMatricesRightTransposed(*V, *Intermediate2); // calculate resulting rotation/reflection matrix
-            //   // calculate optimal scale parameter
-            // Denom = multiplyMatricesLeftTransposed(aSecondaryPoints, *Intermediate1);
-            // FloatType TraceDenominator = 0.0;
-            // for (Index i = 0; i < N; ++i)
-            //     TraceDenominator += Denom->get(i, i);
-            // Intermediate3 = multiplyMatrices(aSecondaryPoints, *T);
-            // Intermediate4 = multiplyMatrices(J, *Intermediate3);
-            // Numerator = multiplyMatricesLeftTransposed(aPrimaryPoints, *Intermediate4);
-            // FloatType TraceNumerator = 0.0;
-            // for (Index i = 0; i < N; ++i)
-            //     TraceNumerator += Numerator->get(i, i);
-            // scale = TraceNumerator / TraceDenominator;
-            //   // add scaling to the
-            //   // calculate translation vector rotation/reflection
-            // multiplyMatrixByValue(*T, scale);
+          // std::cerr << "scale: " << scale << " <= " << trace_numerator << " / " << trace_denominator << '\n';
+        std::cerr << "common points: " << common.size() << '\n';
+        std::cerr << "transformation: " << transformation.tostring(8) << '\n';
     }
+
+        // if (aCalculateTranslation) {
+        //     result = T->augment(1, 1, 0.0);
+        //     result->set(N, N, 1.0);
+        //     Intermediate5 = multiplyMatrices(aSecondaryPoints, *T);
+        //     multiplyAddMatrix(*Intermediate5, -1, aPrimaryPoints);
+        //     for (Index i = 0; i < N; ++i) {
+        //         FloatType t_i = 0.0;
+        //         for (Index j = 0; j < M; ++j) {
+        //             t_i += Intermediate5->get(j, i);
+        //         }
+        //         result->set(N, i, t_i / FloatType(M));
+        //     }
+        // }
 
     return {number_of_dimensions};
 
@@ -177,11 +178,20 @@ alglib::real_2d_array multiply(const alglib::real_2d_array& left, const alglib::
     alglib::real_2d_array result;
     result.setlength(left.rows(), right.cols());
     // std::cerr << "multiply left " << left.rows() << 'x' << left.cols() << "  right " << right.rows() << 'x' << right.cols() << "  result " << result.rows() << 'x' << result.cols() << '\n';
-    alglib::rmatrixgemm(left.cols(), right.cols(), right.rows(),
+    alglib::rmatrixgemm(left.rows(), right.cols(), right.rows(),
                         1.0 /*alpha*/, left, 0 /*i-left*/, 0 /*j-left*/, 0 /*left-no-transform*/,
                         right, 0 /*i-right*/, 0 /*j-right*/, 0 /*right-no-transform*/,
                         0.0 /*beta*/, result, 0 /*i-result*/, 0 /*j-result*/);
     return result;
+
+} // multiply
+
+// ----------------------------------------------------------------------
+
+void multiply(alglib::real_2d_array& matrix, double scale)
+{
+    for (aint_t row = 0; row < matrix.rows(); ++row)
+        alglib::vmul(&matrix[row][0], 1, matrix.cols(), scale);
 
 } // multiply
 
