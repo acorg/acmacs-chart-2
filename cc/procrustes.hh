@@ -1,6 +1,7 @@
 #pragma once
 
 #include "acmacs-base/transformation.hh"
+#include "acmacs-chart-2/common.hh"
 
 // ----------------------------------------------------------------------
 
@@ -12,13 +13,14 @@ namespace acmacs::chart
     class ProcrustesData
     {
      public:
+        ProcrustesData(size_t number_of_dimensions) : transformation(number_of_dimensions) {}
         TransformationTranslation transformation;
-        double rms;
+        double rms{0};
           // distance_summary = backend.ProcrustesDistancesSummaryResults
 
     }; // class ProcrustesData
 
-    ProcrustesData procrustes(const Projection& primary, const Projection& secondary, const CommonAntigensSera& common);
+    ProcrustesData procrustes(const Projection& primary, const Projection& secondary, const std::vector<CommonAntigensSera::common_t>& common);
 
 } // namespace acmacs::chart
 
