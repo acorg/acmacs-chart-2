@@ -20,7 +20,9 @@ namespace acmacs::chart
 
     }; // class ProcrustesData
 
-    ProcrustesData procrustes(const Projection& primary, const Projection& secondary, const std::vector<CommonAntigensSera::common_t>& common);
+    enum class procrustes_scaling_t { no, yes };
+
+    ProcrustesData procrustes(const Projection& primary, const Projection& secondary, const std::vector<CommonAntigensSera::common_t>& common, procrustes_scaling_t scaling);
 
 } // namespace acmacs::chart
 

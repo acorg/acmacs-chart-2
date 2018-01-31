@@ -22,6 +22,9 @@
 
 #pragma GCC diagnostic pop
 
+using aint_t = alglib::ae_int_t;
+template <typename T> constexpr inline aint_t cint(T src) { return static_cast<aint_t>(src); };
+
 // ----------------------------------------------------------------------
 
 static void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
@@ -276,28 +279,28 @@ acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(acmacs
 void alglib_pca(size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
 {
     const double eps{0};
-    const alglib::ae_int_t maxits{0};
-    const alglib::ae_int_t number_of_points = (arg_last - arg_first) / static_cast<alglib::ae_int_t>(source_number_of_dimensions);
+    const aint_t maxits{0};
+    const aint_t number_of_points = (arg_last - arg_first) / cint(source_number_of_dimensions);
 
     alglib::real_2d_array x;
-    x.attach_to_ptr(number_of_points, static_cast<alglib::ae_int_t>(source_number_of_dimensions), arg_first);
+    x.attach_to_ptr(number_of_points, cint(source_number_of_dimensions), arg_first);
     alglib::real_1d_array s2; // output Variance values corresponding to basis vectors.
-    s2.setlength(static_cast<alglib::ae_int_t>(target_number_of_dimensions));
+    s2.setlength(cint(target_number_of_dimensions));
     alglib::real_2d_array v;  // output matrix to transform x to target
-    v.setlength(static_cast<alglib::ae_int_t>(source_number_of_dimensions), static_cast<alglib::ae_int_t>(target_number_of_dimensions));
+    v.setlength(cint(source_number_of_dimensions), cint(target_number_of_dimensions));
 
-    alglib::pcatruncatedsubspace(x, number_of_points, static_cast<alglib::ae_int_t>(source_number_of_dimensions), static_cast<alglib::ae_int_t>(target_number_of_dimensions), eps, maxits, s2, v);
+    alglib::pcatruncatedsubspace(x, number_of_points, cint(source_number_of_dimensions), cint(target_number_of_dimensions), eps, maxits, s2, v);
 
       // x * v -> t
       // https://www.tol-project.org/svn/tolp/OfficialTolArchiveNetwork/AlgLib/CppTools/source/alglib/manual.cpp.html#example_ablas_d_gemm
       // https://stackoverflow.com/questions/5607631/matrix-multiplication-alglib
     alglib::real_2d_array t;
-    t.setlength(number_of_points, static_cast<alglib::ae_int_t>(target_number_of_dimensions));
-    alglib::rmatrixgemm(number_of_points, static_cast<alglib::ae_int_t>(target_number_of_dimensions), static_cast<alglib::ae_int_t>(source_number_of_dimensions), 1.0, x, 0, 0, 0, v, 0, 0, 0, 0, t, 0, 0);
+    t.setlength(number_of_points, cint(target_number_of_dimensions));
+    alglib::rmatrixgemm(number_of_points, cint(target_number_of_dimensions), cint(source_number_of_dimensions), 1.0, x, 0, 0, 0, v, 0, 0, 0, 0, t, 0, 0);
 
     double* target = arg_first;
-    for (alglib::ae_int_t p_no = 0;  p_no < number_of_points; ++p_no) {
-        for (alglib::ae_int_t dim_no = 0; dim_no < static_cast<alglib::ae_int_t>(target_number_of_dimensions); ++dim_no) {
+    for (aint_t p_no = 0;  p_no < number_of_points; ++p_no) {
+        for (aint_t dim_no = 0; dim_no < cint(target_number_of_dimensions); ++dim_no) {
             *target++ = t(p_no, dim_no);
         }
     }
