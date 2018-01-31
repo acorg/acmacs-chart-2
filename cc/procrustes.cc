@@ -69,7 +69,13 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
         auto m4 = transpose(multiply_left_transposed(multiply(j, y), multiply(j, x)));
         alglib::real_2d_array u, vt;
         singular_value_decomposition(m4, u, vt);
-        const auto transormation = multiply_both_transposed(vt, u);
+        const auto transformation = multiply_both_transposed(vt, u);
+
+        std::cerr << "primary: " << x.tostring(8) << '\n';
+        std::cerr << "secondary: " << y.tostring(8) << '\n';
+        std::cerr << "common points: " << common.size() << '\n';
+        std::cerr << "transformation: " << transformation.tostring(8) << '\n';
+        std::cerr << "m4: " << m4.tostring(8) << '\n';
     }
     else {
         throw std::runtime_error("procrustes with scaling not yet implemented");
