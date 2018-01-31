@@ -96,18 +96,20 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
         }
     }
 
+    ProcrustesData result(number_of_dimensions);
+    auto set_transformation = [&result,number_of_dimensions=cint(number_of_dimensions)](const auto& source) {
+        for (aint_t row = 0; row < number_of_dimensions; ++row)
+            for (aint_t col = 0; col < number_of_dimensions; ++col)
+                result.transformation(row, col) = source(row, col);
+    };
+
+    alglib::real_2d_array transformation;
     if (scaling == procrustes_scaling_t::no) {
         const MatrixJProcrustes j(common.size());
         auto m4 = transpose(multiply_left_transposed(multiply(j, y), multiply(j, x)));
         alglib::real_2d_array u, vt;
         singular_value_decomposition(m4, u, vt);
-        const auto transformation = multiply_both_transposed(vt, u);
-
-        // std::cerr << "primary: " << x.tostring(8) << '\n';
-        // std::cerr << "secondary: " << y.tostring(8) << '\n';
-        std::cerr << "common points: " << common.size() << '\n';
-        std::cerr << "transformation: " << transformation.tostring(8) << '\n';
-        // std::cerr << "m4: " << m4.tostring(8) << '\n';
+        transformation = multiply_both_transposed(vt, u);
     }
     else {
         const MatrixJProcrustesScaling j(common.size());
@@ -115,26 +117,26 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
         const auto m2 = multiply_left_transposed(x, m1);
         alglib::real_2d_array u, vt;
         singular_value_decomposition(m2, u, vt);
-        auto transformation = multiply_both_transposed(vt, u);
+        transformation = multiply_both_transposed(vt, u);
         // std::cerr << "transformation0: " << transformation.tostring(8) << '\n';
 
           // calculate optimal scale parameter
         const auto denominator = multiply_left_transposed(y, m1);
         const auto trace_denominator = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&denominator](double sum, auto i) { return sum + denominator(i, i); });
         const auto m3 = multiply(y, transformation);
-        // std::cerr << "secondary: " << y.tostring(8) << '\n';
-        // std::cerr << "m3: " << m3.tostring(8) << '\n';
         const auto m4 = multiply(j, m3);
-        // std::cerr << "m4: " << m4.tostring(8) << '\n';
         const auto numerator = multiply_left_transposed(x, m4);
         const auto trace_numerator = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&numerator](double sum, auto i) { return sum + numerator(i, i); });
         const auto scale = trace_numerator / trace_denominator;
         multiply(transformation, scale);
-
-          // std::cerr << "scale: " << scale << " <= " << trace_numerator << " / " << trace_denominator << '\n';
-        std::cerr << "common points: " << common.size() << '\n';
-        std::cerr << "transformation: " << transformation.tostring(8) << '\n';
+        result.scale = scale;
     }
+    set_transformation(transformation);
+
+    const auto m5 = multiply(y, transformation);
+
+    std::cerr << "common points: " << common.size() << '\n';
+    std::cerr << "transformation: " << transformation.tostring(8) << '\n';
 
         // if (aCalculateTranslation) {
         //     result = T->augment(1, 1, 0.0);
@@ -150,7 +152,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
         //     }
         // }
 
-    return {number_of_dimensions};
+    return result;
 
 } // acmacs::chart::procrustes
 
