@@ -335,7 +335,7 @@ inline CommonAntigensSera::Impl::Impl(const Chart& primary, const Chart& seconda
 
 // ----------------------------------------------------------------------
 
-CommonAntigensSera::CommonAntigensSera(const Chart& primary, const Chart& secondary, match_level_t match_level)
+acmacs::chart::CommonAntigensSera::CommonAntigensSera(const Chart& primary, const Chart& secondary, match_level_t match_level)
     : impl_(std::make_unique<Impl>(primary, secondary, match_level))
 {
 }
@@ -343,13 +343,13 @@ CommonAntigensSera::CommonAntigensSera(const Chart& primary, const Chart& second
 // ----------------------------------------------------------------------
 
 // must be here to allow std::unique_ptr<Impl> with incomplete Impl in .hh
-CommonAntigensSera::~CommonAntigensSera()
+acmacs::chart::CommonAntigensSera::~CommonAntigensSera()
 {
 }
 
 // ----------------------------------------------------------------------
 
-void CommonAntigensSera::report() const
+void acmacs::chart::CommonAntigensSera::report() const
 {
     auto& stream = std::cout;
     impl_->antigens_.report(stream, "antigens", "no-passage");
@@ -360,7 +360,7 @@ void CommonAntigensSera::report() const
 
 // ----------------------------------------------------------------------
 
-std::vector<CommonAntigensSera::common_t> CommonAntigensSera::antigens() const
+std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAntigensSera::antigens() const
 {
     return impl_->antigens_.common();
 
@@ -368,7 +368,7 @@ std::vector<CommonAntigensSera::common_t> CommonAntigensSera::antigens() const
 
 // ----------------------------------------------------------------------
 
-std::vector<CommonAntigensSera::common_t> CommonAntigensSera::sera() const
+std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAntigensSera::sera() const
 {
     return impl_->sera_.common();
 
@@ -376,7 +376,7 @@ std::vector<CommonAntigensSera::common_t> CommonAntigensSera::sera() const
 
 // ----------------------------------------------------------------------
 
-std::vector<CommonAntigensSera::common_t> CommonAntigensSera::points() const
+std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAntigensSera::points() const
 {
     auto result = impl_->antigens_.common();
     for (auto [primary, secondary]: impl_->sera_.common())
