@@ -20,25 +20,56 @@ template <typename T> constexpr inline aint_t cint(T src) { return static_cast<a
 
 // ----------------------------------------------------------------------
 
-class MatrixJProcrustes
+class MatrixJ
 {
  public:
-    template <typename S> MatrixJProcrustes(S size) : size_(cint(size)), diagonal_(1.0 - 1.0 / size), non_diagonal_(-1.0 / size) {}
-    template <typename S> double operator()(S row, S column) const { return row == column ? diagonal_ : non_diagonal_; }
+    template <typename S> MatrixJ(S size) : size_(cint(size)) {}
+    virtual ~MatrixJ() {}
+
     constexpr aint_t rows() const { return size_; }
     constexpr aint_t cols() const { return size_; }
+    virtual double operator()(aint_t row, aint_t col) const = 0;
 
  private:
     const aint_t size_;
+};
+
+class MatrixJProcrustes : public MatrixJ
+{
+ public:
+    template <typename S> MatrixJProcrustes(S size) : MatrixJ(size), diagonal_(1.0 - 1.0 / size), non_diagonal_(-1.0 / size) {}
+    double operator()(aint_t row, aint_t column) const override { return row == column ? diagonal_ : non_diagonal_; }
+
+ private:
     const double diagonal_, non_diagonal_;
 
 }; // class MatrixJProcrustes
 
-static alglib::real_2d_array multiply(const MatrixJProcrustes& left, const alglib::real_2d_array& right);
+class MatrixJProcrustesScaling : public MatrixJ
+{
+ public:
+    template <typename S> MatrixJProcrustesScaling(S size)
+        : MatrixJ(size),
+          diagonal_0_(1.0 - 1.0 / size), non_diagonal_0_(-1.0 / size),
+          diagonal_(non_diagonal_0_ * non_diagonal_0_ * (size - 1) + diagonal_0_ * diagonal_0_),
+          non_diagonal_(non_diagonal_0_ * non_diagonal_0_ * (size - 2) + non_diagonal_0_ * diagonal_0_ * 2)
+        {}
+    double operator()(aint_t row, aint_t column) const override { return row == column ? diagonal_ : non_diagonal_; }
+
+ private:
+    const double diagonal_0_, non_diagonal_0_;
+    const double diagonal_, non_diagonal_;
+
+}; // class MatrixJProcrustesScaling
+
+// ----------------------------------------------------------------------
+
+static alglib::real_2d_array multiply(const MatrixJ& left, const alglib::real_2d_array& right);
+static alglib::real_2d_array multiply(const alglib::real_2d_array& left, const alglib::real_2d_array& right);
 static alglib::real_2d_array multiply_left_transposed(const alglib::real_2d_array& left, const alglib::real_2d_array& right);
 static alglib::real_2d_array multiply_both_transposed(const alglib::real_2d_array& left, const alglib::real_2d_array& right);
 static alglib::real_2d_array transpose(const alglib::real_2d_array& matrix);
-static void singular_value_decomposition(alglib::real_2d_array& matrix, alglib::real_2d_array& u, alglib::real_2d_array& vt);
+static void singular_value_decomposition(const alglib::real_2d_array& matrix, alglib::real_2d_array& u, alglib::real_2d_array& vt);
 
 // ----------------------------------------------------------------------
 
@@ -65,20 +96,57 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     }
 
     if (scaling == procrustes_scaling_t::no) {
-        MatrixJProcrustes j(common.size());
+        const MatrixJProcrustes j(common.size());
         auto m4 = transpose(multiply_left_transposed(multiply(j, y), multiply(j, x)));
         alglib::real_2d_array u, vt;
         singular_value_decomposition(m4, u, vt);
         const auto transformation = multiply_both_transposed(vt, u);
 
-        std::cerr << "primary: " << x.tostring(8) << '\n';
-        std::cerr << "secondary: " << y.tostring(8) << '\n';
+        // std::cerr << "primary: " << x.tostring(8) << '\n';
+        // std::cerr << "secondary: " << y.tostring(8) << '\n';
         std::cerr << "common points: " << common.size() << '\n';
         std::cerr << "transformation: " << transformation.tostring(8) << '\n';
-        std::cerr << "m4: " << m4.tostring(8) << '\n';
+        // std::cerr << "m4: " << m4.tostring(8) << '\n';
     }
     else {
-        throw std::runtime_error("procrustes with scaling not yet implemented");
+        const MatrixJProcrustesScaling j(common.size());
+        const auto m1 = multiply(j, y);
+        const auto m2 = multiply_left_transposed(x, m1);
+        alglib::real_2d_array u, vt;
+        singular_value_decomposition(m2, u, vt);
+        const auto transformation = multiply_both_transposed(vt, u);
+        // std::cerr << "transformation0: " << transformation.tostring(8) << '\n';
+
+          // calculate optimal scale parameter
+        const auto denominator = multiply_left_transposed(y, m1);
+        const auto trace_denominator = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&denominator](double sum, auto i) { return sum + denominator(i, i); });
+        const auto m3 = multiply(y, transformation);
+        const auto m4 = multiply(j, m3);
+        const auto numerator = multiply_left_transposed(x, m4);
+        const auto trace_numerator = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&numerator](double sum, auto i) { return sum + numerator(i, i); });
+        const auto scale = trace_numerator / trace_denominator;
+
+        std::cerr << "scale: " << scale << " <= " << trace_numerator << " / " << trace_denominator << '\n';
+
+            // Vector W(N);
+            // V = Matrix<FloatType>::newMatrix(N, N, 0, 0, Matrix<FloatType>::mtDense);
+            // singularValueDecomposition(*Intermediate2, W, *V);
+            // T = multiplyMatricesRightTransposed(*V, *Intermediate2); // calculate resulting rotation/reflection matrix
+            //   // calculate optimal scale parameter
+            // Denom = multiplyMatricesLeftTransposed(aSecondaryPoints, *Intermediate1);
+            // FloatType TraceDenominator = 0.0;
+            // for (Index i = 0; i < N; ++i)
+            //     TraceDenominator += Denom->get(i, i);
+            // Intermediate3 = multiplyMatrices(aSecondaryPoints, *T);
+            // Intermediate4 = multiplyMatrices(J, *Intermediate3);
+            // Numerator = multiplyMatricesLeftTransposed(aPrimaryPoints, *Intermediate4);
+            // FloatType TraceNumerator = 0.0;
+            // for (Index i = 0; i < N; ++i)
+            //     TraceNumerator += Numerator->get(i, i);
+            // scale = TraceNumerator / TraceDenominator;
+            //   // add scaling to the
+            //   // calculate translation vector rotation/reflection
+            // multiplyMatrixByValue(*T, scale);
     }
 
     return {number_of_dimensions};
@@ -87,8 +155,9 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
 
 // ----------------------------------------------------------------------
 
-alglib::real_2d_array multiply(const MatrixJProcrustes& left, const alglib::real_2d_array& right)
+alglib::real_2d_array multiply(const MatrixJ& left, const alglib::real_2d_array& right)
 {
+    // std::cerr << "multiply left " << left.rows() << 'x' << left.cols() << "  right " << right.rows() << 'x' << right.cols() << '\n';
     alglib::real_2d_array result;
     result.setlength(left.rows(), right.cols());
     for (aint_t row = 0; row < left.rows(); ++row) {
@@ -97,6 +166,21 @@ alglib::real_2d_array multiply(const MatrixJProcrustes& left, const alglib::real
                                                   [&left,&right,row,column](double sum, auto i) { return sum + left(row, i) * right(i, column); });
         }
     }
+    return result;
+
+} // multiply
+
+// ----------------------------------------------------------------------
+
+alglib::real_2d_array multiply(const alglib::real_2d_array& left, const alglib::real_2d_array& right)
+{
+    alglib::real_2d_array result;
+    result.setlength(left.rows(), right.cols());
+    // std::cerr << "multiply left " << left.rows() << 'x' << left.cols() << "  right " << right.rows() << 'x' << right.cols() << "  result " << result.rows() << 'x' << result.cols() << '\n';
+    alglib::rmatrixgemm(left.cols(), right.cols(), right.rows(),
+                        1.0 /*alpha*/, left, 0 /*i-left*/, 0 /*j-left*/, 0 /*left-no-transform*/,
+                        right, 0 /*i-right*/, 0 /*j-right*/, 0 /*right-no-transform*/,
+                        0.0 /*beta*/, result, 0 /*i-result*/, 0 /*j-result*/);
     return result;
 
 } // multiply
@@ -143,7 +227,7 @@ alglib::real_2d_array transpose(const alglib::real_2d_array& source)
 
 // ----------------------------------------------------------------------
 
-void singular_value_decomposition(alglib::real_2d_array& matrix, alglib::real_2d_array& u, alglib::real_2d_array& vt)
+void singular_value_decomposition(const alglib::real_2d_array& matrix, alglib::real_2d_array& u, alglib::real_2d_array& vt)
 {
     vt.setlength(matrix.cols(), matrix.cols());
     u.setlength(matrix.rows(), matrix.rows());
