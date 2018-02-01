@@ -70,7 +70,7 @@ namespace acmacs::chart
      public:
         using internal::string_data::string_data;
 
-        inline bool within_range(std::string first_date, std::string after_last_date) const { return !data().empty() && (first_date.empty() || data() >= first_date) && (after_last_date.empty() || data() < after_last_date); }
+        inline bool within_range(std::string_view first_date, std::string_view after_last_date) const { return !data().empty() && (first_date.empty() || data() >= first_date) && (after_last_date.empty() || data() < after_last_date); }
 
     }; // class Date
 
@@ -286,7 +286,7 @@ namespace acmacs::chart
         inline void filter_egg(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.passage().is_egg(); }); }
         inline void filter_cell(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.passage().is_cell(); }); }
         inline void filter_reassortant(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); }); }
-        inline void filter_date_range(Indexes& aIndexes, std::string first_date, std::string after_last_date) const { remove(aIndexes, [=](const auto& entry) -> bool { return !entry.date().within_range(first_date, after_last_date); }); }
+        inline void filter_date_range(Indexes& aIndexes, std::string_view first_date, std::string_view after_last_date) const { remove(aIndexes, [=](const auto& entry) -> bool { return !entry.date().within_range(first_date, after_last_date); }); }
         void filter_country(Indexes& aIndexes, std::string aCountry) const;
         void filter_continent(Indexes& aIndexes, std::string aContinent) const;
         inline void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }

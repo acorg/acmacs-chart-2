@@ -167,7 +167,7 @@ namespace acmacs::chart
         std::optional<MinimumColumnBasis> minimum_column_basis() const
             {
                 try {
-                    return data()["minimum_column_basis"].str();
+                    return data()["minimum_column_basis"].strv();
                 }
                 catch (std::exception&) {
                     return {};
@@ -218,7 +218,7 @@ namespace acmacs::chart
         MinimumColumnBasis minimum_column_basis() const override
             {
                 try {
-                    return data().get_or_empty_object("stress_evaluator_parameters")["minimum_column_basis"].str();
+                    return data().get_or_empty_object("stress_evaluator_parameters")["minimum_column_basis"].strv();
                 }
                 catch (rjson::field_not_found&) {
                     if (const auto mcb = dynamic_cast<Acd1Titers&>(*chart().titers()).minimum_column_basis(); mcb)

@@ -70,8 +70,8 @@ void print_plot_spec(const argc_argv& args)
         antigen_fields["annotations"].push_back(antigen->annotations().join());
         antigen_fields["passage"].push_back(antigen->passage());
         const auto style = plot_spec->style(ag_no);
-        antigen_fields["fill_color"].push_back(*style.fill);
-        antigen_fields["outline_color"].push_back(*style.outline);
+        antigen_fields["fill_color"].push_back(style.fill->to_string());
+        antigen_fields["outline_color"].push_back(style.outline->to_string());
         antigen_fields["outline_width"].push_back(acmacs::to_string(*style.outline_width));
         antigen_fields["size"].push_back(acmacs::to_string(*style.size));
         antigen_fields["shown"].push_back(bool_to_string(*style.shown));
@@ -79,7 +79,7 @@ void print_plot_spec(const argc_argv& args)
         antigen_fields["rotation"].push_back(acmacs::to_string(*style.rotation));
         antigen_fields["shape"].push_back(*style.shape);
         antigen_fields["label_shown"].push_back(bool_to_string(style.label.shown));
-        antigen_fields["label_color"].push_back(*style.label.color);
+        antigen_fields["label_color"].push_back(style.label.color->to_string());
         antigen_fields["label_font_face"].push_back(*style.label.style.font_family);
         antigen_fields["label_font_slant"].push_back(*style.label.style.slant);
         antigen_fields["label_font_weight"].push_back(*style.label.style.weight);
@@ -106,8 +106,8 @@ void print_plot_spec(const argc_argv& args)
         serum_fields["serum_id"].push_back(serum->serum_id());
         serum_fields["serum_species"].push_back(serum->serum_species());
         auto style = plot_spec->style(point_no);
-        serum_fields["fill_color"].push_back(*style.fill);
-        serum_fields["outline_color"].push_back(*style.outline);
+        serum_fields["fill_color"].push_back(style.fill->to_string());
+        serum_fields["outline_color"].push_back(style.outline->to_string());
         serum_fields["outline_width"].push_back(acmacs::to_string(*style.outline_width));
         serum_fields["size"].push_back(acmacs::to_string(*style.size));
         serum_fields["shown"].push_back(bool_to_string(*style.shown));
@@ -115,7 +115,7 @@ void print_plot_spec(const argc_argv& args)
         serum_fields["rotation"].push_back(acmacs::to_string(*style.rotation));
         serum_fields["shape"].push_back(*style.shape);
         serum_fields["label_shown"].push_back(bool_to_string(style.label.shown));
-        serum_fields["label_color"].push_back(*style.label.color);
+        serum_fields["label_color"].push_back(style.label.color->to_string());
         serum_fields["label_font_face"].push_back(*style.label.style.font_family);
         serum_fields["label_font_slant"].push_back(*style.label.style.slant);
         serum_fields["label_font_weight"].push_back(*style.label.style.weight);

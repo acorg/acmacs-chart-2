@@ -87,7 +87,7 @@ namespace acmacs::chart
 
 namespace acmacs
 {
-    template <> inline std::string to_string(acmacs::chart::Titer aTiter)
+    inline std::string to_string(acmacs::chart::Titer aTiter)
     {
         return aTiter.data();
     }

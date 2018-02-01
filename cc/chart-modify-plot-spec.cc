@@ -70,11 +70,11 @@ int main(int argc, char* const argv[])
             }
             if (args["--fill"].present()) {
                 for (auto point_no: points)
-                    plot_spec->fill(point_no, static_cast<std::string_view>(args["--fill"]));
+                    plot_spec->fill(point_no, Color(static_cast<std::string_view>(args["--fill"])));
             }
             if (args["--outline"].present()) {
                 for (auto point_no: points)
-                    plot_spec->outline(point_no, static_cast<std::string_view>(args["--outline"]));
+                    plot_spec->outline(point_no, Color(static_cast<std::string_view>(args["--outline"])));
             }
 
             acmacs::chart::export_factory(chart_modify, args[1], fs::path(args.program()).filename(), args["--time"] ? report_time::Yes : report_time::No);

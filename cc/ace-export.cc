@@ -276,9 +276,9 @@ void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Plo
     if (const auto drawing_order = aPlotSpec->drawing_order(); ! drawing_order.empty())
         aTarget.set_field("d", rjson::array(rjson::array::use_iterator, drawing_order.begin(), drawing_order.end()));
     if (const auto color = aPlotSpec->error_line_positive_color(); color != RED)
-        aTarget.set_field("E", rjson::object{{{"c", rjson::string{color}}}});
+        aTarget.set_field("E", rjson::object{{{"c", rjson::string{color.to_string()}}}});
     if (const auto color = aPlotSpec->error_line_negative_color(); color != BLUE)
-        aTarget.set_field("e", rjson::object{{{"c", rjson::string{color}}}});
+        aTarget.set_field("e", rjson::object{{{"c", rjson::string{color.to_string()}}}});
 
     std::vector<acmacs::PointStyle> compacted;
     std::vector<size_t> p_index;
@@ -329,8 +329,12 @@ namespace rjson
 
 template <typename T> inline void set_field(rjson::object& target, const char* name, const acmacs::internal::field_optional_with_default<T>& field)
 {
-    if (field.not_default())
-        target.set_field(name, rjson::to_value(*field));
+    if (field.not_default()) {
+        if constexpr (std::is_same_v<T, Color>)
+            target.set_field(name, rjson::to_value(field->to_string()));
+        else
+            target.set_field(name, rjson::to_value(*field));
+    }
 }
 
 void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle)

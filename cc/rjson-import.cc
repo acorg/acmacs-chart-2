@@ -17,7 +17,7 @@ size_t acmacs::chart::RjsonTiters::number_of_sera() const
             auto max_index = [](const rjson::object& obj) -> size_t {
                                  size_t result = 0;
                                  for (auto key_value: obj) {
-                                     if (const size_t ind = std::stoul(key_value.first); ind > result)
+                                     if (const size_t ind = std::stoul(std::string(key_value.first.str())); ind > result)
                                          result = ind;
                                  }
                                  return result;
@@ -119,7 +119,7 @@ template <typename Float> static void update_dict(const rjson::array& data, acma
         if (!parameters.disconnected.exist(p1)) {
             const rjson::object& row = data[p1];
             for (auto [serum_no_s, titer_s] : row) {
-                const auto serum_no = std::stoul(serum_no_s);
+                const auto serum_no = std::stoul(std::string(serum_no_s.str()));
                 const auto p2 = serum_no + data.size();
                 if (!parameters.disconnected.exist(p2)) {
                     table_distances.update(titer_s, p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);

@@ -303,7 +303,7 @@ acmacs::Transformation AceProjection::transformation() const
 Color AcePlotSpec::error_line_positive_color() const
 {
     try {
-        return static_cast<std::string_view>(mData["E"]["c"]);
+        return Color(static_cast<std::string_view>(mData["E"]["c"]));
     }
     catch (rjson::field_not_found&) {
         return "red";
@@ -316,7 +316,7 @@ Color AcePlotSpec::error_line_positive_color() const
 Color AcePlotSpec::error_line_negative_color() const
 {
     try {
-        return static_cast<std::string_view>(mData["e"]["c"]);
+        return Color(static_cast<std::string_view>(mData["e"]["c"]));
     }
     catch (rjson::field_not_found&) {
         return "blue";
@@ -393,10 +393,10 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::object& aSrc, size_t aPoint
                       result.shown = field_value;
                       break;
                   case 'F':
-                      result.fill = static_cast<std::string_view>(field_value);
+                      result.fill = Color(field_value);
                       break;
                   case 'O':
-                      result.outline = static_cast<std::string_view>(field_value);
+                      result.outline = Color(field_value);
                       break;
                   case 'o':
                       result.outline_width = Pixels{field_value};
@@ -447,7 +447,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::object& a
                       label_style.size = Pixels{static_cast<double>(field_value) * acmacs::chart::ace::LabelScale};
                       break;
                   case 'c':
-                      label_style.color = static_cast<std::string_view>(field_value);
+                      label_style.color = Color(field_value);
                       break;
                   case 'r':
                       label_style.rotation = Rotation{field_value};

@@ -14,6 +14,7 @@ namespace acmacs::chart
         MinimumColumnBasis(double value = 0) : value_{value} {}
         MinimumColumnBasis(const MinimumColumnBasis&) = default;
         MinimumColumnBasis(std::string value) { from(value); }
+        MinimumColumnBasis(std::string_view value) { from(value); }
         MinimumColumnBasis& operator=(double value) { value_ = value; return *this; }
         MinimumColumnBasis& operator=(const MinimumColumnBasis&) = default;
         MinimumColumnBasis& operator=(std::string value) { from(value); return *this; }
@@ -27,7 +28,7 @@ namespace acmacs::chart
      private:
         double value_;
 
-        void from(std::string value);
+        void from(std::string_view value);
 
     }; // class MinimumColumnBasis
 

@@ -67,6 +67,7 @@ class MatrixJProcrustesScaling : public MatrixJ
 static alglib::real_2d_array multiply(const MatrixJ& left, const alglib::real_2d_array& right);
 static alglib::real_2d_array multiply(const alglib::real_2d_array& left, const alglib::real_2d_array& right);
 static void multiply(alglib::real_2d_array& matrix, double scale);
+static void multiply_add(alglib::real_2d_array& matrix, double scale, const alglib::real_2d_array& to_add);
 static alglib::real_2d_array multiply_left_transposed(const alglib::real_2d_array& left, const alglib::real_2d_array& right);
 static alglib::real_2d_array multiply_both_transposed(const alglib::real_2d_array& left, const alglib::real_2d_array& right);
 static alglib::real_2d_array transpose(const alglib::real_2d_array& matrix);
@@ -133,10 +134,16 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     }
     set_transformation(transformation);
 
-    const auto m5 = multiply(y, transformation);
+      // translation
+    auto m5 = multiply(y, transformation);
+    multiply_add(m5, -1, x);
+    for (size_t dim = 0; dim < number_of_dimensions; ++dim) {
+        const auto t_i = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(common.size())), 0.0, [&m5,dim=cint(dim)](auto sum, auto row) { return sum + m5(row, dim); });
+        result.transformation(dim, number_of_dimensions) = t_i / common.size();
+    }
 
-    std::cerr << "common points: " << common.size() << '\n';
-    std::cerr << "transformation: " << transformation.tostring(8) << '\n';
+    // std::cerr << "common points: " << common.size() << '\n';
+    std::cerr << "transformation: " << acmacs::to_string(result.transformation) << '\n';
 
         // if (aCalculateTranslation) {
         //     result = T->augment(1, 1, 0.0);
@@ -196,6 +203,17 @@ void multiply(alglib::real_2d_array& matrix, double scale)
         alglib::vmul(&matrix[row][0], 1, matrix.cols(), scale);
 
 } // multiply
+
+// ----------------------------------------------------------------------
+
+void multiply_add(alglib::real_2d_array& matrix, double scale, const alglib::real_2d_array& to_add)
+{
+    for (aint_t row = 0; row < matrix.rows(); ++row) {
+        alglib::vmul(&matrix[row][0], 1, matrix.cols(), scale);
+        alglib::vadd(&matrix[row][0], 1, &to_add[row][0], 1, matrix.cols());
+    }
+
+} // multiply_add
 
 // ----------------------------------------------------------------------
 

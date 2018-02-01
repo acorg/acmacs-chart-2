@@ -821,14 +821,14 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
 
     try {
         if (const std::string label_color = aSource[":NC"]; label_color != "{}")
-            aTarget.label.color = label_color;
+            aTarget.label.color = Color(label_color);
     }
     catch (std::exception&) {
     }
 
     try {
         if (const std::string fill_color = aSource[":CO"]; fill_color != "{}")
-            aTarget.fill = fill_color;
+            aTarget.fill = Color(fill_color);
         else
             aTarget.fill = TRANSPARENT;
     }
@@ -837,7 +837,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
 
     try {
         if (const std::string outline_color = aSource[":OC"]; outline_color != "{}")
-            aTarget.outline = outline_color;
+            aTarget.outline = Color(outline_color);
         else
             aTarget.outline = TRANSPARENT;
     }

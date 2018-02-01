@@ -19,7 +19,7 @@ namespace acmacs::chart
          public:
             string_data() = default;
             string_data(const std::string& aSrc) : mData{aSrc} {}
-            string_data(const std::string_view& aSrc) : mData{aSrc} {}
+            string_data(std::string_view aSrc) : mData{aSrc} {}
             string_data(std::string&& aSrc) : mData{std::move(aSrc)} {}
             string_data(const char* aSrc) : mData{aSrc} {}
             string_data(const rjson::value& aSrc) : mData{aSrc.str()} {}
@@ -99,7 +99,7 @@ namespace acmacs::chart
         template <> inline T_list_data<std::string>::T_list_data(const rjson::array& aSrc)
             : mData(aSrc.size())
         {
-            std::transform(aSrc.begin(), aSrc.end(), mData.begin(), [](const auto& src) -> std::string { return src; });
+            std::transform(aSrc.begin(), aSrc.end(), mData.begin(), [](const auto& src) -> std::string { return src.str(); });
         }
 
         class string_list_data : public T_list_data<std::string>
@@ -161,7 +161,7 @@ namespace acmacs::chart
 
 namespace acmacs
 {
-    template <> inline std::string to_string(const acmacs::chart::internal::string_data& value)
+    inline std::string to_string(const acmacs::chart::internal::string_data& value)
     {
         return value.data();
     }

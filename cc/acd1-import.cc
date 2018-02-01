@@ -441,7 +441,7 @@ Name Acd1Serum::name() const
 static inline Passage make_passage(const rjson::object& aData)
 {
     if (auto [p_dict_present, p_dict] = aData.get_object_if("passage"); p_dict_present) {
-        std::string p = p_dict["passage"];
+        auto p(p_dict["passage"].str());
         if (auto date = p_dict.get_or_default("date", ""); !date.empty())
             p += " (" + date + ")";
         return p;
@@ -473,8 +473,8 @@ static inline Reassortant make_reassortant(const rjson::object& aData)
         const rjson::array& complete = r_dict.get_or_empty_array("complete");
         const rjson::array& incomplete = r_dict.get_or_empty_array("incomplete");
         std::vector<std::string> composition;
-        std::transform(complete.begin(), complete.end(), std::back_inserter(composition), [](const auto& val) -> std::string { return val; });
-        std::transform(incomplete.begin(), incomplete.end(), std::back_inserter(composition), [](const auto& val) -> std::string { return val; });
+        std::transform(complete.begin(), complete.end(), std::back_inserter(composition), [](const auto& val) -> std::string { return val.str(); });
+        std::transform(incomplete.begin(), incomplete.end(), std::back_inserter(composition), [](const auto& val) -> std::string { return val.str(); });
         return string::join(" ", composition);
     }
     else if (auto r_str = aData.get_or_default("reassortant", ""); !r_str.empty()) {
@@ -520,9 +520,9 @@ static inline Annotations make_annotations(const rjson::object& aData)
     result.push_back(aData.get_or_default("extra", ""));
     result.push_back(aData.get_or_default("EXTRA", ""));
     for (const auto& annotation: aData.get_or_empty_array("annotations"))
-        result.push_back(annotation);
+        result.push_back(annotation.str());
     for (const auto& mutation: aData.get_or_empty_array("mutations"))
-        result.push_back(mutation);
+        result.push_back(mutation.str());
     return result;
 }
 
@@ -736,7 +736,7 @@ DrawingOrder Acd1PlotSpec::drawing_order() const
 Color Acd1PlotSpec::error_line_positive_color() const
 {
     try {
-        return static_cast<std::string_view>(mData["error_line_positive"]["color"]);
+        return Color(mData["error_line_positive"]["color"].strv());
     }
     catch (std::exception&) {
         return "red";
@@ -749,7 +749,7 @@ Color Acd1PlotSpec::error_line_positive_color() const
 Color Acd1PlotSpec::error_line_negative_color() const
 {
     try {
-        return static_cast<std::string_view>(mData["error_line_negative"]["color"]);
+        return Color(mData["error_line_negative"]["color"].strv());
     }
     catch (std::exception&) {
         return "blue";

@@ -18,7 +18,6 @@ static std::string reference_antigens(const acmacs::chart::Chart& aChart);
 static std::string plot_spec(const acmacs::chart::Chart& aChart);
 static std::string point_style(const acmacs::PointStyle& aStyle);
 static std::string point_shape(const acmacs::PointShape& aShape);
-static std::string make_color(Color aColor);
 
 // ----------------------------------------------------------------------
 
@@ -272,12 +271,9 @@ std::string point_shape(const acmacs::PointShape& aShape)
 
 // ----------------------------------------------------------------------
 
-std::string make_color(Color aColor)
+static inline std::string make_color(Color aColor)
 {
-    const std::string source = aColor.without_transparency();
-    std::string result;
-    std::copy_if(source.begin(), source.end(), std::back_inserter(result), [](auto c) -> bool { return c != ' '; });
-    return result;
+    return string::remove_spaces(aColor.without_transparency().to_string());
 
 } // make_color
 
