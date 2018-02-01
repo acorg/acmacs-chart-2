@@ -5,6 +5,8 @@
 
 // ----------------------------------------------------------------------
 
+namespace acmacs { class LayoutInterface; class Layout; }
+
 namespace acmacs::chart
 {
     class Projection;
@@ -18,6 +20,8 @@ namespace acmacs::chart
         double scale{1};
         double rms{0};
           // distance_summary = backend.ProcrustesDistancesSummaryResults
+
+        std::shared_ptr<acmacs::Layout> apply(const acmacs::LayoutInterface& source) const;
 
     }; // class ProcrustesData
 

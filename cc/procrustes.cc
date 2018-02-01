@@ -142,26 +142,53 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
         result.transformation(dim, number_of_dimensions) = t_i / common.size();
     }
 
+      // rms
+    auto secondary_transformed = result.apply(*secondary_layout);
+    result.rms = 0.0;
+    size_t num_rows = 0;
+    for (const auto& cp: common) {
+        if (const auto pc = primary_layout->get(cp.primary), sc = secondary_transformed->get(cp.secondary); pc.not_nan() && sc.not_nan()) {
+            ++num_rows;
+            auto make_rms_inc = [&pc,&sc](auto sum, auto dim) {
+                auto square = [](auto v) { return v * v; };
+                return sum + square(pc[dim] - sc[dim]);
+            };
+            result.rms = std::accumulate(acmacs::index_iterator(0UL), acmacs::index_iterator(number_of_dimensions), result.rms, make_rms_inc);
+        }
+    }
+    result.rms = std::sqrt(result.rms / num_rows);
+
     // std::cerr << "common points: " << common.size() << '\n';
     std::cerr << "transformation: " << acmacs::to_string(result.transformation) << '\n';
-
-        // if (aCalculateTranslation) {
-        //     result = T->augment(1, 1, 0.0);
-        //     result->set(N, N, 1.0);
-        //     Intermediate5 = multiplyMatrices(aSecondaryPoints, *T);
-        //     multiplyAddMatrix(*Intermediate5, -1, aPrimaryPoints);
-        //     for (Index i = 0; i < N; ++i) {
-        //         FloatType t_i = 0.0;
-        //         for (Index j = 0; j < M; ++j) {
-        //             t_i += Intermediate5->get(j, i);
-        //         }
-        //         result->set(N, i, t_i / FloatType(M));
-        //     }
-        // }
+    std::cerr << "rms: " << acmacs::to_string(result.rms) << '\n';
 
     return result;
 
 } // acmacs::chart::procrustes
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<acmacs::Layout> acmacs::chart::ProcrustesData::apply(const acmacs::LayoutInterface& source) const
+{
+    assert(source.number_of_dimensions() == transformation.number_of_dimensions());
+    auto result = std::make_shared<acmacs::Layout>(source.number_of_points(), source.number_of_dimensions());
+
+      // multiply source by transformation
+    for (size_t row_no = 0; row_no < source.number_of_points(); ++row_no) {
+        if (const auto row = source[row_no]; row.not_nan()) {
+            for (size_t dim = 0; dim < transformation.number_of_dimensions(); ++dim) {
+                auto sum_squares = [&source,this,row_no,dim](double sum, size_t index) { return sum + source(row_no, index) * this->transformation(index, dim); };
+                result->set(row_no, dim, std::accumulate(acmacs::index_iterator(0UL), acmacs::index_iterator(source.number_of_dimensions()), 0.0, sum_squares));
+            }
+        }
+        else {
+            result->set_nan(row_no);
+        }
+    }
+
+    return result;
+
+} // acmacs::chart::ProcrustesData::apply
 
 // ----------------------------------------------------------------------
 
