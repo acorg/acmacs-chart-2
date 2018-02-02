@@ -178,12 +178,9 @@ std::shared_ptr<acmacs::Layout> acmacs::chart::ProcrustesData::apply(const acmac
         if (const auto row = source[row_no]; row.not_nan()) {
             for (size_t dim = 0; dim < transformation.number_of_dimensions(); ++dim) {
                 auto sum_squares = [&source,this,row_no,dim](double sum, size_t index) {
-                    if (index < source.number_of_dimensions())
-                        return sum + source(row_no, index) * this->transformation(index, dim);
-                    else
-                        return sum + this->transformation(index, dim);
+                    return sum + source(row_no, index) * this->transformation(index, dim);
                 };
-                result->set(row_no, dim, std::accumulate(acmacs::index_iterator(0UL), acmacs::index_iterator(source.number_of_dimensions() + 1), 0.0, sum_squares));
+                result->set(row_no, dim, std::accumulate(acmacs::index_iterator(0UL), acmacs::index_iterator(source.number_of_dimensions()), 0.0, sum_squares) + transformation.translation(dim));
             }
         }
         else {
