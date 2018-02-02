@@ -139,7 +139,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     multiply_add(m5, -1, x);
     for (size_t dim = 0; dim < number_of_dimensions; ++dim) {
         const auto t_i = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(common.size())), 0.0, [&m5,dim=cint(dim)](auto sum, auto row) { return sum + m5(row, dim); });
-        result.transformation(dim, number_of_dimensions) = t_i / common.size();
+        result.transformation.translation(dim) = t_i / common.size();
     }
 
       // rms
@@ -177,8 +177,13 @@ std::shared_ptr<acmacs::Layout> acmacs::chart::ProcrustesData::apply(const acmac
     for (size_t row_no = 0; row_no < source.number_of_points(); ++row_no) {
         if (const auto row = source[row_no]; row.not_nan()) {
             for (size_t dim = 0; dim < transformation.number_of_dimensions(); ++dim) {
-                auto sum_squares = [&source,this,row_no,dim](double sum, size_t index) { return sum + source(row_no, index) * this->transformation(index, dim); };
-                result->set(row_no, dim, std::accumulate(acmacs::index_iterator(0UL), acmacs::index_iterator(source.number_of_dimensions()), 0.0, sum_squares));
+                auto sum_squares = [&source,this,row_no,dim](double sum, size_t index) {
+                    if (index < source.number_of_dimensions())
+                        return sum + source(row_no, index) * this->transformation(index, dim);
+                    else
+                        return sum + this->transformation(index, dim);
+                };
+                result->set(row_no, dim, std::accumulate(acmacs::index_iterator(0UL), acmacs::index_iterator(source.number_of_dimensions() + 1), 0.0, sum_squares));
             }
         }
         else {
