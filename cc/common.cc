@@ -360,6 +360,14 @@ void acmacs::chart::CommonAntigensSera::report() const
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::CommonAntigensSera::operator bool() const
+{
+    return impl_->antigens_.number_of_common_ > 0 || impl_->sera_.number_of_common_ > 0;
+
+} // bool
+
+// ----------------------------------------------------------------------
+
 std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAntigensSera::antigens() const
 {
     return impl_->antigens_.common();

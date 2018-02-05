@@ -18,6 +18,7 @@ namespace acmacs::chart
         ~CommonAntigensSera();
 
         void report() const;
+        operator bool() const;
 
         struct common_t
         {
