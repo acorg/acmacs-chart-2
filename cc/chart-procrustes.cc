@@ -48,6 +48,8 @@ int main(int argc, char* const argv[])
             acmacs::chart::CommonAntigensSera common(*chart1, *chart2, match_level);
             if (common) {
                 auto procrustes_data = acmacs::chart::procrustes(*chart1->projection(args["-p"]), *chart2->projection(args["-r"]), common.points(), args["--scaling"] ? acmacs::chart::procrustes_scaling_t::yes : acmacs::chart::procrustes_scaling_t::no);
+                std::cout << "transformation: " << acmacs::to_string(procrustes_data.transformation) << '\n';
+                std::cout << "rms: " << acmacs::to_string(procrustes_data.rms) << '\n';
                   // common.report();
             }
             else {
