@@ -16,6 +16,8 @@ namespace acmacs::chart
     {
      public:
         ProcrustesData(size_t number_of_dimensions) : transformation(number_of_dimensions) {}
+        ProcrustesData(const ProcrustesData&) = default;
+        ProcrustesData(ProcrustesData&&) = default;
         TransformationTranslation transformation;
         double scale{1};
         double rms{0};

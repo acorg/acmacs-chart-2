@@ -159,8 +159,8 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     result.rms = std::sqrt(result.rms / num_rows);
 
     // std::cerr << "common points: " << common.size() << '\n';
-    std::cerr << "transformation: " << acmacs::to_string(result.transformation) << '\n';
-    std::cerr << "rms: " << acmacs::to_string(result.rms) << '\n';
+    // std::cerr << "transformation: " << acmacs::to_string(result.transformation) << '\n';
+    // std::cerr << "rms: " << acmacs::to_string(result.rms) << '\n';
 
     return result;
 
