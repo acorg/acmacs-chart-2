@@ -17,6 +17,8 @@ int main(int argc, char* const argv[])
         argc_argv args(argc, argv, {
                 {"--match", "auto", "match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""},
                 {"--scaling", false, "use scaling"},
+                {"-p", 0, "primary projection no"},
+                {"-r", 0, "secondary projection no"},
                 {"--time", false, "test speed"},
                 {"--verbose", false},
                 {"-h", false},
@@ -45,7 +47,7 @@ int main(int argc, char* const argv[])
             auto chart2 = acmacs::chart::import_from_file(args[1], acmacs::chart::Verify::None, report);
             acmacs::chart::CommonAntigensSera common(*chart1, *chart2, match_level);
             if (common) {
-                auto procrustes_data = acmacs::chart::procrustes(*chart1->projection(0), *chart2->projection(0), common.points(), args["--scaling"] ? acmacs::chart::procrustes_scaling_t::yes : acmacs::chart::procrustes_scaling_t::no);
+                auto procrustes_data = acmacs::chart::procrustes(*chart1->projection(args["-p"]), *chart2->projection(args["-r"]), common.points(), args["--scaling"] ? acmacs::chart::procrustes_scaling_t::yes : acmacs::chart::procrustes_scaling_t::no);
                   // common.report();
             }
             else {
