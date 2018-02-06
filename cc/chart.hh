@@ -253,7 +253,7 @@ namespace acmacs::chart
         inline std::string full_name() const { return ::string::join(" ", {name(), reassortant(), serum_id(), ::string::join(" ", annotations())}); }
         inline std::string full_name_without_passage() const { return full_name(); }
         inline std::string abbreviated_name() const { return ::string::join(" ", {name_abbreviated(), reassortant(), ::string::join(" ", annotations())}); }
-        inline std::string abbreviated_name_with_passage_type() const { return abbreviated_name(); }
+        inline std::string abbreviated_name_with_serum_id() const { return ::string::join(" ", {name_abbreviated(), reassortant(), serum_id(), ::string::join(" ", annotations())}); }
 
         std::string name_abbreviated() const;
         std::string location_abbreviated() const;
