@@ -75,8 +75,12 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart)
         dates[ag_no] = antigen->date();
         lab_ids[ag_no] = string::join(" ", antigen->lab_ids());
     }
+    std::vector<std::string> serum_annotations(sera->size());
+    for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
+        serum_annotations[sr_no] = string::join(" ", serum->annotations());
+    }
     const bool annotations_present{field_present(annotations)}, reassortants_present{field_present(reassortants)}, passages_present{field_present(passages)},
-               dates_present{field_present(dates)}, lab_ids_present{field_present(lab_ids)};
+               dates_present{field_present(dates)}, lab_ids_present{field_present(lab_ids)}, serum_annotations_present{field_present(serum_annotations)};
 
     output << "<table><tr><td></td><td></td>";
     size_t skip_left = 0;
@@ -93,7 +97,7 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart)
         ++skip_left;
     }
     for (auto sr_no : acmacs::range(sera->size()))
-        output << "<td class=\"sr-no\">" << (sr_no + 1) << "</td>";
+        output << "<td class=\"sr-no " << ("sr-" + std::to_string(sr_no)) << "\">" << (sr_no + 1) << "</td>";
     size_t skip_right = 0;
     if (dates_present) {
         output << "<td></td>";
@@ -109,18 +113,34 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart)
     output << "<tr>";
     for ([[maybe_unused]] auto i : acmacs::range(skip_left + 2))
         output << "<td></td>";
-    for (auto serum : *sera)
-        output << "<td class=\"sr-name\">" << html_escape(serum->name_abbreviated()) << "</td>";
+    for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
+        const auto sr_no_class = "sr-" + std::to_string(sr_no);
+        output << "<td class=\"sr-name " << sr_no_class << "\">" << html_escape(serum->name_abbreviated()) << "</td>";
+    }
     for ([[maybe_unused]] auto i : acmacs::range(skip_right))
         output << "<td></td>";
     output << "</tr>\n";
+
+      // serum annotations (e.g. CONC)
+    if (serum_annotations_present) {
+        output << "<tr>";
+        for ([[maybe_unused]] auto i : acmacs::range(skip_left + 2))
+            output << "<td></td>";
+        for (auto [sr_no, serum] : acmacs::enumerate(*sera))
+            output << "<td class=\"sr-annotations " << ("sr-" + std::to_string(sr_no)) << "\">" << html_escape(serum_annotations[sr_no]) << "</td>";
+        for ([[maybe_unused]] auto i : acmacs::range(skip_right))
+            output << "<td></td>";
+        output << "</tr>\n";
+    }
 
       // serum_ids
     output << "<tr>";
     for ([[maybe_unused]] auto i : acmacs::range(skip_left + 2))
         output << "<td></td>";
-    for (auto serum : *sera)
-        output << "<td class=\"sr-id\">" << html_escape(serum->serum_id()) << "</td>";
+    for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
+        const auto sr_no_class = "sr-" + std::to_string(sr_no);
+        output << "<td class=\"sr-id " << sr_no_class << "\">" << html_escape(serum->serum_id()) << "</td>";
+    }
     for ([[maybe_unused]] auto i : acmacs::range(skip_right))
         output << "<td></td>";
     output << "</tr>\n";
@@ -128,7 +148,7 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart)
     auto titers = chart.titers();
       // antigens and titers
     for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-        output << "<tr class=\"" << ((ag_no % 2) == 0 ? "even" : "odd") << "\"><td class=\"ag-no\">" << (ag_no + 1) << "</td>"
+        output << "<tr class=\"" << ((ag_no % 2) == 0 ? "even" : "odd") << ' ' << ("ag-" + std::to_string(ag_no)) << "\"><td class=\"ag-no\">" << (ag_no + 1) << "</td>"
                << "<td class=\"ag-name\">" << html_escape(antigen->name()) << "</td>";
         if (annotations_present)
             output << "<td class=\"auto ag-annotations\">" << html_escape(annotations[ag_no]) << "</td>";
@@ -184,19 +204,18 @@ void header(std::ostream& output, std::string table_name)
 <style>
 table { border-collapse: collapse; border: 1px solid grey; border-spacing: 0; }
 table.td { border: 1px solid grey; }
-.sr-no { text-align: center; font-size: 0.7em; }
-.sr-name { text-align: center; padding: 0 0.5em; white-space: nowrap; font-weight: bold; font-size: 0.7em; }
+.sr-no { text-align: center; font-size: 0.8em; }
+.sr-name { text-align: center; padding: 0 0.5em; white-space: nowrap; font-weight: bold; font-size: 0.8em; }
 .sr-id { text-align: center; white-space: nowrap; font-size: 0.5em; border-bottom: 1px solid grey; }
-table tr.even td.sr-5 { background-color: #FFFF80; }
-table tr.odd td.sr-5 { background-color: #C0C080; }
-.ag-no { text-align: right; font-size: 0.7em; }
-.ag-name { text-align: left; padding: 0 0.5em; white-space: nowrap; font-weight: bold; font-size: 0.7em; }
-.ag-annotations { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.7em; }
-.ag-reassortant { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.7em; }
-.ag-passage { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.7em; }
-.ag-date { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.7em; }
-.ag-lab-id { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.7em; }
-.titer { text-align: right; white-space: nowrap; padding-right: 1em; font-size: 0.7em; }
+.sr-annotations { text-align: center; white-space: nowrap; font-size: 0.5em; }
+.ag-no { text-align: right; font-size: 0.8em; }
+.ag-name { text-align: left; padding: 0 0.5em; white-space: nowrap; font-weight: bold; font-size: 0.8em; }
+.ag-annotations { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.8em; }
+.ag-reassortant { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.8em; }
+.ag-passage { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.8em; }
+.ag-date { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.8em; }
+.ag-lab-id { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.8em; }
+.titer { text-align: right; white-space: nowrap; padding-right: 1em; font-size: 0.8em; }
 .titer-pos-left { border-left: 1px solid grey; }
 .titer-pos-right { border-right: 1px solid grey; }
 .titer-invalid   { color: red; }
