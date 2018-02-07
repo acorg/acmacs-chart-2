@@ -58,7 +58,7 @@ namespace acmacs::chart
         ProjectionModifyP projection_modify(size_t aProjectionNo);
         PlotSpecModifyP plot_spec_modify();
 
-        std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options);
+        std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {});
 
      private:
         ChartP main_;
@@ -329,7 +329,8 @@ namespace acmacs::chart
         bool dodgy_titer_is_regular() const override { return dodgy_titer_is_regular_; }
         double stress_diff_to_stop() const override { return stress_diff_to_stop_; }
         PointIndexList unmovable() const override { return {}; }
-        PointIndexList disconnected() const override { return {}; }
+        PointIndexList disconnected() const override { return disconnected_; }
+        void set_disconnected(const PointIndexList& disconnect) { disconnected_ = disconnect; }
         PointIndexList unmovable_in_the_last_dimension() const override { return {}; }
         AvidityAdjusts avidity_adjusts() const override { return {}; }
 
@@ -338,6 +339,7 @@ namespace acmacs::chart
         ColumnBasesP forced_column_bases_;
         bool dodgy_titer_is_regular_{false};
         double stress_diff_to_stop_{0};
+        PointIndexList disconnected_;
 
         ProjectionModifyP clone() const override { return std::make_shared<ProjectionModifyNew>(*this); }
 
@@ -362,11 +364,18 @@ namespace acmacs::chart
           // ProjectionModifyP clone(size_t aIndex) { auto cloned = projections_.at(aIndex)->clone(); projections_.push_back(cloned); return cloned; }
         void sort() { std::sort(projections_.begin(), projections_.end(), [](const auto& p1, const auto& p2) { return p1->stress() < p2->stress(); }); set_projection_no(); }
 
-        ProjectionModifyP new_from_scratch(size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis)
+        std::shared_ptr<ProjectionModifyNew> new_from_scratch(size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis)
             {
-                projections_.push_back(std::make_shared<ProjectionModifyNew>(chart(), number_of_dimensions, minimum_column_basis));
+                auto projection = std::make_shared<ProjectionModifyNew>(chart(), number_of_dimensions, minimum_column_basis);
+                projections_.push_back(projection);
                 projections_.back()->set_projection_no(projections_.size() - 1);
-                return projections_.back();
+                return projection;
+            }
+
+        void keep_just(size_t to_keep)
+            {
+                if (projections_.size() > to_keep)
+                    projections_.erase(projections_.begin() + static_cast<decltype(projections_)::difference_type>(to_keep), projections_.end());
             }
 
      private:

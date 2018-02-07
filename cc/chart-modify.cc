@@ -151,11 +151,12 @@ PlotSpecModifyP ChartModify::plot_spec_modify()
 
 // ----------------------------------------------------------------------
 
-std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, optimization_options options)
+std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, optimization_options options, const PointIndexList& disconnect_points)
 {
     const auto start = std::chrono::high_resolution_clock::now();
     const size_t start_num_dim = dimension_annealing && number_of_dimensions < 5 ? 5 : number_of_dimensions;
     auto projection = projections_modify()->new_from_scratch(start_num_dim, minimum_column_basis);
+    projection->set_disconnected(disconnect_points);
     auto layout = projection->layout_modified();
     auto stress = acmacs::chart::stress_factory<double>(*projection, options.mult);
     projection->randomize_layout(options.max_distance_multiplier);
