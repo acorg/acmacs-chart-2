@@ -21,7 +21,8 @@ TARGETS = \
     $(DIST)/chart-relax \
     $(DIST)/chart-relax-existing \
     $(DIST)/chart-common \
-    $(DIST)/chart-procrustes
+    $(DIST)/chart-procrustes \
+    $(DIST)/chart-html
 
 SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc \
     rjson-import.cc \
