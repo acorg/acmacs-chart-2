@@ -1,3 +1,4 @@
+#include "acmacs-base/range.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
 using namespace std::string_literals;
@@ -179,15 +180,55 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
 
 // ----------------------------------------------------------------------
 
-void ProjectionModify::randomize_layout(double max_distance_multiplier)
+std::shared_ptr<ProjectionModifyNew> ProjectionModify::clone(ChartModify& chart) const
 {
-    auto cb = forced_column_bases();
-    if (!cb)
-        cb = chart().column_bases(minimum_column_basis());
-    LayoutRandomizerPlain randomizer(chart().titers()->max_distance(*cb) * max_distance_multiplier);
-    randomize_layout(randomizer);
+    auto projection = std::make_shared<ProjectionModifyNew>(*this);
+    chart.projections_modify()->add(projection);
+    return projection;
 
-} // ProjectionModify::randomize_layout
+} // ProjectionModify::clone
+
+// ----------------------------------------------------------------------
+
+void ProjectionsModify::add(std::shared_ptr<ProjectionModify> projection)
+{
+    projections_.push_back(projection);
+    projections_.back()->set_projection_no(projections_.size() - 1);
+
+} // ProjectionsModify::add
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<ProjectionModifyNew> ProjectionsModify::new_from_scratch(size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis)
+{
+    auto projection = std::make_shared<ProjectionModifyNew>(chart(), number_of_dimensions, minimum_column_basis);
+    add(projection);
+    return projection;
+
+} // ProjectionsModify::new_from_scratch
+
+// ----------------------------------------------------------------------
+
+void ProjectionsModify::remove(size_t projection_no)
+{
+    if (projection_no >= projections_.size())
+        throw invalid_data{"invalid projection number: " + std::to_string(projection_no)};
+    projections_.erase(projections_.begin() + static_cast<decltype(projections_)::difference_type>(projection_no));
+    set_projection_no();
+
+} // ProjectionsModify::remove
+
+// ----------------------------------------------------------------------
+
+void ProjectionsModify::remove_all_except(size_t projection_no)
+{
+    if (projection_no >= projections_.size())
+        throw invalid_data{"invalid projection number: " + std::to_string(projection_no)};
+    projections_.erase(projections_.begin() + static_cast<decltype(projections_)::difference_type>(projection_no + 1), projections_.end());
+    projections_.erase(projections_.begin(), projections_.begin() + static_cast<decltype(projections_)::difference_type>(projection_no));
+    set_projection_no();
+
+} // ProjectionsModify::remove_all_except
 
 // ----------------------------------------------------------------------
 
@@ -204,15 +245,66 @@ void ProjectionModify::randomize_layout(LayoutRandomizer& randomizer)
 
 // ----------------------------------------------------------------------
 
+void ProjectionModify::randomize_layout(const PointIndexList& to_randomize, LayoutRandomizer& randomizer)
+{
+    modify();
+    auto layout = layout_modified();
+    for (auto point_no : to_randomize) {
+        for (size_t dim_no = 0; dim_no < layout->number_of_dimensions(); ++dim_no)
+            layout->set(point_no, dim_no, randomizer());
+    }
+
+} // ProjectionModify::randomize_layout
+
+// ----------------------------------------------------------------------
+
+LayoutRandomizerPlain ProjectionModify::make_randomizer_plain(double max_distance_multiplier) const
+{
+    auto cb = forced_column_bases();
+    if (!cb)
+        cb = chart().column_bases(minimum_column_basis());
+    return LayoutRandomizerPlain(chart().titers()->max_distance(*cb) * max_distance_multiplier);
+
+} // ProjectionModify::make_randomizer_plain
+
+// ----------------------------------------------------------------------
+
 void ProjectionModify::set_layout(const acmacs::Layout& layout, bool allow_size_change)
 {
     modify();
     auto target_layout = layout_modified();
     if (!allow_size_change && layout.size() != target_layout->size())
-        throw invalid_data("ProjectionModify::set_layout: wrong layout size");
+        throw invalid_data("ProjectionModify::set_layout(const acmacs::Layout&): wrong layout size");
     *target_layout = layout;
 
 } // ProjectionModify::set_layout
+
+// ----------------------------------------------------------------------
+
+void ProjectionModify::set_layout(const acmacs::LayoutInterface& layout)
+{
+    modify();
+    new_layout(layout.number_of_points(), layout.number_of_dimensions());
+    for (auto point_no : acmacs::range(layout.number_of_points()))
+        layout_->set(point_no, layout.get(point_no));
+
+} // ProjectionModify::set_layout
+
+// ----------------------------------------------------------------------
+
+void ProjectionModifyNew::connect(const PointIndexList& to_connect)
+{
+    for (auto point_no: to_connect) {
+        const auto found = std::find(disconnected_.begin(), disconnected_.end(), point_no);
+        if (found == disconnected_.end())
+            throw invalid_data{"Point was not disconnected: " + std::to_string(point_no) + ": cannot connect it"};
+        disconnected_.erase(found);
+    }
+
+} // ProjectionModifyNew::connect
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:

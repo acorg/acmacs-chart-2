@@ -40,11 +40,32 @@ int main(int argc, char* const argv[])
             const auto precision = args["--rough"] ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
             const acmacs::chart::optimization_method method{acmacs::chart::optimization_method_from_string(args["--method"])};
 
-            auto projection = chart.projection_modify(args["--projection"]);
-            const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
-            std::cout << status << '\n';
+            acmacs::chart::ProjectionModifyP source_projection;
+            if (args["--remove-source-projections"]) {
+                chart.projections_modify()->remove_all_except(args["--projection"]);
+                source_projection = chart.projection_modify(0);
+            }
+            else {
+                source_projection = chart.projection_modify(args["--projection"]);
+            }
+            auto disconnected = source_projection->disconnected();
+            if (disconnected.empty())
+                throw std::runtime_error("projection has no disconnected points");
+            std::cout << "INFO: disconnected points: (" << disconnected.size() << ')' << disconnected << '\n';
 
-              // chart.projections_modify()->sort();
+            const size_t number_of_attempts = args["-n"];
+            for (size_t attempt = 1; attempt <= number_of_attempts; ++attempt) {
+                auto projection = source_projection->clone(chart);
+                projection->connect(disconnected);
+                projection->randomize_layout(disconnected);
+                const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
+                std::cout << attempt << ' ' << status << '\n';
+            }
+            if (args["--remove-source-projections"])
+                chart.projections_modify()->remove(0);
+
+
+            chart.projections_modify()->sort();
             std::cout << chart.make_info() << '\n';
             if (args.number_of_arguments() > 1)
                 acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);

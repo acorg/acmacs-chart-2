@@ -210,6 +210,8 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+    class ProjectionModifyNew;
+
     class ProjectionModify : public Projection
     {
      public:
@@ -232,15 +234,19 @@ namespace acmacs::chart
 
         std::shared_ptr<acmacs::Layout> layout_modified() { modify(); return layout_; }
         std::shared_ptr<acmacs::Layout> layout_modified() const { return layout_; }
-        virtual void randomize_layout(double max_distance_multiplier = 1.0);
+        virtual void randomize_layout(double max_distance_multiplier = 1.0) { auto rnd = make_randomizer_plain(max_distance_multiplier); randomize_layout(rnd); }
+        virtual void randomize_layout(const PointIndexList& to_randomize, double max_distance_multiplier = 1.0) { auto rnd = make_randomizer_plain(max_distance_multiplier); randomize_layout(to_randomize, rnd); } // randomize just some point coordinates
         virtual void randomize_layout(LayoutRandomizer& randomizer);
+        virtual void randomize_layout(const PointIndexList& to_randomize, LayoutRandomizer& randomizer); // randomize just some point coordinates
         virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
+        virtual void set_layout(const acmacs::LayoutInterface& layout);
         virtual optimization_status relax(acmacs::chart::optimization_options options)
             {
                 const auto status = acmacs::chart::optimize(*this, options);
                 stress_ = status.final_stress;
                 return status;
             }
+        virtual std::shared_ptr<ProjectionModifyNew> clone(ChartModify& chart) const;
 
      protected:
         virtual void modify() { stress_.reset(); }
@@ -261,7 +267,8 @@ namespace acmacs::chart
         mutable std::optional<double> stress_;
 
         friend class ProjectionsModify;
-        virtual ProjectionModifyP clone() const = 0;
+
+        LayoutRandomizerPlain make_randomizer_plain(double max_distance_multiplier) const;
 
     }; // class ProjectionModify
 
@@ -296,8 +303,6 @@ namespace acmacs::chart
      private:
         ProjectionP main_;
 
-        ProjectionModifyP clone() const override { return std::make_shared<ProjectionModifyMain>(*this); }
-
     }; // class ProjectionModifyMain
 
 // ----------------------------------------------------------------------
@@ -311,11 +316,13 @@ namespace acmacs::chart
                 new_layout(chart.number_of_points(), number_of_dimensions);
             }
 
-        ProjectionModifyNew(const ProjectionModifyNew& aSource)
-            : ProjectionModify(aSource), minimum_column_basis_(aSource.minimum_column_basis_),
-              forced_column_bases_(std::make_shared<ColumnBasesData>(*aSource.forced_column_bases_)),
-              dodgy_titer_is_regular_(aSource.dodgy_titer_is_regular_), stress_diff_to_stop_(aSource.stress_diff_to_stop_)
+        ProjectionModifyNew(const ProjectionModify& aSource)
+            : ProjectionModify(aSource), minimum_column_basis_(aSource.minimum_column_basis()),
+              forced_column_bases_(std::make_shared<ColumnBasesData>(*aSource.forced_column_bases())),
+              dodgy_titer_is_regular_(aSource.dodgy_titer_is_regular()), stress_diff_to_stop_(aSource.stress_diff_to_stop()),
+              disconnected_(aSource.disconnected())
             {
+                set_layout(*aSource.layout());
             }
 
         std::shared_ptr<Layout> layout() const override { return layout_modified(); }
@@ -331,6 +338,7 @@ namespace acmacs::chart
         PointIndexList unmovable() const override { return {}; }
         PointIndexList disconnected() const override { return disconnected_; }
         void set_disconnected(const PointIndexList& disconnect) { disconnected_ = disconnect; }
+        void connect(const PointIndexList& to_connect);
         PointIndexList unmovable_in_the_last_dimension() const override { return {}; }
         AvidityAdjusts avidity_adjusts() const override { return {}; }
 
@@ -340,8 +348,6 @@ namespace acmacs::chart
         bool dodgy_titer_is_regular_{false};
         double stress_diff_to_stop_{0};
         PointIndexList disconnected_;
-
-        ProjectionModifyP clone() const override { return std::make_shared<ProjectionModifyNew>(*this); }
 
     }; // class ProjectionModifyNew
 
@@ -363,20 +369,18 @@ namespace acmacs::chart
         ProjectionModifyP at(size_t aIndex) const { return projections_.at(aIndex); }
           // ProjectionModifyP clone(size_t aIndex) { auto cloned = projections_.at(aIndex)->clone(); projections_.push_back(cloned); return cloned; }
         void sort() { std::sort(projections_.begin(), projections_.end(), [](const auto& p1, const auto& p2) { return p1->stress() < p2->stress(); }); set_projection_no(); }
+        void add(std::shared_ptr<ProjectionModify> projection);
 
-        std::shared_ptr<ProjectionModifyNew> new_from_scratch(size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis)
+        std::shared_ptr<ProjectionModifyNew> new_from_scratch(size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis);
+
+        void keep_just(size_t number_of_projections_to_keep)
             {
-                auto projection = std::make_shared<ProjectionModifyNew>(chart(), number_of_dimensions, minimum_column_basis);
-                projections_.push_back(projection);
-                projections_.back()->set_projection_no(projections_.size() - 1);
-                return projection;
+                if (projections_.size() > number_of_projections_to_keep)
+                    projections_.erase(projections_.begin() + static_cast<decltype(projections_)::difference_type>(number_of_projections_to_keep), projections_.end());
             }
 
-        void keep_just(size_t to_keep)
-            {
-                if (projections_.size() > to_keep)
-                    projections_.erase(projections_.begin() + static_cast<decltype(projections_)::difference_type>(to_keep), projections_.end());
-            }
+        void remove(size_t projection_no);
+        void remove_all_except(size_t projection_no);
 
      private:
         std::vector<ProjectionModifyP> projections_;

@@ -389,7 +389,7 @@ namespace acmacs::chart
         template <typename Float> double calculate_stress(multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const;
         template <typename Float> std::vector<Float> calculate_gradient(multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const;
 
-        // Chart& chart() { return const_cast<Chart&>(chart_); }
+        Chart& chart() { return const_cast<Chart&>(chart_); }
         const Chart& chart() const { return chart_; }
         void set_projection_no(size_t projection_no) { projection_no_ = projection_no; }
 

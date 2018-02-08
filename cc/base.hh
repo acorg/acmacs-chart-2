@@ -90,6 +90,7 @@ namespace acmacs::chart
 
             constexpr void push_back(const T& val) { mData.push_back(val); }
             constexpr void push_back(T&& val) { mData.push_back(std::forward<T>(val)); }
+            constexpr typename std::vector<T>::iterator erase(typename std::vector<T>::iterator to_erase) { return mData.erase(to_erase); }
 
          private:
             std::vector<T> mData;
