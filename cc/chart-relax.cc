@@ -9,7 +9,6 @@
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
-static acmacs::chart::optimization_method get_method(std::string method_s);
 static std::vector<size_t> get_disconnected(std::string antigens, std::string sera, size_t number_of_antigens, size_t number_of_sera);
 
 // ----------------------------------------------------------------------
@@ -43,7 +42,7 @@ int main(int argc, char* const argv[])
             const report_time report = args["--time"] ? report_time::Yes : report_time::No;
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
             const auto precision = args["--rough"] ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
-            const auto method{get_method(args["--method"])};
+            const auto method{acmacs::chart::optimization_method_from_string(args["--method"])};
             const auto disconnected{get_disconnected(args["--disconnect-antigens"], args["--disconnect-sera"], chart.number_of_antigens(), chart.number_of_sera())};
 
             const size_t number_of_attempts = args["-n"];
@@ -66,21 +65,6 @@ int main(int argc, char* const argv[])
     }
     return exit_code;
 }
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::optimization_method get_method(std::string method_s)
-{
-    acmacs::chart::optimization_method method{acmacs::chart::optimization_method::alglib_cg_pca};
-    if (method_s == "lbfgs")
-        method = acmacs::chart::optimization_method::alglib_lbfgs_pca;
-    else if (method_s == "cg")
-        method = acmacs::chart::optimization_method::alglib_cg_pca;
-    else
-        throw std::runtime_error("unrecognized method, lbfgs or cg expected");
-    return method;
-
-} // get_method
 
 // ----------------------------------------------------------------------
 

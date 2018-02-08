@@ -16,8 +16,11 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
+                {"-n", 1U, "number of optimizations"},
                 {"--projection", 0},
                 {"--rough", false},
+                {"--remove-source-projections", false},
+                {"--keep-projections", 0, "number of projections to keep, 0 - keep all"},
                 {"--method", "cg", "method: lbfgs, cg"},
                 {"--md", 1.0, "max distance multiplier"},
                 {"--time", false, "report time of loading chart"},
@@ -27,7 +30,8 @@ int main(int argc, char* const argv[])
                 {"-v", false},
                         });
         if (args["-h"] || args["--help"] || args.number_of_arguments() < 1) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file> [<output-chart-file>]\n" << args.usage_options() << '\n';
+            std::cerr << "Randomizes position for disconnected points, connects them and relaxes the map.\n"
+                      << "Usage: " << args.program() << " [options] <chart-file> [<output-chart-file>]\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {

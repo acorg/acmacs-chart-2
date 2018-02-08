@@ -20,6 +20,7 @@ TARGETS = \
     $(DIST)/chart-relax-test \
     $(DIST)/chart-relax \
     $(DIST)/chart-relax-existing \
+    $(DIST)/chart-relax-disconnected \
     $(DIST)/chart-common \
     $(DIST)/chart-procrustes \
     $(DIST)/chart-html

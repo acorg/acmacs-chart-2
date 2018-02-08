@@ -51,13 +51,7 @@ int main(int argc, char* const argv[])
             const acmacs::chart::dimension_schedule schedule{acmacs::string::split_into_uint(args["-d"].str(), ",")};
             const auto number_of_dimensions = schedule.final();
             const auto precision = args["--rough"] ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
-            acmacs::chart::optimization_method method{acmacs::chart::optimization_method::alglib_lbfgs_pca};
-            if (args["--method"] == "lbfgs")
-                method = acmacs::chart::optimization_method::alglib_lbfgs_pca;
-            else if (args["--method"] == "cg")
-                method = acmacs::chart::optimization_method::alglib_cg_pca;
-            else
-                throw std::runtime_error("unrecognized method, lbfgs or cg expected");
+            const acmacs::chart::optimization_method method{acmacs::chart::optimization_method_from_string(args["--method"])};
 
             if (args["--rough-test"]) {
                 test_rough(chart, args["-n"], args["-m"].str(), number_of_dimensions, args["--md"]);
