@@ -91,9 +91,11 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, bool all_
 
     std::vector<std::string> annotations(antigens->size()), reassortants(antigens->size()), passages(antigens->size()), dates(antigens->size()), lab_ids(antigens->size());
     for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-        annotations[ag_no] = string::join(" ", antigen->annotations());
-        reassortants[ag_no] = antigen->reassortant();
-        passages[ag_no] = antigen->passage();
+        if (all_fields) {
+            annotations[ag_no] = string::join(" ", antigen->annotations());
+            reassortants[ag_no] = antigen->reassortant();
+            passages[ag_no] = antigen->passage();
+        }
         dates[ag_no] = antigen->date();
         lab_ids[ag_no] = string::join(" ", antigen->lab_ids());
     }
@@ -105,14 +107,28 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, bool all_
     auto titers = chart.titers();
       // antigens and titers
     for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-        output << "<tr class=\"" << ((ag_no % 2) == 0 ? "even" : "odd") << ' ' << ("ag-" + std::to_string(ag_no)) << "\"><td class=\"ag-no\">" << (ag_no + 1) << "</td>"
-               << "<td class=\"ag-name\">" << html_escape(antigen->name()) << "</td>";
-        if (antigen_fields.annotations)
-            output << "<td class=\"auto ag-annotations\">" << html_escape(annotations[ag_no]) << "</td>";
-        if (antigen_fields.reassortants)
-            output << "<td class=\"ag-reassortant\">" << html_escape(reassortants[ag_no]) << "</td>";
-        if (antigen_fields.passages)
-            output << "<td class=\"ag-passage\">" << html_escape(passages[ag_no]) << "</td>";
+        output << "<tr class=\"" << ((ag_no % 2) == 0 ? "even" : "odd") << ' ' << ("ag-" + std::to_string(ag_no)) << "\"><td class=\"ag-no\">" << (ag_no + 1) << "</td>";
+        const auto passage_type = antigen->passage_type();
+        if (all_fields) {
+            output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << "\">" << html_escape(antigen->name()) << "</td>";
+            if (antigen_fields.annotations)
+                output << "<td class=\"auto ag-annotations\">" << html_escape(annotations[ag_no]) << "</td>";
+            if (antigen_fields.reassortants)
+                output << "<td class=\"ag-reassortant\">" << html_escape(reassortants[ag_no]) << "</td>";
+            if (antigen_fields.passages)
+                output << "<td class=\"ag-passage\">" << html_escape(passages[ag_no]) << "</td>";
+        }
+        else {
+            std::string name = antigen->name_abbreviated();
+            // if (name.size() > 8) {
+            //     std::vector<std::string> fields;
+            //     for (auto field : acmacs::string::split(name, "/", acmacs::string::Split::RemoveEmpty))
+            //         fields.emplace_back(field.substr(0, 2));
+            //     name = string::join("/", fields);
+            // }
+            output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << "\"><div class=\"tooltip\">" << html_escape(name)
+                   << "<span class=\"tooltiptext\">" << html_escape(antigen->full_name()) << "</span></div></td>";
+        }
 
           // titers
         for (auto sr_no : acmacs::range(sera->size())) {
@@ -231,18 +247,21 @@ void header(std::ostream& output, std::string table_name)
 table { border-collapse: collapse; border: 1px solid grey; border-spacing: 0; }
 table.td { border: 1px solid grey; }
 .sr-no { text-align: center; font-size: 0.8em; }
-.sr-name { text-align: center; padding: 0 0.5em; white-space: nowrap; font-weight: bold; font-size: 0.8em; }
+.sr-name { text-align: center; padding: 0 0.5em; white-space: nowrap; font-weight: bold; font-size: 1em; }
 .sr-name .tooltip .tooltiptext { top: -3em; left: -10em; }
 .sr-id { text-align: center; white-space: nowrap; font-size: 0.5em; border-bottom: 1px solid grey; }
 .sr-annotations { text-align: center; white-space: nowrap; font-size: 0.5em; }
 .ag-no { text-align: right; font-size: 0.8em; }
-.ag-name { text-align: left; padding: 0 0.5em; white-space: nowrap; font-weight: bold; font-size: 0.8em; }
+.ag-name { text-align: left; padding: 0 0.5em; white-space: nowrap; font-weight: bold; font-size: 1em; }
+.ag-name .tooltip .tooltiptext { top: -2em; left: 0; }
+.passage-egg { color: #606000; }
+.passage-cell { color: #000060; }
 .ag-annotations { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.8em; }
 .ag-reassortant { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.8em; }
 .ag-passage { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.8em; }
 .ag-date { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.8em; }
 .ag-lab-id { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.8em; }
-.titer { text-align: right; white-space: nowrap; padding-right: 1em; font-size: 0.8em; }
+.titer { text-align: right; white-space: nowrap; padding-right: 1em; font-size: 1em; }
 .titer-pos-left { border-left: 1px solid grey; }
 .titer-pos-right { border-right: 1px solid grey; }
 .titer-invalid   { color: red; }
@@ -252,18 +271,18 @@ table.td { border: 1px solid grey; }
 .titer-more-than { color: blue; }
 .titer-dodgy     { color: brown; }
 tr.even td { background-color: white; }
-tr.odd td { background-color: #F0F0F0; }
+tr.odd td { background-color: #F8F8F8; }
 
 .tooltip {
     position: relative;
     display: inline-block;
-    border-bottom: 1px dotted black;
+    // border-bottom: 1px dotted black;
 }
 
 .tooltip .tooltiptext {
     visibility: hidden;
-    background-color: #EEF;
-    color: black;
+    background-color: #FF8;
+    color: blue;
     text-align: left;
     padding: 5px 3px;
     border-radius: 6px;
@@ -277,6 +296,11 @@ tr.odd td { background-color: #F0F0F0; }
 .tooltip:hover .tooltiptext {
     visibility: visible;
 }
+
+tr:hover td {
+  background: #FFF0E0;
+}
+
 </style>
 <title>)";
     const char* h2 = R"(</title>
