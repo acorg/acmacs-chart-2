@@ -1,5 +1,6 @@
 #include "acmacs-base/layout.hh"
 #include "acmacs-base/timeit.hh"
+#include "acmacs-base/stream.hh"
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
@@ -261,14 +262,29 @@ void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs
 
 acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(acmacs::chart::optimization_method optimization_method, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
 {
+    // std::cerr << "dimension_annealing " << std::pair(arg_first, arg_last) << '\n';
     DimensionAnnelingStatus status;
     const auto start = std::chrono::high_resolution_clock::now();
+
+      // remember nan positions, replace nan's with 0 (pca engine cannot handle nan)
+    std::vector<long> nan_positions;
+    for (auto arg = arg_first; arg != arg_last; ++arg) {
+        if (std::isnan(*arg)) {
+            nan_positions.push_back(arg - arg_first);
+            *arg = 0;
+        }
+    }
+
     switch (optimization_method) {
       case optimization_method::alglib_lbfgs_pca:
       case optimization_method::alglib_cg_pca:
           alglib_pca(source_number_of_dimensions, target_number_of_dimensions, arg_first, arg_last);
           break;
     }
+
+      // return back nan's
+    std::for_each(nan_positions.begin(), nan_positions.end(), [arg_first](auto pos) { arg_first[pos] = std::numeric_limits<double>::quiet_NaN(); });
+
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
     return status;
 
