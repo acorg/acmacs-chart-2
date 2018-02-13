@@ -368,6 +368,22 @@ acmacs::chart::CommonAntigensSera::operator bool() const
 
 // ----------------------------------------------------------------------
 
+size_t acmacs::chart::CommonAntigensSera::common_antigens() const
+{
+    return impl_->antigens_.number_of_common_;
+
+} // acmacs::chart::CommonAntigensSera::common_antigens
+
+// ----------------------------------------------------------------------
+
+size_t acmacs::chart::CommonAntigensSera::common_sera() const
+{
+    return impl_->sera_.number_of_common_;
+
+} // acmacs::chart::CommonAntigensSera::common_sera
+
+// ----------------------------------------------------------------------
+
 std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAntigensSera::antigens() const
 {
     return impl_->antigens_.common();

@@ -90,10 +90,10 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     y.setlength(cint(common.size()), cint(number_of_dimensions));
     for (size_t point_no = 0; point_no < common.size(); ++point_no) {
         for (size_t dim = 0; dim < number_of_dimensions; ++dim) {
-            const auto x_v = primary_layout->coordinate(common[point_no].primary, dim);
-            x(cint(point_no), cint(dim)) = x_v;
-            const auto y_v = secondary_layout->coordinate(common[point_no].secondary, dim);
-            y(cint(point_no), cint(dim)) = y_v;
+            if (const auto x_v = primary_layout->coordinate(common[point_no].primary, dim); !std::isnan(x_v))
+                x(cint(point_no), cint(dim)) = x_v;
+            if (const auto y_v = secondary_layout->coordinate(common[point_no].secondary, dim); !std::isnan(y_v))
+                y(cint(point_no), cint(dim)) = y_v;
         }
     }
 
