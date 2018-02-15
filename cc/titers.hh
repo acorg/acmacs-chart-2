@@ -29,8 +29,8 @@ namespace acmacs::chart
         bool is_more_than() const { return type() == MoreThan; }
 
         bool operator<(const Titer& other) const { return value_for_sorting() < other.value_for_sorting(); }
-        bool operator==(const Titer& other) const { return data() == other.data(); }
-        bool operator!=(const Titer& other) const { return ! operator==(other); }
+        // bool operator==(const Titer& other) const { return data() == other.data(); }
+        // bool operator!=(const Titer& other) const { return ! operator==(other); }
 
         double logged() const;
         double logged_with_thresholded() const;
@@ -39,11 +39,11 @@ namespace acmacs::chart
         size_t value_for_sorting() const;
 
           // static inline Titer from_logged(double aLogged, std::string aPrefix = "") { return aPrefix + std::to_string(std::lround(std::pow(2.0, aLogged) * 10.0)); }
-        static inline Titer from_logged(double aLogged, std::string aPrefix = "") { return aPrefix + std::to_string(std::lround(std::exp2(aLogged) * 10.0)); }
+        static inline Titer from_logged(double aLogged, const char* aPrefix = "") { return aPrefix + std::to_string(std::lround(std::exp2(aLogged) * 10.0)); }
 
     }; // class Titer
 
-    inline std::ostream& operator<<(std::ostream& s, const Titer& aTiter) { return s << aTiter.data(); }
+    // inline std::ostream& operator<<(std::ostream& s, const Titer& aTiter) { return s << aTiter; }
 
 // ----------------------------------------------------------------------
 
@@ -85,14 +85,14 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-namespace acmacs
-{
-    inline std::string to_string(acmacs::chart::Titer aTiter)
-    {
-        return aTiter.data();
-    }
+// namespace acmacs
+// {
+//     inline std::string to_string(acmacs::chart::Titer aTiter)
+//     {
+//         return aTiter.data();
+//     }
 
-} // namespace acmacs
+// } // namespace acmacs
 
 // ----------------------------------------------------------------------
 /// Local Variables:

@@ -14,39 +14,26 @@ namespace acmacs::chart
 {
     namespace internal
     {
-        class string_data
+        class string_data : public std::string
         {
          public:
             string_data() = default;
-            string_data(const std::string& aSrc) : mData{aSrc} {}
-            string_data(std::string_view aSrc) : mData{aSrc} {}
-            string_data(std::string&& aSrc) : mData{std::move(aSrc)} {}
-            string_data(const char* aSrc) : mData{aSrc} {}
-            string_data(const rjson::value& aSrc) : mData{aSrc.str()} {}
-            string_data(const string_data& aSrc) = default;
-            string_data(string_data&& aSrc) = default;
-            string_data& operator=(const std::string& aSrc) { mData = aSrc; return *this; }
-            string_data& operator=(std::string&& aSrc) { mData = std::move(aSrc); return *this; }
-            string_data& operator=(const string_data& aSrc) = default;
-            string_data& operator=(string_data&& aSrc) = default;
-            int compare(const string_data& a) const { return ::string::compare(*this, a); }
-
-            bool empty() const noexcept { return mData.empty(); }
-            size_t size() const noexcept { return mData.size(); }
-            char operator[](size_t index) const noexcept { return mData[index]; }
-            bool operator == (const string_data& other) const { return data() == other.data(); }
-            bool operator != (const string_data& other) const { return !operator==(other); }
-            auto find(const char* s) const noexcept { return mData.find(s); }
-
-            constexpr const std::string& data() const noexcept { return mData; }
-            constexpr operator const std::string&() const noexcept { return mData; }
-
-         private:
-            std::string mData;
+            string_data(const std::string& src) : std::string(src) {}
+            string_data(std::string&& src) : std::string(std::move(src)) {}
+            string_data(std::string_view src) : std::string(src) {}
+            string_data(const char* src) : std::string(src) {}
+            string_data(const rjson::value& aSrc) : std::string(aSrc.str()) {}
+            string_data(const string_data&) = default;
+            string_data(string_data&&) = default;
+            using std::string::operator=;
+            string_data& operator=(const string_data&) = default;
+            string_data& operator=(string_data&&) = default;
+            int compare(const string_data& other) const { return ::string::compare(*this, other); }
 
         }; // class string_data
 
-        inline std::ostream& operator << (std::ostream& out, const string_data& a) { return out << a.data(); }
+        inline bool operator==(const string_data& left, const char* right) { return ::string::compare(left, right) == 0; }
+        inline bool operator!=(const string_data& left, const char* right) { return !operator==(left, right); }
 
 // ----------------------------------------------------------------------
 
@@ -164,7 +151,7 @@ namespace acmacs
 {
     inline std::string to_string(const acmacs::chart::internal::string_data& value)
     {
-        return value.data();
+        return value;
     }
 
 } // namespace acmacs

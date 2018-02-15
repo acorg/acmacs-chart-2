@@ -51,7 +51,7 @@ TiterMerger::Type TiterMerger::merge()
     if (mTiters.empty()) {
         mType = DontCare;
         if (mMerged != "*")
-            throw std::runtime_error("Invalid pre-merged titer: " + mMerged.data() + " for sources: " + acmacs::to_string(mTiters) + ", must be: *");
+            throw std::runtime_error("Invalid pre-merged titer: " + mMerged + " for sources: " + acmacs::to_string(mTiters) + ", must be: *");
     }
     else {
         size_t num_less = 0, num_more = 0;
@@ -64,7 +64,7 @@ TiterMerger::Type TiterMerger::merge()
               case acmacs::chart::Titer::Invalid:
               case acmacs::chart::Titer::DontCare:
               case acmacs::chart::Titer::Dodgy:
-                  throw std::runtime_error("Invalid titer: " + titer.data());
+                  throw std::runtime_error("Invalid titer: " + titer);
               case acmacs::chart::Titer::Regular:
                   regular.push_back(lgd);
                   break;
@@ -81,7 +81,7 @@ TiterMerger::Type TiterMerger::merge()
         if (num_less && num_more) {
             mType = ThresholdedBoth;
             if (mMerged != "*")
-                throw std::runtime_error("Invalid pre-merged titer: " + mMerged.data() + " for sources: " + acmacs::to_string(mTiters) + ", must be: *");
+                throw std::runtime_error("Invalid pre-merged titer: " + mMerged + " for sources: " + acmacs::to_string(mTiters) + ", must be: *");
         }
         else if (num_less == mTiters.size()) {
             mType = ThresholdedOnly;
@@ -103,7 +103,7 @@ TiterMerger::Type TiterMerger::merge()
                 mType = SDTooBig;
                 // std::cerr << "SDTooBig: " << sd << ": " << mMerged << " <-- " << mTiters << '\n';
                 if (mMerged != "*")
-                    throw std::runtime_error("Invalid pre-merged titer: " + mMerged.data() + " for sources: " + acmacs::to_string(mTiters) + ", must be: * (because SD is " + std::to_string(sd) + " > " + std::to_string(sd_threshold_) + ")");
+                    throw std::runtime_error("Invalid pre-merged titer: " + mMerged + " for sources: " + acmacs::to_string(mTiters) + ", must be: * (because SD is " + std::to_string(sd) + " > " + std::to_string(sd_threshold_) + ")");
             }
             else if (num_less) {
                 if (const auto regular_max = regular.max(), thresholded_max = thresholded.max(); thresholded_max > regular_max) {

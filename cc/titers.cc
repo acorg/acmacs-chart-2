@@ -7,9 +7,9 @@
 
 acmacs::chart::Titer::Type acmacs::chart::Titer::type() const
 {
-    if (data().empty())
+    if (empty())
         return Invalid;
-    switch (data()[0]) {
+    switch (front()) {
       case '*':
           return DontCare;
       case '<':
@@ -35,17 +35,17 @@ double acmacs::chart::Titer::logged() const
 
     switch (type()) {
       case Invalid:
-          throw invalid_titer(data());
+          throw invalid_titer(*this);
       case Regular:
-          return log_titer(data());
+          return log_titer(*this);
       case DontCare:
-          throw invalid_titer(data());
+          throw invalid_titer(*this);
       case LessThan:
       case MoreThan:
       case Dodgy:
-          return log_titer(data().substr(1));
+          return log_titer(substr(1));
     }
-    throw invalid_titer(data()); // for gcc 7.2
+    throw invalid_titer(*this); // for gcc 7.2
 
 } // acmacs::chart::Titer::logged
 
@@ -64,7 +64,7 @@ double acmacs::chart::Titer::logged_with_thresholded() const
       case MoreThan:
           return logged() + 1;
     }
-    throw invalid_titer(data()); // for gcc 7.2
+    throw invalid_titer(*this); // for gcc 7.2
 
 } // acmacs::chart::Titer::logged_with_thresholded
 
@@ -74,17 +74,17 @@ std::string acmacs::chart::Titer::logged_as_string() const
 {
     switch (type()) {
       case Invalid:
-          throw invalid_titer(data());
+          throw invalid_titer(*this);
       case Regular:
           return acmacs::to_string(logged());
       case DontCare:
-          return data();
+          return *this;
       case LessThan:
       case MoreThan:
       case Dodgy:
-          return data()[0] + acmacs::to_string(logged());
+          return front() + acmacs::to_string(logged());
     }
-    throw invalid_titer(data()); // for gcc 7.2
+    throw invalid_titer(*this); // for gcc 7.2
 
 } // acmacs::chart::Titer::logged_as_string
 
@@ -94,7 +94,7 @@ double acmacs::chart::Titer::logged_for_column_bases() const
 {
     switch (type()) {
       case Invalid:
-          throw invalid_titer(data());
+          throw invalid_titer(*this);
       case Regular:
       case LessThan:
           return logged();
@@ -104,7 +104,7 @@ double acmacs::chart::Titer::logged_for_column_bases() const
       case Dodgy:
           return -1;
     }
-    throw invalid_titer(data()); // for gcc 7.2
+    throw invalid_titer(*this); // for gcc 7.2
 
 } // acmacs::chart::Titer::logged_for_column_bases
 
@@ -117,13 +117,13 @@ size_t acmacs::chart::Titer::value_for_sorting() const
       case DontCare:
           return 0;
       case Regular:
-          return std::stoul(data());
+          return std::stoul(*this);
       case LessThan:
-          return std::stoul(data().substr(1)) - 1;
+          return std::stoul(substr(1)) - 1;
       case MoreThan:
-          return std::stoul(data().substr(1)) + 1;
+          return std::stoul(substr(1)) + 1;
       case Dodgy:
-          return std::stoul(data().substr(1));
+          return std::stoul(substr(1));
     }
     return 0;
 

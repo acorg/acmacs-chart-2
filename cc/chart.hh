@@ -70,7 +70,7 @@ namespace acmacs::chart
      public:
         using internal::string_data::string_data;
 
-        inline bool within_range(std::string_view first_date, std::string_view after_last_date) const { return !data().empty() && (first_date.empty() || data() >= first_date) && (after_last_date.empty() || data() < after_last_date); }
+        inline bool within_range(std::string_view first_date, std::string_view after_last_date) const { return !empty() && (first_date.empty() || *this >= first_date) && (after_last_date.empty() || *this < after_last_date); }
 
     }; // class Date
 

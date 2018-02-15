@@ -12,9 +12,9 @@ namespace acmacs::chart
      public:
         using internal::string_data::string_data;
 
-        inline bool is_egg() const { return acmacs::passage::is_egg(data()); }
-        inline bool is_cell() const { return acmacs::passage::is_cell(data()); }
-        inline std::string without_date() const { return acmacs::passage::without_date(data()); }
+        inline bool is_egg() const { return acmacs::passage::is_egg(*this); }
+        inline bool is_cell() const { return acmacs::passage::is_cell(*this); }
+        inline std::string without_date() const { return acmacs::passage::without_date(*this); }
         inline std::string passage_type() const { return is_egg() ? "egg" : "cell"; }
 
     }; // class Passage
