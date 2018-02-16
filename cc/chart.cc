@@ -182,10 +182,10 @@ void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, In
     auto tts = titers();
     const Titer homologous_titer = tts->titer(aAntigenNo, aSerumNo);
     if (!homologous_titer.is_regular())
-        throw std::runtime_error("serum_coverage: cannot handle non-regular homologous titer: " + homologous_titer);
+        throw serum_coverage_error("cannot handle non-regular homologous titer: " + homologous_titer);
     const double titer_threshold = homologous_titer.logged() - 2;
     if (titer_threshold <= 0)
-        throw std::runtime_error("serum_coverage: homologous titer is too low: " + homologous_titer);
+        throw serum_coverage_error("homologous titer is too low: " + homologous_titer);
     for (size_t ag_no = 0; ag_no < number_of_antigens(); ++ag_no) {
         const Titer titer = tts->titer(ag_no, aSerumNo);
         const double value = titer.is_dont_care() ? -1 : titer.logged_for_column_bases();
@@ -195,7 +195,7 @@ void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, In
             aOutside4Fold.push_back(ag_no);
     }
     if (aWithin4Fold.empty())
-        throw std::runtime_error("serum_coverage: no antigens within 4fold from homologous titer (for serum coverage)"); // BUG? at least homologous antigen must be there!
+        throw serum_coverage_error("no antigens within 4fold from homologous titer (for serum coverage)"); // BUG? at least homologous antigen must be there!
 
 } // acmacs::chart::Chart::serum_coverage
 

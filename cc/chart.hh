@@ -22,8 +22,9 @@ namespace acmacs::chart
     using Indexes = std::vector<size_t>;
     using Layout = acmacs::LayoutInterface;
 
-    class invalid_data : public std::runtime_error { public: inline invalid_data(std::string msg) : std::runtime_error("invalid_data: " + msg) {} };
-    class chart_is_read_only : public std::runtime_error { public: inline chart_is_read_only(std::string msg) : std::runtime_error("chart_is_read_only: " + msg) {} };
+    class invalid_data : public std::runtime_error { public: invalid_data(std::string msg) : std::runtime_error("invalid_data: " + msg) {} };
+    class chart_is_read_only : public std::runtime_error { public: chart_is_read_only(std::string msg) : std::runtime_error("chart_is_read_only: " + msg) {} };
+    class serum_coverage_error : public std::runtime_error { public: serum_coverage_error(std::string msg) : std::runtime_error("serum_coverage: " + msg) {} };
 
     class Chart;
 
@@ -42,9 +43,9 @@ namespace acmacs::chart
         std::string make_name() const;
 
         virtual std::string name(Compute = Compute::No) const = 0;
-        inline std::string name_non_empty() const { const auto result = name(Compute::Yes); return result.empty() ? std::string{"UNKNOWN"} : result; }
+        std::string name_non_empty() const { const auto result = name(Compute::Yes); return result.empty() ? std::string{"UNKNOWN"} : result; }
         virtual std::string virus(Compute = Compute::No) const = 0;
-        inline std::string virus_not_influenza(Compute aCompute = Compute::No) const { const auto v = virus(aCompute); return ::string::lower(v) == "influenza" ? std::string{} : v; }
+        std::string virus_not_influenza(Compute aCompute = Compute::No) const { const auto v = virus(aCompute); return ::string::lower(v) == "influenza" ? std::string{} : v; }
         virtual std::string virus_type(Compute = Compute::Yes) const = 0;
         virtual std::string subset(Compute = Compute::No) const = 0;
         virtual std::string assay(Compute = Compute::No) const = 0;
@@ -70,7 +71,7 @@ namespace acmacs::chart
      public:
         using internal::string_data::string_data;
 
-        inline bool within_range(std::string_view first_date, std::string_view after_last_date) const { return !empty() && (first_date.empty() || *this >= first_date) && (after_last_date.empty() || *this < after_last_date); }
+        bool within_range(std::string_view first_date, std::string_view after_last_date) const { return !empty() && (first_date.empty() || *this >= first_date) && (after_last_date.empty() || *this < after_last_date); }
 
     }; // class Date
 
@@ -79,16 +80,16 @@ namespace acmacs::chart
      public:
         enum Lineage { Unknown, Victoria, Yamagata };
 
-        inline BLineage() = default;
-        inline BLineage(Lineage lineage) : mLineage{lineage} {}
-        inline BLineage(const BLineage&) = default;
-        inline BLineage(std::string lineage) : mLineage{from(lineage)} {}
-        inline BLineage(char lineage) : mLineage{from({lineage})} {}
-        inline BLineage& operator=(Lineage lineage) { mLineage = lineage; return *this; }
-        inline BLineage& operator=(const BLineage&) = default;
-        inline BLineage& operator=(std::string lineage) { mLineage = from(lineage); return *this; }
+        BLineage() = default;
+        BLineage(Lineage lineage) : mLineage{lineage} {}
+        BLineage(const BLineage&) = default;
+        BLineage(std::string lineage) : mLineage{from(lineage)} {}
+        BLineage(char lineage) : mLineage{from({lineage})} {}
+        BLineage& operator=(Lineage lineage) { mLineage = lineage; return *this; }
+        BLineage& operator=(const BLineage&) = default;
+        BLineage& operator=(std::string lineage) { mLineage = from(lineage); return *this; }
 
-        inline operator std::string() const
+        operator std::string() const
             {
                 switch (mLineage) {
                   case Victoria:
@@ -103,7 +104,7 @@ namespace acmacs::chart
 #endif
             }
 
-        inline operator Lineage() const { return mLineage; }
+        operator Lineage() const { return mLineage; }
 
      private:
         Lineage mLineage{Unknown};
@@ -137,7 +138,7 @@ namespace acmacs::chart
      public:
         using internal::string_list_data::string_list_data;
 
-        inline bool distinct() const { return std::find(begin(), end(), "DISTINCT") != end(); }
+        bool distinct() const { return std::find(begin(), end(), "DISTINCT") != end(); }
 
     }; // class Annotations
 
@@ -167,31 +168,31 @@ namespace acmacs::chart
      public:
         using internal::index_list_data::index_list_data;
 
-        inline size_t index_of(size_t aValue) const { return static_cast<size_t>(std::find(begin(), end(), aValue) - begin()); }
+        size_t index_of(size_t aValue) const { return static_cast<size_t>(std::find(begin(), end(), aValue) - begin()); }
 
-        inline void raise(size_t aIndex)
+        void raise(size_t aIndex)
             {
                 if (const auto p = std::find(begin(), end(), aIndex); p != end())
                     std::rotate(p, p + 1, end());
             }
 
-        inline void raise(const std::vector<size_t>& aIndexes)
+        void raise(const std::vector<size_t>& aIndexes)
             {
                 std::for_each(aIndexes.begin(), aIndexes.end(), [this](size_t index) { this->raise(index); });
             }
 
-        inline void lower(size_t aIndex)
+        void lower(size_t aIndex)
             {
                 if (const auto p = std::find(rbegin(), rend(), aIndex); p != rend())
                     std::rotate(p, p + 1, rend());
             }
 
-        inline void lower(const std::vector<size_t>& aIndexes)
+        void lower(const std::vector<size_t>& aIndexes)
             {
                 std::for_each(aIndexes.begin(), aIndexes.end(), [this](size_t index) { this->lower(index); });
             }
 
-        inline void fill_if_empty(size_t aSize)
+        void fill_if_empty(size_t aSize)
             {
                 if (empty())
                     acmacs::fill_with_indexes(data(), aSize);
@@ -218,16 +219,16 @@ namespace acmacs::chart
         virtual Annotations annotations() const = 0;
         virtual bool reference() const = 0;
 
-        inline std::string full_name() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations()), passage()}); }
-        inline std::string full_name_without_passage() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations())}); }
-        inline std::string full_name_for_seqdb_matching() const { return ::string::join(" ", {name(), reassortant(), passage(), ::string::join(" ", annotations())}); } // annotations may part of the passage in seqdb (NIMR ISOLATE 1)
-        inline std::string abbreviated_name() const { return ::string::join(" ", {name_abbreviated(), reassortant(), ::string::join(" ", annotations())}); }
-        inline std::string abbreviated_name_with_passage_type() const { return ::string::join("-", {name_abbreviated(), reassortant(), ::string::join(" ", annotations()), passage_type()}); }
-        inline std::string abbreviated_location_with_passage_type() const { return ::string::join(" ", {location_abbreviated(), passage_type()}); }
+        std::string full_name() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations()), passage()}); }
+        std::string full_name_without_passage() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations())}); }
+        std::string full_name_for_seqdb_matching() const { return ::string::join(" ", {name(), reassortant(), passage(), ::string::join(" ", annotations())}); } // annotations may part of the passage in seqdb (NIMR ISOLATE 1)
+        std::string abbreviated_name() const { return ::string::join(" ", {name_abbreviated(), reassortant(), ::string::join(" ", annotations())}); }
+        std::string abbreviated_name_with_passage_type() const { return ::string::join("-", {name_abbreviated(), reassortant(), ::string::join(" ", annotations()), passage_type()}); }
+        std::string abbreviated_location_with_passage_type() const { return ::string::join(" ", {location_abbreviated(), passage_type()}); }
 
         std::string name_abbreviated() const;
         std::string location_abbreviated() const;
-        inline std::string passage_type() const { return passage().passage_type(); }
+        std::string passage_type() const { return passage().passage_type(); }
 
     }; // class Antigen
 
@@ -248,12 +249,12 @@ namespace acmacs::chart
         virtual SerumId serum_id() const = 0;
         virtual SerumSpecies serum_species() const = 0;
         virtual PointIndexList homologous_antigens() const = 0;
-        virtual inline void set_homologous(const std::vector<size_t>&) const {}
+        virtual void set_homologous(const std::vector<size_t>&) const {}
 
-        inline std::string full_name() const { return ::string::join(" ", {name(), reassortant(), serum_id(), ::string::join(" ", annotations())}); }
-        inline std::string full_name_without_passage() const { return full_name(); }
-        inline std::string abbreviated_name() const { return ::string::join(" ", {name_abbreviated(), reassortant(), ::string::join(" ", annotations())}); }
-        inline std::string abbreviated_name_with_serum_id() const { return ::string::join(" ", {name_abbreviated(), reassortant(), serum_id(), ::string::join(" ", annotations())}); }
+        std::string full_name() const { return ::string::join(" ", {name(), reassortant(), serum_id(), ::string::join(" ", annotations())}); }
+        std::string full_name_without_passage() const { return full_name(); }
+        std::string abbreviated_name() const { return ::string::join(" ", {name_abbreviated(), reassortant(), ::string::join(" ", annotations())}); }
+        std::string abbreviated_name_with_serum_id() const { return ::string::join(" ", {name_abbreviated(), reassortant(), serum_id(), ::string::join(" ", annotations())}); }
 
         std::string name_abbreviated() const;
         std::string location_abbreviated() const;
@@ -272,31 +273,31 @@ namespace acmacs::chart
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Antigen> operator[](size_t aIndex) const = 0;
         using iterator = internal::iterator<Antigens, std::shared_ptr<Antigen>>;
-        inline iterator begin() const { return {*this, 0}; }
-        inline iterator end() const { return {*this, size()}; }
+        iterator begin() const { return {*this, 0}; }
+        iterator end() const { return {*this, size()}; }
 
-        inline Indexes all_indexes() const { return acmacs::filled_with_indexes(size()); }
-        inline Indexes reference_indexes() const { return make_indexes([](const Antigen& ag) { return ag.reference(); }); }
-        inline Indexes test_indexes() const { return make_indexes([](const Antigen& ag) { return !ag.reference(); }); }
-        inline Indexes egg_indexes() const { return make_indexes([](const Antigen& ag) { return ag.passage().is_egg() || !ag.reassortant().empty(); }); }
-        inline Indexes reassortant_indexes() const { return make_indexes([](const Antigen& ag) { return !ag.reassortant().empty(); }); }
+        Indexes all_indexes() const { return acmacs::filled_with_indexes(size()); }
+        Indexes reference_indexes() const { return make_indexes([](const Antigen& ag) { return ag.reference(); }); }
+        Indexes test_indexes() const { return make_indexes([](const Antigen& ag) { return !ag.reference(); }); }
+        Indexes egg_indexes() const { return make_indexes([](const Antigen& ag) { return ag.passage().is_egg() || !ag.reassortant().empty(); }); }
+        Indexes reassortant_indexes() const { return make_indexes([](const Antigen& ag) { return !ag.reassortant().empty(); }); }
 
-        inline void filter_reference(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.reference(); }); }
-        inline void filter_test(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return entry.reference(); }); }
-        inline void filter_egg(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.passage().is_egg(); }); }
-        inline void filter_cell(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.passage().is_cell(); }); }
-        inline void filter_reassortant(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); }); }
-        inline void filter_date_range(Indexes& aIndexes, std::string_view first_date, std::string_view after_last_date) const { remove(aIndexes, [=](const auto& entry) -> bool { return !entry.date().within_range(first_date, after_last_date); }); }
+        void filter_reference(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.reference(); }); }
+        void filter_test(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return entry.reference(); }); }
+        void filter_egg(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.passage().is_egg(); }); }
+        void filter_cell(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.passage().is_cell(); }); }
+        void filter_reassortant(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); }); }
+        void filter_date_range(Indexes& aIndexes, std::string_view first_date, std::string_view after_last_date) const { remove(aIndexes, [=](const auto& entry) -> bool { return !entry.date().within_range(first_date, after_last_date); }); }
         void filter_country(Indexes& aIndexes, std::string aCountry) const;
         void filter_continent(Indexes& aIndexes, std::string aContinent) const;
-        inline void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }
-        inline void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); }); }
+        void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }
+        void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); }); }
 
         virtual std::optional<size_t> find_by_full_name(std::string aFullName) const;
         virtual Indexes find_by_name(std::string aName) const;
 
      private:
-        inline Indexes make_indexes(std::function<bool (const Antigen& ag)> test) const
+        Indexes make_indexes(std::function<bool (const Antigen& ag)> test) const
             {
                 Indexes result;
                 for (size_t no = 0; no < size(); ++no)
@@ -305,7 +306,7 @@ namespace acmacs::chart
                 return result;
             }
 
-        inline void remove(Indexes& aIndexes, std::function<bool (const Antigen&)> aFilter) const
+        void remove(Indexes& aIndexes, std::function<bool (const Antigen&)> aFilter) const
         {
             aIndexes.erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
         }
@@ -324,19 +325,19 @@ namespace acmacs::chart
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Serum> operator[](size_t aIndex) const = 0;
         using iterator = internal::iterator<Sera, std::shared_ptr<Serum>>;
-        inline iterator begin() const { return {*this, 0}; }
-        inline iterator end() const { return {*this, size()}; }
+        iterator begin() const { return {*this, 0}; }
+        iterator end() const { return {*this, size()}; }
 
-        inline Indexes all_indexes() const
+        Indexes all_indexes() const
             {
                 return acmacs::filled_with_indexes(size());
             }
 
-        inline void filter_serum_id(Indexes& aIndexes, std::string aSerumId) const { remove(aIndexes, [&aSerumId](const auto& entry) -> bool { return entry.serum_id() != aSerumId; }); }
+        void filter_serum_id(Indexes& aIndexes, std::string aSerumId) const { remove(aIndexes, [&aSerumId](const auto& entry) -> bool { return entry.serum_id() != aSerumId; }); }
         void filter_country(Indexes& aIndexes, std::string aCountry) const;
         void filter_continent(Indexes& aIndexes, std::string aContinent) const;
-        inline void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }
-        inline void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); }); }
+        void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }
+        void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); }); }
 
         virtual std::optional<size_t> find_by_full_name(std::string aFullName) const;
         virtual Indexes find_by_name(std::string aName) const;
@@ -344,7 +345,7 @@ namespace acmacs::chart
         void set_homologous(const Antigens& aAntigens);
 
      private:
-        inline void remove(Indexes& aIndexes, std::function<bool (const Serum&)> aFilter) const
+        void remove(Indexes& aIndexes, std::function<bool (const Serum&)> aFilter) const
         {
             aIndexes.erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
         }
@@ -371,7 +372,7 @@ namespace acmacs::chart
         virtual size_t number_of_dimensions() const = 0;
         virtual size_t number_of_points() const = 0;
         virtual std::shared_ptr<Layout> layout() const = 0;
-        virtual inline std::shared_ptr<Layout> transformed_layout() const { return std::shared_ptr<Layout>(layout()->transform(transformation())); }
+        virtual std::shared_ptr<Layout> transformed_layout() const { return std::shared_ptr<Layout>(layout()->transform(transformation())); }
         virtual MinimumColumnBasis minimum_column_basis() const = 0;
         virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0; // returns nullptr if not forced
         virtual acmacs::Transformation transformation() const = 0;
@@ -467,26 +468,26 @@ namespace acmacs::chart
         virtual std::shared_ptr<Sera> sera() const = 0;
         virtual std::shared_ptr<Titers> titers() const = 0;
         virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0; // returns nullptr if column bases not forced
-        inline  std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const { return titers()->computed_column_bases(aMinimumColumnBasis, number_of_antigens(), number_of_sera()); }
-        inline  std::shared_ptr<ColumnBases> column_bases(MinimumColumnBasis aMinimumColumnBasis) const { auto cb = forced_column_bases(); if (!cb) cb = computed_column_bases(aMinimumColumnBasis); return cb; }
+         std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const { return titers()->computed_column_bases(aMinimumColumnBasis, number_of_antigens(), number_of_sera()); }
+         std::shared_ptr<ColumnBases> column_bases(MinimumColumnBasis aMinimumColumnBasis) const { auto cb = forced_column_bases(); if (!cb) cb = computed_column_bases(aMinimumColumnBasis); return cb; }
         virtual std::shared_ptr<Projections> projections() const = 0;
-        inline  std::shared_ptr<Projection> projection(size_t aProjectionNo) const { return (*projections())[aProjectionNo]; }
+         std::shared_ptr<Projection> projection(size_t aProjectionNo) const { return (*projections())[aProjectionNo]; }
         virtual std::shared_ptr<PlotSpec> plot_spec() const = 0;
         virtual bool is_merge() const = 0;
 
-        virtual inline size_t number_of_antigens() const { return antigens()->size(); }
-        virtual inline size_t number_of_sera() const { return sera()->size(); }
-        inline size_t number_of_points() const { return number_of_antigens() + number_of_sera(); }
-        virtual inline size_t number_of_projections() const { return projections()->size(); }
+        virtual size_t number_of_antigens() const { return antigens()->size(); }
+        virtual size_t number_of_sera() const { return sera()->size(); }
+        size_t number_of_points() const { return number_of_antigens() + number_of_sera(); }
+        virtual size_t number_of_projections() const { return projections()->size(); }
 
-        inline std::shared_ptr<Antigen> antigen(size_t aAntigenNo) const { return antigens()->operator[](aAntigenNo); }
-        inline std::shared_ptr<Serum> serum(size_t aSerumNo) const { return sera()->operator[](aSerumNo); }
+        std::shared_ptr<Antigen> antigen(size_t aAntigenNo) const { return antigens()->operator[](aAntigenNo); }
+        std::shared_ptr<Serum> serum(size_t aSerumNo) const { return sera()->operator[](aSerumNo); }
         std::string lineage() const;
 
         std::string make_info() const;
         std::string make_name(std::optional<size_t> aProjectionNo = {}) const;
 
-        inline PointStyle default_style(size_t aPointNo) const { auto ags = antigens(); return default_style(aPointNo < ags->size() ? ((*ags)[aPointNo]->reference() ? PointType::ReferenceAntigen : PointType::TestAntigen) : PointType::Serum); }
+        PointStyle default_style(size_t aPointNo) const { auto ags = antigens(); return default_style(aPointNo < ags->size() ? ((*ags)[aPointNo]->reference() ? PointType::ReferenceAntigen : PointType::TestAntigen) : PointType::Serum); }
         std::vector<acmacs::PointStyle> default_all_styles() const;
 
           // Negative radius means calculation failed (e.g. no homologous titer)
@@ -502,7 +503,7 @@ namespace acmacs::chart
                 return stress_factory<Float>(projection, mult);
             }
 
-        template <typename Float> inline Stress<Float> make_stress(size_t aProjectionNo) const { return make_stress<Float>(*projection(aProjectionNo)); }
+        template <typename Float> Stress<Float> make_stress(size_t aProjectionNo) const { return make_stress<Float>(*projection(aProjectionNo)); }
 
      private:
         mutable bool mHomologousFound = false;
@@ -526,7 +527,7 @@ namespace acmacs::chart
         return calculate_stress(stress_factory<Float>(*this, mult));
     }
 
-    template <typename Float> std::vector<Float> Projection::calculate_gradient(multiply_antigen_titer_until_column_adjust mult) const
+    template <typename Float> inline std::vector<Float> Projection::calculate_gradient(multiply_antigen_titer_until_column_adjust mult) const
     {
         return calculate_gradient(stress_factory<Float>(*this, mult));
     }
