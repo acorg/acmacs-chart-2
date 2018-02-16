@@ -204,7 +204,7 @@ namespace acmacs::chart
 
     class Antigen
     {
-      public:
+     public:
         virtual ~Antigen();
         Antigen() = default;
         Antigen(const Antigen&) = delete;
@@ -236,7 +236,7 @@ namespace acmacs::chart
 
     class Serum
     {
-      public:
+     public:
         virtual ~Serum();
         Serum() = default;
         Serum(const Serum&) = delete;
@@ -307,9 +307,9 @@ namespace acmacs::chart
             }
 
         void remove(Indexes& aIndexes, std::function<bool (const Antigen&)> aFilter) const
-        {
-            aIndexes.erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
-        }
+            {
+                aIndexes.erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
+            }
 
     }; // class Antigens
 
@@ -317,7 +317,7 @@ namespace acmacs::chart
 
     class Sera
     {
-      public:
+     public:
         virtual ~Sera();
         Sera() = default;
         Sera(const Sera&) = delete;
@@ -346,9 +346,9 @@ namespace acmacs::chart
 
      private:
         void remove(Indexes& aIndexes, std::function<bool (const Serum&)> aFilter) const
-        {
-            aIndexes.erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
-        }
+            {
+                aIndexes.erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
+            }
 
     }; // class Sera
 
@@ -359,7 +359,7 @@ namespace acmacs::chart
 
     class Projection
     {
-      public:
+     public:
         virtual ~Projection();
         Projection(const Chart& chart) : chart_(chart) {}
         Projection(const Projection&) = delete;
@@ -408,7 +408,7 @@ namespace acmacs::chart
 
     class Projections
     {
-      public:
+     public:
         virtual ~Projections();
         Projections(const Chart& chart) : chart_(chart) {}
         Projections(const Projections&) = delete;
@@ -419,7 +419,7 @@ namespace acmacs::chart
         using iterator = internal::iterator<Projections, std::shared_ptr<Projection>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
-        // virtual size_t projection_no(const Projection* projection) const;
+          // virtual size_t projection_no(const Projection* projection) const;
 
         virtual std::string make_info() const;
 
@@ -435,7 +435,7 @@ namespace acmacs::chart
 
     class PlotSpec
     {
-      public:
+     public:
         virtual ~PlotSpec();
         PlotSpec() = default;
         PlotSpec(const PlotSpec&) = delete;
@@ -468,10 +468,10 @@ namespace acmacs::chart
         virtual std::shared_ptr<Sera> sera() const = 0;
         virtual std::shared_ptr<Titers> titers() const = 0;
         virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0; // returns nullptr if column bases not forced
-         std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const { return titers()->computed_column_bases(aMinimumColumnBasis, number_of_antigens(), number_of_sera()); }
-         std::shared_ptr<ColumnBases> column_bases(MinimumColumnBasis aMinimumColumnBasis) const { auto cb = forced_column_bases(); if (!cb) cb = computed_column_bases(aMinimumColumnBasis); return cb; }
+        std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis, bool use_cache = false) const;
+        std::shared_ptr<ColumnBases> column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
         virtual std::shared_ptr<Projections> projections() const = 0;
-         std::shared_ptr<Projection> projection(size_t aProjectionNo) const { return (*projections())[aProjectionNo]; }
+        std::shared_ptr<Projection> projection(size_t aProjectionNo) const { return (*projections())[aProjectionNo]; }
         virtual std::shared_ptr<PlotSpec> plot_spec() const = 0;
         virtual bool is_merge() const = 0;
 
@@ -507,6 +507,7 @@ namespace acmacs::chart
 
      private:
         mutable bool mHomologousFound = false;
+        mutable std::map<MinimumColumnBasis, std::shared_ptr<ColumnBases>> computed_column_bases_; // cache, computing might be slow for big charts
 
     }; // class Chart
 
