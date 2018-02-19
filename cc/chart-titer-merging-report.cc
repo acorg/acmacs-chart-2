@@ -88,7 +88,7 @@ TiterMerger::Type TiterMerger::merge()
             // std::cerr << "less-only mean: " << logged.min() << " src:" << mTiters << '\n';
             const auto value = acmacs::chart::Titer::from_logged(logged.min() + 1, "<"); // +1 becasue logged contains values with subtructed 1
             if (value != mMerged)
-                throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
+                throw std::runtime_error("Unexpected merged titer: " + static_cast<std::string>(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
         }
         else if (num_more == mTiters.size()) {
             mType = ThresholdedOnly;
@@ -153,7 +153,7 @@ TiterMerger::Type TiterMerger::merge()
                 mType = Regular;
                 const auto value = acmacs::chart::Titer::from_logged(mean);
                 if (value != mMerged)
-                    throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
+                    throw std::runtime_error("Unexpected merged titer: " + static_cast<std::string>(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
             }
         }
     }

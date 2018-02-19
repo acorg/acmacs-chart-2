@@ -144,7 +144,7 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, bool all_
             }
             const char* titer_pos_class = sr_no == 0 ? "titer-pos-left" : (sr_no == (sera->size() - 1) ? "titer-pos-right" : "titer-pos-middle");
             const auto sr_no_class = "sr-" + std::to_string(sr_no);
-            output << "<td class=\"titer " << titer_class << ' ' << titer_pos_class << ' ' << sr_no_class << "\">" << html_escape(acmacs::to_string(titer)) << "</td>";
+            output << "<td class=\"titer " << titer_class << ' ' << titer_pos_class << ' ' << sr_no_class << "\">" << html_escape(titer) << "</td>";
         }
 
         if (antigen_fields.dates)
