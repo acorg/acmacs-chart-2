@@ -37,7 +37,7 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Chart::computed_colum
         if (auto found = computed_column_bases_.find(aMinimumColumnBasis); found != computed_column_bases_.end())
             return found->second;
     }
-    return computed_column_bases_[aMinimumColumnBasis] = titers()->computed_column_bases(aMinimumColumnBasis, number_of_antigens(), number_of_sera());
+    return computed_column_bases_[aMinimumColumnBasis] = titers()->computed_column_bases(aMinimumColumnBasis);
 
 } // acmacs::chart::Chart::computed_column_bases
 

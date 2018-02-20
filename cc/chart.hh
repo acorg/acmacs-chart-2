@@ -468,7 +468,7 @@ namespace acmacs::chart
         virtual std::shared_ptr<Sera> sera() const = 0;
         virtual std::shared_ptr<Titers> titers() const = 0;
         virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0; // returns nullptr if column bases not forced
-        std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis, bool use_cache = false) const;
+        virtual std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis, bool use_cache = false) const;
         std::shared_ptr<ColumnBases> column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
         virtual std::shared_ptr<Projections> projections() const = 0;
         std::shared_ptr<Projection> projection(size_t aProjectionNo) const { return (*projections())[aProjectionNo]; }

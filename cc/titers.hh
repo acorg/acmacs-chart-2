@@ -47,6 +47,36 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+    class Titers;
+
+    class TiterIterator
+    {
+     public:
+        struct Data
+        {
+            operator const Titer& () const { return titer; }
+            Titer titer;
+            size_t antigen, serum;
+        };
+
+        TiterIterator(const Titers& titers) : titers_{titers} {}
+        constexpr bool operator==(const TiterIterator& rhs) const { return data_.antigen == rhs.data_.antigen && data_.serum == rhs.data_.serum; }
+        constexpr bool operator!=(const TiterIterator& rhs) const { return !operator==(rhs); }
+        constexpr const Data& operator*() const { return data_; }
+        constexpr const Data& operator->() const { return data_; }
+        TiterIterator& operator++();
+        TiterIterator operator++(int) { TiterIterator it = *this; ++it; return it; }
+
+        constexpr Data& data() { return data_; }
+
+     private:
+        const Titers& titers_;
+        Data data_;
+
+    }; // class TiterIterator
+
+// ----------------------------------------------------------------------
+
     template <typename Float> class TableDistances;
     class PointIndexList;
     class AvidityAdjusts;
@@ -73,13 +103,28 @@ namespace acmacs::chart
         virtual inline const rjson::array& rjson_list_dict() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
         virtual inline const rjson::array& rjson_layers() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
 
-        std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis, size_t number_of_antigens, size_t number_of_sera) const;
+        std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
 
         virtual void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters) const;
         virtual void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters) const;
         virtual double max_distance(const ColumnBases& column_bases);
 
+        TiterIterator begin() const { TiterIterator ti(*this); begin(ti); return ti; }
+        TiterIterator end() const { TiterIterator ti(*this); end(ti); return ti; }
+
+     private:
+        friend class TiterIterator;
+        virtual void begin(TiterIterator& iterator) const;
+        virtual void end(TiterIterator& iterator) const;
+        virtual void next(TiterIterator& iterator) const;
+
     }; // class Titers
+
+    inline TiterIterator& TiterIterator::operator++()
+    {
+        titers_.next(*this);
+        return *this;
+    }
 
 } // namespace acmacs::chart
 

@@ -11,6 +11,7 @@ std::string acmacs::to_string(const acmacs::chart::ColumnBases& aColumnBases)
             result += ' ';
         result += std::to_string(aColumnBases.column_basis(serum_no));
     }
+    result += ']';
     return result;
 
 } // acmacs::to_string

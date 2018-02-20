@@ -160,6 +160,10 @@ namespace acmacs::chart
         mutable std::optional<size_t> number_of_antigens_;
         mutable std::optional<size_t> number_of_sera_;
 
+        void begin(TiterIterator& iterator) const override;
+        void end(TiterIterator& iterator) const override;
+        void next(TiterIterator& iterator) const override;
+
     }; // class RjsonTiters
 
 // ----------------------------------------------------------------------

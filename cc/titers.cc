@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "acmacs-base/debug.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-chart-2/titers.hh"
@@ -134,7 +136,7 @@ size_t acmacs::chart::Titer::value_for_sorting() const
 class ComputedColumnBases : public acmacs::chart::ColumnBases
 {
  public:
-    inline ComputedColumnBases(size_t aNumberOfSera) : mData(aNumberOfSera, 0) {}
+    inline ComputedColumnBases(size_t aNumberOfSera, double aMinimumColumnBasis) : mData(aNumberOfSera, aMinimumColumnBasis) {}
 
     inline double column_basis(size_t aSerumNo) const override { return mData.at(aSerumNo); }
     inline size_t size() const override { return mData.size(); }
@@ -150,14 +152,24 @@ class ComputedColumnBases : public acmacs::chart::ColumnBases
 
 }; // class ComputedColumnBases
 
-std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Titers::computed_column_bases(acmacs::chart::MinimumColumnBasis aMinimumColumnBasis, size_t number_of_antigens, size_t number_of_sera) const
+std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Titers::computed_column_bases(acmacs::chart::MinimumColumnBasis aMinimumColumnBasis) const
 {
-    auto cb = std::make_shared<ComputedColumnBases>(number_of_sera);
-    for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no)
-        for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no)
-            cb->update(sr_no, titer(ag_no, sr_no).logged_for_column_bases());
-    for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no)
-        cb->update(sr_no, aMinimumColumnBasis);
+    // auto cb1 = std::make_shared<ComputedColumnBases>(number_of_sera, aMinimumColumnBasis);
+    // for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no)
+    //     for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no)
+    //         cb1->update(sr_no, titer(ag_no, sr_no).logged_for_column_bases());
+    // // for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no)
+    // //     cb->update(sr_no, aMinimumColumnBasis);
+
+    // std::cerr << "DEBUG: computed_column_bases_old: " << *cb1 << '\n';
+
+    auto cb = std::make_shared<ComputedColumnBases>(number_of_sera(), aMinimumColumnBasis);
+
+    std::for_each(begin(), end(), [&cb](const auto& titer_data) { cb->update(titer_data.serum, titer_data.titer.logged_for_column_bases()); });
+
+    // for (const auto& t : *this)
+    //     std::cerr << "DEBUG: " << t.antigen << ' ' << t.serum << ' ' << t.titer << '\n';
+    // std::cerr << "DEBUG: computed_column_bases_new: " << *cb << '\n';
     return cb;
 
 } // acmacs::chart::Titers::computed_column_bases
@@ -221,6 +233,52 @@ double acmacs::chart::Titers::max_distance(const acmacs::chart::ColumnBases& col
     return max_distance;
 
 } // acmacs::chart::Titers::max_distance
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Titers::begin(acmacs::chart::TiterIterator& iterator) const
+{
+    auto& data = iterator.data();
+    data.antigen = 0;
+    data.serum = 0;
+    data.titer = titer(0, 0);
+    if (data.titer.is_dont_care())
+        next(iterator);
+
+} // acmacs::chart::Titers::begin
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Titers::end(acmacs::chart::TiterIterator& iterator) const
+{
+    auto& data = iterator.data();
+    data.antigen = number_of_antigens();
+    data.serum = 0;
+    data.titer = Titer("*");
+
+} // acmacs::chart::Titers::end
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Titers::next(acmacs::chart::TiterIterator& iterator) const
+{
+    const auto num_antigens = number_of_antigens();
+    auto& data = iterator.data();
+    while (data.antigen < num_antigens) {
+        if (++data.serum >= number_of_sera()) {
+            ++data.antigen;
+            data.serum = 0;
+        }
+        if (data.antigen < num_antigens) {
+            data.titer = titer(data.antigen, data.serum);
+            if (!data.titer.is_dont_care())
+                break;
+        }
+        else
+            data.titer = Titer("*");
+    }
+
+} // acmacs::chart::Titers::next
 
 // ----------------------------------------------------------------------
 /// Local Variables:

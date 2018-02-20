@@ -72,6 +72,89 @@ size_t acmacs::chart::RjsonTiters::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
+void acmacs::chart::RjsonTiters::begin(acmacs::chart::TiterIterator& iterator) const
+{
+    auto& data = iterator.data();
+    if (auto [present, list] = data_.get_array_if(keys_.list); present) {
+        data.antigen = 0;
+        data.serum = 0;
+        data.titer = list[0][0];
+        if (data.titer.is_dont_care())
+            next(iterator);
+    }
+    else {
+        const rjson::array& d = data_[keys_.dict];
+        data.antigen = 0;
+        while (d[data.antigen].empty() && data.antigen < d.size()) {
+            ++data.antigen;
+        }
+        if (data.antigen < d.size()) {
+            const auto& first = static_cast<const rjson::object&>(d[data.antigen]).begin();
+            data.serum = std::stoul(first->first.str());
+            data.titer = first->second;
+        }
+        else {
+            data.serum = 0;
+            data.titer = "*";
+        }
+    }
+
+} // acmacs::chart::RjsonTiters::begin
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::RjsonTiters::end(acmacs::chart::TiterIterator& iterator) const
+{
+    auto& data = iterator.data();
+    data.antigen = number_of_antigens();
+    data.serum = 0;
+    data.titer = Titer("*");
+
+} // acmacs::chart::RjsonTiters::end
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::RjsonTiters::next(acmacs::chart::TiterIterator& iterator) const
+{
+    auto& data = iterator.data();
+    if (auto [present, list] = data_.get_array_if(keys_.list); present) {
+        while (data.antigen < list.size()) {
+            const rjson::array& row = list[data.antigen];
+            if (++data.serum >= row.size()) {
+                ++data.antigen;
+                data.serum = 0;
+            }
+            if (data.antigen < list.size()) {
+                data.titer = row[data.serum].str();
+                if (!data.titer.is_dont_care())
+                    return;
+            }
+        }
+    }
+    else {
+        const auto num_sera = number_of_sera();
+        const rjson::array& d = data_[keys_.dict];
+        ++data.serum;
+        while (data.antigen < d.size()) {
+            for (const rjson::object& row = d[data.antigen]; data.serum < num_sera; ++data.serum) {
+                try {
+                    data.titer = row[std::to_string(data.serum)];
+                    return;
+                }
+                catch (rjson::field_not_found&) {
+                }
+            }
+            ++data.antigen;
+            data.serum = 0;
+        }
+    }
+    data.serum = 0;
+    data.titer = Titer("*");
+
+} // acmacs::chart::RjsonTiters::next
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::rjson_import::Layout::Layout(const rjson::array& aData)
     : acmacs::Layout(aData.size(), rjson_import::number_of_dimensions(aData))
 {

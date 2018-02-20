@@ -11,6 +11,7 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
+                {"--column-bases", false},
                 {"--verify", false},
                 {"--time", false, "report time of loading chart"},
                 {"-h", false},
@@ -28,6 +29,11 @@ int main(int argc, char* const argv[])
             for (size_t file_no = 0; file_no < args.number_of_arguments(); ++file_no) {
                 auto chart = acmacs::chart::import_from_file(args[file_no], verify ? acmacs::chart::Verify::All : acmacs::chart::Verify::None, report);
                 std::cout << chart->make_info() << '\n';
+                if (args["--column-bases"]) {
+                    Timeit ti("column bases computing ");
+                    auto cb = chart->computed_column_bases(acmacs::chart::MinimumColumnBasis{});
+                    std::cout << "computed column bases: " << *cb << '\n';
+                }
             }
         }
     }
