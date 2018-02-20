@@ -72,86 +72,113 @@ size_t acmacs::chart::RjsonTiters::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::RjsonTiters::begin(acmacs::chart::TiterIterator& iterator) const
+namespace                       // to make class static in the module
 {
-    auto& data = iterator.data();
-    if (auto [present, list] = data_.get_array_if(keys_.list); present) {
-        data.antigen = 0;
-        data.serum = 0;
-        data.titer = list[0][0];
-        if (data.titer.is_dont_care())
-            next(iterator);
-    }
-    else {
-        const rjson::array& d = data_[keys_.dict];
-        data.antigen = 0;
-        while (d[data.antigen].empty() && data.antigen < d.size()) {
-            ++data.antigen;
-        }
-        if (data.antigen < d.size()) {
-            const auto& first = static_cast<const rjson::object&>(d[data.antigen]).begin();
-            data.serum = std::stoul(first->first.str());
-            data.titer = first->second;
-        }
-        else {
-            data.serum = 0;
-            data.titer = "*";
-        }
-    }
+    class TiterIteratorImplementation : public acmacs::chart::TiterIterator::Implementation
+    {
+     public:
+        TiterIteratorImplementation(bool list, const rjson::array& titer_data)
+            : list_{list}, row_{titer_data.begin()}, last_row_{titer_data.end()}
+            {
+                if (list_) {
+                    init_list_column();
+                    data_.antigen = 0;
+                    data_.serum = 0;
+                    data_.titer = list_column_->str();
+                    if (data_.titer.is_dont_care())
+                        operator++();
+                }
+                else {
+                    init_dict_column();
+                    if (dict_column_ != last_dict_column_) {
+                        data_.antigen = 0;
+                        data_.serum = std::stoul(dict_column_->first.str());
+                        data_.titer = dict_column_->second.str();
+                    }
+                    else
+                        operator++();
+                }
+            }
+
+        TiterIteratorImplementation(size_t number_of_antigens)
+            : acmacs::chart::TiterIterator::Implementation("*", number_of_antigens, 0), list_{false} {}
+
+        void operator++() override
+            {
+                if (list_) {
+                    while (row_ != last_row_) {
+                        if (++list_column_ == last_list_column_) {
+                            ++row_;
+                            if (row_ != last_row_)
+                                init_list_column();
+                            ++data_.antigen;
+                            data_.serum = 0;
+                        }
+                        if (row_ != last_row_) {
+                            data_.titer = list_column_->str();
+                            if (!data_.titer.is_dont_care())
+                                break;
+                        }
+                        else
+                            data_.titer = "*";
+                    }
+                }
+                else {
+                    if (++dict_column_ == last_dict_column_) {
+                        for (++row_, ++data_.antigen; row_ != last_row_ && row_->empty(); ++row_, ++data_.antigen);
+                        if (row_ != last_row_)
+                            init_dict_column();
+                    }
+                    if (row_ != last_row_) {
+                        data_.serum = std::stoul(dict_column_->first.str());
+                        data_.titer = dict_column_->second.str();
+                    }
+                    else {
+                        data_.serum = 0;
+                        data_.titer = "*";
+                    }
+                }
+            }
+
+     private:
+        const bool list_;
+        rjson::array::iterator row_, last_row_;
+        rjson::array::iterator list_column_, last_list_column_;
+        rjson::object::const_iterator dict_column_, last_dict_column_;
+
+        void init_list_column()
+            {
+                list_column_ = static_cast<const rjson::array&>(*row_).begin();
+                last_list_column_ = static_cast<const rjson::array&>(*row_).end();
+            }
+
+        void init_dict_column()
+            {
+                dict_column_ = static_cast<const rjson::object&>(*row_).begin();
+                last_dict_column_ = static_cast<const rjson::object&>(*row_).end();
+            }
+
+    }; // class TiterIteratorImplementation
+}
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::TiterIterator acmacs::chart::RjsonTiters::begin() const
+{
+    if (auto [present, list] = data_.get_array_if(keys_.list); present)
+        return {new TiterIteratorImplementation(true, list)};
+    else
+        return {new TiterIteratorImplementation(false, data_[keys_.dict])};
 
 } // acmacs::chart::RjsonTiters::begin
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::RjsonTiters::end(acmacs::chart::TiterIterator& iterator) const
+acmacs::chart::TiterIterator acmacs::chart::RjsonTiters::end() const
 {
-    auto& data = iterator.data();
-    data.antigen = number_of_antigens();
-    data.serum = 0;
-    data.titer = Titer("*");
+    return {new TiterIteratorImplementation(number_of_antigens())};
 
 } // acmacs::chart::RjsonTiters::end
-
-// ----------------------------------------------------------------------
-
-void acmacs::chart::RjsonTiters::next(acmacs::chart::TiterIterator& iterator) const
-{
-    auto& data = iterator.data();
-    if (auto [present, list] = data_.get_array_if(keys_.list); present) {
-        while (data.antigen < list.size()) {
-            const rjson::array& row = list[data.antigen];
-            if (++data.serum >= row.size()) {
-                ++data.antigen;
-                data.serum = 0;
-            }
-            if (data.antigen < list.size()) {
-                data.titer = row[data.serum].str();
-                if (!data.titer.is_dont_care())
-                    return;
-            }
-        }
-    }
-    else {
-        const auto num_sera = number_of_sera();
-        const rjson::array& d = data_[keys_.dict];
-        ++data.serum;
-        while (data.antigen < d.size()) {
-            for (const rjson::object& row = d[data.antigen]; data.serum < num_sera; ++data.serum) {
-                try {
-                    data.titer = row[std::to_string(data.serum)];
-                    return;
-                }
-                catch (rjson::field_not_found&) {
-                }
-            }
-            ++data.antigen;
-            data.serum = 0;
-        }
-    }
-    data.serum = 0;
-    data.titer = Titer("*");
-
-} // acmacs::chart::RjsonTiters::next
 
 // ----------------------------------------------------------------------
 

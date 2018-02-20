@@ -127,6 +127,9 @@ namespace acmacs::chart
                     throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
             }
 
+        TiterIterator begin() const override;
+        TiterIterator end() const override;
+
      protected:
         struct Keys
         {
@@ -159,10 +162,6 @@ namespace acmacs::chart
         const Keys& keys_;
         mutable std::optional<size_t> number_of_antigens_;
         mutable std::optional<size_t> number_of_sera_;
-
-        void begin(TiterIterator& iterator) const override;
-        void end(TiterIterator& iterator) const override;
-        void next(TiterIterator& iterator) const override;
 
     }; // class RjsonTiters
 

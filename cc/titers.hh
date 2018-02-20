@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "acmacs-chart-2/base.hh"
 #include "acmacs-chart-2/column-bases.hh"
 
@@ -54,24 +56,35 @@ namespace acmacs::chart
      public:
         struct Data
         {
-            operator const Titer& () const { return titer; }
+            constexpr operator const Titer& () const { return titer; }
+            constexpr bool operator==(const Data& rhs) const { return antigen == rhs.antigen && serum == rhs.serum; }
             Titer titer;
             size_t antigen, serum;
         };
 
-        TiterIterator(const Titers& titers) : titers_{titers} {}
-        constexpr bool operator==(const TiterIterator& rhs) const { return data_.antigen == rhs.data_.antigen && data_.serum == rhs.data_.serum; }
-        constexpr bool operator!=(const TiterIterator& rhs) const { return !operator==(rhs); }
-        constexpr const Data& operator*() const { return data_; }
-        constexpr const Data& operator->() const { return data_; }
-        TiterIterator& operator++();
-        TiterIterator operator++(int) { TiterIterator it = *this; ++it; return it; }
+        class Implementation
+        {
+         public:
+            Implementation() = default;
+            Implementation(const Titer& titer, size_t antigen, size_t serum) : data_{titer, antigen, serum} {}
+            virtual ~Implementation() = default;
+            constexpr bool operator==(const Implementation& rhs) const { return data_ == rhs.data_; }
+            constexpr const Data& operator*() const { return data_; }
+            virtual void operator++() = 0;
 
-        constexpr Data& data() { return data_; }
+         protected:
+            Data data_;
+        };
+
+        TiterIterator(Implementation* implementation) : data_{implementation} {}
+        constexpr bool operator==(const TiterIterator& rhs) const { return *data_ == *rhs.data_; }
+        constexpr bool operator!=(const TiterIterator& rhs) const { return !operator==(rhs); }
+        constexpr const Data& operator*() const { return **data_; }
+        constexpr const Data& operator->() const { return **data_; }
+        const TiterIterator& operator++() { data_->operator++(); return *this; }
 
      private:
-        const Titers& titers_;
-        Data data_;
+        std::unique_ptr<Implementation> data_;
 
     }; // class TiterIterator
 
@@ -109,22 +122,10 @@ namespace acmacs::chart
         virtual void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters) const;
         virtual double max_distance(const ColumnBases& column_bases);
 
-        TiterIterator begin() const { TiterIterator ti(*this); begin(ti); return ti; }
-        TiterIterator end() const { TiterIterator ti(*this); end(ti); return ti; }
-
-     private:
-        friend class TiterIterator;
-        virtual void begin(TiterIterator& iterator) const;
-        virtual void end(TiterIterator& iterator) const;
-        virtual void next(TiterIterator& iterator) const;
+        virtual TiterIterator begin() const;
+        virtual TiterIterator end() const;
 
     }; // class Titers
-
-    inline TiterIterator& TiterIterator::operator++()
-    {
-        titers_.next(*this);
-        return *this;
-    }
 
 } // namespace acmacs::chart
 

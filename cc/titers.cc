@@ -236,49 +236,61 @@ double acmacs::chart::Titers::max_distance(const acmacs::chart::ColumnBases& col
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Titers::begin(acmacs::chart::TiterIterator& iterator) const
+namespace                       // to make class static in the module
 {
-    auto& data = iterator.data();
-    data.antigen = 0;
-    data.serum = 0;
-    data.titer = titer(0, 0);
-    if (data.titer.is_dont_care())
-        next(iterator);
+    class TiterIteratorImplementation : public acmacs::chart::TiterIterator::Implementation
+    {
+     public:
+        TiterIteratorImplementation(const acmacs::chart::Titers& titers)
+            : acmacs::chart::TiterIterator::Implementation(titers.titer(0, 0), 0, 0), titers_{titers}
+            {
+                if (data_.titer.is_dont_care())
+                    operator++();
+            }
+
+        TiterIteratorImplementation(const acmacs::chart::Titers& titers, size_t number_of_antigens)
+            : acmacs::chart::TiterIterator::Implementation("*", number_of_antigens, 0), titers_{titers} {}
+
+        void operator++() override
+            {
+                const auto num_antigens = titers_.number_of_antigens();
+                const auto num_sera = titers_.number_of_sera();
+                while (data_.antigen < num_antigens) {
+                    if (++data_.serum >= num_sera) {
+                        ++data_.antigen;
+                        data_.serum = 0;
+                    }
+                    if (data_.antigen < num_antigens) {
+                        data_.titer = titers_.titer(data_.antigen, data_.serum);
+                        if (!data_.titer.is_dont_care())
+                            break;
+                    }
+                    else
+                        data_.titer = "*";
+                }
+            }
+
+     private:
+        const acmacs::chart::Titers& titers_;
+
+    }; // class TiterIteratorImplementation
+}
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::TiterIterator acmacs::chart::Titers::begin() const
+{
+    return {new TiterIteratorImplementation(*this)};
 
 } // acmacs::chart::Titers::begin
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Titers::end(acmacs::chart::TiterIterator& iterator) const
+acmacs::chart::TiterIterator acmacs::chart::Titers::end() const
 {
-    auto& data = iterator.data();
-    data.antigen = number_of_antigens();
-    data.serum = 0;
-    data.titer = Titer("*");
+    return {new TiterIteratorImplementation(*this, number_of_antigens())};
 
 } // acmacs::chart::Titers::end
-
-// ----------------------------------------------------------------------
-
-void acmacs::chart::Titers::next(acmacs::chart::TiterIterator& iterator) const
-{
-    const auto num_antigens = number_of_antigens();
-    auto& data = iterator.data();
-    while (data.antigen < num_antigens) {
-        if (++data.serum >= number_of_sera()) {
-            ++data.antigen;
-            data.serum = 0;
-        }
-        if (data.antigen < num_antigens) {
-            data.titer = titer(data.antigen, data.serum);
-            if (!data.titer.is_dont_care())
-                break;
-        }
-        else
-            data.titer = Titer("*");
-    }
-
-} // acmacs::chart::Titers::next
 
 // ----------------------------------------------------------------------
 /// Local Variables:
