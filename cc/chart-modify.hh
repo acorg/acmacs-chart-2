@@ -38,7 +38,7 @@ namespace acmacs::chart
     {
      public:
 
-        inline ChartModify(ChartP main) : main_{main} {}
+        ChartModify(ChartP main) : main_{main} {}
 
         InfoP info() const override;
         AntigensP antigens() const override;
@@ -47,7 +47,7 @@ namespace acmacs::chart
         ColumnBasesP forced_column_bases() const override;
         ProjectionsP projections() const override;
         PlotSpecP plot_spec() const override;
-        inline bool is_merge() const override { return main_->is_merge(); }
+        bool is_merge() const override { return main_->is_merge(); }
 
         InfoModifyP info_modify();
         AntigensModifyP antigens_modify();
@@ -75,18 +75,18 @@ namespace acmacs::chart
     class InfoModify : public Info
     {
      public:
-        inline InfoModify(InfoP aMain) : mMain{aMain} {}
+        InfoModify(InfoP aMain) : mMain{aMain} {}
 
-        inline std::string name(Compute aCompute = Compute::No) const override { return mMain->name(aCompute); }
-        inline std::string virus(Compute aCompute = Compute::No) const override { return mMain->virus(aCompute); }
-        inline std::string virus_type(Compute aCompute = Compute::Yes) const override { return mMain->virus_type(aCompute); }
-        inline std::string subset(Compute aCompute = Compute::No) const override { return mMain->subset(aCompute); }
-        inline std::string assay(Compute aCompute = Compute::No) const override { return mMain->assay(aCompute); }
-        inline std::string lab(Compute aCompute = Compute::No) const override { return mMain->lab(aCompute); }
-        inline std::string rbc_species(Compute aCompute = Compute::No) const override { return mMain->rbc_species(aCompute); }
-        inline std::string date(Compute aCompute = Compute::No) const override { return mMain->date(aCompute); }
-        inline size_t number_of_sources() const override { return mMain->number_of_sources(); }
-        inline InfoP source(size_t aSourceNo) const override { return mMain->source(aSourceNo); }
+        std::string name(Compute aCompute = Compute::No) const override { return mMain->name(aCompute); }
+        std::string virus(Compute aCompute = Compute::No) const override { return mMain->virus(aCompute); }
+        std::string virus_type(Compute aCompute = Compute::Yes) const override { return mMain->virus_type(aCompute); }
+        std::string subset(Compute aCompute = Compute::No) const override { return mMain->subset(aCompute); }
+        std::string assay(Compute aCompute = Compute::No) const override { return mMain->assay(aCompute); }
+        std::string lab(Compute aCompute = Compute::No) const override { return mMain->lab(aCompute); }
+        std::string rbc_species(Compute aCompute = Compute::No) const override { return mMain->rbc_species(aCompute); }
+        std::string date(Compute aCompute = Compute::No) const override { return mMain->date(aCompute); }
+        size_t number_of_sources() const override { return mMain->number_of_sources(); }
+        InfoP source(size_t aSourceNo) const override { return mMain->source(aSourceNo); }
 
      private:
         InfoP mMain;
@@ -98,17 +98,17 @@ namespace acmacs::chart
     class AntigenModify : public Antigen
     {
      public:
-        inline AntigenModify(AntigenP aMain) : mMain{aMain} {}
+        AntigenModify(AntigenP aMain) : mMain{aMain} {}
 
-        inline Name name() const override  { return mMain->name(); }
-        inline Date date() const override  { return mMain->date(); }
-        inline Passage passage() const override { return mMain->passage(); }
-        inline BLineage lineage() const override  { return mMain->lineage(); }
-        inline Reassortant reassortant() const override { return mMain->reassortant(); }
-        inline LabIds lab_ids() const override { return mMain->lab_ids(); }
-        inline Clades clades() const override { return mMain->clades(); }
-        inline Annotations annotations() const override { return mMain->annotations(); }
-        inline bool reference() const override { return mMain->reference(); }
+        Name name() const override  { return mMain->name(); }
+        Date date() const override  { return mMain->date(); }
+        Passage passage() const override { return mMain->passage(); }
+        BLineage lineage() const override  { return mMain->lineage(); }
+        Reassortant reassortant() const override { return mMain->reassortant(); }
+        LabIds lab_ids() const override { return mMain->lab_ids(); }
+        Clades clades() const override { return mMain->clades(); }
+        Annotations annotations() const override { return mMain->annotations(); }
+        bool reference() const override { return mMain->reference(); }
 
      private:
         AntigenP mMain;
@@ -120,17 +120,17 @@ namespace acmacs::chart
     class SerumModify : public Serum
     {
      public:
-        inline SerumModify(SerumP aMain) : mMain{aMain} {}
+        SerumModify(SerumP aMain) : mMain{aMain} {}
 
-        inline Name name() const override { return mMain->name(); }
-        inline Passage passage() const override { return mMain->passage(); }
-        inline BLineage lineage() const override { return mMain->lineage(); }
-        inline Reassortant reassortant() const override { return mMain->reassortant(); }
-        inline Annotations annotations() const override { return mMain->annotations(); }
-        inline SerumId serum_id() const override { return mMain->serum_id(); }
-        inline SerumSpecies serum_species() const override { return mMain->serum_species(); }
-        inline PointIndexList homologous_antigens() const override { return mMain->homologous_antigens(); }
-        inline void set_homologous(const std::vector<size_t>& ags) const override { return mMain->set_homologous(ags); }
+        Name name() const override { return mMain->name(); }
+        Passage passage() const override { return mMain->passage(); }
+        BLineage lineage() const override { return mMain->lineage(); }
+        Reassortant reassortant() const override { return mMain->reassortant(); }
+        Annotations annotations() const override { return mMain->annotations(); }
+        SerumId serum_id() const override { return mMain->serum_id(); }
+        SerumSpecies serum_species() const override { return mMain->serum_species(); }
+        PointIndexList homologous_antigens() const override { return mMain->homologous_antigens(); }
+        void set_homologous(const std::vector<size_t>& ags) const override { return mMain->set_homologous(ags); }
 
      private:
         SerumP mMain;
@@ -142,11 +142,11 @@ namespace acmacs::chart
     class AntigensModify : public Antigens
     {
      public:
-        inline AntigensModify(AntigensP aMain) : mMain{aMain} {}
+        AntigensModify(AntigensP aMain) : mMain{aMain} {}
 
-        inline size_t size() const override { return mMain->size(); }
-        inline AntigenP operator[](size_t aIndex) const override { return std::make_shared<AntigenModify>(mMain->operator[](aIndex)); }
-        inline std::optional<size_t> find_by_full_name(std::string aFullName) const override { return mMain->find_by_full_name(aFullName); }
+        size_t size() const override { return mMain->size(); }
+        AntigenP operator[](size_t aIndex) const override { return std::make_shared<AntigenModify>(mMain->operator[](aIndex)); }
+        std::optional<size_t> find_by_full_name(std::string aFullName) const override { return mMain->find_by_full_name(aFullName); }
 
      private:
         AntigensP mMain;
@@ -158,10 +158,10 @@ namespace acmacs::chart
     class SeraModify : public Sera
     {
      public:
-        inline SeraModify(SeraP aMain) : mMain{aMain} {}
+        SeraModify(SeraP aMain) : mMain{aMain} {}
 
-        inline size_t size() const override { return mMain->size(); }
-        inline SerumP operator[](size_t aIndex) const override { return std::make_shared<SerumModify>(mMain->operator[](aIndex)); }
+        size_t size() const override { return mMain->size(); }
+        SerumP operator[](size_t aIndex) const override { return std::make_shared<SerumModify>(mMain->operator[](aIndex)); }
 
      private:
         SeraP mMain;
@@ -173,20 +173,23 @@ namespace acmacs::chart
     class TitersModify : public Titers
     {
      public:
-        inline TitersModify(TitersP aMain) : mMain{aMain} {}
+        TitersModify(TitersP aMain) : mMain{aMain} {}
 
-        inline Titer titer(size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titer(aAntigenNo, aSerumNo); }
-        inline Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titer_of_layer(aLayerNo, aAntigenNo, aSerumNo); }
-        inline std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titers_for_layers(aAntigenNo, aSerumNo); }
-        inline size_t number_of_layers() const override { return mMain->number_of_layers(); }
-        inline size_t number_of_antigens() const override { return mMain->number_of_antigens(); }
-        inline size_t number_of_sera() const override { return mMain->number_of_sera(); }
-        inline size_t number_of_non_dont_cares() const override { return mMain->number_of_non_dont_cares(); }
+        Titer titer(size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titer(aAntigenNo, aSerumNo); }
+        Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titer_of_layer(aLayerNo, aAntigenNo, aSerumNo); }
+        std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titers_for_layers(aAntigenNo, aSerumNo); }
+        size_t number_of_layers() const override { return mMain->number_of_layers(); }
+        size_t number_of_antigens() const override { return mMain->number_of_antigens(); }
+        size_t number_of_sera() const override { return mMain->number_of_sera(); }
+        size_t number_of_non_dont_cares() const override { return mMain->number_of_non_dont_cares(); }
 
           // support for fast exporting into ace, if source was ace or acd1
-        inline const rjson::array& rjson_list_list() const override { return mMain->rjson_list_list(); }
-        inline const rjson::array& rjson_list_dict() const override { return mMain->rjson_list_dict(); }
-        inline const rjson::array& rjson_layers() const override { return mMain->rjson_layers(); }
+        const rjson::array& rjson_list_list() const override { return mMain->rjson_list_list(); }
+        const rjson::array& rjson_list_dict() const override { return mMain->rjson_list_dict(); }
+        const rjson::array& rjson_layers() const override { return mMain->rjson_layers(); }
+
+        TiterIterator begin() const override { return mMain->begin(); }
+        TiterIterator end() const override { return mMain->end(); }
 
      private:
         TitersP mMain;
@@ -198,10 +201,10 @@ namespace acmacs::chart
     class ColumnBasesModify : public ColumnBases
     {
      public:
-        inline ColumnBasesModify(ColumnBasesP aMain) : mMain{aMain} {}
+        ColumnBasesModify(ColumnBasesP aMain) : mMain{aMain} {}
 
-        inline double column_basis(size_t aSerumNo) const override { return mMain->column_basis(aSerumNo); }
-        inline size_t size() const override { return mMain->size(); }
+        double column_basis(size_t aSerumNo) const override { return mMain->column_basis(aSerumNo); }
+        size_t size() const override { return mMain->size(); }
 
      private:
         ColumnBasesP mMain;
