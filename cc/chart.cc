@@ -32,9 +32,9 @@ std::string acmacs::chart::Chart::make_name(std::optional<size_t> aProjectionNo)
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Chart::computed_column_bases(acmacs::chart::MinimumColumnBasis aMinimumColumnBasis, bool use_cache) const
+std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Chart::computed_column_bases(acmacs::chart::MinimumColumnBasis aMinimumColumnBasis, use_cache a_use_cache) const
 {
-    if (use_cache) {
+    if (a_use_cache == use_cache::yes) {
         if (auto found = computed_column_bases_.find(aMinimumColumnBasis); found != computed_column_bases_.end())
             return found->second;
     }
@@ -101,10 +101,10 @@ inline std::ostream& operator << (std::ostream& out, const TiterDistance& td)
 
 class SerumCircleRadiusCalculationError : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-double acmacs::chart::Chart::serum_circle_radius(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool aVerbose) const
+double acmacs::chart::Chart::serum_circle_radius_empirical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool aVerbose) const
 {
     if (aVerbose)
-        std::cerr << "DEBUG: serum_circle_radius for [sr:" << aSerumNo << ' ' << serum(aSerumNo)->full_name() << "] [ag:" << aAntigenNo << ' ' << antigen(aAntigenNo)->full_name() << ']' << std::endl;
+        std::cerr << "DEBUG: serum_circle_radius_empirical for [sr:" << aSerumNo << ' ' << serum(aSerumNo)->full_name() << "] [ag:" << aAntigenNo << ' ' << antigen(aAntigenNo)->full_name() << ']' << std::endl;
     try {
         auto tts = titers();
         if (const auto homologous_titer = tts->titer(aAntigenNo, aSerumNo); !homologous_titer.is_regular())
@@ -115,7 +115,7 @@ double acmacs::chart::Chart::serum_circle_radius(size_t aAntigenNo, size_t aSeru
         if (auto forced = prj->forced_column_bases(); forced)
             cb = forced->column_basis(aSerumNo);
         else
-            cb = computed_column_bases(prj->minimum_column_basis(), true /* use cache */)->column_basis(aSerumNo);
+            cb = computed_column_bases(prj->minimum_column_basis(), use_cache::yes)->column_basis(aSerumNo);
         std::vector<TiterDistance> titers_and_distances(number_of_antigens());
         size_t max_titer_for_serum_ag_no = 0;
         for (size_t ag_no = 0; ag_no < number_of_antigens(); ++ag_no) {
@@ -133,7 +133,7 @@ double acmacs::chart::Chart::serum_circle_radius(size_t aAntigenNo, size_t aSeru
         if (protection_boundary_titer < 1.0)
             throw SerumCircleRadiusCalculationError("titer is too low, protects everything");
         // if (aVerbose) std::cerr << "DEBUG: titers_and_distances: " << titers_and_distances << std::endl;
-        if (aVerbose) std::cerr << "DEBUG: serum_circle_radius protection_boundary_titer: " << protection_boundary_titer << std::endl;
+        if (aVerbose) std::cerr << "DEBUG: serum_circle_radius_empirical protection_boundary_titer: " << protection_boundary_titer << std::endl;
 
           // sort antigen indices by antigen distance from serum, closest first
         auto antigens_by_distances_sorting = [&titers_and_distances](size_t a, size_t b) -> bool {
@@ -198,7 +198,36 @@ double acmacs::chart::Chart::serum_circle_radius(size_t aAntigenNo, size_t aSeru
         return -1;
     }
 
-} // acmacs::chart::Chart::serum_circle_radius
+} // acmacs::chart::Chart::serum_circle_radius_empirical
+
+// ----------------------------------------------------------------------
+
+// Low reactors are defined as >4-fold from the homologous titer,
+// hence the theoretical radius is 2 units plus the number of 2-folds
+// between max titer and the homologous titer for a serum. Saying the
+// same thing mathematically the theoretical radius for a serum circle
+// is 2 + log2(max titer for serum S against any antigen A) - log2(homologous titer for serum S).
+
+double acmacs::chart::Chart::serum_circle_radius_theoretical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool /*aVerbose*/) const
+{
+    try {
+        const auto homologous_titer = titers()->titer(aAntigenNo, aSerumNo);
+        if (!homologous_titer.is_regular())
+            throw SerumCircleRadiusCalculationError("cannot handle non-regular homologous titer: " + homologous_titer);
+        double cb;
+        auto prj = projection(aProjectionNo);
+        if (auto forced = prj->forced_column_bases(); forced)
+            cb = forced->column_basis(aSerumNo);
+        else
+            cb = computed_column_bases(prj->minimum_column_basis(), use_cache::yes)->column_basis(aSerumNo);
+        return 2.0 + cb - homologous_titer.logged_for_column_bases();
+    }
+    catch (SerumCircleRadiusCalculationError& err) {
+        std::cerr << "WARNING: " << "Cannot calculate serum projection radius for sr " << aSerumNo << " ag " << aAntigenNo << ": " << err.what() << std::endl;
+        return -1;
+    }
+
+} // acmacs::chart::Chart::serum_circle_radius_theoretical
 
 // ----------------------------------------------------------------------
 

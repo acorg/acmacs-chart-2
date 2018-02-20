@@ -459,6 +459,8 @@ namespace acmacs::chart
         PointStyle default_style(PointType aPointType) const;
 
      public:
+        enum class use_cache { no, yes };
+
         virtual ~Chart();
         Chart() = default;
         Chart(const Chart&) = delete;
@@ -468,7 +470,7 @@ namespace acmacs::chart
         virtual std::shared_ptr<Sera> sera() const = 0;
         virtual std::shared_ptr<Titers> titers() const = 0;
         virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0; // returns nullptr if column bases not forced
-        virtual std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis, bool use_cache = false) const;
+        virtual std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis, use_cache a_use_cache = use_cache::no) const;
         std::shared_ptr<ColumnBases> column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
         virtual std::shared_ptr<Projections> projections() const = 0;
         std::shared_ptr<Projection> projection(size_t aProjectionNo) const { return (*projections())[aProjectionNo]; }
@@ -491,7 +493,8 @@ namespace acmacs::chart
         std::vector<acmacs::PointStyle> default_all_styles() const;
 
           // Negative radius means calculation failed (e.g. no homologous titer)
-        double serum_circle_radius(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool aVerbose = false) const;
+        double serum_circle_radius_empirical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool aVerbose = false) const;
+        double serum_circle_radius_theoretical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool aVerbose = false) const;
           // aWithin4Fold: indices of antigens within 4fold from homologous titer
           // aOutside4Fold: indices of antigens with titers against aSerumNo outside 4fold distance from homologous titer
         void serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const;
