@@ -77,10 +77,10 @@ namespace acmacs::chart
         };
 
         TiterIterator(Implementation* implementation) : data_{implementation} {}
-        constexpr bool operator==(const TiterIterator& rhs) const { return *data_ == *rhs.data_; }
-        constexpr bool operator!=(const TiterIterator& rhs) const { return !operator==(rhs); }
-        constexpr const Data& operator*() const { return **data_; }
-        constexpr const Data& operator->() const { return **data_; }
+        bool operator==(const TiterIterator& rhs) const { return *data_ == *rhs.data_; }
+        bool operator!=(const TiterIterator& rhs) const { return !operator==(rhs); }
+        const Data& operator*() const { return **data_; }
+        const Data& operator->() const { return **data_; }
         const TiterIterator& operator++() { data_->operator++(); return *this; }
 
      private:
