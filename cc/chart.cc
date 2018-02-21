@@ -101,6 +101,37 @@ inline std::ostream& operator << (std::ostream& out, const TiterDistance& td)
 
 class SerumCircleRadiusCalculationError : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
+// Description of empirical radius calculation found in my message to Derek 2015-09-21 12:03 Subject: Serum protection radius
+//
+// Program "draws" some circle around a serum with some radius. Then for
+// each antigen having titer with that serum program calculates:
+// 1. Theoretical protection, i.e. if titer for antigen and serum is more
+// or equal than (homologous-titer - 2)
+// 2. Empirical protection, i.e. if antigen is inside the drawn circle,
+// i.e. if distance between antigen and serum is less or equal than the
+// circle radius.
+//
+// As the result for a circle we have four numbers:
+// 1. Number of antigens both theoretically and empirically protected;
+// 2. Number of antigens just theoretically protected;
+// 3. Number of antigens just empirically protected;
+// 4. Number of antigens not protected at all.
+//
+// Then the program optimizes the circle radius to minimize 2 and 3,
+// i.e. the sum of number of antigens protected only theoretically and
+// only empirically.
+//
+// Practically program first calculates stress for the radius equal to
+// the distance of the closest antigen. Then it takes the radius as
+// average between closest antigen distance and the second closest
+// antigen distance and gets stress. Then it takes the radius as
+// average between the second closest antigen distance and the third
+// closest antigen and gets stress. And so on, the stress increases
+// with each antigen included into the circle.
+//
+// If there are multiple optima with equal sums of 2 and 3, then the
+// radius is a mean of optimal radii.
+
 double acmacs::chart::Chart::serum_circle_radius_empirical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool aVerbose) const
 {
     if (aVerbose)
