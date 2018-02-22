@@ -100,7 +100,7 @@ AntigensP AceChart::antigens() const
 SeraP AceChart::sera() const
 {
     auto sera = std::make_shared<AceSera>(mData["c"].get_or_empty_array("s"));
-    set_homologous(false, sera);
+    set_homologous(find_homologous_for_big_chart::no, sera);
     return sera;
 
 } // AceChart::sera

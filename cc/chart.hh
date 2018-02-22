@@ -499,7 +499,8 @@ namespace acmacs::chart
           // aOutside4Fold: indices of antigens with titers against aSerumNo outside 4fold distance from homologous titer
         void serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const;
 
-        void set_homologous(bool force, std::shared_ptr<Sera> aSera = nullptr) const;
+        enum class find_homologous_for_big_chart { no, yes };
+        void set_homologous(find_homologous_for_big_chart force, std::shared_ptr<Sera> aSera = nullptr) const;
 
         template <typename Float> Stress<Float> make_stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const
             {
