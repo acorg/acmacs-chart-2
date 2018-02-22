@@ -1,8 +1,10 @@
 #include <iostream>
+#include <fstream>
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-base/string.hh"
+//#include "acmacs-base/string.hh"
+#include "acmacs-base/read-file.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -17,6 +19,7 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
+                {"--json", "", "write json data into file suitable for ssm report"},
                 {"--projection", 0UL},
                 {"--verbose", false},
                 {"--time", false, "report time of loading chart"},
@@ -65,6 +68,7 @@ struct SerumData
 
 static std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t projection_no);
 static void report_text(const acmacs::chart::Chart& chart, const std::vector<SerumData>& sera_data);
+static void report_json(std::ostream& output, const acmacs::chart::Chart& chart, const std::vector<SerumData>& sera_data);
 
 void report(const argc_argv& args)
 {
@@ -76,38 +80,16 @@ void report(const argc_argv& args)
         throw std::runtime_error("invalid projection number");
     chart->set_homologous(acmacs::chart::Chart::find_homologous_for_big_chart::yes);
     auto result = collect(*chart, projection_no);
-    report_text(*chart, result);
 
-    // auto antigens = chart->antigens();
-    // const auto antigen_no_num_digits = static_cast<int>(std::log10(antigens->size())) + 1;
-    // auto sera = chart->sera();
-    // const auto serum_no_num_digits = static_cast<int>(std::log10(sera->size())) + 1;
-    // auto titers = chart->titers();
-    // for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
-    //     const auto antigen_indexes = serum->homologous_antigens();
-
-    //     std::cout << "SR " << std::setw(serum_no_num_digits) << sr_no << ' ' << serum->full_name_with_fields() << '\n';
-    //     if (!antigen_indexes.empty()) {
-    //         std::cout << "   titer theor empir\n";
-    //         for (auto ag_no : antigen_indexes) {
-    //             std::cout << "  ";
-    //             if (const auto homologous_titer = titers->titer(ag_no, sr_no); homologous_titer.is_regular()) {
-    //                 const auto theoretical = chart->serum_circle_radius_theoretical(ag_no, sr_no, projection_no, false);
-    //                 const auto empirical = chart->serum_circle_radius_empirical(ag_no, sr_no, projection_no, false);
-    //                 std::cout << std::setw(6) << std::right << homologous_titer
-    //                           << ' ' << std::setw(5) << std::fixed << std::setprecision(2) << theoretical
-    //                           << ' ' << std::setw(5) << std::fixed << std::setprecision(2) << empirical;
-    //             }
-    //             else {
-    //                 std::cout << std::setw(5) << std::right << homologous_titer << "    -     -  ";
-    //             }
-    //             std::cout << "   " << std::setw(antigen_no_num_digits) << ag_no << ' ' << (*antigens)[ag_no]->full_name_with_passage() << '\n';
-    //         }
-    //     }
-    //     else {
-    //         std::cout << "    no antigens\n";
-    //     }
-    // }
+    if (std::string json_filename = args["--json"]; json_filename.empty())
+        report_text(*chart, result);
+    else if (json_filename == "-" || json_filename == "=")
+        report_json(std::cout, *chart, result);
+    else {
+        acmacs::file::backup(json_filename);
+        std::ofstream output(json_filename);
+        report_json(output, *chart, result);
+    }
 
 } // report
 
@@ -162,6 +144,16 @@ void report_text(const acmacs::chart::Chart& chart, const std::vector<SerumData>
     }
 
 } // report_text
+
+// ----------------------------------------------------------------------
+
+void report_json(std::ostream& output, const acmacs::chart::Chart& chart, const std::vector<SerumData>& sera_data)
+{
+    output << R"({ "_":"-*- js-indent-level: 2 -*-",
+  "mods": {
+)";
+
+} // report_json
 
 // ----------------------------------------------------------------------
 
