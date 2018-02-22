@@ -3,7 +3,7 @@
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/enumerate.hh"
-//#include "acmacs-base/string.hh"
+#include "acmacs-base/string.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
@@ -149,9 +149,51 @@ void report_text(const acmacs::chart::Chart& chart, const std::vector<SerumData>
 
 void report_json(std::ostream& output, const acmacs::chart::Chart& chart, const std::vector<SerumData>& sera_data)
 {
-    output << R"({ "_":"-*- js-indent-level: 2 -*-",
-  "mods": {
-)";
+    const std::string tag_prefix = chart.info()->lab(acmacs::chart::Info::Compute::Yes) + "_" + string::replace(chart.info()->assay(), " ", "_") + '_';
+    const char* mod_pre = "        {\"N\": \"clades_light\", \"size\": 8},\n";
+
+    output << "{ \"_\":\"-*- js-indent-level: 2 -*-\",\n  \"mods\": {\n";
+    output << "    \"?? " << tag_prefix << "\": false,\n\n";
+
+    for (const auto& serum_data : sera_data) {
+        const std::string serum_name_infix = string::replace(serum_data.serum->full_name_without_passage(), "/", "_", " ", "_", "A(H1N1)", "H1", "A(H3N2)", "H3", ",", "_");
+        if (!serum_data.antigens.empty()) {
+            for (const auto& antigen_data : serum_data.antigens) {
+                output << "    \"?? SR " << serum_data.serum_no << ' ' << serum_data.serum->full_name_with_passage() << "\": false,\n"
+                       << "    \"?? AG " << antigen_data.antigen_no << ' ' << antigen_data.antigen->full_name_with_passage() << "\": false,\n"
+                       << "    \"?? titer:" << antigen_data.titer << "  theoretical:" << antigen_data.theoretical << "  empirical:" << antigen_data.empirical << "\": false,\n";
+                output << "    \"" << tag_prefix << "serum_circle_" << serum_name_infix << ".theoretical.all\": [\n";
+                output << mod_pre;
+                output << "        {\"N\": \"serum_circle\", \"type\": \"theoretical\", \"serum\": {\"index\": " << serum_data.serum_no
+                       << "}, \"?antigen\": {\"index\": 0}, \"report\": true, \"circle\": {\"fill\": \"#C0FF8080\", \"outline\": \"red\", \"outline_width\": 2}}\n";
+                output << "    ],\n";
+
+                // output << "    \"" << tag_prefix << "serum_circle_" << serum_name_infix << ".theoretical.12m\": [\n";
+                // output << "    ],\n";
+                // output << "    \"" << tag_prefix << "serum_circle_" << serum_name_infix << ".empirical.all\": [\n";
+                // output << "    ],\n";
+                // output << "    \"" << tag_prefix << "serum_circle_" << serum_name_infix << ".empirical.12m\": [\n";
+                // output << "    ],\n";
+                // output << "    \"" << tag_prefix << "serum_coverage_circle_" << serum_name_infix << ".theoretical.all\": [\n";
+                // output << "    ],\n";
+                // output << "    \"" << tag_prefix << "serum_coverage_circle_" << serum_name_infix << ".theoretical.12m\": [\n";
+                // output << "    ],\n";
+                // output << "    \"" << tag_prefix << "serum_coverage_circle_" << serum_name_infix << ".empirical.all\": [\n";
+                // output << "    ],\n";
+                // output << "    \"" << tag_prefix << "serum_coverage_circle_" << serum_name_infix << ".empirical.12m\": [\n";
+                // output << "    ],\n";
+
+                output << '\n';
+            }
+        }
+        else {
+            output << "    \"?? ** no antigens ** no serum circle ** " << tag_prefix << " " << serum_data.serum->full_name_with_passage() << "\": false,\n";
+        }
+        output << "\n    \"? ======================================================================\": false,\n";
+
+    }
+    output << "    \"? avoid last comma\": []\n";
+    output << "  }\n}\n";
 
 } // report_json
 
