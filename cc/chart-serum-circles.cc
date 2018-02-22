@@ -8,6 +8,8 @@
 
 // ----------------------------------------------------------------------
 
+static void report(const argc_argv& args);
+
 int main(int argc, char* const argv[])
 {
       //using namespace std::string_literals;
@@ -27,44 +29,7 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            const auto report = do_report_time(args["--time"]);
-            const size_t projection_no = args["--projection"];
-            auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
-            if (chart->number_of_projections() == 0)
-                throw std::runtime_error("chart has no projections");
-            if (chart->number_of_projections() <= projection_no)
-                throw std::runtime_error("invalid projection number");
-            chart->set_homologous(acmacs::chart::Chart::find_homologous_for_big_chart::yes);
-            auto antigens = chart->antigens();
-            const auto antigen_no_num_digits = static_cast<int>(std::log10(antigens->size())) + 1;
-            auto sera = chart->sera();
-            const auto serum_no_num_digits = static_cast<int>(std::log10(sera->size())) + 1;
-            auto titers = chart->titers();
-            for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
-                const auto antigen_indexes = serum->homologous_antigens();
-
-                std::cout << "SR " << std::setw(serum_no_num_digits) << sr_no << ' ' << serum->full_name_with_fields() << '\n';
-                if (!antigen_indexes.empty()) {
-                    std::cout << "   titer theor empir\n";
-                    for (auto ag_no : antigen_indexes) {
-                        std::cout << "  ";
-                        if (const auto homologous_titer = titers->titer(ag_no, sr_no); homologous_titer.is_regular()) {
-                            const auto theoretical = chart->serum_circle_radius_theoretical(ag_no, sr_no, projection_no, false);
-                            const auto empirical = chart->serum_circle_radius_empirical(ag_no, sr_no, projection_no, false);
-                            std::cout << std::setw(6) << std::right << homologous_titer
-                                      << ' ' << std::setw(5) << std::fixed << std::setprecision(2) << theoretical
-                                      << ' ' << std::setw(5) << std::fixed << std::setprecision(2) << empirical;
-                        }
-                        else {
-                            std::cout << homologous_titer << " - -";
-                        }
-                        std::cout << "   " << std::setw(antigen_no_num_digits) << ag_no << ' ' << (*antigens)[ag_no]->full_name_with_passage() << '\n';
-                    }
-                }
-                else {
-                    std::cout << "    no antigens\n";
-                }
-            }
+            report(args);
         }
     }
     catch (std::exception& err) {
@@ -73,6 +38,54 @@ int main(int argc, char* const argv[])
     }
     return exit_code;
 }
+
+// ----------------------------------------------------------------------
+
+void report(const argc_argv& args)
+{
+    const size_t projection_no = args["--projection"];
+    auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, do_report_time(args["--time"]));
+    if (chart->number_of_projections() == 0)
+        throw std::runtime_error("chart has no projections");
+    if (chart->number_of_projections() <= projection_no)
+        throw std::runtime_error("invalid projection number");
+    chart->set_homologous(acmacs::chart::Chart::find_homologous_for_big_chart::yes);
+
+    auto antigens = chart->antigens();
+    const auto antigen_no_num_digits = static_cast<int>(std::log10(antigens->size())) + 1;
+    auto sera = chart->sera();
+    const auto serum_no_num_digits = static_cast<int>(std::log10(sera->size())) + 1;
+    auto titers = chart->titers();
+    for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
+        const auto antigen_indexes = serum->homologous_antigens();
+
+        std::cout << "SR " << std::setw(serum_no_num_digits) << sr_no << ' ' << serum->full_name_with_fields() << '\n';
+        if (!antigen_indexes.empty()) {
+            std::cout << "   titer theor empir\n";
+            for (auto ag_no : antigen_indexes) {
+                std::cout << "  ";
+                if (const auto homologous_titer = titers->titer(ag_no, sr_no); homologous_titer.is_regular()) {
+                    const auto theoretical = chart->serum_circle_radius_theoretical(ag_no, sr_no, projection_no, false);
+                    const auto empirical = chart->serum_circle_radius_empirical(ag_no, sr_no, projection_no, false);
+                    std::cout << std::setw(6) << std::right << homologous_titer
+                              << ' ' << std::setw(5) << std::fixed << std::setprecision(2) << theoretical
+                              << ' ' << std::setw(5) << std::fixed << std::setprecision(2) << empirical;
+                }
+                else {
+                    std::cout << std::setw(5) << std::right << homologous_titer << "    -     -  ";
+                }
+                std::cout << "   " << std::setw(antigen_no_num_digits) << ag_no << ' ' << (*antigens)[ag_no]->full_name_with_passage() << '\n';
+            }
+        }
+        else {
+            std::cout << "    no antigens\n";
+        }
+    }
+
+} // report
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:
