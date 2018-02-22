@@ -41,6 +41,30 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
+struct AntigenData
+{
+    AntigenData(size_t ag_no, acmacs::chart::AntigenP ag, const acmacs::chart::Titer& a_titer)
+        : antigen_no{ag_no}, antigen{ag}, titer{a_titer} {}
+
+    size_t antigen_no;
+    acmacs::chart::AntigenP antigen;
+    acmacs::chart::Titer titer;
+    double theoretical;
+    double empirical;
+};
+
+struct SerumData
+{
+    SerumData(size_t sr_no, acmacs::chart::SerumP sr)
+        : serum_no{sr_no}, serum{sr} {}
+
+    size_t serum_no;
+    acmacs::chart::SerumP serum;
+    std::vector<AntigenData> antigens;
+};
+
+static std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t projection_no);
+
 void report(const argc_argv& args)
 {
     const size_t projection_no = args["--projection"];
@@ -50,6 +74,7 @@ void report(const argc_argv& args)
     if (chart->number_of_projections() <= projection_no)
         throw std::runtime_error("invalid projection number");
     chart->set_homologous(acmacs::chart::Chart::find_homologous_for_big_chart::yes);
+    auto result = collect(*chart, projection_no);
 
     auto antigens = chart->antigens();
     const auto antigen_no_num_digits = static_cast<int>(std::log10(antigens->size())) + 1;
@@ -83,6 +108,28 @@ void report(const argc_argv& args)
     }
 
 } // report
+
+// ----------------------------------------------------------------------
+
+std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t projection_no)
+{
+    std::vector<SerumData> result;
+    auto antigens = chart.antigens();
+    auto sera = chart.sera();
+    auto titers = chart.titers();
+    for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
+        auto& serum_data = result.emplace_back(sr_no, serum);
+        for (auto ag_no : serum->homologous_antigens()) {
+            auto& antigen_data = serum_data.antigens.emplace_back(ag_no, (*antigens)[ag_no], titers->titer(ag_no, sr_no));
+            if (antigen_data.titer.is_regular()) {
+                antigen_data.theoretical = chart.serum_circle_radius_theoretical(ag_no, sr_no, projection_no, false);
+                antigen_data.empirical = chart.serum_circle_radius_empirical(ag_no, sr_no, projection_no, false);
+            }
+        }
+    }
+    return result;
+
+} // collect
 
 // ----------------------------------------------------------------------
 
