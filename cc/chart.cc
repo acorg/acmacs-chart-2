@@ -450,6 +450,50 @@ std::string acmacs::chart::Projections::make_info() const
 
 // ----------------------------------------------------------------------
 
+std::string acmacs::chart::Antigen::full_name_with_fields() const
+{
+    std::string r = name();
+    if (const auto value = reassortant(); !value.empty())
+        r += " reassortant=\"" + value + '"';
+    if (const auto value = ::string::join(" ", annotations()); !value.empty())
+        r += " annotations=\"" + value + '"';
+    if (const auto value = passage(); !value.empty())
+        r += " passage=\"" + value + "\" ptype=" + value.passage_type();
+    if (const auto value = date(); !value.empty())
+        r += " date=" + value;
+    if (const auto value = lineage(); value != BLineage::Unknown)
+        r += " lineage=" + static_cast<std::string>(value);
+    if (reference())
+        r += " reference";
+    if (const auto value = ::string::join(" ", lab_ids()); !value.empty())
+        r += " lab_ids=\"" + value + '"';
+    return r;
+
+} // acmacs::chart::Antigen::full_name_with_fields
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::Serum::full_name_with_fields() const
+{
+    std::string r = name();
+    if (const auto value = reassortant(); !value.empty())
+        r += " reassortant=\"" + value + '"';
+    if (const auto value = ::string::join(" ", annotations()); !value.empty())
+        r += " annotations=\"" + value + '"';
+    if (const auto value = serum_id(); !value.empty())
+        r += " serum_id=\"" + value + '"';
+    if (const auto value = passage(); !value.empty())
+        r += " passage=\"" + value + "\" ptype=" + value.passage_type();
+    if (const auto value = serum_species(); !value.empty())
+        r += " serum_species=\"" + value + '"';
+    if (const auto value = lineage(); value != BLineage::Unknown)
+        r += " lineage=" + static_cast<std::string>(value);
+    return r;
+
+} // acmacs::chart::Serum::full_name_with_fields
+
+// ----------------------------------------------------------------------
+
 std::string name_abbreviated(std::string aName);
 std::string name_abbreviated(std::string aName)
 {

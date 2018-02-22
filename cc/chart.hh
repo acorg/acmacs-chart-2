@@ -221,6 +221,8 @@ namespace acmacs::chart
 
         std::string full_name() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations()), passage()}); }
         std::string full_name_without_passage() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations())}); }
+        std::string full_name_with_passage() const { return full_name(); }
+        std::string full_name_with_fields() const;
         std::string full_name_for_seqdb_matching() const { return ::string::join(" ", {name(), reassortant(), passage(), ::string::join(" ", annotations())}); } // annotations may part of the passage in seqdb (NIMR ISOLATE 1)
         std::string abbreviated_name() const { return ::string::join(" ", {name_abbreviated(), reassortant(), ::string::join(" ", annotations())}); }
         std::string abbreviated_name_with_passage_type() const { return ::string::join("-", {name_abbreviated(), reassortant(), ::string::join(" ", annotations()), passage_type()}); }
@@ -251,8 +253,10 @@ namespace acmacs::chart
         virtual PointIndexList homologous_antigens() const = 0;
         virtual void set_homologous(const std::vector<size_t>&) const {}
 
-        std::string full_name() const { return ::string::join(" ", {name(), reassortant(), serum_id(), ::string::join(" ", annotations())}); }
+        std::string full_name() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations()), serum_id()}); }
         std::string full_name_without_passage() const { return full_name(); }
+        std::string full_name_with_passage() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations()), serum_id(), passage()}); }
+        std::string full_name_with_fields() const;
         std::string abbreviated_name() const { return ::string::join(" ", {name_abbreviated(), reassortant(), ::string::join(" ", annotations())}); }
         std::string abbreviated_name_with_serum_id() const { return ::string::join(" ", {name_abbreviated(), reassortant(), serum_id(), ::string::join(" ", annotations())}); }
 
