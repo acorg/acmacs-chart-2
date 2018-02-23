@@ -46,7 +46,7 @@ int main(int argc, char* const argv[])
 
 static inline std::string make_infix(size_t no, std::string source)
 {
-    return std::to_string(no) + "_" + string::replace(source, "/", "_", " (", "_", " ", "_", "A(H1N1)", "H1", "A(H3N2)", "H3", ",", "_", "(", "", ")", "");
+    return std::to_string(no) + "_" + string::replace(source, "/", "_", " (", "_", " ", "_", "A(H1N1)", "H1", "A(H3N2)", "H3", ",", "_", "(", "", ")", "", "?", "X");
 }
 
 struct AntigenData
@@ -201,7 +201,7 @@ template <mod_type mt, radius_type rt, time_type tt> void make_list_2(std::ostre
                     output << '"';
                 make_tag<mt, rt, tt>(output, lab_assay_tag, serum_data.infix, antigen_data.infix);
                 output << "\",\n";
-                commented = true;
+                  // commented = true;
             }
         }
     }
@@ -336,6 +336,12 @@ template <mod_type mt, std::enable_if_t<mt==mod_type::coverage_circle, int> = 0>
 template <mod_type mt, radius_type rt, time_type tt, std::enable_if_t<tt==time_type::all, int> = 0>
     void make_antigen_mod_3(std::ostream& output, const SerumData& serum_data, const AntigenData& antigen_data, std::string /*lab_assay_tag*/)
 {
+    output << "        {\"serum_name\": \"" << serum_data.serum->full_name_with_passage()
+           << "\", \"antigen_name\": \"" << antigen_data.antigen->full_name_with_passage()
+           << "\", \"titer\": \"" << antigen_data.titer
+           << "\", \"theoretical\": " << std::setprecision(2) << std::fixed << antigen_data.theoretical
+           << ", \"empirical\": " << std::setprecision(2) << std::fixed << antigen_data.empirical
+           << ", \"N\": \"comment\", \"type\": \"data\"},\n";
     output << "        {\"N\": \"" << mod_type_name<mt>()
            << "\", \"serum\": {\"index\": " << serum_data.serum_no
            << "}, \"antigen\": {\"index\": " << antigen_data.antigen_no << "},\n";
