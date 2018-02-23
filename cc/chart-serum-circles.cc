@@ -44,9 +44,9 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-static inline std::string make_infix(std::string source)
+static inline std::string make_infix(size_t no, std::string source)
 {
-    return string::replace(source, "/", "_", " (", "_", " ", "_", "A(H1N1)", "H1", "A(H3N2)", "H3", ",", "_", "(", "", ")", "");
+    return std::to_string(no) + "_" + string::replace(source, "/", "_", " (", "_", " ", "_", "A(H1N1)", "H1", "A(H3N2)", "H3", ",", "_", "(", "", ")", "");
 }
 
 struct AntigenData
@@ -59,7 +59,7 @@ struct AntigenData
     double empirical = -1;
 
     AntigenData(size_t ag_no, acmacs::chart::AntigenP ag, const acmacs::chart::Titer& a_titer)
-        : antigen_no{ag_no}, antigen{ag}, infix(make_infix(ag->full_name_with_passage())), titer{a_titer} {}
+        : antigen_no{ag_no}, antigen{ag}, infix(make_infix(ag_no, ag->full_name_with_passage())), titer{a_titer} {}
     constexpr bool valid_theoretical() const { return theoretical > 0; }
     constexpr bool valid_empirical() const { return empirical > 0; }
 };
@@ -72,7 +72,7 @@ struct SerumData
     std::vector<AntigenData> antigens;
 
     SerumData(size_t sr_no, acmacs::chart::SerumP sr)
-        : serum_no{sr_no}, serum{sr}, infix(make_infix(sr->full_name_without_passage())) {}
+        : serum_no{sr_no}, serum{sr}, infix(make_infix(sr_no, sr->full_name_without_passage())) {}
     constexpr bool valid() const { return !antigens.empty(); }
 };
 
@@ -178,16 +178,18 @@ template <time_type> const char* time_infix();
 template <> inline const char* time_infix<time_type::all>() { return "all"; }
 template <> inline const char* time_infix<time_type::m12>() { return "12m"; }
 
-template <mod_type mt, radius_type rt, time_type tt> inline void make_tag(std::ostream& output, std::string lab_assay_tag, std::string serum_tag, std::string antigen_tag)
+template <mod_type mt, radius_type rt, time_type tt> inline void make_tag(std::ostream& output, std::string /*lab_assay_tag*/, std::string serum_tag, std::string antigen_tag)
 {
-    output << lab_assay_tag << mod_type_name<mt>() << '.' << serum_tag << '.' << antigen_tag << '.' << radius_infix<rt>() << '.' << time_infix<tt>();
+      // output << lab_assay_tag << mod_type_name<mt>() << '.' << serum_tag << '.' << antigen_tag << '.' << radius_infix<rt>() << '.' << time_infix<tt>();
+    output << mod_type_name<mt>() << '.' << serum_tag << '.' << antigen_tag << '.' << radius_infix<rt>() << '.' << time_infix<tt>();
 }
 
 // ----------------------------------------------------------------------
 
 template <mod_type mt, radius_type rt, time_type tt> void make_list_2(std::ostream& output, const std::vector<SerumData>& sera_data, std::string lab_assay_tag)
 {
-    output << "    \"" << lab_assay_tag << mod_type_name<mt>() << '.' << radius_infix<rt>() << '.' << time_infix<tt>() << "\": [\n";
+      // output << "    \"" << lab_assay_tag << mod_type_name<mt>() << '.' << radius_infix<rt>() << '.' << time_infix<tt>() << "\": [\n";
+    output << "    \"" << radius_infix<rt>() << '.' << time_infix<tt>() << "\": [\n";
     for (const auto& serum_data : sera_data) {
         bool commented = false;
         for (const auto& antigen_data : serum_data.antigens) {
@@ -297,7 +299,7 @@ template <mod_type mt, radius_type rt, std::enable_if_t<mt==mod_type::circle, in
 
 template <mod_type mt, radius_type rt, std::enable_if_t<mt==mod_type::coverage_circle, int> = 0> void make_radius_type(std::ostream& output, std::string prefix)
 {
-    output << prefix << '"' << radius_infix<rt>() << R"(": {"show": true, "fill": "#C0FF8080", "outline": "red", "outline_width": 2, "angle_degrees": [0, 30], "radius_line_dash": "dash2", "?radius_line_color": "red", "?radius_line_width": 1},)" << '\n';
+    output << prefix << '"' << radius_infix<rt>() << R"(": {"show": true, "fill": "#C0FF8080", "outline": "red", "outline_width": 2, "?angle_degrees": [0, 30], "radius_line_dash": "dash2", "?radius_line_color": "red", "?radius_line_width": 1},)" << '\n';
 }
 
 // ----------------------------------------------------------------------
@@ -308,15 +310,15 @@ template <mod_type mt, std::enable_if_t<mt==mod_type::circle, int> = 0> void mak
 
 template <mod_type mt, std::enable_if_t<mt==mod_type::coverage_circle, int> = 0> void make_within_outside(std::ostream& output, std::string prefix)
 {
-    output << prefix << R"("within_4fold": {"outline": "pink", "outline_width": 3, "order": "raise"},)" << '\n'
-           << prefix << R"("outside_4fold": {"fill": "grey50", "outline": "black", "order": "raise"},)" << '\n';
+    output << prefix << R"("within_4fold": {"fill_saturation": 10.0, "outline": "pink", "outline_width": 3, "order": "raise"},)" << '\n'
+           << prefix << R"("outside_4fold": {"fill_saturation": 10.0, "outline": "black", "order": "raise"},)" << '\n';
 }
 
 // ----------------------------------------------------------------------
 
 template <mod_type mt> void mark_serum(std::ostream& output, std::string prefix)
 {
-    output << prefix << R"("mark_serum": {"fill": "red", "outline": "black", "order": "raise", "?label": {"name_type": "full", "offset": [0, 1.2], "color": "black", "size": 12, "weight": "bold"}})" << '\n';
+    output << prefix << R"("mark_serum": {"fill": "black", "outline": "black", "size": 20, "order": "raise", "?label": {"name_type": "full", "offset": [0, 1.2], "color": "black", "size": 12, "weight": "bold"}})" << '\n';
 }
 
 template <mod_type mt, std::enable_if_t<mt==mod_type::circle, int> = 0> void mark_antigen(std::ostream& output, std::string prefix)
@@ -332,7 +334,7 @@ template <mod_type mt, std::enable_if_t<mt==mod_type::coverage_circle, int> = 0>
 
 // time_type::all
 template <mod_type mt, radius_type rt, time_type tt, std::enable_if_t<tt==time_type::all, int> = 0>
-    void make_antigen_mod_3(std::ostream& output, const SerumData& serum_data, const AntigenData& antigen_data, std::string lab_assay_tag)
+    void make_antigen_mod_3(std::ostream& output, const SerumData& serum_data, const AntigenData& antigen_data, std::string /*lab_assay_tag*/)
 {
     output << "        {\"N\": \"" << mod_type_name<mt>()
            << "\", \"serum\": {\"index\": " << serum_data.serum_no
@@ -428,26 +430,33 @@ template <typename ... Args> void make_antigen_mod(mod_type mt, radius_type rt, 
 
 void report_json(std::ostream& output, const acmacs::chart::Chart& chart, const std::vector<SerumData>& sera_data)
 {
-    const auto assay_tag = string::replace(chart.info()->assay(), "FOCUS REDUCTION", "FRA", " ", "_");
+      // const auto assay_tag = string::replace(chart.info()->assay(), "FOCUS REDUCTION", "FRA", " ", "_");
+    const std::string assay_tag = chart.info()->assay() == "HI" ? "HI" : "NEUT";
     const auto lab = chart.info()->lab(acmacs::chart::Info::Compute::Yes);
     const auto lab_assay_tag = lab + '_' + assay_tag + '.';
 
     // const char* mod_pre = "        {\"N\": \"clades_light\", \"size\": 8},\n";
 
-    output << "{ \"_\":\"-*- js-indent-level: 2 -*-\",\n";
-    output << "  \"?? " << lab << ' ' << assay_tag << "\": false\n";
-    output << "  \"mods\": {\n\n";
+    output << "{ \"_\":\"-*- js-indent-level: 2 -*-\",\n\n";
+    output << "  \"?? " << lab << ' ' << assay_tag << "\": false,\n\n";
 
-    output << "    \"?? ==== COVERAGE LIST ======================================================================\": false,\n\n";
+    output << "  \"?? ==== COVERAGE LIST ======================================================================\": false,\n";
+    output << "  \"serum_coverage_mods\": {\n\n";
     for (auto rt : {radius_type::theoretical, radius_type::empirical})
         for (auto tt : {time_type::all, time_type::m12})
             make_list(mod_type::coverage_circle, rt, tt, output, sera_data, lab_assay_tag);
+    output << "    \"?? no comma\": false\n";
+    output << "  },\n\n";
 
-    output << "    \"?? ==== CIRCLE LIST ======================================================================\": false,\n\n";
+    output << "  \"?? ==== CIRCLE LIST ======================================================================\": false,\n";
+    output << "  \"serum_circle_mods\": {\n\n";
     for (auto rt : {radius_type::theoretical, radius_type::empirical})
         for (auto tt : {time_type::all, time_type::m12})
             make_list(mod_type::circle, rt, tt, output, sera_data, lab_assay_tag);
+    output << "    \"?? no comma\": false\n";
+    output << "  },\n\n";
 
+    output << "  \"mods\": {\n\n";
     for (const auto& serum_data : sera_data) {
         make_serum_info(output, serum_data);
         for (const auto& antigen_data : serum_data.antigens) {
