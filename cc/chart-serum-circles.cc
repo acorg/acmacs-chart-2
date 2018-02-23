@@ -336,9 +336,9 @@ template <mod_type mt, std::enable_if_t<mt==mod_type::coverage_circle, int> = 0>
 template <mod_type mt, radius_type rt, time_type tt, std::enable_if_t<tt==time_type::all, int> = 0>
     void make_antigen_mod_3(std::ostream& output, const SerumData& serum_data, const AntigenData& antigen_data, std::string /*lab_assay_tag*/)
 {
-    output << "        {\"serum_name\": \"" << serum_data.serum->full_name_with_passage()
-           << "\", \"antigen_name\": \"" << antigen_data.antigen->full_name_with_passage()
-           << "\", \"titer\": \"" << antigen_data.titer
+    output << "        {\"serum_name\": \"" << serum_data.serum->full_name_with_passage() << "\", \"serum_no\": " << serum_data.serum_no
+           << ", \"antigen_name\": \"" << antigen_data.antigen->full_name_with_passage() << "\", \"antigen_no\": " << antigen_data.antigen_no
+           << ", \"titer\": \"" << antigen_data.titer
            << "\", \"theoretical\": " << std::setprecision(2) << std::fixed << antigen_data.theoretical
            << ", \"empirical\": " << std::setprecision(2) << std::fixed << antigen_data.empirical
            << ", \"N\": \"comment\", \"type\": \"data\"},\n";
