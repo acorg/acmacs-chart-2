@@ -73,7 +73,7 @@ struct SerumData
 
     SerumData(size_t sr_no, acmacs::chart::SerumP sr)
         : serum_no{sr_no}, serum{sr}, infix(make_infix(sr_no, sr->full_name_without_passage())) {}
-    constexpr bool valid() const { return !antigens.empty(); }
+    bool valid() const { return !antigens.empty(); }
 };
 
 static std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t projection_no);
