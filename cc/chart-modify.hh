@@ -1,5 +1,7 @@
 #pragma once
 
+#include <variant>
+
 #include "acmacs-chart-2/chart.hh"
 #include "acmacs-chart-2/randomizer.hh"
 #include "acmacs-chart-2/optimize.hh"
@@ -211,26 +213,30 @@ namespace acmacs::chart
     class TitersModify : public Titers
     {
      public:
-        explicit TitersModify(TitersP aMain) : mMain{aMain} {}
+        explicit TitersModify();
+        explicit TitersModify(TitersP main);
 
-        Titer titer(size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titer(aAntigenNo, aSerumNo); }
-        Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titer_of_layer(aLayerNo, aAntigenNo, aSerumNo); }
-        std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titers_for_layers(aAntigenNo, aSerumNo); }
-        size_t number_of_layers() const override { return mMain->number_of_layers(); }
-        size_t number_of_antigens() const override { return mMain->number_of_antigens(); }
-        size_t number_of_sera() const override { return mMain->number_of_sera(); }
-        size_t number_of_non_dont_cares() const override { return mMain->number_of_non_dont_cares(); }
+        Titer titer(size_t aAntigenNo, size_t aSerumNo) const override;
+        Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override;
+        std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const override;
+        size_t number_of_layers() const override { return layers_.size(); }
+        size_t number_of_antigens() const override;
+        size_t number_of_sera() const override { return number_of_sera_; }
+        size_t number_of_non_dont_cares() const override;
 
-          // support for fast exporting into ace, if source was ace or acd1
-        const rjson::array& rjson_list_list() const override { return mMain->rjson_list_list(); }
-        const rjson::array& rjson_list_dict() const override { return mMain->rjson_list_dict(); }
-        const rjson::array& rjson_layers() const override { return mMain->rjson_layers(); }
-
-        TiterIterator begin() const override { return mMain->begin(); }
-        TiterIterator end() const override { return mMain->end(); }
+        TiterIterator begin() const override;
+        TiterIterator end() const override;
 
      private:
-        TitersP mMain;
+        using dense_t = std::vector<Titer>;
+        using sparse_entry_t = std::pair<size_t, Titer>; // serum no, titer
+        using sparse_t = std::vector<sparse_entry_t>;    // size = number_of_antigens
+        using layers_t = std::vector<sparse_t>;
+
+          // size_t number_of_antigens_;
+        size_t number_of_sera_;
+        std::variant<dense_t, sparse_t> titers_;
+        layers_t layers_;
 
     }; // class TitersModify
 

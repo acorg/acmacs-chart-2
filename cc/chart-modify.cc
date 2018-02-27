@@ -260,6 +260,77 @@ SeraModify::SeraModify(SeraP main)
 
 // ----------------------------------------------------------------------
 
+TitersModify::TitersModify()
+    : titers_{dense_t{}}
+{
+} // TitersModify::TitersModify
+
+// ----------------------------------------------------------------------
+
+TitersModify::TitersModify(TitersP main)
+{
+
+} // TitersModify::TitersModify
+
+// ----------------------------------------------------------------------
+
+Titer TitersModify::titer(size_t aAntigenNo, size_t aSerumNo) const
+{
+
+} // TitersModify::titer
+
+// ----------------------------------------------------------------------
+
+Titer TitersModify::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const
+{
+
+} // TitersModify::titer_of_layer
+
+// ----------------------------------------------------------------------
+
+std::vector<Titer> TitersModify::titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const
+{
+
+} // TitersModify::titers_for_layers
+
+// ----------------------------------------------------------------------
+
+size_t TitersModify::number_of_antigens() const
+{
+    auto num_ags = [this](const auto& titers) -> size_t {
+                       using T = std::decay_t<decltype(titers)>;
+                       if constexpr (std::is_same_v<T, dense_t>)
+                                            return titers.size() / this->number_of_sera_;
+                       else
+                           return titers.size();
+                   };
+    return std::visit(num_ags, titers_);
+
+} // TitersModify::number_of_antigens
+
+// ----------------------------------------------------------------------
+
+size_t TitersModify::number_of_non_dont_cares() const
+{
+
+} // TitersModify::number_of_non_dont_cares
+
+// ----------------------------------------------------------------------
+
+TiterIterator TitersModify::begin() const
+{
+
+} // TitersModify::begin
+
+// ----------------------------------------------------------------------
+
+TiterIterator TitersModify::end() const
+{
+
+} // TitersModify::end
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<ProjectionModifyNew> ProjectionModify::clone(ChartModify& chart) const
 {
     auto projection = std::make_shared<ProjectionModifyNew>(*this);
