@@ -74,7 +74,7 @@ InfoModifyP ChartModify::info_modify()
 
 AntigensP ChartModify::antigens() const
 {
-    return std::make_shared<AntigensModify>(main_->antigens());
+    return std::make_shared<AntigensModifyMain>(main_->antigens());
 
 } // ChartModify::antigens
 
@@ -125,7 +125,7 @@ void ChartModify::new_plot_spec() const
 
 AntigensModifyP ChartModify::antigens_modify()
 {
-    return std::make_shared<AntigensModify>(main_->antigens());
+    return std::make_shared<AntigensModifyMain>(main_->antigens());
 
 } // ChartModify::antigens_modify
 
@@ -183,6 +183,14 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     return {status, projection};
 
 } // ChartModify::relax
+
+// ----------------------------------------------------------------------
+
+std::optional<size_t> AntigensModify::find_by_full_name(std::string aFullName) const
+{
+    return {};
+
+} // AntigensModify::find_by_full_name
 
 // ----------------------------------------------------------------------
 

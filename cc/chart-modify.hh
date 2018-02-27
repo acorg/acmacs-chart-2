@@ -252,16 +252,52 @@ namespace acmacs::chart
     class AntigensModify : public Antigens
     {
      public:
-        AntigensModify(AntigensP aMain) : mMain{aMain} {}
+        AntigensModify() = default;
 
-        size_t size() const override { return mMain->size(); }
-        AntigenP operator[](size_t aIndex) const override { return std::make_shared<AntigenModify>(mMain->operator[](aIndex)); }
-        std::optional<size_t> find_by_full_name(std::string aFullName) const override { return mMain->find_by_full_name(aFullName); }
+          //size_t size() const override { return antigens_.size(); }
+        AntigenP operator[](size_t aIndex) const override { return antigens_.at(aIndex); }
+        std::optional<size_t> find_by_full_name(std::string aFullName) const override;
+
+     protected:
+        std::vector<AntigenModifyP> antigens_;
+
+        bool modified() const { return !antigens_.empty(); }
+
+    }; // class AntigensModify
+
+    class AntigensModifyMain : public AntigensModify
+    {
+     public:
+        AntigensModifyMain(AntigensP aMain) : mMain{aMain} {}
+
+        size_t size() const override
+            {
+                if (const auto sz = antigens_.size(); sz == 0)
+                    return mMain->size();
+                else
+                    return sz;
+            }
+
+        AntigenP operator[](size_t aIndex) const override
+            {
+                if (modified())
+                    return antigens_.at(aIndex);
+                else
+                    return mMain->operator[](aIndex);
+            }
+
+        std::optional<size_t> find_by_full_name(std::string aFullName) const override
+            {
+                if (modified())
+                    return AntigensModify::find_by_full_name(aFullName);
+                else
+                    return mMain->find_by_full_name(aFullName);
+            }
 
      private:
         AntigensP mMain;
 
-    }; // class AntigensModify
+    }; // class AntigensModifyMain
 
 // ----------------------------------------------------------------------
 
