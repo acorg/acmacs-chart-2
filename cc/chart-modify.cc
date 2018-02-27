@@ -6,49 +6,12 @@ using namespace acmacs::chart;
 
 // ----------------------------------------------------------------------
 
-ProjectionsP ChartModifyBase::projections() const
+ChartModify::ChartModify()
+    : info_{std::make_shared<InfoModify>()}
 {
-    return get_projections();
 
-} // ChartModifyBase::projections
+} // ChartModify::ChartModify
 
-// ----------------------------------------------------------------------
-
-PlotSpecP ChartModifyBase::plot_spec() const
-{
-    return get_plot_spec();
-
-} // ChartModifyBase::plot_spec
-
-// ----------------------------------------------------------------------
-
-ProjectionModifyP ChartModifyBase::projection_modify(size_t aProjectionNo)
-{
-    return get_projections()->at(aProjectionNo);
-
-} // ChartModifyBase::projection_modify
-
-// ----------------------------------------------------------------------
-
-ProjectionsModifyP ChartModifyBase::get_projections() const
-{
-    if (!projections_)
-        new_projections();
-    return projections_;
-
-} // ChartModifyBase::get_projections
-
-// ----------------------------------------------------------------------
-
-PlotSpecModifyP ChartModifyBase::get_plot_spec() const
-{
-    if (!plot_spec_)
-        new_plot_spec();
-    return plot_spec_;
-
-} // ChartModifyBase::get_plot_spec
-
-// ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 
 InfoP ChartModify::info() const
@@ -65,7 +28,7 @@ InfoP ChartModify::info() const
 InfoModifyP ChartModify::info_modify()
 {
     if (!info_)
-        info_ = std::make_shared<InfoModifyMain>(main_->info());
+        info_ = std::make_shared<InfoModify>(main_->info());
     return info_;
 
 } // ChartModify::info_modify
@@ -74,87 +37,135 @@ InfoModifyP ChartModify::info_modify()
 
 AntigensP ChartModify::antigens() const
 {
-    return std::make_shared<AntigensModifyMain>(main_->antigens());
+    if (antigens_)
+        return antigens_;
+    else
+        return main_->antigens();
 
 } // ChartModify::antigens
 
 // ----------------------------------------------------------------------
 
-SeraP ChartModify::sera() const
-{
-    return std::make_shared<SeraModify>(main_->sera());
-
-} // ChartModify::sera
-
-// ----------------------------------------------------------------------
-
-TitersP ChartModify::titers() const
-{
-    return std::make_shared<TitersModify>(main_->titers());
-
-} // ChartModify::titers
-
-// ----------------------------------------------------------------------
-
-ColumnBasesP ChartModify::forced_column_bases() const
-{
-    if (auto cb = main_->forced_column_bases(); cb)
-        return std::make_shared<ColumnBasesModify>(cb);
-    else
-        return nullptr;
-
-} // ChartModify::forced_column_bases
-
-// ----------------------------------------------------------------------
-
-void ChartModify::new_projections() const
-{
-    projections_ = std::make_shared<ProjectionsModify>(main_->projections());
-
-} // ChartModify::new_projections
-
-// ----------------------------------------------------------------------
-
-void ChartModify::new_plot_spec() const
-{
-    plot_spec_ = std::make_shared<PlotSpecModify>(main_->plot_spec(), number_of_antigens());
-
-} // ChartModify::new_plot_spec
-
-// ----------------------------------------------------------------------
-
 AntigensModifyP ChartModify::antigens_modify()
 {
-    return std::make_shared<AntigensModifyMain>(main_->antigens());
+    if (!antigens_)
+        antigens_ = std::make_shared<AntigensModify>(main_->antigens());
+    return antigens_;
 
 } // ChartModify::antigens_modify
 
 // ----------------------------------------------------------------------
 
+SeraP ChartModify::sera() const
+{
+    if (sera_)
+        return sera_;
+    else
+        return main_->sera();
+
+} // ChartModify::sera
+
+// ----------------------------------------------------------------------
+
 SeraModifyP ChartModify::sera_modify()
 {
-    return std::make_shared<SeraModify>(main_->sera());
+    if (!sera_)
+        sera_ = std::make_shared<SeraModify>(main_->sera());
+    return sera_;
 
 } // ChartModify::sera_modify
 
 // ----------------------------------------------------------------------
 
+TitersP ChartModify::titers() const
+{
+    if (titers_)
+        return titers_;
+    else
+        return main_->titers();
+
+} // ChartModify::titers
+
+// ----------------------------------------------------------------------
+
 TitersModifyP ChartModify::titers_modify()
 {
-    return std::make_shared<TitersModify>(main_->titers());
+    if (!titers_)
+        titers_ = std::make_shared<TitersModify>(main_->titers());
+    return titers_;
 
 } // ChartModify::titers_modify
 
 // ----------------------------------------------------------------------
 
+ProjectionsP ChartModify::projections() const
+{
+    if (projections_)
+        return projections_;
+    else
+        return main_->projections();
+
+} // ChartModify::projections
+
+// ----------------------------------------------------------------------
+
+PlotSpecP ChartModify::plot_spec() const
+{
+    if (plot_spec_)
+        return plot_spec_;
+    else
+        return main_->plot_spec();
+
+} // ChartModify::plot_spec
+
+// ----------------------------------------------------------------------
+
+ColumnBasesP ChartModify::forced_column_bases() const
+{
+    if (forced_column_bases_)
+        return forced_column_bases_;
+    else
+        return main_->forced_column_bases();
+
+} // ChartModify::forced_column_bases
+
+// ----------------------------------------------------------------------
+
 ColumnBasesModifyP ChartModify::forced_column_bases_modify()
 {
-    if (auto cb = main_->forced_column_bases(); cb)
-        return std::make_shared<ColumnBasesModify>(cb);
-    else
-        return nullptr;
+    if (!forced_column_bases_)
+        forced_column_bases_ = std::make_shared<ColumnBasesModify>(main_->forced_column_bases());
+    return forced_column_bases_;
 
 } // ChartModify::forced_column_bases_modify
+
+// ----------------------------------------------------------------------
+
+ProjectionsModifyP ChartModify::projections_modify()
+{
+    if (!projections_)
+        projections_ = std::make_shared<ProjectionsModify>(main_->projections());
+    return projections_;
+
+} // ChartModify::projections_modify
+
+// ----------------------------------------------------------------------
+
+ProjectionModifyP ChartModify::projection_modify(size_t aProjectionNo)
+{
+    return projections_modify()->at(aProjectionNo);
+
+} // ChartModify::projection_modify
+
+// ----------------------------------------------------------------------
+
+PlotSpecModifyP ChartModify::plot_spec_modify()
+{
+    if (!plot_spec_)
+        plot_spec_ = std::make_shared<PlotSpecModify>(main_->plot_spec(), number_of_antigens());
+    return plot_spec_;
+
+} // ChartModify::plot_spec_modify
 
 // ----------------------------------------------------------------------
 
@@ -186,11 +197,43 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
 
 // ----------------------------------------------------------------------
 
+InfoModify::InfoModify(InfoP main)
+    : name_{main->name(Compute::Yes)},
+      virus_{main->virus(Compute::Yes)},
+      virus_type_{main->virus_type(Compute::Yes)},
+      subset_{main->subset(Compute::Yes)},
+      assay_{main->assay(Compute::Yes)},
+      lab_{main->lab(Compute::Yes)},
+      rbc_species_{main->rbc_species(Compute::Yes)},
+      date_{main->date(Compute::Yes)}
+{
+} // InfoModify::InfoModify
+
+// ----------------------------------------------------------------------
+
+AntigensModify::AntigensModify(AntigensP main)
+    : antigens_(main->size(), nullptr)
+{
+    std::transform(main->begin(), main->end(), antigens_.begin(), [](auto ag) { return std::make_shared<AntigenModify>(ag); });
+
+} // AntigensModify::AntigensModify
+
+// ----------------------------------------------------------------------
+
 std::optional<size_t> AntigensModify::find_by_full_name(std::string aFullName) const
 {
     return {};
 
 } // AntigensModify::find_by_full_name
+
+// ----------------------------------------------------------------------
+
+SeraModify::SeraModify(SeraP main)
+    : sera_(main->size(), nullptr)
+{
+    std::transform(main->begin(), main->end(), sera_.begin(), [](auto sr) { return std::make_shared<SerumModify>(sr); });
+
+} // SeraModify::SeraModify
 
 // ----------------------------------------------------------------------
 

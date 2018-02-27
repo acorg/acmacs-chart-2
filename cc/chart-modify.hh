@@ -1,7 +1,5 @@
 #pragma once
 
-#include <optional>
-
 #include "acmacs-chart-2/chart.hh"
 #include "acmacs-chart-2/randomizer.hh"
 #include "acmacs-chart-2/optimize.hh"
@@ -36,128 +34,61 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class ChartModifyBase : public Chart
+    class ChartModify : public Chart
     {
      public:
-        ChartModifyBase() {}
-
-        ProjectionsP projections() const override;
-        PlotSpecP plot_spec() const override;
-
-        InfoModifyP info_modify() { return info_; }
-        AntigensModifyP antigens_modify() { return antigens_; }
-        SeraModifyP sera_modify() { return sera_; }
-        TitersModifyP titers_modify() { return titers_; }
-        ColumnBasesModifyP forced_column_bases_modify() { return forced_column_bases_; }
-        ProjectionsModifyP projections_modify() { return get_projections(); }
-        ProjectionModifyP projection_modify(size_t aProjectionNo);
-        PlotSpecModifyP plot_spec_modify() { return get_plot_spec(); }
-
-     protected:
-        // virtual void modify() {  }
-        // virtual bool modified() const { return true; }
-        virtual ProjectionsModifyP get_projections() const;
-        virtual PlotSpecModifyP get_plot_spec() const;
-        virtual void new_projections() const = 0;
-        virtual void new_plot_spec() const = 0;
-
-        InfoModifyP info_;
-        AntigensModifyP antigens_;
-        SeraModifyP sera_;
-        TitersModifyP titers_;
-        ColumnBasesModifyP forced_column_bases_;
-        mutable ProjectionsModifyP projections_;
-        mutable PlotSpecModifyP plot_spec_;
-
-    }; // class ChartModifyBase
-
-// ----------------------------------------------------------------------
-
-    class ChartModify : public ChartModifyBase
-    {
-     public:
-        ChartModify(ChartP main) : main_{main} {}
+        explicit ChartModify();
+        explicit ChartModify(ChartP main) : main_{main} {}
 
         InfoP info() const override;
         AntigensP antigens() const override;
         SeraP sera() const override;
         TitersP titers() const override;
         ColumnBasesP forced_column_bases() const override;
-        bool is_merge() const override { return main_->is_merge(); }
+        ProjectionsP projections() const override;
+        PlotSpecP plot_spec() const override;
+
+        bool is_merge() const override { return main_ ? main_->is_merge() : false; }
 
         InfoModifyP info_modify();
         AntigensModifyP antigens_modify();
         SeraModifyP sera_modify();
         TitersModifyP titers_modify();
         ColumnBasesModifyP forced_column_bases_modify();
+        ProjectionsModifyP projections_modify();
+        ProjectionModifyP projection_modify(size_t aProjectionNo);
+        PlotSpecModifyP plot_spec_modify();
 
         std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {});
 
-     protected:
-        // bool modified() const override {}
-        // ProjectionsModifyP get_projections() const override;
-        // PlotSpecModifyP get_plot_spec() const override;
-        void new_projections() const override;
-        void new_plot_spec() const override;
-
      private:
         ChartP main_;
-        // mutable ProjectionsModifyP projections_;
-        // mutable PlotSpecModifyP plot_spec_;
+        InfoModifyP info_;
+        AntigensModifyP antigens_;
+        SeraModifyP sera_;
+        TitersModifyP titers_;
+        ColumnBasesModifyP forced_column_bases_;
+        ProjectionsModifyP projections_;
+        PlotSpecModifyP plot_spec_;
 
     }; // class ChartModify
-
-// ----------------------------------------------------------------------
-
-    // class ChartModifyNew : public ChartModifyBase
-    // {
-    //  public:
-    //     ChartModifyNew() {}
-
-    //     InfoP info() const override { return info_modify(); }
-    //     AntigensP antigens() const override;
-    //     SeraP sera() const override;
-    //     TitersP titers() const override;
-    //     ColumnBasesP forced_column_bases() const override;
-    //     ProjectionsP projections() const override;
-    //     PlotSpecP plot_spec() const override;
-    //     bool is_merge() const override { return false; }
-
-    //     InfoModifyP info_modify();
-    //     AntigensModifyP antigens_modify();
-    //     SeraModifyP sera_modify();
-    //     TitersModifyP titers_modify();
-    //     ColumnBasesModifyP forced_column_bases_modify();
-    //     ProjectionsModifyP projections_modify();
-    //     ProjectionModifyP projection_modify(size_t aProjectionNo);
-    //     PlotSpecModifyP plot_spec_modify();
-
-    //     std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {});
-
-    //  private:
-        // void new_projections() const override;
-        // void new_plot_spec() const override;
-
-    //     ProjectionsModifyP get_projections() const;
-    //     PlotSpecModifyP get_plot_spec() const;
-
-    // }; // class ChartModifyNew
 
 // ----------------------------------------------------------------------
 
     class InfoModify : public Info
     {
      public:
-        InfoModify() = default;
+        explicit InfoModify() = default;
+        explicit InfoModify(InfoP main);
 
-        using Info::name;
-        using Info::virus;
-        using Info::virus_type;
-        using Info::subset;
-        using Info::assay;
-        using Info::lab;
-        using Info::rbc_species;
-        using Info::date;
+        std::string name(Compute /*aCompute*/ = Compute::No) const override { return name_; }
+        std::string virus(Compute /*aCompute*/ = Compute::No) const override { return virus_; }
+        std::string virus_type(Compute /*aCompute*/ = Compute::Yes) const override { return virus_type_; }
+        std::string subset(Compute /*aCompute*/ = Compute::No) const override { return subset_; }
+        std::string assay(Compute /*aCompute*/ = Compute::No) const override { return assay_; }
+        std::string lab(Compute /*aCompute*/ = Compute::No) const override { return lab_; }
+        std::string rbc_species(Compute /*aCompute*/ = Compute::No) const override { return rbc_species_; }
+        std::string date(Compute /*aCompute*/ = Compute::No) const override { return date_; }
         size_t number_of_sources() const override { return 0; }
         InfoP source(size_t /*aSourceNo*/) const override { return nullptr; }
 
@@ -171,44 +102,23 @@ namespace acmacs::chart
         void date(std::string value) { date_ = value; }
 
      protected:
-        std::optional<std::string> name_;
-        std::optional<std::string> virus_;
-        std::optional<std::string> virus_type_;
-        std::optional<std::string> subset_;
-        std::optional<std::string> assay_;
-        std::optional<std::string> lab_;
-        std::optional<std::string> rbc_species_;
-        std::optional<std::string> date_;
+        std::string name_;
+        std::string virus_;
+        std::string virus_type_;
+        std::string subset_;
+        std::string assay_;
+        std::string lab_;
+        std::string rbc_species_;
+        std::string date_;
 
     }; // class InfoModify
-
-    class InfoModifyMain : public InfoModify
-    {
-     public:
-        InfoModifyMain(InfoP aMain) : mMain{aMain} {}
-
-        std::string name(Compute aCompute = Compute::No) const override { return name_ ? *name_ : mMain->name(aCompute); }
-        std::string virus(Compute aCompute = Compute::No) const override { return virus_ ? *virus_ : mMain->virus(aCompute); }
-        std::string virus_type(Compute aCompute = Compute::Yes) const override { return virus_type_ ? *virus_type_ : mMain->virus_type(aCompute); }
-        std::string subset(Compute aCompute = Compute::No) const override { return subset_ ? *subset_ : mMain->subset(aCompute); }
-        std::string assay(Compute aCompute = Compute::No) const override { return assay_ ? *assay_ : mMain->assay(aCompute); }
-        std::string lab(Compute aCompute = Compute::No) const override { return lab_ ? *lab_ : mMain->lab(aCompute); }
-        std::string rbc_species(Compute aCompute = Compute::No) const override { return rbc_species_ ? *rbc_species_ : mMain->rbc_species(aCompute); }
-        std::string date(Compute aCompute = Compute::No) const override { return date_ ? *date_ : mMain->date(aCompute); }
-        size_t number_of_sources() const override { return mMain->number_of_sources(); }
-        InfoP source(size_t aSourceNo) const override { return mMain->source(aSourceNo); }
-
-     private:
-        InfoP mMain;
-
-    }; // class InfoModifyMain
 
 // ----------------------------------------------------------------------
 
     class AntigenModify : public Antigen
     {
      public:
-        AntigenModify(AntigenP aMain) : mMain{aMain} {}
+        explicit AntigenModify(AntigenP aMain) : mMain{aMain} {}
 
         Name name() const override  { return mMain->name(); }
         Date date() const override  { return mMain->date(); }
@@ -230,7 +140,7 @@ namespace acmacs::chart
     class SerumModify : public Serum
     {
      public:
-        SerumModify(SerumP aMain) : mMain{aMain} {}
+        explicit SerumModify(SerumP aMain) : mMain{aMain} {}
 
         Name name() const override { return mMain->name(); }
         Passage passage() const override { return mMain->passage(); }
@@ -252,65 +162,31 @@ namespace acmacs::chart
     class AntigensModify : public Antigens
     {
      public:
-        AntigensModify() = default;
+        explicit AntigensModify(AntigensP main);
+        explicit AntigensModify() = default;
 
-          //size_t size() const override { return antigens_.size(); }
+        size_t size() const override { return antigens_.size(); }
         AntigenP operator[](size_t aIndex) const override { return antigens_.at(aIndex); }
         std::optional<size_t> find_by_full_name(std::string aFullName) const override;
 
-     protected:
+     private:
         std::vector<AntigenModifyP> antigens_;
 
-        bool modified() const { return !antigens_.empty(); }
-
     }; // class AntigensModify
-
-    class AntigensModifyMain : public AntigensModify
-    {
-     public:
-        AntigensModifyMain(AntigensP aMain) : mMain{aMain} {}
-
-        size_t size() const override
-            {
-                if (const auto sz = antigens_.size(); sz == 0)
-                    return mMain->size();
-                else
-                    return sz;
-            }
-
-        AntigenP operator[](size_t aIndex) const override
-            {
-                if (modified())
-                    return antigens_.at(aIndex);
-                else
-                    return mMain->operator[](aIndex);
-            }
-
-        std::optional<size_t> find_by_full_name(std::string aFullName) const override
-            {
-                if (modified())
-                    return AntigensModify::find_by_full_name(aFullName);
-                else
-                    return mMain->find_by_full_name(aFullName);
-            }
-
-     private:
-        AntigensP mMain;
-
-    }; // class AntigensModifyMain
 
 // ----------------------------------------------------------------------
 
     class SeraModify : public Sera
     {
      public:
-        SeraModify(SeraP aMain) : mMain{aMain} {}
+        explicit SeraModify() = default;
+        explicit SeraModify(SeraP main);
 
-        size_t size() const override { return mMain->size(); }
-        SerumP operator[](size_t aIndex) const override { return std::make_shared<SerumModify>(mMain->operator[](aIndex)); }
+        size_t size() const override { return sera_.size(); }
+        SerumP operator[](size_t aIndex) const override { return sera_.at(aIndex); }
 
      private:
-        SeraP mMain;
+        std::vector<SerumModifyP> sera_;
 
     }; // class SeraModify
 
@@ -319,7 +195,7 @@ namespace acmacs::chart
     class TitersModify : public Titers
     {
      public:
-        TitersModify(TitersP aMain) : mMain{aMain} {}
+        explicit TitersModify(TitersP aMain) : mMain{aMain} {}
 
         Titer titer(size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titer(aAntigenNo, aSerumNo); }
         Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override { return mMain->titer_of_layer(aLayerNo, aAntigenNo, aSerumNo); }
@@ -347,7 +223,7 @@ namespace acmacs::chart
     class ColumnBasesModify : public ColumnBases
     {
      public:
-        ColumnBasesModify(ColumnBasesP aMain) : mMain{aMain} {}
+        explicit ColumnBasesModify(ColumnBasesP aMain) : mMain{aMain} {}
 
         double column_basis(size_t aSerumNo) const override { return mMain->column_basis(aSerumNo); }
         size_t size() const override { return mMain->size(); }
@@ -364,8 +240,8 @@ namespace acmacs::chart
     class ProjectionModify : public Projection
     {
      public:
-        ProjectionModify(const Chart& chart) : Projection(chart) {}
-        ProjectionModify(const ProjectionModify& aSource) : Projection(aSource.chart())
+        explicit ProjectionModify(const Chart& chart) : Projection(chart) {}
+        explicit ProjectionModify(const ProjectionModify& aSource) : Projection(aSource.chart())
             {
                 if (aSource.modified()) {
                     layout_ = std::make_shared<acmacs::Layout>(*aSource.layout_modified());
@@ -426,8 +302,8 @@ namespace acmacs::chart
     class ProjectionModifyMain : public ProjectionModify
     {
      public:
-        ProjectionModifyMain(ProjectionP main) : ProjectionModify(main->chart()), main_{main} {}
-        ProjectionModifyMain(const ProjectionModifyMain& aSource) : ProjectionModify(aSource), main_(aSource.main_) {}
+        explicit ProjectionModifyMain(ProjectionP main) : ProjectionModify(main->chart()), main_{main} {}
+        explicit ProjectionModifyMain(const ProjectionModifyMain& aSource) : ProjectionModify(aSource), main_(aSource.main_) {}
 
         std::optional<double> stored_stress() const override { if (modified()) return ProjectionModify::stored_stress(); else return main_->stored_stress(); } // no stress if projection was modified
         std::shared_ptr<Layout> layout() const override { return modified() ? layout_modified() : main_->layout(); }
@@ -459,13 +335,13 @@ namespace acmacs::chart
     class ProjectionModifyNew : public ProjectionModify
     {
      public:
-        ProjectionModifyNew(const Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis)
+        explicit ProjectionModifyNew(const Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis)
             : ProjectionModify(chart), minimum_column_basis_(minimum_column_basis), forced_column_bases_(chart.forced_column_bases())
             {
                 new_layout(chart.number_of_points(), number_of_dimensions);
             }
 
-        ProjectionModifyNew(const ProjectionModify& aSource)
+        explicit ProjectionModifyNew(const ProjectionModify& aSource)
             : ProjectionModify(aSource), minimum_column_basis_(aSource.minimum_column_basis()),
               forced_column_bases_(std::make_shared<ColumnBasesData>(*aSource.forced_column_bases())),
               dodgy_titer_is_regular_(aSource.dodgy_titer_is_regular()), stress_diff_to_stop_(aSource.stress_diff_to_stop()),
@@ -505,7 +381,7 @@ namespace acmacs::chart
     class ProjectionsModify : public Projections
     {
      public:
-        ProjectionsModify(ProjectionsP main)
+        explicit ProjectionsModify(ProjectionsP main)
             : Projections(main->chart()), projections_(main->size(), nullptr)
             {
                 std::transform(main->begin(), main->end(), projections_.begin(), [](ProjectionP aSource) { return std::make_shared<ProjectionModifyMain>(aSource); });
@@ -545,7 +421,7 @@ namespace acmacs::chart
     class PlotSpecModify : public PlotSpec
     {
      public:
-        PlotSpecModify(PlotSpecP main, size_t number_of_antigens) : main_{main}, number_of_antigens_(number_of_antigens) {}
+        explicit PlotSpecModify(PlotSpecP main, size_t number_of_antigens) : main_{main}, number_of_antigens_(number_of_antigens) {}
 
         bool empty() const override { return modified() ? false : main_->empty(); }
         Color error_line_positive_color() const override { return main_->error_line_positive_color(); }
