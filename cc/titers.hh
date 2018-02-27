@@ -11,8 +11,8 @@ namespace rjson { class array; }
 
 namespace acmacs::chart
 {
-    class data_not_available : public std::runtime_error { public: inline data_not_available(std::string msg) : std::runtime_error("data_not_available: " + msg) {} };
-    class invalid_titer : public std::runtime_error { public: inline invalid_titer(std::string msg) : std::runtime_error("invalid_titer: " + msg) {} };
+    class data_not_available : public std::runtime_error { public: data_not_available(std::string msg) : std::runtime_error("data_not_available: " + msg) {} };
+    class invalid_titer : public std::runtime_error { public: invalid_titer(std::string msg) : std::runtime_error("invalid_titer: " + msg) {} };
 
 // ----------------------------------------------------------------------
 
@@ -98,7 +98,9 @@ namespace acmacs::chart
 
     class Titers
     {
-      public:
+     public:
+        static constexpr double dense_sparse_boundary = 0.7;
+
         virtual ~Titers() {}
         Titers() = default;
         Titers(const Titers&) = delete;
@@ -110,12 +112,13 @@ namespace acmacs::chart
         virtual size_t number_of_antigens() const = 0;
         virtual size_t number_of_sera() const = 0;
         virtual size_t number_of_non_dont_cares() const = 0;
-        virtual inline double percent_of_non_dont_cares() const { return static_cast<double>(number_of_non_dont_cares()) / (number_of_antigens() * number_of_sera()); }
+        virtual double percent_of_non_dont_cares() const { return static_cast<double>(number_of_non_dont_cares()) / (number_of_antigens() * number_of_sera()); }
+        virtual bool is_dense() const noexcept;
 
           // support for fast exporting into ace, if source was ace or acd1
-        virtual inline const rjson::array& rjson_list_list() const { throw data_not_available{"rjson_list_list titers are not available"}; }
-        virtual inline const rjson::array& rjson_list_dict() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
-        virtual inline const rjson::array& rjson_layers() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
+        virtual const rjson::array& rjson_list_list() const { throw data_not_available{"rjson_list_list titers are not available"}; }
+        virtual const rjson::array& rjson_list_dict() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
+        virtual const rjson::array& rjson_layers() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
 
         std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
 

@@ -229,15 +229,16 @@ namespace acmacs::chart
         using sparse_entry_t = std::pair<size_t, Titer>; // serum no, titer
         using sparse_row_t = std::vector<sparse_entry_t>;
         using sparse_t = std::vector<sparse_row_t>;    // size = number_of_antigens
+        using titers_t = std::variant<dense_t, sparse_t>;
         using layers_t = std::vector<sparse_t>;
 
           // size_t number_of_antigens_;
         size_t number_of_sera_;
-        std::variant<dense_t, sparse_t> titers_;
+        titers_t titers_;
         layers_t layers_;
 
         static Titer titer_in_sparse_t(const sparse_t& aSparse, size_t aAntigenNo, size_t aSerumNo);
-        
+
     }; // class TitersModify
 
 // ----------------------------------------------------------------------

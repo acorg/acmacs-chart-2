@@ -214,6 +214,26 @@ void acmacs::chart::Titers::update(acmacs::chart::TableDistances<double>& table_
 
 // ----------------------------------------------------------------------
 
+bool acmacs::chart::Titers::is_dense() const noexcept
+{
+    try {
+        rjson_list_dict();
+        return false;
+    }
+    catch (data_not_available&) {
+        try {
+            rjson_list_list();
+            return true;
+        }
+        catch (data_not_available&) {
+            return percent_of_non_dont_cares() > dense_sparse_boundary;
+        }
+    }
+
+} // acmacs::chart::Titers::is_dense
+
+// ----------------------------------------------------------------------
+
 double acmacs::chart::Titers::max_distance(const acmacs::chart::ColumnBases& column_bases)
 {
     double max_distance{0};
