@@ -25,6 +25,7 @@ TARGETS = \
     $(DIST)/chart-procrustes \
     $(DIST)/chart-html \
     $(DIST)/chart-serum-circles \
+    $(DIST)/chart-update \
     $(DIST)/test-titer-iterator
 
 SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc \

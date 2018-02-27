@@ -6,11 +6,69 @@ using namespace acmacs::chart;
 
 // ----------------------------------------------------------------------
 
+ProjectionsP ChartModifyBase::projections() const
+{
+    return get_projections();
+
+} // ChartModifyBase::projections
+
+// ----------------------------------------------------------------------
+
+PlotSpecP ChartModifyBase::plot_spec() const
+{
+    return get_plot_spec();
+
+} // ChartModifyBase::plot_spec
+
+// ----------------------------------------------------------------------
+
+ProjectionModifyP ChartModifyBase::projection_modify(size_t aProjectionNo)
+{
+    return get_projections()->at(aProjectionNo);
+
+} // ChartModifyBase::projection_modify
+
+// ----------------------------------------------------------------------
+
+ProjectionsModifyP ChartModifyBase::get_projections() const
+{
+    if (!projections_)
+        new_projections();
+    return projections_;
+
+} // ChartModifyBase::get_projections
+
+// ----------------------------------------------------------------------
+
+PlotSpecModifyP ChartModifyBase::get_plot_spec() const
+{
+    if (!plot_spec_)
+        new_plot_spec();
+    return plot_spec_;
+
+} // ChartModifyBase::get_plot_spec
+
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+
 InfoP ChartModify::info() const
 {
-    return std::make_shared<InfoModify>(main_->info());
+    if (info_)
+        return info_;
+    else
+        return main_->info();
 
 } // ChartModify::info
+
+// ----------------------------------------------------------------------
+
+InfoModifyP ChartModify::info_modify()
+{
+    if (!info_)
+        info_ = std::make_shared<InfoModifyMain>(main_->info());
+    return info_;
+
+} // ChartModify::info_modify
 
 // ----------------------------------------------------------------------
 
@@ -49,47 +107,19 @@ ColumnBasesP ChartModify::forced_column_bases() const
 
 // ----------------------------------------------------------------------
 
-inline ProjectionsModifyP ChartModify::get_projections() const
+void ChartModify::new_projections() const
 {
-    if (!projections_)
-        projections_ = std::make_shared<ProjectionsModify>(main_->projections());
-    return projections_;
+    projections_ = std::make_shared<ProjectionsModify>(main_->projections());
 
-} // ChartModify::get_projections
+} // ChartModify::new_projections
 
 // ----------------------------------------------------------------------
 
-ProjectionsP ChartModify::projections() const
+void ChartModify::new_plot_spec() const
 {
-    return get_projections();
+    plot_spec_ = std::make_shared<PlotSpecModify>(main_->plot_spec(), number_of_antigens());
 
-} // ChartModify::projections
-
-// ----------------------------------------------------------------------
-
-PlotSpecModifyP ChartModify::get_plot_spec() const
-{
-    if (!plot_spec_)
-        plot_spec_ = std::make_shared<PlotSpecModify>(main_->plot_spec(), number_of_antigens());
-    return plot_spec_;
-
-} // ChartModify::get_plot_spec
-
-// ----------------------------------------------------------------------
-
-PlotSpecP ChartModify::plot_spec() const
-{
-    return get_plot_spec();
-
-} // ChartModify::plot_spec
-
-// ----------------------------------------------------------------------
-
-InfoModifyP ChartModify::info_modify()
-{
-    return std::make_shared<InfoModify>(main_->info());
-
-} // ChartModify::info_modify
+} // ChartModify::new_plot_spec
 
 // ----------------------------------------------------------------------
 
@@ -125,30 +155,6 @@ ColumnBasesModifyP ChartModify::forced_column_bases_modify()
         return nullptr;
 
 } // ChartModify::forced_column_bases_modify
-
-// ----------------------------------------------------------------------
-
-ProjectionsModifyP ChartModify::projections_modify()
-{
-    return get_projections();
-
-} // ChartModify::projections_modify
-
-// ----------------------------------------------------------------------
-
-ProjectionModifyP ChartModify::projection_modify(size_t aProjectionNo)
-{
-    return get_projections()->at(aProjectionNo);
-
-} // ChartModify::projection_modify
-
-// ----------------------------------------------------------------------
-
-PlotSpecModifyP ChartModify::plot_spec_modify()
-{
-    return get_plot_spec();
-
-} // ChartModify::plot_spec_modify
 
 // ----------------------------------------------------------------------
 

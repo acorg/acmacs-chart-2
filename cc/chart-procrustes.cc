@@ -1,8 +1,6 @@
 #include <iostream>
 
 #include "acmacs-base/argc-argv.hh"
-#include "acmacs-base/string.hh"
-#include "acmacs-base/timeit.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
 #include "acmacs-chart-2/procrustes.hh"
