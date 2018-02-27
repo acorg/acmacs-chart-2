@@ -137,9 +137,9 @@ namespace acmacs::chart
         Passage passage_;
         BLineage lineage_;
         Reassortant reassortant_;
+        Annotations annotations_;
         LabIds lab_ids_;
         Clades clades_;
-        Annotations annotations_;
         bool reference_ = false;
 
     }; // class AntigenModify
@@ -149,20 +149,28 @@ namespace acmacs::chart
     class SerumModify : public Serum
     {
      public:
-        explicit SerumModify(SerumP aMain) : mMain{aMain} {}
+        explicit SerumModify() = default;
+        explicit SerumModify(SerumP main);
 
-        Name name() const override { return mMain->name(); }
-        Passage passage() const override { return mMain->passage(); }
-        BLineage lineage() const override { return mMain->lineage(); }
-        Reassortant reassortant() const override { return mMain->reassortant(); }
-        Annotations annotations() const override { return mMain->annotations(); }
-        SerumId serum_id() const override { return mMain->serum_id(); }
-        SerumSpecies serum_species() const override { return mMain->serum_species(); }
-        PointIndexList homologous_antigens() const override { return mMain->homologous_antigens(); }
-        void set_homologous(const std::vector<size_t>& ags) const override { return mMain->set_homologous(ags); }
+        Name name() const override { return name_; }
+        Passage passage() const override { return passage_; }
+        BLineage lineage() const override { return lineage_; }
+        Reassortant reassortant() const override { return reassortant_; }
+        Annotations annotations() const override { return annotations_; }
+        SerumId serum_id() const override { return serum_id_; }
+        SerumSpecies serum_species() const override { return serum_species_; }
+        PointIndexList homologous_antigens() const override { return homologous_antigens_; }
+        void set_homologous(const std::vector<size_t>& ags) const override { homologous_antigens_ = ags; }
 
      private:
-        SerumP mMain;
+        Name name_;
+        Passage passage_;
+        BLineage lineage_;
+        Reassortant reassortant_;
+        Annotations annotations_;
+        SerumId serum_id_;
+        SerumSpecies serum_species_;
+        mutable PointIndexList homologous_antigens_;
 
     }; // class SerumModify
 

@@ -218,12 +218,27 @@ AntigenModify::AntigenModify(AntigenP main)
     passage_{main->passage()},
     lineage_{main->lineage()},
     reassortant_{main->reassortant()},
+    annotations_{main->annotations()},
     lab_ids_{main->lab_ids()},
     clades_{main->clades()},
-    annotations_{main->annotations()},
     reference_{main->reference()}
 {
 } // AntigenModify::AntigenModify
+
+// ----------------------------------------------------------------------
+
+SerumModify::SerumModify(SerumP main)
+    :
+    name_{main->name()},
+    passage_{main->passage()},
+    lineage_{main->lineage()},
+    reassortant_{main->reassortant()},
+    annotations_{main->annotations()},
+    serum_id_{main->serum_id()},
+    serum_species_{main->serum_species()},
+    homologous_antigens_{main->homologous_antigens()}
+{
+} // SerumModify::SerumModify
 
 // ----------------------------------------------------------------------
 
