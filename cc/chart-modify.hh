@@ -150,8 +150,25 @@ namespace acmacs::chart
      public:
         InfoModify() = default;
 
+        using Info::name;
+        using Info::virus;
+        using Info::virus_type;
+        using Info::subset;
+        using Info::assay;
+        using Info::lab;
+        using Info::rbc_species;
+        using Info::date;
         size_t number_of_sources() const override { return 0; }
         InfoP source(size_t /*aSourceNo*/) const override { return nullptr; }
+
+        void name(std::string value) { name_ = value; }
+        void virus(std::string value) { virus_ = value; }
+        void virus_type(std::string value) { virus_type_ = value; }
+        void subset(std::string value) { subset_ = value; }
+        void assay(std::string value) { assay_ = value; }
+        void lab(std::string value) { lab_ = value; }
+        void rbc_species(std::string value) { rbc_species_ = value; }
+        void date(std::string value) { date_ = value; }
 
      protected:
         std::optional<std::string> name_;
