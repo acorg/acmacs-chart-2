@@ -249,7 +249,7 @@ namespace                       // to make class static in the module
             }
 
         TiterIteratorImplementation(const acmacs::chart::Titers& titers, size_t number_of_antigens)
-            : acmacs::chart::TiterIterator::Implementation("*", number_of_antigens, 0), titers_{titers} {}
+            : acmacs::chart::TiterIterator::Implementation({}, number_of_antigens, 0), titers_{titers} {}
 
         void operator++() override
             {
@@ -266,7 +266,7 @@ namespace                       // to make class static in the module
                             break;
                     }
                     else
-                        data_.titer = "*";
+                        data_.titer = acmacs::chart::Titer{};
                 }
             }
 

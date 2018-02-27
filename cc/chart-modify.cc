@@ -274,8 +274,28 @@ TitersModify::TitersModify(TitersP main)
 
 // ----------------------------------------------------------------------
 
+inline acmacs::chart::Titer TitersModify::titer_in_sparse_t(const sparse_t& aSparse, size_t aAntigenNo, size_t aSerumNo)
+{
+    if (const auto found = std::lower_bound(aSparse[aAntigenNo].begin(), aSparse[aAntigenNo].end(), aSerumNo,
+                                            [](const auto& e1, size_t sr_no) { return e1.first < sr_no; }); found->first == aSerumNo)
+        return found->second;
+    else
+        return {};
+
+} // TitersModify::titer_in_sparse_t
+
+// ----------------------------------------------------------------------
+
 Titer TitersModify::titer(size_t aAntigenNo, size_t aSerumNo) const
 {
+    auto get = [this,aAntigenNo,aSerumNo](const auto& titers) -> Titer {
+        using T = std::decay_t<decltype(titers)>;
+        if constexpr (std::is_same_v<T, dense_t>)
+            return titers[aAntigenNo * this->number_of_sera_ + aSerumNo];
+        else
+            return titer_in_sparse_t(titers, aAntigenNo, aSerumNo);
+    };
+    return std::visit(get, titers_);
 
 } // TitersModify::titer
 
@@ -283,6 +303,7 @@ Titer TitersModify::titer(size_t aAntigenNo, size_t aSerumNo) const
 
 Titer TitersModify::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const
 {
+    return titer_in_sparse_t(layers_[aLayerNo], aAntigenNo, aSerumNo);
 
 } // TitersModify::titer_of_layer
 
@@ -290,6 +311,14 @@ Titer TitersModify::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aS
 
 std::vector<Titer> TitersModify::titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const
 {
+    if (layers_.empty())
+        throw acmacs::chart::data_not_available("no layers");
+    std::vector<Titer> result;
+    for (const auto& layer: layers_) {
+        if (const auto found = std::lower_bound(layer[aAntigenNo].begin(), layer[aAntigenNo].end(), aSerumNo, [](const auto& e1, size_t sr_no) { return e1.first < sr_no; }); found->first == aSerumNo)
+            result.push_back(found->second);
+    }
+    return result;
 
 } // TitersModify::titers_for_layers
 
@@ -298,12 +327,12 @@ std::vector<Titer> TitersModify::titers_for_layers(size_t aAntigenNo, size_t aSe
 size_t TitersModify::number_of_antigens() const
 {
     auto num_ags = [this](const auto& titers) -> size_t {
-                       using T = std::decay_t<decltype(titers)>;
-                       if constexpr (std::is_same_v<T, dense_t>)
-                                            return titers.size() / this->number_of_sera_;
-                       else
-                           return titers.size();
-                   };
+        using T = std::decay_t<decltype(titers)>;
+        if constexpr (std::is_same_v<T, dense_t>)
+            return titers.size() / this->number_of_sera_;
+        else
+            return titers.size();
+    };
     return std::visit(num_ags, titers_);
 
 } // TitersModify::number_of_antigens
@@ -312,22 +341,16 @@ size_t TitersModify::number_of_antigens() const
 
 size_t TitersModify::number_of_non_dont_cares() const
 {
+    auto num_non_dont_cares = [](const auto& titers) -> size_t {
+        using T = std::decay_t<decltype(titers)>;
+        if constexpr (std::is_same_v<T, dense_t>)
+            return std::accumulate(titers.begin(), titers.end(), size_t{0}, [](size_t a, const auto& titer) -> size_t { return a + (titer.is_dont_care() ? size_t{0} : size_t{1}); });
+        else
+            return std::accumulate(titers.begin(), titers.end(), size_t{0}, [](size_t a, const auto& row) -> size_t { return a + row.size(); });
+    };
+    return std::visit(num_non_dont_cares, titers_);
 
 } // TitersModify::number_of_non_dont_cares
-
-// ----------------------------------------------------------------------
-
-TiterIterator TitersModify::begin() const
-{
-
-} // TitersModify::begin
-
-// ----------------------------------------------------------------------
-
-TiterIterator TitersModify::end() const
-{
-
-} // TitersModify::end
 
 // ----------------------------------------------------------------------
 

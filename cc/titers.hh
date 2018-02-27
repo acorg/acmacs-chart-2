@@ -20,6 +20,7 @@ namespace acmacs::chart
     {
      public:
         using internal::string_data::string_data;
+        Titer() : internal::string_data::string_data("*") {}
 
         enum Type { Invalid, Regular, DontCare, LessThan, MoreThan, Dodgy };
 

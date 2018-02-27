@@ -224,13 +224,11 @@ namespace acmacs::chart
         size_t number_of_sera() const override { return number_of_sera_; }
         size_t number_of_non_dont_cares() const override;
 
-        TiterIterator begin() const override;
-        TiterIterator end() const override;
-
      private:
         using dense_t = std::vector<Titer>;
         using sparse_entry_t = std::pair<size_t, Titer>; // serum no, titer
-        using sparse_t = std::vector<sparse_entry_t>;    // size = number_of_antigens
+        using sparse_row_t = std::vector<sparse_entry_t>;
+        using sparse_t = std::vector<sparse_row_t>;    // size = number_of_antigens
         using layers_t = std::vector<sparse_t>;
 
           // size_t number_of_antigens_;
@@ -238,6 +236,8 @@ namespace acmacs::chart
         std::variant<dense_t, sparse_t> titers_;
         layers_t layers_;
 
+        static Titer titer_in_sparse_t(const sparse_t& aSparse, size_t aAntigenNo, size_t aSerumNo);
+        
     }; // class TitersModify
 
 // ----------------------------------------------------------------------

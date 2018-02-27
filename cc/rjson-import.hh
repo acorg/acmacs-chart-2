@@ -149,7 +149,7 @@ namespace acmacs::chart
                     return aSource[aAntigenNo][std::to_string(aSerumNo)];
                 }
                 catch (rjson::field_not_found&) {
-                    return "*";
+                    return {};
                 }
             }
 

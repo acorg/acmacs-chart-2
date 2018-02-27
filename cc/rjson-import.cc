@@ -64,7 +64,7 @@ size_t acmacs::chart::RjsonTiters::number_of_non_dont_cares() const
     }
     else {
         const rjson::array& d = data_[keys_.dict];
-        result = std::accumulate(d.begin(), d.end(), 0U, [](size_t a, const rjson::object& row) -> size_t { return a + row.size(); });
+        result = std::accumulate(d.begin(), d.end(), size_t{0}, [](size_t a, const rjson::object& row) -> size_t { return a + row.size(); });
     }
     return result;
 
@@ -89,7 +89,7 @@ namespace                       // to make class static in the module
             }
 
         TiterIteratorImplementationList(size_t number_of_antigens)
-            : acmacs::chart::TiterIterator::Implementation("*", number_of_antigens, 0) {}
+            : acmacs::chart::TiterIterator::Implementation({}, number_of_antigens, 0) {}
 
         void operator++() override
             {
@@ -109,7 +109,7 @@ namespace                       // to make class static in the module
                             break;
                     }
                     else
-                        data_.titer = "*";
+                        data_.titer = acmacs::chart::Titer{};
                 }
             }
 
@@ -142,7 +142,7 @@ namespace                       // to make class static in the module
             }
 
         TiterIteratorImplementationDict(size_t number_of_antigens)
-            : acmacs::chart::TiterIterator::Implementation("*", number_of_antigens, 0) {}
+            : acmacs::chart::TiterIterator::Implementation({}, number_of_antigens, 0) {}
 
         void operator++() override
             {
@@ -157,7 +157,7 @@ namespace                       // to make class static in the module
                 }
                 else {
                     data_.serum = 0;
-                    data_.titer = "*";
+                    data_.titer = acmacs::chart::Titer{};
                 }
             }
 
