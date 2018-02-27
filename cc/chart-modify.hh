@@ -118,20 +118,29 @@ namespace acmacs::chart
     class AntigenModify : public Antigen
     {
      public:
-        explicit AntigenModify(AntigenP aMain) : mMain{aMain} {}
+        explicit AntigenModify() = default;
+        explicit AntigenModify(AntigenP main);
 
-        Name name() const override  { return mMain->name(); }
-        Date date() const override  { return mMain->date(); }
-        Passage passage() const override { return mMain->passage(); }
-        BLineage lineage() const override  { return mMain->lineage(); }
-        Reassortant reassortant() const override { return mMain->reassortant(); }
-        LabIds lab_ids() const override { return mMain->lab_ids(); }
-        Clades clades() const override { return mMain->clades(); }
-        Annotations annotations() const override { return mMain->annotations(); }
-        bool reference() const override { return mMain->reference(); }
+        Name name() const override { return name_; }
+        Date date() const override { return date_; }
+        Passage passage() const override { return passage_; }
+        BLineage lineage() const override { return lineage_; }
+        Reassortant reassortant() const override { return reassortant_; }
+        LabIds lab_ids() const override { return lab_ids_; }
+        Clades clades() const override { return clades_; }
+        Annotations annotations() const override { return annotations_; }
+        bool reference() const override { return reference_; }
 
      private:
-        AntigenP mMain;
+        Name name_;
+        Date date_;
+        Passage passage_;
+        BLineage lineage_;
+        Reassortant reassortant_;
+        LabIds lab_ids_;
+        Clades clades_;
+        Annotations annotations_;
+        bool reference_ = false;
 
     }; // class AntigenModify
 
@@ -167,7 +176,6 @@ namespace acmacs::chart
 
         size_t size() const override { return antigens_.size(); }
         AntigenP operator[](size_t aIndex) const override { return antigens_.at(aIndex); }
-        std::optional<size_t> find_by_full_name(std::string aFullName) const override;
 
      private:
         std::vector<AntigenModifyP> antigens_;

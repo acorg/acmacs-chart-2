@@ -211,20 +211,28 @@ InfoModify::InfoModify(InfoP main)
 
 // ----------------------------------------------------------------------
 
+AntigenModify::AntigenModify(AntigenP main)
+    :
+    name_{main->name()},
+    date_{main->date()},
+    passage_{main->passage()},
+    lineage_{main->lineage()},
+    reassortant_{main->reassortant()},
+    lab_ids_{main->lab_ids()},
+    clades_{main->clades()},
+    annotations_{main->annotations()},
+    reference_{main->reference()}
+{
+} // AntigenModify::AntigenModify
+
+// ----------------------------------------------------------------------
+
 AntigensModify::AntigensModify(AntigensP main)
     : antigens_(main->size(), nullptr)
 {
     std::transform(main->begin(), main->end(), antigens_.begin(), [](auto ag) { return std::make_shared<AntigenModify>(ag); });
 
 } // AntigensModify::AntigensModify
-
-// ----------------------------------------------------------------------
-
-std::optional<size_t> AntigensModify::find_by_full_name(std::string aFullName) const
-{
-    return {};
-
-} // AntigensModify::find_by_full_name
 
 // ----------------------------------------------------------------------
 
