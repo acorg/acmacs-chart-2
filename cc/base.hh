@@ -105,8 +105,6 @@ namespace acmacs::chart
         using index_list_data = T_list_data<size_t>;
         using double_list_data = T_list_data<double>;
 
-        template <typename T> inline std::ostream& operator << (std::ostream& out, const T_list_data<T>& a) { return ::operator<<(out, a.data()); }
-
 // ----------------------------------------------------------------------
 
         template <typename Parent, typename Reference> class iterator
@@ -149,9 +147,13 @@ namespace acmacs::chart
 
 namespace acmacs
 {
-    inline std::string to_string(const acmacs::chart::internal::string_data& value)
+    inline std::string to_string(const acmacs::chart::internal::string_data& value) { return value; }
+
+    template <typename T> inline std::string to_string(const acmacs::chart::internal::T_list_data<T>& value) { return to_string(value.data()); }
+
+    namespace chart::internal
     {
-        return value;
+        template <typename T> inline std::ostream& operator<<(std::ostream& out, const T_list_data<T>& a) { return out << to_string(a); }
     }
 
 } // namespace acmacs
