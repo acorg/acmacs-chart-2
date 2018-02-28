@@ -276,13 +276,20 @@ TitersModify::TitersModify(TitersP main)
         if constexpr (std::is_same_v<T, dense_t>) {
               // Dense ==================================================
             titers.resize(main->number_of_antigens() * this->number_of_sera_);
-            for (const auto &entry : *main)
+            for (const auto &entry : *main) { // order of iterations is not specified!
+                // std::cerr << entry.antigen << ' ' << entry.serum << ' ' << entry.titer << '\n';
                 titers[entry.antigen * this->number_of_sera_ + entry.serum] = entry.titer;
+            }
         }
         else { // Sparse ==================================================
             titers.resize(main->number_of_antigens());
-            for (const auto &entry : *main)
+            for (const auto &entry : *main) { // order of iterations is not specified!
+                // std::cerr << entry.antigen << ' ' << entry.serum << ' ' << entry.titer << '\n';
                 titers[entry.antigen].emplace_back(entry.serum, entry.titer);
+            }
+              // sort entries by serum no
+            for (auto& row : titers)
+                std::sort(row.begin(), row.end(), [](const auto& e1, const auto& e2) { return e1.first < e2.first; });
         }
     };
 

@@ -30,9 +30,9 @@ int main(int argc, char* const argv[])
             auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
 
             acmacs::chart::ChartModify chart_modify{chart};
-            chart_modify.info_modify();
-            chart_modify.antigens_modify();
-            chart_modify.sera_modify();
+            // chart_modify.info_modify();
+            // chart_modify.antigens_modify();
+            // chart_modify.sera_modify();
             chart_modify.titers_modify();
 
             const auto plain = acmacs::chart::export_factory(*chart, acmacs::chart::export_format::ace, args.program(), report);
