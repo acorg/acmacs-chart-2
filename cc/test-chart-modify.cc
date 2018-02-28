@@ -15,6 +15,7 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
+                {"--full", false, "full output"},
                 {"--time", false, "report time of loading chart"},
                 {"-h", false},
                 {"--help", false},
@@ -38,10 +39,16 @@ int main(int argc, char* const argv[])
             const auto plain = acmacs::chart::export_factory(*chart, acmacs::chart::export_format::ace, args.program(), report);
             const auto modified = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
             if (plain != modified) {
-                acmacs::file::temp plain_file{".ace"}, modified_file{".ace"};
-                write(plain_file, plain.data(), plain.size());
-                write(modified_file, modified.data(), modified.size());
-                std::system(("/usr/bin/diff -B -b " + static_cast<std::string>(plain_file) + " " + static_cast<std::string>(modified_file)).data());
+                if (args["--full"]) {
+                    std::cout << "======== PLAIN ============" << plain << '\n';
+                    std::cout << "======== MODIFIED ============" << modified << '\n';
+                }
+                else {
+                    acmacs::file::temp plain_file{".ace"}, modified_file{".ace"};
+                    write(plain_file, plain.data(), plain.size());
+                    write(modified_file, modified.data(), modified.size());
+                    std::system(("/usr/bin/diff -B -b " + static_cast<std::string>(plain_file) + " " + static_cast<std::string>(modified_file)).data());
+                }
                 throw std::runtime_error("different!");
             }
         }

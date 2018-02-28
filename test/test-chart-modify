@@ -33,3 +33,4 @@ fi
 cd "$TESTDIR"
 ../dist/test-chart-modify ./test-2004-3.ace
 ../dist/test-chart-modify ./test.ace
+../dist/test-chart-modify ./test-h1-2009.ace

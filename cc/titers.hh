@@ -26,6 +26,7 @@ namespace acmacs::chart
 
         Type type() const;
 
+        bool is_invalid() const { return type() == Invalid; }
         bool is_dont_care() const { return type() == DontCare; }
         bool is_regular() const { return type() == Regular; }
         bool is_less_than() const { return type() == LessThan; }

@@ -238,6 +238,7 @@ namespace acmacs::chart
         titers_t titers_;
         layers_t layers_;
 
+        static Titer find_titer_for_serum(const sparse_row_t& aRow, size_t aSerumNo);
         static Titer titer_in_sparse_t(const sparse_t& aSparse, size_t aAntigenNo, size_t aSerumNo);
 
     }; // class TitersModify

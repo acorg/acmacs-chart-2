@@ -1,4 +1,5 @@
 #include "acmacs-base/range.hh"
+#include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
 using namespace std::string_literals;
@@ -269,8 +270,11 @@ TitersModify::TitersModify()
 // ----------------------------------------------------------------------
 
 TitersModify::TitersModify(TitersP main)
-    : number_of_sera_{main->number_of_sera()}, titers_{main->is_dense() ? titers_t{dense_t{}} : titers_t{sparse_t{}}}
+    : number_of_sera_{main->number_of_sera()},
+      titers_{main->is_dense() ? titers_t{dense_t{}} : titers_t{sparse_t{}}}
 {
+      // Titers
+
     auto fill_titers = [this, &main](auto &titers) {
         using T = std::decay_t<decltype(titers)>;
         if constexpr (std::is_same_v<T, dense_t>) {
@@ -284,7 +288,6 @@ TitersModify::TitersModify(TitersP main)
         else { // Sparse ==================================================
             titers.resize(main->number_of_antigens());
             for (const auto &entry : *main) { // order of iterations is not specified!
-                // std::cerr << entry.antigen << ' ' << entry.serum << ' ' << entry.titer << '\n';
                 titers[entry.antigen].emplace_back(entry.serum, entry.titer);
             }
               // sort entries by serum no
@@ -295,17 +298,58 @@ TitersModify::TitersModify(TitersP main)
 
     std::visit(fill_titers, titers_);
 
+      // Layers
+    if (main->number_of_layers() > 0) {
+        layers_.resize(main->number_of_layers());
+        try {
+            auto source = main->rjson_layers();
+            for (const auto [layer_no, source_layer_v] : acmacs::enumerate(source)) {
+                const rjson::array& source_layer = source_layer_v;
+                auto& target = layers_[layer_no];
+                target.resize(source_layer.size());
+                for (const auto [ag_no, source_row] : acmacs::enumerate(source_layer)) {
+                    for (const auto& entry : static_cast<const rjson::object&>(source_row)) {
+                        target[ag_no].emplace_back(std::stoul(entry.first.str()), entry.second);
+                    }
+                }
+                  // sort entries by serum no
+                for (auto& row : target)
+                    std::sort(row.begin(), row.end(), [](const auto& e1, const auto& e2) { return e1.first < e2.first; });
+            }
+        }
+        catch (data_not_available&) {
+            for (size_t layer_no = 0; layer_no < main->number_of_layers(); ++layer_no) {
+                auto& target = layers_[layer_no];
+                target.resize(main->number_of_antigens());
+                for (auto ag_no : acmacs::range(target.size())) {
+                    for (auto sr_no : acmacs::range(number_of_sera_))
+                        if (const auto titer = main->titer_of_layer(layer_no, ag_no, sr_no); !titer.is_dont_care() && !titer.is_invalid())
+                            target[ag_no].emplace_back(sr_no, titer);
+                }
+            }
+        }
+    }
+
 } // TitersModify::TitersModify
+
+// ----------------------------------------------------------------------
+
+inline acmacs::chart::Titer TitersModify::find_titer_for_serum(const sparse_row_t& aRow, size_t aSerumNo)
+{
+    if (aRow.empty())
+        return {};
+    if (const auto found = std::lower_bound(aRow.begin(), aRow.end(), aSerumNo,
+                                            [](const auto& e1, size_t sr_no) { return e1.first < sr_no; }); found != aRow.end() && found->first == aSerumNo)
+        return found->second;
+    return {};
+
+} // TitersModify::find_titer_for_serum
 
 // ----------------------------------------------------------------------
 
 inline acmacs::chart::Titer TitersModify::titer_in_sparse_t(const sparse_t& aSparse, size_t aAntigenNo, size_t aSerumNo)
 {
-    if (const auto found = std::lower_bound(aSparse[aAntigenNo].begin(), aSparse[aAntigenNo].end(), aSerumNo,
-                                            [](const auto& e1, size_t sr_no) { return e1.first < sr_no; }); found->first == aSerumNo)
-        return found->second;
-    else
-        return {};
+    return find_titer_for_serum(aSparse[aAntigenNo], aSerumNo);
 
 } // TitersModify::titer_in_sparse_t
 
@@ -340,8 +384,8 @@ std::vector<Titer> TitersModify::titers_for_layers(size_t aAntigenNo, size_t aSe
         throw acmacs::chart::data_not_available("no layers");
     std::vector<Titer> result;
     for (const auto& layer: layers_) {
-        if (const auto found = std::lower_bound(layer[aAntigenNo].begin(), layer[aAntigenNo].end(), aSerumNo, [](const auto& e1, size_t sr_no) { return e1.first < sr_no; }); found->first == aSerumNo)
-            result.push_back(found->second);
+        if (const auto titer = find_titer_for_serum(layer[aAntigenNo], aSerumNo); !titer.is_dont_care())
+            result.push_back(titer);
     }
     return result;
 
