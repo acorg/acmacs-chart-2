@@ -38,7 +38,7 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            const report_time report = args["--time"] ? report_time::Yes : report_time::No;
+            const auto report = do_report_time(args["--time"]);
             acmacs::file::temp temp_file(".html");
             const std::string output_filename = args.number_of_arguments() > 1 ? std::string{args[1]} : static_cast<std::string>(temp_file);
             std::ofstream output{output_filename};

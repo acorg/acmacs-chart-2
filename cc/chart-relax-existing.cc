@@ -31,7 +31,7 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            const report_time report = args["--time"] ? report_time::Yes : report_time::No;
+            const auto report = do_report_time(args["--time"]);
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
             const auto precision = args["--rough"] ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
             const acmacs::chart::optimization_method method{acmacs::chart::optimization_method_from_string(args["--method"])};

@@ -14,6 +14,9 @@ namespace acmacs::chart
 
     void export_factory(const Chart& aChart, std::string aFilename, std::string aProgramName, report_time aReport);
 
+    enum class export_format { ace, save };
+    std::string export_factory(const Chart& aChart, export_format aFormat, std::string aProgramName, report_time aReport);
+
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------

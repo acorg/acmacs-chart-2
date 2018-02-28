@@ -14,7 +14,7 @@ trap on_exit EXIT
 
 function failed
 {
-    echo FAILED >&2
+    echo FAILED "$@" >&2
     exit 1
 }
 
@@ -22,14 +22,14 @@ trap failed ERR
 
 # ======================================================================
 
-export LD_LIBRARY_PATH="${ACMACSD_ROOT}/lib:${LD_LIBRARY_PATH}"
-cd "$TESTDIR"
-./test-modify-projection
-./test-modify-plot-spec
-./test-convert
-./test-stress
-./test-titer-iterator
-./test-chart-modify
+if [[ "${T}" == "R" || "${T}" == "D" ]]; then
+    if [[ -f /r/ramdisk-id && -d /r/T ]]; then
+        export T=/r/T
+    else
+        export T="${TDIR}"
+    fi
+fi
 
-# ../bin/test-ace ./test.ace
-# ../bin/acmacs-chart-info ./test.ace
+cd "$TESTDIR"
+../dist/test-chart-modify ./test-2004-3.ace
+../dist/test-chart-modify ./test.ace

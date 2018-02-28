@@ -24,7 +24,7 @@ int main(int argc, char* const argv[])
         }
         else {
             const bool verify = args["--verify"];
-            const report_time report = args["--time"] ? report_time::Yes : report_time::No;
+            const auto report = do_report_time(args["--time"]);
             for (size_t file_no = 0; file_no < args.number_of_arguments(); ++file_no) {
                 auto chart = acmacs::chart::import_from_file(args[file_no], verify ? acmacs::chart::Verify::All : acmacs::chart::Verify::None, report);
                 auto titers = chart->titers();

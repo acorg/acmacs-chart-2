@@ -198,7 +198,8 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
 // ----------------------------------------------------------------------
 
 InfoModify::InfoModify(InfoP main)
-    : name_{main->name(Compute::Yes)},
+    : name_{main->name(Compute::No)},
+      computed_name_{main->name(Compute::Yes)},
       virus_{main->virus(Compute::Yes)},
       virus_type_{main->virus_type(Compute::Yes)},
       subset_{main->subset(Compute::Yes)},
@@ -270,31 +271,21 @@ TitersModify::TitersModify()
 TitersModify::TitersModify(TitersP main)
     : number_of_sera_{main->number_of_sera()}, titers_{main->is_dense() ? titers_t{dense_t{}} : titers_t{sparse_t{}}}
 {
-    auto fill_titers = [this,&main](auto& titers) {
+    auto fill_titers = [this, &main](auto &titers) {
         using T = std::decay_t<decltype(titers)>;
         if constexpr (std::is_same_v<T, dense_t>) {
-            // Dense ==================================================
-            try {
-                const auto& list_list = main->rjson_list_list();
-                titers.resize(list_list.size() * this->number_of_sera_);
-            }
-            catch (data_not_available&) {
-                titers.resize(main->number_of_antigens() * this->number_of_sera_);
-                for (const auto& entry : *main)
-                    titers[entry.antigen * this->number_of_sera_ + entry.serum] = entry.titer;
-            }
+              // Dense ==================================================
+            titers.resize(main->number_of_antigens() * this->number_of_sera_);
+            for (const auto &entry : *main)
+                titers[entry.antigen * this->number_of_sera_ + entry.serum] = entry.titer;
         }
-        else {
-            // Sparse ==================================================
-            try {
-                const auto& list_dict = main->rjson_list_dict();
-                for (const auto& row : list_dict) {
-                }
-            }
-            catch (data_not_available&) {
-            }
+        else { // Sparse ==================================================
+            titers.resize(main->number_of_antigens());
+            for (const auto &entry : *main)
+                titers[entry.antigen].emplace_back(entry.serum, entry.titer);
         }
     };
+
     std::visit(fill_titers, titers_);
 
 } // TitersModify::TitersModify

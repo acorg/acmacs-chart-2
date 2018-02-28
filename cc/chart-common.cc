@@ -26,7 +26,7 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            const report_time report = args["--time"] ? report_time::Yes : report_time::No;
+            const auto report = do_report_time(args["--time"]);
             auto match_level{acmacs::chart::CommonAntigensSera::match_level_t::automatic};
             if (const std::string match_level_s = args["--match"].str(); !match_level_s.empty()) {
                 switch (match_level_s[0]) {

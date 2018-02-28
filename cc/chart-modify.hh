@@ -83,7 +83,7 @@ namespace acmacs::chart
         explicit InfoModify() = default;
         explicit InfoModify(InfoP main);
 
-        std::string name(Compute /*aCompute*/ = Compute::No) const override { return name_; }
+        std::string name(Compute aCompute = Compute::No) const override { return aCompute == Compute::No ? name_ : computed_name_; }
         std::string virus(Compute /*aCompute*/ = Compute::No) const override { return virus_; }
         std::string virus_type(Compute /*aCompute*/ = Compute::Yes) const override { return virus_type_; }
         std::string subset(Compute /*aCompute*/ = Compute::No) const override { return subset_; }
@@ -94,7 +94,7 @@ namespace acmacs::chart
         size_t number_of_sources() const override { return 0; }
         InfoP source(size_t /*aSourceNo*/) const override { return nullptr; }
 
-        void name(std::string value) { name_ = value; }
+        void name(std::string value) { name_ = value; computed_name_ = value; }
         void virus(std::string value) { virus_ = value; }
         void virus_type(std::string value) { virus_type_ = value; }
         void subset(std::string value) { subset_ = value; }
@@ -105,6 +105,7 @@ namespace acmacs::chart
 
      protected:
         std::string name_;
+        std::string computed_name_;
         std::string virus_;
         std::string virus_type_;
         std::string subset_;

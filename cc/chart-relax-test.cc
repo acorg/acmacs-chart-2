@@ -46,7 +46,7 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            const report_time report = args["--time"] ? report_time::Yes : report_time::No;
+            const auto report = do_report_time(args["--time"]);
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
             const acmacs::chart::dimension_schedule schedule{acmacs::string::split_into_uint(args["-d"].str(), ",")};
             const auto number_of_dimensions = schedule.final();

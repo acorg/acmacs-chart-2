@@ -26,7 +26,8 @@ TARGETS = \
     $(DIST)/chart-html \
     $(DIST)/chart-serum-circles \
     $(DIST)/chart-update \
-    $(DIST)/test-titer-iterator
+    $(DIST)/test-titer-iterator \
+    $(DIST)/test-chart-modify
 
 SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc \
     rjson-import.cc \
