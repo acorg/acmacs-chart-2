@@ -134,8 +134,10 @@ ColumnBasesP ChartModify::forced_column_bases() const
 
 ColumnBasesModifyP ChartModify::forced_column_bases_modify()
 {
-    if (!forced_column_bases_)
-        forced_column_bases_ = std::make_shared<ColumnBasesModify>(main_->forced_column_bases());
+    if (!forced_column_bases_) {
+        if (auto fcb = main_->forced_column_bases(); fcb)
+            forced_column_bases_ = std::make_shared<ColumnBasesModify>(fcb);
+    }
     return forced_column_bases_;
 
 } // ChartModify::forced_column_bases_modify

@@ -245,16 +245,10 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class ColumnBasesModify : public ColumnBases
+    class ColumnBasesModify : public ColumnBasesData
     {
      public:
-        explicit ColumnBasesModify(ColumnBasesP aMain) : mMain{aMain} {}
-
-        double column_basis(size_t aSerumNo) const override { return mMain->column_basis(aSerumNo); }
-        size_t size() const override { return mMain->size(); }
-
-     private:
-        ColumnBasesP mMain;
+        explicit ColumnBasesModify(ColumnBasesP aMain) : ColumnBasesData{*aMain} {}
 
     }; // class ColumnBasesModify
 
