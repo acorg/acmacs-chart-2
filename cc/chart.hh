@@ -69,9 +69,19 @@ namespace acmacs::chart
     class Date : public internal::string_data
     {
      public:
-        using internal::string_data::string_data;
+        Date() = default;
+        Date(const Date&) = default;
+        Date(const std::string& source) : internal::string_data(source) { check(); }
+        Date(std::string&& source) : internal::string_data(std::move(source)) { check(); }
+        Date(std::string_view source) : internal::string_data(source) { check(); }
+        Date& operator=(const Date&) = default;
+        Date& operator=(Date&&) = default;
+        Date& operator=(const std::string& source) { internal::string_data::operator=(source); check(); return *this; }
+        Date& operator=(std::string_view source) { internal::string_data::operator=(source); check(); return *this; }
 
         bool within_range(std::string_view first_date, std::string_view after_last_date) const { return !empty() && (first_date.empty() || *this >= first_date) && (after_last_date.empty() || *this < after_last_date); }
+
+        void check() const;
 
     }; // class Date
 

@@ -134,6 +134,13 @@ namespace acmacs::chart
         Annotations annotations() const override { return annotations_; }
         bool reference() const override { return reference_; }
 
+        void name(const std::string& value) { name_ = value; }
+        void date(const std::string& value) { date_ = value; }
+        void passage(const std::string& value) { passage_ = value; }
+        void lineage(const std::string& value) { lineage_ = value; }
+        void reassortant(const std::string& value) { reassortant_ = value; }
+        void reference(bool value) { reference_ = value; }
+
      private:
         Name name_;
         Date date_;
@@ -164,6 +171,13 @@ namespace acmacs::chart
         SerumSpecies serum_species() const override { return serum_species_; }
         PointIndexList homologous_antigens() const override { return homologous_antigens_; }
         void set_homologous(const std::vector<size_t>& ags) const override { homologous_antigens_ = ags; }
+
+        void name(const std::string& value) { name_ = value; }
+        void passage(const std::string& value) { passage_ = value; }
+        void lineage(const std::string& value) { lineage_ = value; }
+        void reassortant(const std::string& value) { reassortant_ = value; }
+        void serum_id(const std::string& value) { serum_id_ = value; }
+        void serum_species(const std::string& value) { serum_species_ = value; }
 
      private:
         Name name_;
@@ -211,6 +225,8 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+    class titers_cannot_be_modified : public std::runtime_error { public: titers_cannot_be_modified() : std::runtime_error("titers cannot be modified") {} };
+
     class TitersModify : public Titers
     {
      public:
@@ -225,6 +241,12 @@ namespace acmacs::chart
         size_t number_of_sera() const override { return number_of_sera_; }
         size_t number_of_non_dont_cares() const override;
 
+        void titer(size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter);
+        void all_dontcare_for_antigen(size_t aAntigenNo);
+        void all_dontcare_for_serum(size_t aSerumNo);
+        void all_multiply_by_for_antigen(size_t aAntigenNo, double multiply_by);
+        void all_multiply_by_for_serum(size_t aSerumNo, double multiply_by);
+
      private:
         using dense_t = std::vector<Titer>;
         using sparse_entry_t = std::pair<size_t, Titer>; // serum no, titer
@@ -237,6 +259,9 @@ namespace acmacs::chart
         size_t number_of_sera_;
         titers_t titers_;
         layers_t layers_;
+
+        bool titers_modifiable() const noexcept { return layers_.empty(); }
+        void titers_modifiable_check() const { if (!titers_modifiable()) throw titers_cannot_be_modified{}; }
 
         static Titer find_titer_for_serum(const sparse_row_t& aRow, size_t aSerumNo);
         static Titer titer_in_sparse_t(const sparse_t& aSparse, size_t aAntigenNo, size_t aSerumNo);

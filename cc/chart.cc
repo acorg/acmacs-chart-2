@@ -1,10 +1,24 @@
-//#include "acmacs-base/timeit.hh"
+#include <regex>
+
 #include "acmacs-base/string.hh"
 #include "acmacs-base/virus-name.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/range.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart.hh"
+
+// ----------------------------------------------------------------------
+
+#include "acmacs-base/global-constructors-push.hh"
+static std::regex sDate{"[12][90][0-9][0-9]-[0-2][0-9]-[0-3][0-9]"};
+#include "acmacs-base/diagnostics-pop.hh"
+
+void acmacs::chart::Date::check() const
+{
+    if (!empty() && !std::regex_match(*this, sDate))
+        throw invalid_data{"invalid date (YYYY-MM-DD expected): " + *this};
+
+} // acmacs::chart::Date::check
 
 // ----------------------------------------------------------------------
 

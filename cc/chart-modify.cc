@@ -425,6 +425,77 @@ size_t TitersModify::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
+void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter)
+{
+    titers_modifiable_check();
+
+    auto set_titer = [aAntigenNo,aSerumNo,&aTiter,this](auto& titers) {
+        using T = std::decay_t<decltype(titers)>;
+        if constexpr (std::is_same_v<T, dense_t>) {
+            titers[aAntigenNo * this->number_of_sera_ + aSerumNo] = aTiter;
+        }
+        else {
+            auto& row = titers[aAntigenNo];
+            if (row.empty()) {
+                row.emplace_back(aSerumNo, aTiter);
+            }
+            else {
+                if (auto found = std::lower_bound(row.begin(), row.end(), aSerumNo, [](const auto& e1, size_t sr_no) { return e1.first < sr_no; }); found != row.end() && found->first == aSerumNo)
+                    found->second = aTiter;
+                else
+                    row.emplace(found, aSerumNo, aTiter);
+            }
+        }
+    };
+
+    return std::visit(set_titer, titers_);
+
+} // TitersModify::titer
+
+// ----------------------------------------------------------------------
+
+void TitersModify::all_dontcare_for_antigen(size_t aAntigenNo)
+{
+    titers_modifiable_check();
+    auto set_all_dontcare = [aAntigenNo, this](auto& titers) {
+        using T = std::decay_t<decltype(titers)>;
+        if constexpr (std::is_same_v<T, dense_t>) {
+            std::fill_n(titers.begin() + static_cast<typename T::difference_type>(aAntigenNo * this->number_of_sera_), this->number_of_sera_, Titer{});
+        }
+        else {
+            titers[aAntigenNo].clear();
+        }
+    };
+    return std::visit(set_all_dontcare, titers_);
+
+} // TitersModify::all_dontcare_for_antigen
+
+// ----------------------------------------------------------------------
+
+void TitersModify::all_dontcare_for_serum(size_t aSerumNo)
+{
+    titers_modifiable_check();
+
+} // TitersModify::all_dontcare_for_serum
+
+// ----------------------------------------------------------------------
+
+void TitersModify::all_multiply_by_for_antigen(size_t aAntigenNo, double multiply_by)
+{
+    titers_modifiable_check();
+
+} // TitersModify::all_multiply_by_for_antigen
+
+// ----------------------------------------------------------------------
+
+void TitersModify::all_multiply_by_for_serum(size_t aSerumNo, double multiply_by)
+{
+    titers_modifiable_check();
+
+} // TitersModify::all_multiply_by_for_serum
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<ProjectionModifyNew> ProjectionModify::clone(ChartModify& chart) const
 {
     auto projection = std::make_shared<ProjectionModifyNew>(*this);

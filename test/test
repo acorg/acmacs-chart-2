@@ -14,7 +14,7 @@ trap on_exit EXIT
 
 function failed
 {
-    echo FAILED >&2
+    echo FAILED: "$@" >&2
     exit 1
 }
 
@@ -24,12 +24,12 @@ trap failed ERR
 
 export LD_LIBRARY_PATH="${ACMACSD_ROOT}/lib:${LD_LIBRARY_PATH}"
 cd "$TESTDIR"
-./test-modify-projection
-./test-modify-plot-spec
-./test-convert
-./test-stress
-./test-titer-iterator
-./test-chart-modify
+./test-modify-projection || failed test-modify-projection
+./test-modify-plot-spec || failed test-modify-plot-spec
+./test-convert || failed test-convert
+./test-stress || failed test-stress
+./test-titer-iterator || failed test-titer-iterator
+./test-chart-modify || failed test-chart-modify
 
 # ../bin/test-ace ./test.ace
 # ../bin/acmacs-chart-info ./test.ace

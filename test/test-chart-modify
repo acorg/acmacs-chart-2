@@ -14,7 +14,7 @@ trap on_exit EXIT
 
 function failed
 {
-    echo FAILED "$@" >&2
+    echo FAILED: "$@" >&2
     exit 1
 }
 
@@ -31,6 +31,6 @@ if [[ "${T}" == "R" || "${T}" == "D" ]]; then
 fi
 
 cd "$TESTDIR"
-../dist/test-chart-modify ./test-2004-3.ace
-../dist/test-chart-modify ./test.ace
-../dist/test-chart-modify ./test-h1-2009.ace
+for chart in test-2004-3.ace test.ace test-h1-2009.ace; do
+    ../dist/test-chart-modify ${chart} || failed ${TESTDIR}/../dist/test-chart-modify "${TESTDIR}/${chart}"
+done

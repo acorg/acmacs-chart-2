@@ -14,7 +14,7 @@ trap on_exit EXIT
 
 function failed
 {
-    echo FAILED "$@" >&2
+    echo FAILED: "$@" >&2
     exit 1
 }
 
@@ -23,19 +23,19 @@ trap failed ERR
 # ======================================================================
 
 cd "$TESTDIR"
-../dist/chart-modify-projection --points 0,3 --move-to 10,-10 ./test-2004-3.ace "${TDIR}/r1.ace" >/dev/null 2>&1
-../dist/chart-layout ./test-2004-3.ace "${TDIR}/o.txt" 2>/dev/null
+../dist/chart-modify-projection --points 0,3 --move-to 10,-10 test-2004-3.ace "${TDIR}/r1.ace" >/dev/null 2>&1 || failed chart-modify-projection --points 0,3 --move-to 10,-10 test-2004-3.ace "${TDIR}/r1.ace"
+../dist/chart-layout test-2004-3.ace "${TDIR}/o.txt" 2>/dev/null
 ../dist/chart-layout "${TDIR}/r1.ace" "${TDIR}/r1.txt" 2>/dev/null
 diff "${TDIR}/o.txt" "${TDIR}/r1.txt" >"${TDIR}/diff-1.txt" || true
 cmp "${TDIR}/diff-1.txt" test-modify-projection.expected-1.diff || (echo '********************'; cat "${TDIR}/diff-1.txt"; echo '********************'; false)
 
-../dist/chart-modify-projection --rotate-degrees 60 ./test-2004-3.ace "${TDIR}/r2.ace" >/dev/null 2>&1
-xz -dc ./test-2004-3.ace >"${TDIR}/orig.json"
+../dist/chart-modify-projection --rotate-degrees 60 test-2004-3.ace "${TDIR}/r2.ace" >/dev/null 2>&1 || failed chart-modify-projection --rotate-degrees 60 test-2004-3.ace "${TDIR}/r2.ace"
+xz -dc test-2004-3.ace >"${TDIR}/orig.json"
 xz -dc "${TDIR}/r2.ace" >"${TDIR}/r2.json"
 diff -I "\"\\?created\":" "${TDIR}/orig.json" "${TDIR}/r2.json" >"${TDIR}/diff-2.txt" || true
 cmp "${TDIR}/diff-2.txt" test-modify-projection.expected-2.diff || (echo '********************'; cat "${TDIR}/diff-2.txt"; echo '********************'; false)
 
-../dist/chart-modify-projection --flip-ew ./test-2004-3.ace "${TDIR}/r3.ace" >/dev/null 2>&1
+../dist/chart-modify-projection --flip-ew test-2004-3.ace "${TDIR}/r3.ace" >/dev/null 2>&1 || failed chart-modify-projection test-2004-3.ace
 xz -dc "${TDIR}/r3.ace" >"${TDIR}/r3.json"
 diff -I "\"\\?created\":" "${TDIR}/orig.json" "${TDIR}/r3.json" >"${TDIR}/diff-3.txt" || true
 cmp "${TDIR}/diff-3.txt" test-modify-projection.expected-3.diff || (echo; echo; diff -I "\"\\?created\":" "${TDIR}/orig.json" "${TDIR}/r3.json" && false)
