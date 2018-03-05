@@ -204,7 +204,7 @@ void ChartModify::remove_antigens(const Indexes& indexes)
 {
     antigens_modify()->remove(indexes);
     titers_modify()->remove_antigens(indexes);
-    // projections_modify()->remove_antigens(indexes);
+    projections_modify()->remove_antigens(indexes);
     // plot_spec_modify()->remove_antigens(indexes);
 
 } // ChartModify::remove_antigens
@@ -215,7 +215,7 @@ void ChartModify::remove_sera(const Indexes& indexes)
 {
     sera_modify()->remove(indexes);
     titers_modify()->remove_sera(indexes);
-    // projections_modify()->remove_sera(indexes);
+    projections_modify()->remove_sera(indexes, number_of_antigens());
     // plot_spec_modify()->remove_sera(indexes);
     // if (auto fcb = forced_column_bases_modify(); fcb)
     //     fcb->remove(indexes);

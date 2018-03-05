@@ -313,6 +313,9 @@ namespace acmacs::chart
             }
         virtual std::shared_ptr<ProjectionModifyNew> clone(ChartModify& chart) const;
 
+        void remove_antigens(const Indexes& indexes) { layout_modified()->remove_points(indexes, 0); }
+        void remove_sera(const Indexes& indexes, size_t number_of_antigens) { layout_modified()->remove_points(indexes, number_of_antigens); }
+
      protected:
         virtual void modify() { stress_.reset(); }
         virtual bool modified() const { return true; }
@@ -446,6 +449,9 @@ namespace acmacs::chart
 
         void remove(size_t projection_no);
         void remove_all_except(size_t projection_no);
+
+        void remove_antigens(const Indexes& indexes) { for_each(projections_.begin(), projections_.end(), [&](auto& projection) { projection->remove_antigens(indexes); }); }
+        void remove_sera(const Indexes& indexes, size_t number_of_antigens) { for_each(projections_.begin(), projections_.end(), [&indexes,number_of_antigens](auto& projection) { projection->remove_sera(indexes, number_of_antigens); }); }
 
      private:
         std::vector<ProjectionModifyP> projections_;
