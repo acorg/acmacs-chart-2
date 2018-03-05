@@ -7,6 +7,7 @@
 #include "acmacs-base/rjson.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/stream.hh"
+#include "acmacs-base/indexes.hh"
 
 // ----------------------------------------------------------------------
 
@@ -102,8 +103,21 @@ namespace acmacs::chart
 
         }; // class string_list_data
 
-        using index_list_data = T_list_data<size_t>;
         using double_list_data = T_list_data<double>;
+
+        class index_list_data : public T_list_data<size_t>
+        {
+         public:
+            using T_list_data<size_t>::T_list_data;
+
+            void remove_indexes(const Indexes& to_remove, size_t base_index = 0)
+                {
+                    for (const auto index : to_remove) {
+                        if (const auto found = std::find(begin(), end(), index + base_index); found != end())
+                            erase(found);
+                    }
+                }
+        };
 
 // ----------------------------------------------------------------------
 

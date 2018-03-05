@@ -19,7 +19,7 @@ namespace rjson { class array; }
 
 namespace acmacs::chart
 {
-    using Indexes = std::vector<size_t>;
+    using Indexes = acmacs::Indexes;
     using Layout = acmacs::LayoutInterface;
 
     class invalid_data : public std::runtime_error { public: invalid_data(std::string msg) : std::runtime_error("invalid_data: " + msg) {} };

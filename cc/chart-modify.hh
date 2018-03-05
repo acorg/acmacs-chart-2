@@ -64,8 +64,8 @@ namespace acmacs::chart
 
         std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {});
 
-        void remove_antigens(const Indexes& indexes);
-        void remove_sera(const Indexes& indexes);
+        void remove_antigens(const ReverseSortedIndexes& indexes);
+        void remove_sera(const ReverseSortedIndexes& indexes);
         AntigenModifyP insert_antigen(size_t before);
         SerumModifyP insert_serum(size_t before);
 
@@ -207,7 +207,7 @@ namespace acmacs::chart
 
         size_t size() const override { return data_.size(); }
         std::shared_ptr<ModifyBase> operator[](size_t aIndex) const override { return data_.at(aIndex); }
-        void remove(const Indexes& indexes);
+        void remove(const ReverseSortedIndexes& indexes);
 
      private:
         std::vector<std::shared_ptr<Modify>> data_;
@@ -240,8 +240,8 @@ namespace acmacs::chart
         void multiply_by_for_antigen(size_t aAntigenNo, double multiply_by);
         void multiply_by_for_serum(size_t aSerumNo, double multiply_by);
 
-        void remove_antigens(const Indexes& indexes);
-        void remove_sera(const Indexes& indexes);
+        void remove_antigens(const ReverseSortedIndexes& indexes);
+        void remove_sera(const ReverseSortedIndexes& indexes);
 
      private:
         using dense_t = std::vector<Titer>;
@@ -313,8 +313,8 @@ namespace acmacs::chart
             }
         virtual std::shared_ptr<ProjectionModifyNew> clone(ChartModify& chart) const;
 
-        void remove_antigens(const Indexes& indexes) { layout_modified()->remove_points(indexes, 0); }
-        void remove_sera(const Indexes& indexes, size_t number_of_antigens) { layout_modified()->remove_points(indexes, number_of_antigens); }
+        void remove_antigens(const ReverseSortedIndexes& indexes) { layout_modified()->remove_points(indexes, 0); }
+        void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens) { layout_modified()->remove_points(indexes, number_of_antigens); }
 
      protected:
         virtual void modify() { stress_.reset(); }
@@ -450,8 +450,8 @@ namespace acmacs::chart
         void remove(size_t projection_no);
         void remove_all_except(size_t projection_no);
 
-        void remove_antigens(const Indexes& indexes) { for_each(projections_.begin(), projections_.end(), [&](auto& projection) { projection->remove_antigens(indexes); }); }
-        void remove_sera(const Indexes& indexes, size_t number_of_antigens) { for_each(projections_.begin(), projections_.end(), [&indexes,number_of_antigens](auto& projection) { projection->remove_sera(indexes, number_of_antigens); }); }
+        void remove_antigens(const ReverseSortedIndexes& indexes) { for_each(projections_.begin(), projections_.end(), [&](auto& projection) { projection->remove_antigens(indexes); }); }
+        void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens) { for_each(projections_.begin(), projections_.end(), [&indexes,number_of_antigens](auto& projection) { projection->remove_sera(indexes, number_of_antigens); }); }
 
      private:
         std::vector<ProjectionModifyP> projections_;
@@ -504,6 +504,9 @@ namespace acmacs::chart
         void modify(const Indexes& points, const PointStyle& style) { modify(); std::for_each(points.begin(), points.end(), [this,&style](size_t index) { this->modify(index, style); }); }
         void modify_serum(size_t serum_no, const PointStyle& style) { modify(serum_no + number_of_antigens_, style); }
         void modify_sera(const Indexes& sera, const PointStyle& style) { std::for_each(sera.begin(), sera.end(), [this,&style](size_t index) { this->modify(index + this->number_of_antigens_, style); }); }
+
+        void remove_antigens(const ReverseSortedIndexes& indexes) { modify(); acmacs::remove(indexes, styles_); drawing_order_.remove_indexes(indexes); number_of_antigens_ -= indexes.size(); }
+        void remove_sera(const ReverseSortedIndexes& indexes) { modify(); acmacs::remove(indexes, styles_, number_of_antigens_); drawing_order_.remove_indexes(indexes, number_of_antigens_); }
 
      protected:
         virtual bool modified() const { return modified_; }

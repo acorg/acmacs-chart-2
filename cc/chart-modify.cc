@@ -200,25 +200,25 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
 
 // ----------------------------------------------------------------------
 
-void ChartModify::remove_antigens(const Indexes& indexes)
+void ChartModify::remove_antigens(const ReverseSortedIndexes& indexes)
 {
     antigens_modify()->remove(indexes);
     titers_modify()->remove_antigens(indexes);
     projections_modify()->remove_antigens(indexes);
-    // plot_spec_modify()->remove_antigens(indexes);
+    plot_spec_modify()->remove_antigens(indexes);
 
 } // ChartModify::remove_antigens
 
 // ----------------------------------------------------------------------
 
-void ChartModify::remove_sera(const Indexes& indexes)
+void ChartModify::remove_sera(const ReverseSortedIndexes& indexes)
 {
     sera_modify()->remove(indexes);
     titers_modify()->remove_sera(indexes);
     projections_modify()->remove_sera(indexes, number_of_antigens());
-    // plot_spec_modify()->remove_sera(indexes);
-    // if (auto fcb = forced_column_bases_modify(); fcb)
-    //     fcb->remove(indexes);
+    plot_spec_modify()->remove_sera(indexes);
+    if (auto fcb = forced_column_bases_modify(); fcb)
+        fcb->remove(indexes);
 
 } // ChartModify::remove_sera
 
@@ -290,11 +290,9 @@ template <typename Base, typename Modify, typename ModifyBase> AntigensSeraModif
     std::transform(main->begin(), main->end(), data_.begin(), [](auto ag_sr) { return std::make_shared<Modify>(ag_sr); });
 }
 
-template <typename Base, typename Modify, typename ModifyBase> void AntigensSeraModify<Base, Modify, ModifyBase>::remove(const Indexes& indexes)
+template <typename Base, typename Modify, typename ModifyBase> void AntigensSeraModify<Base, Modify, ModifyBase>::remove(const ReverseSortedIndexes& indexes)
 {
-    auto mindexes{indexes};
-    std::sort(mindexes.begin(), mindexes.end(), [](auto i1, auto i2) { return i1 > i2; });
-    for (auto index : mindexes)
+    for (auto index : indexes)
         data_.erase(data_.begin() + static_cast<Indexes::difference_type>(index));
 }
 
@@ -579,18 +577,12 @@ void TitersModify::multiply_by_for_serum(size_t aSerumNo, double multiply_by)
 
 // ----------------------------------------------------------------------
 
-void TitersModify::remove_antigens(const Indexes& indexes)
+void TitersModify::remove_antigens(const ReverseSortedIndexes& indexes)
 {
-    auto mindexes{indexes};
-    std::sort(mindexes.begin(), mindexes.end(), [](auto i1, auto i2) { return i1 > i2; });
+    auto do_remove_antigens_sparse = [&indexes](auto& titers) { acmacs::remove(indexes, titers); };
 
-    auto do_remove_antigens_sparse = [&mindexes](auto& titers) {
-        for (auto index : mindexes)
-            titers.erase(titers.begin() + static_cast<Indexes::difference_type>(index));
-    };
-
-    auto do_remove_antigens_dense = [&mindexes, this](auto& titers) {
-        for (auto index : mindexes) {
+    auto do_remove_antigens_dense = [&indexes, this](auto& titers) {
+        for (auto index : indexes) {
             const auto first = titers.begin() + static_cast<Indexes::difference_type>(index * this->number_of_sera_);
             titers.erase(first, first + static_cast<Indexes::difference_type>(this->number_of_sera_));
         }
@@ -612,22 +604,19 @@ void TitersModify::remove_antigens(const Indexes& indexes)
 
 // ----------------------------------------------------------------------
 
-void TitersModify::remove_sera(const Indexes& indexes)
+void TitersModify::remove_sera(const ReverseSortedIndexes& indexes)
 {
-    auto mindexes{indexes};
-    std::sort(mindexes.begin(), mindexes.end(), [](auto i1, auto i2) { return i1 > i2; });
-
-    auto do_remove_sera_sparse = [&mindexes](auto& titers) {
+    auto do_remove_sera_sparse = [&indexes](auto& titers) {
         for (auto& row : titers) {
-            for (auto index : mindexes)
+            for (auto index : indexes)
                 row.erase(row.begin() + static_cast<Indexes::difference_type>(index));
         }
     };
 
-    auto do_remove_sera_dense = [&mindexes, this](auto& titers) {
+    auto do_remove_sera_dense = [&indexes, this](auto& titers) {
         using diff_t = Indexes::difference_type;
         for (auto ag_no = static_cast<diff_t>(this->number_of_antigens()) - 1; ag_no >= 0; --ag_no) {
-            for (auto index : mindexes)
+            for (auto index : indexes)
                 titers.erase(titers.begin() + ag_no * static_cast<diff_t>(this->number_of_sera_) + static_cast<diff_t>(index));
         }
     };
@@ -643,6 +632,8 @@ void TitersModify::remove_sera(const Indexes& indexes)
     std::visit(do_remove_sera, titers_);
     for (auto& layer : layers_)
         do_remove_sera_sparse(layer);
+
+    number_of_sera_ -= indexes.size();
 
 } // TitersModify::remove_sera
 

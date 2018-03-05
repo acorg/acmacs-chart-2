@@ -3,6 +3,7 @@
 #include <memory>
 #include "acmacs-base/float.hh"
 #include "acmacs-base/string.hh"
+#include "acmacs-base/indexes.hh"
 
 // ----------------------------------------------------------------------
 
@@ -56,6 +57,8 @@ namespace acmacs::chart
 
         virtual double column_basis(size_t aSerumNo) const { return data_.at(aSerumNo); }
         virtual size_t size() const { return data_.size(); }
+
+        void remove(const ReverseSortedIndexes& indexes) { acmacs::remove(indexes, data_); }
 
      private:
         std::vector<double> data_;
