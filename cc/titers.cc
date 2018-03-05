@@ -147,7 +147,7 @@ acmacs::chart::Titer acmacs::chart::Titer::multiplied_by(double value) const // 
       case Dodgy:
           return front() + std::to_string(std::lround(std::stoul(substr(1)) * value));
     }
-    return 0;
+    return Titer{};
 
 } // acmacs::chart::Titer::multiplied_by
 

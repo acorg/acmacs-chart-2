@@ -73,6 +73,7 @@ namespace acmacs::chart
             virtual ~Implementation() = default;
             constexpr bool operator==(const Implementation& rhs) const { return data_ == rhs.data_; }
             constexpr const Data& operator*() const { return data_; }
+            constexpr const Data* ptr() const { return &data_; }
             virtual void operator++() = 0;
 
          protected:
@@ -83,7 +84,7 @@ namespace acmacs::chart
         bool operator==(const TiterIterator& rhs) const { return *data_ == *rhs.data_; }
         bool operator!=(const TiterIterator& rhs) const { return !operator==(rhs); }
         const Data& operator*() const { return **data_; }
-        const Data& operator->() const { return **data_; }
+        const Data* operator->() const { return data_->ptr(); }
         const TiterIterator& operator++() { data_->operator++(); return *this; }
 
      private:
@@ -137,14 +138,19 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-// namespace acmacs
-// {
-//     inline std::string to_string(acmacs::chart::Titer aTiter)
-//     {
-//         return aTiter.data();
-//     }
+namespace acmacs
+{
+    // inline std::string to_string(acmacs::chart::Titer aTiter)
+    // {
+    //     return aTiter.data();
+    // }
 
-// } // namespace acmacs
+    inline std::string to_string(acmacs::chart::TiterIterator::Data data)
+    {
+        return "ag:" + std::to_string(data.antigen) + " sr:" + std::to_string(data.serum) + " t:" + data.titer;
+    }
+
+} // namespace acmacs
 
 // ----------------------------------------------------------------------
 /// Local Variables:
