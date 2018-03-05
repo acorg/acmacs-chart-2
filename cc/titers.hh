@@ -40,6 +40,7 @@ namespace acmacs::chart
         double logged_with_thresholded() const;
         std::string logged_as_string() const;
         double logged_for_column_bases() const;
+        size_t value() const;
         size_t value_for_sorting() const;
         Titer multiplied_by(double value) const; // multiplied_by(2) returns 80 for 40 and <80 for <40, * for *
 

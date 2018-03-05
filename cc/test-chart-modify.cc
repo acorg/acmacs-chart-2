@@ -13,6 +13,8 @@ static void test_chart_modify_no_changes(acmacs::chart::ChartP chart, const argc
 static void test_modify_titers(acmacs::chart::ChartP chart, const argc_argv& args, report_time report);
 static void test_dont_care_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo, const argc_argv& args, report_time report);
 static void test_dont_care_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, const argc_argv& args, report_time report);
+static void test_multiply_by_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo, double aMult, const argc_argv& args, report_time report);
+static void test_multiply_by_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, double aMult, const argc_argv& args, report_time report);
 
 // ----------------------------------------------------------------------
 
@@ -20,14 +22,7 @@ int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {
-                {"--full", false, "full output"},
-                {"--time", false, "report time of loading chart"},
-                {"-h", false},
-                {"--help", false},
-                {"-v", false},
-                {"--verbose", false}
-        });
+        argc_argv args(argc, argv, {{"--full", false, "full output"}, {"--time", false, "report time of loading chart"}, {"-h", false}, {"--help", false}, {"-v", false}, {"--verbose", false}});
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
             std::cerr << "Usage: " << args.program() << " [options] <chart-file>\n" << args.usage_options() << '\n';
             exit_code = 1;
@@ -37,11 +32,24 @@ int main(int argc, char* const argv[])
             auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
             test_chart_modify_no_changes(chart, args, report);
             if (chart->titers()->number_of_layers() == 0) {
+                std::cout << "  test_modify_titers\n";
                 test_modify_titers(chart, args, report);
+                std::cout << "  test_dont_care_for_antigen\n";
                 for (auto ag_no : acmacs::range(chart->number_of_antigens()))
                     test_dont_care_for_antigen(chart, ag_no, args, report);
+                std::cout << "  test_dont_care_for_serum\n";
                 for (auto sr_no : acmacs::range(chart->number_of_sera()))
                     test_dont_care_for_serum(chart, sr_no, args, report);
+                std::cout << "  test_multiply_by_for_antigen\n";
+                for (auto ag_no : acmacs::range(chart->number_of_antigens())) {
+                    test_multiply_by_for_antigen(chart, ag_no, 2.0, args, report);
+                    test_multiply_by_for_antigen(chart, ag_no, 0.5, args, report);
+                }
+                std::cout << "  test_multiply_by_for_serum\n";
+                for (auto sr_no : acmacs::range(chart->number_of_sera())) {
+                    test_multiply_by_for_serum(chart, sr_no, 2.0, args, report);
+                    test_multiply_by_for_serum(chart, sr_no, 0.5, args, report);
+                }
             }
         }
     }
@@ -127,17 +135,14 @@ void test_dont_care_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo, 
     const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
     auto titers_source{chart->titers()}, titers_modified{imported->titers()};
-    for (auto ag_no : acmacs::range(titers_source->number_of_antigens())) {
-        for (auto sr_no : acmacs::range(titers_source->number_of_sera())) {
-            if (ag_no == aAntigenNo) {
-                if (!titers_modified->titer(ag_no, sr_no).is_dont_care())
-                    throw std::runtime_error("test_dont_care_for_antigen: unexpected titer: [ag:" + std::to_string(ag_no) + " sr:" + std::to_string(sr_no) +
-                                             " t:" + titers_modified->titer(ag_no, sr_no) + "], expected: *");
-            }
-            else if (titers_modified->titer(ag_no, sr_no) != titers_source->titer(ag_no, sr_no))
-                throw std::runtime_error("test_dont_care_for_antigen: titer mismatch: ag:" + std::to_string(ag_no) + " sr:" + std::to_string(sr_no) +
-                                         " source:" + titers_source->titer(ag_no, sr_no) + " modified:" + titers_modified->titer(ag_no, sr_no));
+
+    for (auto ti_source : *titers_source) {
+        if (ti_source.antigen == aAntigenNo) {
+            if (!titers_modified->titer(ti_source.antigen, ti_source.serum).is_dont_care())
+                throw std::runtime_error("test_dont_care_for_antigen: unexpected titer: [" + acmacs::to_string(ti_source) + "], expected: *");
         }
+        else if (titers_modified->titer(ti_source.antigen, ti_source.serum) != ti_source.titer)
+            throw std::runtime_error("test_dont_care_for_antigen: titer mismatch: [" + acmacs::to_string(ti_source) + "] vs. " + titers_modified->titer(ti_source.antigen, ti_source.serum));
     }
 
 } // test_dont_care_for_antigen
@@ -152,23 +157,65 @@ void test_dont_care_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, cons
     const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
     auto titers_source{chart->titers()}, titers_modified{imported->titers()};
-    for (auto ag_no : acmacs::range(titers_source->number_of_antigens())) {
-        for (auto sr_no : acmacs::range(titers_source->number_of_sera())) {
-            if (sr_no == aSerumNo) {
-                if (!titers_modified->titer(ag_no, sr_no).is_dont_care())
-                    throw std::runtime_error("test_dont_care_for_antigen: unexpected titer: [ag:" + std::to_string(ag_no) + " sr:" + std::to_string(sr_no) +
-                                             " t:" + titers_modified->titer(ag_no, sr_no) + "], expected: *");
-            }
-            else if (titers_modified->titer(ag_no, sr_no) != titers_source->titer(ag_no, sr_no))
-                throw std::runtime_error("test_dont_care_for_antigen: titer mismatch: ag:" + std::to_string(ag_no) + " sr:" + std::to_string(sr_no) +
-                                         " source:" + titers_source->titer(ag_no, sr_no) + " modified:" + titers_modified->titer(ag_no, sr_no));
+
+    for (auto ti_source : *titers_source) {
+        if (ti_source.serum == aSerumNo) {
+            if (!titers_modified->titer(ti_source.antigen, ti_source.serum).is_dont_care())
+                throw std::runtime_error("test_dont_care_for_serum: unexpected titer: [" + acmacs::to_string(ti_source) + "], expected: *");
         }
+        else if (titers_modified->titer(ti_source.antigen, ti_source.serum) != ti_source.titer)
+            throw std::runtime_error("test_dont_care_for_serum: titer mismatch: [" + acmacs::to_string(ti_source) + "] vs. " + titers_modified->titer(ti_source.antigen, ti_source.serum));
     }
 
 } // test_dont_care_for_serum
 
 // ----------------------------------------------------------------------
 
+void test_multiply_by_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo, double aMult, const argc_argv& args, report_time report)
+{
+    acmacs::chart::ChartModify chart_modify{chart};
+    chart_modify.titers_modify()->multiply_by_for_antigen(aAntigenNo, aMult);
+
+    const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
+    auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
+    auto titers_source{chart->titers()}, titers_modified{imported->titers()};
+
+    for (auto ti_source : *titers_source) {
+        if (ti_source.antigen == aAntigenNo && !ti_source.titer.is_dont_care()) {
+            const auto expected_value = static_cast<size_t>(std::lround(ti_source.titer.value() * aMult));
+            if (titers_modified->titer(ti_source.antigen, ti_source.serum).value() != expected_value)
+                throw std::runtime_error("test_multiply_by_for_antigen: unexpected titer: [ag:" + std::to_string(ti_source.antigen) + " sr:" + std::to_string(ti_source.serum) +
+                                         " t:" + titers_modified->titer(ti_source.antigen, ti_source.serum) + "], expected: " + std::to_string(expected_value));
+        }
+        else if (titers_modified->titer(ti_source.antigen, ti_source.serum) != ti_source.titer)
+            throw std::runtime_error("test_multiply_by_for_antigen: titer mismatch: [" + acmacs::to_string(ti_source) + "] vs. " + titers_modified->titer(ti_source.antigen, ti_source.serum));
+    }
+
+} // test_multiply_by_for_antigen
+
+// ----------------------------------------------------------------------
+
+void test_multiply_by_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, double aMult, const argc_argv& args, report_time report)
+{
+    acmacs::chart::ChartModify chart_modify{chart};
+    chart_modify.titers_modify()->multiply_by_for_serum(aSerumNo, aMult);
+
+    const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
+    auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
+    auto titers_source{chart->titers()}, titers_modified{imported->titers()};
+
+    for (auto ti_source : *titers_source) {
+        if (ti_source.serum == aSerumNo && !ti_source.titer.is_dont_care()) {
+            const auto expected_value = static_cast<size_t>(std::lround(ti_source.titer.value() * aMult));
+            if (titers_modified->titer(ti_source.antigen, ti_source.serum).value() != expected_value)
+                throw std::runtime_error("test_multiply_by_for_serum: unexpected titer: [ag:" + std::to_string(ti_source.antigen) + " sr:" + std::to_string(ti_source.serum) +
+                                         " t:" + titers_modified->titer(ti_source.antigen, ti_source.serum) + "], expected: " + std::to_string(expected_value));
+        }
+        else if (titers_modified->titer(ti_source.antigen, ti_source.serum) != ti_source.titer)
+            throw std::runtime_error("test_multiply_by_for_serum: titer mismatch: [" + acmacs::to_string(ti_source) + "] vs. " + titers_modified->titer(ti_source.antigen, ti_source.serum));
+    }
+
+} // test_multiply_by_for_serum
 
 // ----------------------------------------------------------------------
 /// Local Variables:

@@ -31,6 +31,7 @@ if [[ "${T}" == "R" || "${T}" == "D" ]]; then
 fi
 
 cd "$TESTDIR"
-for chart in test-2004-3.ace test.ace test-h1-2009.ace; do
+for chart in test-2004-3.ace test.ace test-h1-2009.ace test-h1-2009-no-layers.ace; do
+    echo test-chart-modify ${chart}
     ../dist/test-chart-modify ${chart} || failed ${TESTDIR}/../dist/test-chart-modify "${TESTDIR}/${chart}"
 done

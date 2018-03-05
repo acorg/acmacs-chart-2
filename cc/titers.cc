@@ -134,6 +134,25 @@ size_t acmacs::chart::Titer::value_for_sorting() const
 
 // ----------------------------------------------------------------------
 
+size_t acmacs::chart::Titer::value() const
+{
+    switch (type()) {
+      case Invalid:
+      case DontCare:
+          return 0;
+      case Regular:
+          return std::stoul(*this);
+      case LessThan:
+      case MoreThan:
+      case Dodgy:
+          return std::stoul(substr(1));
+    }
+    return 0;
+
+} // acmacs::chart::Titer::value
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::Titer acmacs::chart::Titer::multiplied_by(double value) const // multiplied_by(2) returns 80 for 40 and <80 for <40, * for *
 {
     switch (type()) {
