@@ -12,10 +12,11 @@ namespace acmacs::chart
 {
     class ChartModify;
     class InfoModify;
-    class AntigensModify;
-    class SeraModify;
     class AntigenModify;
     class SerumModify;
+    template <typename Base, typename Modify, typename ModifyBase> class AntigensSeraModify;
+    using AntigensModify = AntigensSeraModify<Antigens, AntigenModify, Antigen>;
+    using SeraModify = AntigensSeraModify<Sera, SerumModify, Serum>;
     class TitersModify;
     class ColumnBasesModify;
     class ProjectionModify;
@@ -62,6 +63,11 @@ namespace acmacs::chart
         PlotSpecModifyP plot_spec_modify();
 
         std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {});
+
+        void remove_antigens(const Indexes& indexes);
+        void remove_sera(const Indexes& indexes);
+        AntigenModifyP insert_antigen(size_t before);
+        SerumModifyP insert_serum(size_t before);
 
      private:
         ChartP main_;
@@ -193,35 +199,22 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class AntigensModify : public Antigens
+    template <typename Base, typename Modify, typename ModifyBase> class AntigensSeraModify : public Base
     {
      public:
-        explicit AntigensModify(AntigensP main);
-        explicit AntigensModify() = default;
+        explicit AntigensSeraModify() = default;
+        explicit AntigensSeraModify(std::shared_ptr<Base> main);
 
-        size_t size() const override { return antigens_.size(); }
-        AntigenP operator[](size_t aIndex) const override { return antigens_.at(aIndex); }
-
-     private:
-        std::vector<AntigenModifyP> antigens_;
-
-    }; // class AntigensModify
-
-// ----------------------------------------------------------------------
-
-    class SeraModify : public Sera
-    {
-     public:
-        explicit SeraModify() = default;
-        explicit SeraModify(SeraP main);
-
-        size_t size() const override { return sera_.size(); }
-        SerumP operator[](size_t aIndex) const override { return sera_.at(aIndex); }
+        size_t size() const override { return data_.size(); }
+        std::shared_ptr<ModifyBase> operator[](size_t aIndex) const override { return data_.at(aIndex); }
+        void remove(const Indexes& indexes);
 
      private:
-        std::vector<SerumModifyP> sera_;
+        std::vector<std::shared_ptr<Modify>> data_;
+    };
 
-    }; // class SeraModify
+    extern template class AntigensSeraModify<Antigens, AntigenModify, Antigen>;
+    extern template class AntigensSeraModify<Sera, SerumModify, Serum>;
 
 // ----------------------------------------------------------------------
 
@@ -246,6 +239,9 @@ namespace acmacs::chart
         void dontcare_for_serum(size_t aSerumNo);
         void multiply_by_for_antigen(size_t aAntigenNo, double multiply_by);
         void multiply_by_for_serum(size_t aSerumNo, double multiply_by);
+
+        void remove_antigens(const Indexes& indexes);
+        void remove_sera(const Indexes& indexes);
 
      private:
         using dense_t = std::vector<Titer>;
