@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 
 #include "acmacs-base/debug.hh"
 #include "acmacs-base/range.hh"
@@ -130,6 +131,25 @@ size_t acmacs::chart::Titer::value_for_sorting() const
     return 0;
 
 } // acmacs::chart::Titer::value_for_sorting
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Titer acmacs::chart::Titer::multiplied_by(double value) const // multiplied_by(2) returns 80 for 40 and <80 for <40, * for *
+{
+    switch (type()) {
+      case Invalid:
+      case DontCare:
+          return *this;
+      case Regular:
+          return std::to_string(std::lround(std::stoul(*this) * value));
+      case LessThan:
+      case MoreThan:
+      case Dodgy:
+          return front() + std::to_string(std::lround(std::stoul(substr(1)) * value));
+    }
+    return 0;
+
+} // acmacs::chart::Titer::multiplied_by
 
 // ----------------------------------------------------------------------
 

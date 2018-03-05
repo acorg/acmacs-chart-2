@@ -242,10 +242,10 @@ namespace acmacs::chart
         size_t number_of_non_dont_cares() const override;
 
         void titer(size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter);
-        void all_dontcare_for_antigen(size_t aAntigenNo);
-        void all_dontcare_for_serum(size_t aSerumNo);
-        void all_multiply_by_for_antigen(size_t aAntigenNo, double multiply_by);
-        void all_multiply_by_for_serum(size_t aSerumNo, double multiply_by);
+        void dontcare_for_antigen(size_t aAntigenNo);
+        void dontcare_for_serum(size_t aSerumNo);
+        void multiply_by_for_antigen(size_t aAntigenNo, double multiply_by);
+        void multiply_by_for_serum(size_t aSerumNo, double multiply_by);
 
      private:
         using dense_t = std::vector<Titer>;

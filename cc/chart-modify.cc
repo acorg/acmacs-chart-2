@@ -454,10 +454,10 @@ void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, const std::string& 
 
 // ----------------------------------------------------------------------
 
-void TitersModify::all_dontcare_for_antigen(size_t aAntigenNo)
+void TitersModify::dontcare_for_antigen(size_t aAntigenNo)
 {
     titers_modifiable_check();
-    auto set_all_dontcare = [aAntigenNo, this](auto& titers) {
+    auto set_dontcare = [aAntigenNo, this](auto& titers) {
         using T = std::decay_t<decltype(titers)>;
         if constexpr (std::is_same_v<T, dense_t>) {
             std::fill_n(titers.begin() + static_cast<typename T::difference_type>(aAntigenNo * this->number_of_sera_), this->number_of_sera_, Titer{});
@@ -466,33 +466,74 @@ void TitersModify::all_dontcare_for_antigen(size_t aAntigenNo)
             titers[aAntigenNo].clear();
         }
     };
-    return std::visit(set_all_dontcare, titers_);
+    return std::visit(set_dontcare, titers_);
 
-} // TitersModify::all_dontcare_for_antigen
-
-// ----------------------------------------------------------------------
-
-void TitersModify::all_dontcare_for_serum(size_t aSerumNo)
-{
-    titers_modifiable_check();
-
-} // TitersModify::all_dontcare_for_serum
+} // TitersModify::dontcare_for_antigen
 
 // ----------------------------------------------------------------------
 
-void TitersModify::all_multiply_by_for_antigen(size_t aAntigenNo, double multiply_by)
+void TitersModify::dontcare_for_serum(size_t aSerumNo)
 {
     titers_modifiable_check();
+    auto set_dontcare = [aSerumNo, this](auto& titers) {
+        using T = std::decay_t<decltype(titers)>;
+        if constexpr (std::is_same_v<T, dense_t>) {
+            for (auto ag_no : acmacs::range(number_of_antigens()))
+                titers[ag_no * this->number_of_sera_ + aSerumNo] = Titer{};
+        }
+        else {
+            for (auto& row : titers) {
+                if (auto found = std::lower_bound(row.begin(), row.end(), aSerumNo, [](const auto& e1, size_t sr_no) { return e1.first < sr_no; }); found != row.end() && found->first == aSerumNo)
+                    row.erase(found);
+            }
+        }
+    };
+    return std::visit(set_dontcare, titers_);
 
-} // TitersModify::all_multiply_by_for_antigen
+} // TitersModify::dontcare_for_serum
 
 // ----------------------------------------------------------------------
 
-void TitersModify::all_multiply_by_for_serum(size_t aSerumNo, double multiply_by)
+void TitersModify::multiply_by_for_antigen(size_t aAntigenNo, double multiply_by)
 {
     titers_modifiable_check();
+    auto multiply = [aAntigenNo,multiply_by,this](auto& titers) {
+        using T = std::decay_t<decltype(titers)>;
+        if constexpr (std::is_same_v<T, dense_t>) {
+            auto first = titers.begin() + static_cast<typename T::difference_type>(aAntigenNo * this->number_of_sera_);
+            std::for_each(first, first + static_cast<typename T::difference_type>(this->number_of_sera_), [multiply_by](Titer& titer) { titer = titer.multiplied_by(multiply_by); });
+        }
+        else {
+            std::for_each(titers[aAntigenNo].begin(), titers[aAntigenNo].end(), [multiply_by](sparse_entry_t& entry) { entry.second = entry.second.multiplied_by(multiply_by); });
+        }
+    };
+    return std::visit(multiply, titers_);
 
-} // TitersModify::all_multiply_by_for_serum
+} // TitersModify::multiply_by_for_antigen
+
+// ----------------------------------------------------------------------
+
+void TitersModify::multiply_by_for_serum(size_t aSerumNo, double multiply_by)
+{
+    titers_modifiable_check();
+    auto multiply = [aSerumNo, multiply_by, this](auto& titers) {
+        using T = std::decay_t<decltype(titers)>;
+        if constexpr (std::is_same_v<T, dense_t>) {
+            for (auto ag_no : acmacs::range(number_of_antigens())) {
+                auto& titer = titers[ag_no * this->number_of_sera_ + aSerumNo];
+                titer = titer.multiplied_by(multiply_by);
+            }
+        }
+        else {
+            for (auto& row : titers) {
+                if (auto found = std::lower_bound(row.begin(), row.end(), aSerumNo, [](const auto& e1, size_t sr_no) { return e1.first < sr_no; }); found != row.end() && found->first == aSerumNo)
+                    found->second = found->second.multiplied_by(multiply_by);
+            }
+        }
+    };
+    return std::visit(multiply, titers_);
+
+} // TitersModify::multiply_by_for_serum
 
 // ----------------------------------------------------------------------
 

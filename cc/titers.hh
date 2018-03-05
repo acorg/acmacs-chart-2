@@ -41,6 +41,7 @@ namespace acmacs::chart
         std::string logged_as_string() const;
         double logged_for_column_bases() const;
         size_t value_for_sorting() const;
+        Titer multiplied_by(double value) const; // multiplied_by(2) returns 80 for 40 and <80 for <40, * for *
 
           // static inline Titer from_logged(double aLogged, std::string aPrefix = "") { return aPrefix + std::to_string(std::lround(std::pow(2.0, aLogged) * 10.0)); }
         static inline Titer from_logged(double aLogged, const char* aPrefix = "") { return aPrefix + std::to_string(std::lround(std::exp2(aLogged) * 10.0)); }
