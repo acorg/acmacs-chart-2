@@ -246,6 +246,9 @@ namespace acmacs::chart
         size_t number_of_sera() const override { return number_of_sera_; }
         size_t number_of_non_dont_cares() const override;
 
+        bool modifiable() const noexcept { return layers_.empty(); }
+        void modifiable_check() const { if (!modifiable()) throw titers_cannot_be_modified{}; }
+
         void titer(size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter);
         void dontcare_for_antigen(size_t aAntigenNo);
         void dontcare_for_serum(size_t aSerumNo);
@@ -254,6 +257,8 @@ namespace acmacs::chart
 
         void remove_antigens(const ReverseSortedIndexes& indexes);
         void remove_sera(const ReverseSortedIndexes& indexes);
+        void insert_antigen(size_t before);
+        void insert_serum(size_t before);
 
      private:
         using dense_t = std::vector<Titer>;
@@ -268,8 +273,6 @@ namespace acmacs::chart
         titers_t titers_;
         layers_t layers_;
 
-        bool titers_modifiable() const noexcept { return layers_.empty(); }
-        void titers_modifiable_check() const { if (!titers_modifiable()) throw titers_cannot_be_modified{}; }
 
         static Titer find_titer_for_serum(const sparse_row_t& aRow, size_t aSerumNo);
         static Titer titer_in_sparse_t(const sparse_t& aSparse, size_t aAntigenNo, size_t aSerumNo);

@@ -226,8 +226,9 @@ void ChartModify::remove_sera(const ReverseSortedIndexes& indexes)
 
 AntigenModifyP ChartModify::insert_antigen(size_t before)
 {
+    titers_modify()->modifiable_check();
     auto result = antigens_modify()->insert(before);
-    // titers_modify()->insert_antigen(before);
+    titers_modify()->insert_antigen(before);
     // projections_modify()->insert_antigen(before);
     // plot_spec_modify()->insert_antigen(before);
     return result;
@@ -238,8 +239,9 @@ AntigenModifyP ChartModify::insert_antigen(size_t before)
 
 SerumModifyP ChartModify::insert_serum(size_t before)
 {
+    titers_modify()->modifiable_check();
     auto result = sera_modify()->insert(before);
-    // titers_modify()->insert_serum(before);
+    titers_modify()->insert_serum(before);
     // projections_modify()->insert_serum(before, number_of_antigens());
     // plot_spec_modify()->insert_serum(before);
     // if (auto fcb = forced_column_bases_modify(); fcb)
@@ -459,7 +461,7 @@ size_t TitersModify::number_of_non_dont_cares() const
 
 void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter)
 {
-    titers_modifiable_check();
+    modifiable_check();
 
     auto set_titer = [aAntigenNo,aSerumNo,&aTiter,this](auto& titers) {
         using T = std::decay_t<decltype(titers)>;
@@ -488,7 +490,7 @@ void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, const std::string& 
 
 void TitersModify::dontcare_for_antigen(size_t aAntigenNo)
 {
-    titers_modifiable_check();
+    modifiable_check();
     auto set_dontcare = [aAntigenNo, this](auto& titers) {
         using T = std::decay_t<decltype(titers)>;
         if constexpr (std::is_same_v<T, dense_t>) {
@@ -506,7 +508,7 @@ void TitersModify::dontcare_for_antigen(size_t aAntigenNo)
 
 void TitersModify::dontcare_for_serum(size_t aSerumNo)
 {
-    titers_modifiable_check();
+    modifiable_check();
     auto set_dontcare = [aSerumNo, this](auto& titers) {
         using T = std::decay_t<decltype(titers)>;
         if constexpr (std::is_same_v<T, dense_t>) {
@@ -528,7 +530,7 @@ void TitersModify::dontcare_for_serum(size_t aSerumNo)
 
 void TitersModify::multiply_by_for_antigen(size_t aAntigenNo, double multiply_by)
 {
-    titers_modifiable_check();
+    modifiable_check();
     auto multiply = [aAntigenNo,multiply_by,this](auto& titers) {
         using T = std::decay_t<decltype(titers)>;
         if constexpr (std::is_same_v<T, dense_t>) {
@@ -547,7 +549,7 @@ void TitersModify::multiply_by_for_antigen(size_t aAntigenNo, double multiply_by
 
 void TitersModify::multiply_by_for_serum(size_t aSerumNo, double multiply_by)
 {
-    titers_modifiable_check();
+    modifiable_check();
     auto multiply = [aSerumNo, multiply_by, this](auto& titers) {
         using T = std::decay_t<decltype(titers)>;
         if constexpr (std::is_same_v<T, dense_t>) {
@@ -596,6 +598,30 @@ void TitersModify::remove_antigens(const ReverseSortedIndexes& indexes)
 
 // ----------------------------------------------------------------------
 
+void TitersModify::insert_antigen(size_t before)
+{
+    modifiable_check();
+
+    auto do_insert_antigen_sparse = [before](auto& titers) { titers.insert(titers.begin() + static_cast<Indexes::difference_type>(before), sparse_row_t{}); };
+
+    auto do_insert_antigen_dense = [before, this](auto& titers) {
+        titers.insert(titers.begin() + static_cast<Indexes::difference_type>(before * this->number_of_sera_), this->number_of_sera_, Titer{});
+    };
+
+    auto do_insert_antigen = [&do_insert_antigen_sparse, &do_insert_antigen_dense](auto& titers) {
+        using T = std::decay_t<decltype(titers)>;
+        if constexpr (std::is_same_v<T, dense_t>)
+            do_insert_antigen_dense(titers);
+        else
+            do_insert_antigen_sparse(titers);
+    };
+
+    std::visit(do_insert_antigen, titers_);
+
+} // TitersModify::insert_antigen
+
+// ----------------------------------------------------------------------
+
 void TitersModify::remove_sera(const ReverseSortedIndexes& indexes)
 {
     auto do_remove_sera_sparse = [&indexes](auto& titers) {
@@ -635,6 +661,39 @@ void TitersModify::remove_sera(const ReverseSortedIndexes& indexes)
     number_of_sera_ -= indexes.size();
 
 } // TitersModify::remove_sera
+
+// ----------------------------------------------------------------------
+
+void TitersModify::insert_serum(size_t before)
+{
+    modifiable_check();
+
+    auto do_insert_serum_sparse = [before](auto& titers) {
+        // renumber serum entries with indexes >= before
+        for (auto& row : titers) {
+            for (auto it = std::lower_bound(row.begin(), row.end(), before, [](const auto&e1, size_t sr_no) { return e1.first < sr_no; }); it != row.end(); ++it)
+                ++it->first;
+        }
+    };
+
+    auto do_insert_serum_dense = [before, this](auto& titers) {
+        using diff_t = Indexes::difference_type;
+        for (auto ag_no = static_cast<diff_t>(this->number_of_antigens()) - 1; ag_no >= 0; --ag_no)
+            titers.insert(titers.begin() + ag_no * static_cast<diff_t>(this->number_of_sera_) + static_cast<diff_t>(before), Titer{});
+    };
+
+    auto do_insert_serum = [&do_insert_serum_sparse, &do_insert_serum_dense](auto& titers) {
+        using T = std::decay_t<decltype(titers)>;
+        if constexpr (std::is_same_v<T, dense_t>)
+            do_insert_serum_dense(titers);
+        else
+            do_insert_serum_sparse(titers);
+    };
+
+    std::visit(do_insert_serum, titers_);
+    ++number_of_sera_;
+
+} // TitersModify::insert_serum
 
 // ----------------------------------------------------------------------
 

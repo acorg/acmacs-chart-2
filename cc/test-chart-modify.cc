@@ -57,6 +57,16 @@ int main(int argc, char* const argv[])
                     test_multiply_by_for_serum(chart, sr_no, 2.0, args, report);
                     test_multiply_by_for_serum(chart, sr_no, 0.5, args, report);
                 }
+                std::cout << "  test_insert_antigen\n";
+                for (auto ag_no : antigens_to_test) {
+                    test_insert_antigen(chart, ag_no, args, report);
+                    test_insert_antigen(chart, ag_no + 1, args, report);
+                }
+                std::cout << "  test_insert_serum\n";
+                for (auto sr_no : sera_to_test) {
+                    test_insert_serum(chart, sr_no, args, report);
+                    test_insert_serum(chart, sr_no + 1, args, report);
+                }
             }
             std::cout << "  test_remove_antigens\n";
             for (auto ag_no : antigens_to_test)
@@ -64,16 +74,6 @@ int main(int argc, char* const argv[])
             std::cout << "  test_remove_sera\n";
             for (auto sr_no : sera_to_test)
                 test_remove_sera(chart, {sr_no}, args, report);
-            std::cout << "  test_insert_antigen\n";
-            for (auto ag_no : antigens_to_test) {
-                test_insert_antigen(chart, ag_no, args, report);
-                test_insert_antigen(chart, ag_no + 1, args, report);
-            }
-            std::cout << "  test_insert_serum\n";
-            for (auto sr_no : sera_to_test) {
-                test_insert_serum(chart, sr_no, args, report);
-                test_insert_serum(chart, sr_no + 1, args, report);
-            }
         }
     }
     catch (std::exception& err) {
