@@ -317,15 +317,17 @@ namespace acmacs::chart
         void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens) { layout_modified()->remove_points(indexes, number_of_antigens); }
 
      protected:
-        virtual void modify() { stress_.reset(); }
+        virtual void modify() { stress_.reset(); transformed_layout_.reset(); }
         virtual bool modified() const { return true; }
         double recalculate_stress() const override { stress_ = Projection::recalculate_stress(); return *stress_; }
         bool layout_present() const { return static_cast<bool>(layout_); }
-        void clone_from(const Projection& aSource) { layout_ = std::make_shared<acmacs::Layout>(*aSource.layout()); transformation_ = aSource.transformation(); transformed_layout_.reset(); }
+        void clone_from(const Projection& aSource);
         std::shared_ptr<Layout> transformed_layout_modified() const { if (!transformed_layout_) transformed_layout_.reset(layout_->transform(transformation_)); return transformed_layout_; }
         size_t number_of_points_modified() const { return layout_->number_of_points(); }
         size_t number_of_dimensions_modified() const { return layout_->number_of_dimensions(); }
         const Transformation& transformation_modified() const { return transformation_; }
+        ColumnBasesP forced_column_bases_modified() const { return forced_column_bases_; }
+        void set_forced_column_bases(ColumnBasesP aSource) { if (aSource) forced_column_bases_ = std::make_shared<ColumnBasesData>(*aSource); else forced_column_bases_.reset(); }
         void new_layout(size_t number_of_points, size_t number_of_dimensions) { layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions); transformation_.reset(); transformed_layout_.reset(); }
 
      private:
@@ -333,6 +335,7 @@ namespace acmacs::chart
         Transformation transformation_;
         mutable std::shared_ptr<acmacs::chart::Layout> transformed_layout_;
         mutable std::optional<double> stress_;
+        ColumnBasesP forced_column_bases_;
 
         friend class ProjectionsModify;
 
@@ -345,7 +348,7 @@ namespace acmacs::chart
     class ProjectionModifyMain : public ProjectionModify
     {
      public:
-        explicit ProjectionModifyMain(ProjectionP main) : ProjectionModify(main->chart()), main_{main} {}
+        explicit ProjectionModifyMain(const ChartModify& chart, ProjectionP main) : ProjectionModify(chart), main_{main} {}
         explicit ProjectionModifyMain(const ProjectionModifyMain& aSource) : ProjectionModify(aSource), main_(aSource.main_) {}
 
         std::optional<double> stored_stress() const override { if (modified()) return ProjectionModify::stored_stress(); else return main_->stored_stress(); } // no stress if projection was modified
@@ -355,7 +358,7 @@ namespace acmacs::chart
         size_t number_of_points() const override { return modified() ? number_of_points_modified() : main_->number_of_points(); }
         size_t number_of_dimensions() const override { return modified() ? number_of_dimensions_modified() : main_->number_of_dimensions(); }
         MinimumColumnBasis minimum_column_basis() const override { return main_->minimum_column_basis(); }
-        ColumnBasesP forced_column_bases() const override { return main_->forced_column_bases(); }
+        ColumnBasesP forced_column_bases() const override { return modified() ? forced_column_bases_modified() : main_->forced_column_bases(); }
         acmacs::Transformation transformation() const override { return modified() ? transformation_modified() : main_->transformation(); }
         bool dodgy_titer_is_regular() const override { return main_->dodgy_titer_is_regular(); }
         double stress_diff_to_stop() const override { return main_->stress_diff_to_stop(); }
@@ -379,18 +382,19 @@ namespace acmacs::chart
     {
      public:
         explicit ProjectionModifyNew(const Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis)
-            : ProjectionModify(chart), minimum_column_basis_(minimum_column_basis), forced_column_bases_(chart.forced_column_bases())
+            : ProjectionModify(chart), minimum_column_basis_(minimum_column_basis)
             {
                 new_layout(chart.number_of_points(), number_of_dimensions);
+                set_forced_column_bases(chart.forced_column_bases());
             }
 
         explicit ProjectionModifyNew(const ProjectionModify& aSource)
             : ProjectionModify(aSource), minimum_column_basis_(aSource.minimum_column_basis()),
-              forced_column_bases_(std::make_shared<ColumnBasesData>(*aSource.forced_column_bases())),
               dodgy_titer_is_regular_(aSource.dodgy_titer_is_regular()), stress_diff_to_stop_(aSource.stress_diff_to_stop()),
               disconnected_(aSource.disconnected())
             {
                 set_layout(*aSource.layout());
+                set_forced_column_bases(aSource.forced_column_bases());
             }
 
         std::shared_ptr<Layout> layout() const override { return layout_modified(); }
@@ -399,7 +403,7 @@ namespace acmacs::chart
         size_t number_of_points() const override { return number_of_points_modified(); }
         size_t number_of_dimensions() const override { return number_of_dimensions_modified(); }
         MinimumColumnBasis minimum_column_basis() const override { return minimum_column_basis_; }
-        ColumnBasesP forced_column_bases() const override { return forced_column_bases_; }
+        ColumnBasesP forced_column_bases() const override { return forced_column_bases_modified(); }
         acmacs::Transformation transformation() const override { return transformation_modified(); }
         bool dodgy_titer_is_regular() const override { return dodgy_titer_is_regular_; }
         double stress_diff_to_stop() const override { return stress_diff_to_stop_; }
@@ -412,7 +416,6 @@ namespace acmacs::chart
 
      private:
         MinimumColumnBasis minimum_column_basis_;
-        ColumnBasesP forced_column_bases_;
         bool dodgy_titer_is_regular_{false};
         double stress_diff_to_stop_{0};
         PointIndexList disconnected_;
@@ -424,10 +427,10 @@ namespace acmacs::chart
     class ProjectionsModify : public Projections
     {
      public:
-        explicit ProjectionsModify(ProjectionsP main)
-            : Projections(main->chart()), projections_(main->size(), nullptr)
+        explicit ProjectionsModify(const ChartModify& chart, ProjectionsP main)
+            : Projections(chart), projections_(main->size(), nullptr)
             {
-                std::transform(main->begin(), main->end(), projections_.begin(), [](ProjectionP aSource) { return std::make_shared<ProjectionModifyMain>(aSource); });
+                std::transform(main->begin(), main->end(), projections_.begin(), [&chart](ProjectionP aSource) { return std::make_shared<ProjectionModifyMain>(chart, aSource); });
                 set_projection_no();
             }
 

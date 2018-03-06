@@ -147,7 +147,7 @@ ColumnBasesModifyP ChartModify::forced_column_bases_modify()
 ProjectionsModifyP ChartModify::projections_modify()
 {
     if (!projections_)
-        projections_ = std::make_shared<ProjectionsModify>(main_->projections());
+        projections_ = std::make_shared<ProjectionsModify>(*this, main_->projections());
     return projections_;
 
 } // ChartModify::projections_modify
@@ -646,6 +646,17 @@ std::shared_ptr<ProjectionModifyNew> ProjectionModify::clone(ChartModify& chart)
     return projection;
 
 } // ProjectionModify::clone
+
+// ----------------------------------------------------------------------
+
+void ProjectionModify::clone_from(const Projection& aSource)
+{
+    layout_ = std::make_shared<acmacs::Layout>(*aSource.layout());
+    transformation_ = aSource.transformation();
+    transformed_layout_.reset();
+    set_forced_column_bases(aSource.forced_column_bases());
+
+} // ProjectionModify::clone_from
 
 // ----------------------------------------------------------------------
 

@@ -15,6 +15,8 @@ static void test_dont_care_for_antigen(acmacs::chart::ChartP chart, size_t aAnti
 static void test_dont_care_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, const argc_argv& args, report_time report);
 static void test_multiply_by_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo, double aMult, const argc_argv& args, report_time report);
 static void test_multiply_by_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, double aMult, const argc_argv& args, report_time report);
+static void test_remove_antigens(acmacs::chart::ChartP chart, const acmacs::Indexes& indexes, const argc_argv& args, report_time report);
+static void test_remove_sera(acmacs::chart::ChartP chart, const acmacs::Indexes& indexes, const argc_argv& args, report_time report);
 
 // ----------------------------------------------------------------------
 
@@ -30,27 +32,35 @@ int main(int argc, char* const argv[])
         else {
             const auto report = do_report_time(args["--time"]);
             auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
+            const std::array<size_t, 5> antigens_to_test{{0, 1, chart->number_of_antigens() / 2, chart->number_of_antigens() - 2, chart->number_of_antigens() - 1}};
+            const std::array<size_t, 5> sera_to_test{{0, 1, chart->number_of_sera() / 2, chart->number_of_sera() - 2, chart->number_of_sera() - 1}};
             test_chart_modify_no_changes(chart, args, report);
             if (chart->titers()->number_of_layers() == 0) {
                 std::cout << "  test_modify_titers\n";
                 test_modify_titers(chart, args, report);
                 std::cout << "  test_dont_care_for_antigen\n";
-                for (auto ag_no : acmacs::range(chart->number_of_antigens()))
+                for (auto ag_no : antigens_to_test)
                     test_dont_care_for_antigen(chart, ag_no, args, report);
                 std::cout << "  test_dont_care_for_serum\n";
-                for (auto sr_no : acmacs::range(chart->number_of_sera()))
+                for (auto sr_no : sera_to_test)
                     test_dont_care_for_serum(chart, sr_no, args, report);
                 std::cout << "  test_multiply_by_for_antigen\n";
-                for (auto ag_no : acmacs::range(chart->number_of_antigens())) {
+                for (auto ag_no : antigens_to_test) {
                     test_multiply_by_for_antigen(chart, ag_no, 2.0, args, report);
                     test_multiply_by_for_antigen(chart, ag_no, 0.5, args, report);
                 }
                 std::cout << "  test_multiply_by_for_serum\n";
-                for (auto sr_no : acmacs::range(chart->number_of_sera())) {
+                for (auto sr_no : sera_to_test) {
                     test_multiply_by_for_serum(chart, sr_no, 2.0, args, report);
                     test_multiply_by_for_serum(chart, sr_no, 0.5, args, report);
                 }
             }
+            std::cout << "  test_remove_antigens\n";
+            for (auto ag_no : antigens_to_test)
+                test_remove_antigens(chart, {ag_no}, args, report);
+            std::cout << "  test_remove_sera\n";
+            for (auto sr_no : sera_to_test)
+                test_remove_sera(chart, {sr_no}, args, report);
         }
     }
     catch (std::exception& err) {
@@ -216,6 +226,32 @@ void test_multiply_by_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, do
     }
 
 } // test_multiply_by_for_serum
+
+// ----------------------------------------------------------------------
+
+void test_remove_antigens(acmacs::chart::ChartP chart, const acmacs::Indexes& indexes, const argc_argv& args, report_time report)
+{
+    acmacs::chart::ChartModify chart_modify{chart};
+    chart_modify.remove_antigens(acmacs::ReverseSortedIndexes(indexes));
+
+    const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
+    try {
+        auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
+    }
+    catch (std::exception& err) {
+        acmacs::file::write("/r/a.ace", exported, acmacs::file::ForceCompression::Yes);
+          //std::cerr << "ERROR: " << err.what() << '\n' << exported << '\n';
+        throw;
+    }
+
+} // test_remove_antigens
+
+// ----------------------------------------------------------------------
+
+void test_remove_sera(acmacs::chart::ChartP chart, const acmacs::Indexes& indexes, const argc_argv& args, report_time report)
+{
+
+} // test_remove_sera
 
 // ----------------------------------------------------------------------
 /// Local Variables:
