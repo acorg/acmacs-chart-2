@@ -235,6 +235,11 @@ void test_remove_antigens(acmacs::chart::ChartP chart, const acmacs::Indexes& in
     acmacs::chart::ChartModify chart_modify{chart};
     chart_modify.remove_antigens(acmacs::ReverseSortedIndexes(indexes));
 
+    // for (auto ag_no : acmacs::range(chart_modify.number_of_antigens())) {
+    //     std::cerr << "plot_style orig: " << std::setw(2) << (ag_no + 1) << ' ' << chart->plot_spec()->style(ag_no + 1) << '\n';
+    //     std::cerr << "plot_style mod:  " << std::setw(2) << ag_no << ' ' << chart_modify.plot_spec()->style(ag_no) << '\n' << '\n';
+    // }
+
     const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
 
@@ -260,7 +265,7 @@ void test_remove_antigens(acmacs::chart::ChartP chart, const acmacs::Indexes& in
                                                  " vs. imported:" + std::to_string(imported_ag_no) + ' ' + acmacs::to_string(imp));
                 }
                 if (auto src = plot_spec_source->style(source_ag_no), imp = plot_spec_imported->style(imported_ag_no); src != imp)
-                    throw std::runtime_error("antigen plot style mismatch: orig:" + std::to_string(source_ag_no) + ' ' + acmacs::to_string(src) + " vs. imported:" + std::to_string(imported_ag_no) + ' ' + acmacs::to_string(imp));
+                    throw std::runtime_error("antigen plot style mismatch:\n     orig:" + std::to_string(source_ag_no) + ' ' + acmacs::to_string(src) + "\n imported:" + std::to_string(imported_ag_no) + ' ' + acmacs::to_string(imp) + "\n  report: " + acmacs::equality_report(src, imp));
                 ++imported_ag_no;
             }
         }
@@ -281,7 +286,7 @@ void test_remove_antigens(acmacs::chart::ChartP chart, const acmacs::Indexes& in
     }
     catch (std::exception& err) {
         acmacs::file::write("/r/a.ace", exported, acmacs::file::ForceCompression::Yes);
-        throw std::runtime_error(std::string("test_remove_antigens: ") + err.what() + " indexes:" + acmacs::to_string(indexes));
+        throw std::runtime_error(std::string("test_remove_antigens: ") + err.what() + "\n  indexes:" + acmacs::to_string(indexes));
     }
 
 } // test_remove_antigens
