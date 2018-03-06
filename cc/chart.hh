@@ -218,6 +218,8 @@ namespace acmacs::chart
         virtual ~Antigen();
         Antigen() = default;
         Antigen(const Antigen&) = delete;
+        bool operator==(const Antigen& rhs) const { return full_name() == rhs.full_name(); }
+        bool operator!=(const Antigen& rhs) const { return !operator==(rhs); }
 
         virtual Name name() const = 0;
         virtual Date date() const = 0;
@@ -252,6 +254,8 @@ namespace acmacs::chart
         virtual ~Serum();
         Serum() = default;
         Serum(const Serum&) = delete;
+        bool operator==(const Serum& rhs) const { return full_name() == rhs.full_name(); }
+        bool operator!=(const Serum& rhs) const { return !operator==(rhs); }
 
         virtual Name name() const = 0;
         virtual Passage passage() const = 0;

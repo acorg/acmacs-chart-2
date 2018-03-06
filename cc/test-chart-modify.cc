@@ -5,6 +5,7 @@
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/read-file.hh"
+#include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/factory-export.hh"
@@ -188,7 +189,7 @@ void test_multiply_by_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo
 
     const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
-    auto titers_source{chart->titers()}, titers_modified{imported->titers()};
+    auto titers_source = chart->titers(), titers_modified = imported->titers();
 
     for (auto ti_source : *titers_source) {
         if (ti_source.antigen == aAntigenNo && !ti_source.titer.is_dont_care()) {
@@ -235,13 +236,37 @@ void test_remove_antigens(acmacs::chart::ChartP chart, const acmacs::Indexes& in
     chart_modify.remove_antigens(acmacs::ReverseSortedIndexes(indexes));
 
     const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
+    auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
+
     try {
-        auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
+        auto antigens_source = chart->antigens(), antigens_imported = imported->antigens();
+        auto titers_source = chart->titers(), titers_imported = imported->titers();
+        auto projections_source = chart->projections(), projections_imported = imported->projections();
+
+        size_t imported_ag_no = 0;
+        for (auto[source_ag_no, source_antigen] : acmacs::enumerate(*antigens_source)) {
+            if (std::find(indexes.begin(), indexes.end(), source_ag_no) == indexes.end()) {
+                if (*source_antigen != *(*antigens_imported)[imported_ag_no])
+                    throw std::runtime_error("antigen mismatch: orig:" + std::to_string(source_ag_no) + " vs. imported:" + std::to_string(imported_ag_no));
+                for (auto sr_no : acmacs::range(chart->number_of_sera())) {
+                    if (titers_source->titer(source_ag_no, sr_no) != titers_imported->titer(imported_ag_no, sr_no))
+                        throw std::runtime_error("titer mismatch: sr_no:" + std::to_string(sr_no) + " orig: " + std::to_string(source_ag_no) + ' ' + titers_source->titer(source_ag_no, sr_no) +
+                                                 ", imported: " + std::to_string(imported_ag_no) + ' ' + titers_imported->titer(imported_ag_no, sr_no));
+                }
+                for (auto[p_no, projection] : acmacs::enumerate(*projections_source)) {
+                    if (auto src = projection->layout()->get(source_ag_no), imp = (*projections_imported)[p_no]->layout()->get(imported_ag_no); src != imp)
+                        throw std::runtime_error("antigen coordinates mismatch: orig:" + std::to_string(source_ag_no) + ' ' + acmacs::to_string(src) +
+                                                 " vs. imported:" + std::to_string(imported_ag_no) + ' ' + acmacs::to_string(imp));
+                }
+                ++imported_ag_no;
+            }
+        }
+        if (imported_ag_no != imported->number_of_antigens())
+            throw std::runtime_error("invalid resulting imported_ag_no");
     }
     catch (std::exception& err) {
         acmacs::file::write("/r/a.ace", exported, acmacs::file::ForceCompression::Yes);
-          //std::cerr << "ERROR: " << err.what() << '\n' << exported << '\n';
-        throw;
+        throw std::runtime_error(err.what() + std::string("  indexes: ") + acmacs::to_string(indexes));
     }
 
 } // test_remove_antigens
