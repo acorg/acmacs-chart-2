@@ -203,18 +203,18 @@ namespace acmacs::chart
     {
      public:
         explicit AntigensSeraModify() = default;
-        explicit AntigensSeraModify(std::shared_ptr<Base> main);
+        explicit AntigensSeraModify(std::shared_ptr<Base> main) : data_(main->size(), nullptr) { std::transform(main->begin(), main->end(), data_.begin(), [](auto ag_sr) { return std::make_shared<Modify>(ag_sr); }); }
 
         size_t size() const override { return data_.size(); }
         std::shared_ptr<ModifyBase> operator[](size_t aIndex) const override { return data_.at(aIndex); }
-        void remove(const ReverseSortedIndexes& indexes);
+        void remove(const ReverseSortedIndexes& indexes) { for (auto index : indexes) data_.erase(data_.begin() + static_cast<Indexes::difference_type>(index)); }
 
      private:
         std::vector<std::shared_ptr<Modify>> data_;
     };
 
-    extern template class AntigensSeraModify<Antigens, AntigenModify, Antigen>;
-    extern template class AntigensSeraModify<Sera, SerumModify, Serum>;
+    // extern template class AntigensSeraModify<Antigens, AntigenModify, Antigen>;
+    // extern template class AntigensSeraModify<Sera, SerumModify, Serum>;
 
 // ----------------------------------------------------------------------
 

@@ -284,26 +284,6 @@ SerumModify::SerumModify(SerumP main)
 
 // ----------------------------------------------------------------------
 
-template <typename Base, typename Modify, typename ModifyBase> AntigensSeraModify<Base, Modify, ModifyBase>::AntigensSeraModify(std::shared_ptr<Base> main)
-    : data_(main->size(), nullptr)
-{
-    std::transform(main->begin(), main->end(), data_.begin(), [](auto ag_sr) { return std::make_shared<Modify>(ag_sr); });
-}
-
-template <typename Base, typename Modify, typename ModifyBase> void AntigensSeraModify<Base, Modify, ModifyBase>::remove(const ReverseSortedIndexes& indexes)
-{
-    for (auto index : indexes)
-        data_.erase(data_.begin() + static_cast<Indexes::difference_type>(index));
-}
-
-namespace acmacs::chart
-{
-    template class AntigensSeraModify<Antigens, AntigenModify, Antigen>;
-    template class AntigensSeraModify<Sera, SerumModify, Serum>;
-}
-
-// ----------------------------------------------------------------------
-
 TitersModify::TitersModify()
     : titers_{dense_t{}}
 {
