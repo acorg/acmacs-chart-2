@@ -330,6 +330,8 @@ namespace acmacs::chart
 
         void remove_antigens(const ReverseSortedIndexes& indexes) { layout_modified()->remove_points(indexes, 0); }
         void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens) { layout_modified()->remove_points(indexes, number_of_antigens); }
+        void insert_antigen(size_t before) { layout_modified()->insert_point(before, 0); }
+        void insert_serum(size_t before, size_t number_of_antigens) { layout_modified()->insert_point(before, number_of_antigens); }
 
      protected:
         virtual void modify() { stress_.reset(); transformed_layout_.reset(); }
@@ -470,6 +472,8 @@ namespace acmacs::chart
 
         void remove_antigens(const ReverseSortedIndexes& indexes) { for_each(projections_.begin(), projections_.end(), [&](auto& projection) { projection->remove_antigens(indexes); }); }
         void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens) { for_each(projections_.begin(), projections_.end(), [&indexes,number_of_antigens](auto& projection) { projection->remove_sera(indexes, number_of_antigens); }); }
+        void insert_antigen(size_t before) { for_each(projections_.begin(), projections_.end(), [=](auto& projection) { projection->insert_antigen(before); }); }
+        void insert_serum(size_t before, size_t number_of_antigens) { for_each(projections_.begin(), projections_.end(), [=](auto& projection) { projection->insert_serum(before, number_of_antigens); }); }
 
      private:
         std::vector<ProjectionModifyP> projections_;
