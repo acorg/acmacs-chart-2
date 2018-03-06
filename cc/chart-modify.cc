@@ -609,8 +609,13 @@ void TitersModify::remove_sera(const ReverseSortedIndexes& indexes)
     auto do_remove_sera_sparse = [&indexes](auto& titers) {
         for (auto& row : titers) {
             for (auto index : indexes) {
-                if (auto found = std::lower_bound(row.begin(), row.end(), index, [](const auto& e1, size_t sr_no) { return e1.first < sr_no; }); found != row.end() && found->first == index)
-                    row.erase(found);
+                  // remove entry for index, then renumber entries for >index
+                if (auto found = std::lower_bound(row.begin(), row.end(), index, [](const auto& e1, size_t sr_no) { return e1.first < sr_no; }); found != row.end()) {
+                    if (found->first == index)
+                        found = row.erase(found);
+                    for (; found != row.end(); ++found)
+                        --found->first;
+                }
             }
         }
     };
