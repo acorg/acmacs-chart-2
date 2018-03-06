@@ -207,14 +207,26 @@ namespace acmacs::chart
 
         size_t size() const override { return data_.size(); }
         std::shared_ptr<ModifyBase> operator[](size_t aIndex) const override { return data_.at(aIndex); }
-        void remove(const ReverseSortedIndexes& indexes) { for (auto index : indexes) data_.erase(data_.begin() + static_cast<Indexes::difference_type>(index)); }
+
+        void remove(const ReverseSortedIndexes& indexes)
+            {
+                for (auto index : indexes) {
+                    if (index >= data_.size())
+                        throw invalid_data{"invalid index to remove: " + to_string(index) + ", valid values in [0.." + to_string(data_.size()) + ')'};
+                    data_.erase(data_.begin() + static_cast<Indexes::difference_type>(index));
+                }
+            }
+
+        std::shared_ptr<Modify> insert(size_t before)
+            {
+                if (before > data_.size())
+                    throw invalid_data{"invalid index to insert before: " + to_string(before) + ", valid values in [0.." + to_string(data_.size()) + ']'};
+                return *data_.emplace(data_.begin() + static_cast<Indexes::difference_type>(before), new Modify);
+            }
 
      private:
         std::vector<std::shared_ptr<Modify>> data_;
     };
-
-    // extern template class AntigensSeraModify<Antigens, AntigenModify, Antigen>;
-    // extern template class AntigensSeraModify<Sera, SerumModify, Serum>;
 
 // ----------------------------------------------------------------------
 

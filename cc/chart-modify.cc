@@ -226,6 +226,11 @@ void ChartModify::remove_sera(const ReverseSortedIndexes& indexes)
 
 AntigenModifyP ChartModify::insert_antigen(size_t before)
 {
+    auto result = antigens_modify()->insert(before);
+    // titers_modify()->insert_antigen(before);
+    // projections_modify()->insert_antigen(before);
+    // plot_spec_modify()->insert_antigen(before);
+    return result;
 
 } // ChartModify::insert_antigen
 
@@ -233,6 +238,13 @@ AntigenModifyP ChartModify::insert_antigen(size_t before)
 
 SerumModifyP ChartModify::insert_serum(size_t before)
 {
+    auto result = sera_modify()->insert(before);
+    // titers_modify()->insert_serum(before);
+    // projections_modify()->insert_serum(before, number_of_antigens());
+    // plot_spec_modify()->insert_serum(before);
+    // if (auto fcb = forced_column_bases_modify(); fcb)
+    //     fcb->insert(before);
+    return result;
 
 } // ChartModify::insert_serum
 

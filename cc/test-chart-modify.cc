@@ -18,6 +18,8 @@ static void test_multiply_by_for_antigen(acmacs::chart::ChartP chart, size_t aAn
 static void test_multiply_by_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, double aMult, const argc_argv& args, report_time report);
 static void test_remove_antigens(acmacs::chart::ChartP chart, const acmacs::Indexes& indexes, const argc_argv& args, report_time report);
 static void test_remove_sera(acmacs::chart::ChartP chart, const acmacs::Indexes& indexes, const argc_argv& args, report_time report);
+static void test_insert_antigen(acmacs::chart::ChartP chart, size_t before, const argc_argv& args, report_time report);
+static void test_insert_serum(acmacs::chart::ChartP chart, size_t before, const argc_argv& args, report_time report);
 
 // ----------------------------------------------------------------------
 
@@ -62,6 +64,16 @@ int main(int argc, char* const argv[])
             std::cout << "  test_remove_sera\n";
             for (auto sr_no : sera_to_test)
                 test_remove_sera(chart, {sr_no}, args, report);
+            std::cout << "  test_insert_antigen\n";
+            for (auto ag_no : antigens_to_test) {
+                test_insert_antigen(chart, ag_no, args, report);
+                test_insert_antigen(chart, ag_no + 1, args, report);
+            }
+            std::cout << "  test_insert_serum\n";
+            for (auto sr_no : sera_to_test) {
+                test_insert_serum(chart, sr_no, args, report);
+                test_insert_serum(chart, sr_no + 1, args, report);
+            }
         }
     }
     catch (std::exception& err) {
@@ -352,6 +364,36 @@ void test_remove_sera(acmacs::chart::ChartP chart, const acmacs::Indexes& indexe
     }
 
 } // test_remove_sera
+
+// ----------------------------------------------------------------------
+
+void test_insert_antigen(acmacs::chart::ChartP chart, size_t before, const argc_argv& args, report_time report)
+{
+    acmacs::chart::ChartModify chart_modify{chart};
+    chart_modify.insert_antigen(before);
+
+    // const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
+    // auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
+
+    // acmacs::file::write("/r/a.ace", exported, acmacs::file::ForceCompression::Yes);
+    // throw std::runtime_error("not implemented");
+
+} // test_insert_antigen
+
+// ----------------------------------------------------------------------
+
+void test_insert_serum(acmacs::chart::ChartP chart, size_t before, const argc_argv& args, report_time report)
+{
+    acmacs::chart::ChartModify chart_modify{chart};
+    chart_modify.insert_serum(before);
+
+    // const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
+    // auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
+
+    // acmacs::file::write("/r/a.ace", exported, acmacs::file::ForceCompression::Yes);
+    // throw std::runtime_error("not implemented");
+
+} // test_insert_serum
 
 // ----------------------------------------------------------------------
 /// Local Variables:
