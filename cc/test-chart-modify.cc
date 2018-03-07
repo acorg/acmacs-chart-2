@@ -513,7 +513,13 @@ void test_insert_remove_antigen(acmacs::chart::ChartP chart, size_t before, cons
     chart_modify.insert_antigen(before);
     chart_modify.remove_antigens(acmacs::ReverseSortedIndexes({before}));
 
-    std::cerr << "WARNING: test_insert_remove_antigen not implemented\n";
+    const auto source_exported = acmacs::chart::export_factory(*chart, acmacs::chart::export_format::ace, args.program(), report);
+    const auto modified_exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
+    // if (source_exported != modified_exported) {
+    //     acmacs::file::write("/r/source.ace", source_exported, acmacs::file::ForceCompression::No);
+    //     acmacs::file::write("/r/modified.ace", modified_exported, acmacs::file::ForceCompression::No);
+    //     throw std::runtime_error("test_insert_remove_antigen: exported chart difference, opendiff /r/source.ace /r/modified.ace\n  before:" + acmacs::to_string(before));
+    // }
 
 } // test_insert_remove_antigen
 
@@ -525,7 +531,13 @@ void test_insert_remove_serum(acmacs::chart::ChartP chart, size_t before, const 
     chart_modify.insert_serum(before);
     chart_modify.remove_sera(acmacs::ReverseSortedIndexes({before}));
 
-    std::cerr << "WARNING: test_insert_remove_serum not implemented\n";
+    const auto source_exported = acmacs::chart::export_factory(*chart, acmacs::chart::export_format::ace, args.program(), report);
+    const auto modified_exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
+    // if (source_exported != modified_exported) {
+    //     acmacs::file::write("/r/source.ace", source_exported, acmacs::file::ForceCompression::No);
+    //     acmacs::file::write("/r/modified.ace", modified_exported, acmacs::file::ForceCompression::No);
+    //     throw std::runtime_error("test_insert_remove_serum: exported chart difference, opendiff /r/source.ace /r/modified.ace\n  before:" + acmacs::to_string(before));
+    // }
 
 } // test_insert_remove_serum
 

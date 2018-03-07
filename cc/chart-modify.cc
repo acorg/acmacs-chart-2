@@ -839,7 +839,7 @@ void PlotSpecModify::remove_antigens(const ReverseSortedIndexes& indexes)
 {
     modify();
     acmacs::remove(indexes, styles_);
-    drawing_order_.remove_indexes(indexes);
+    drawing_order_.remove_points(indexes);
     number_of_antigens_ -= indexes.size();
 
 } // PlotSpecModify::remove_antigens
@@ -850,7 +850,7 @@ void PlotSpecModify::remove_sera(const ReverseSortedIndexes& indexes)
 {
     modify();
     acmacs::remove(indexes, styles_, number_of_antigens_);
-    drawing_order_.remove_indexes(indexes, number_of_antigens_);
+    drawing_order_.remove_points(indexes, number_of_antigens_);
 
 } // PlotSpecModify::remove_sera
 

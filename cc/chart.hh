@@ -214,6 +214,15 @@ namespace acmacs::chart
                 push_back(before);
             }
 
+        void remove_points(const ReverseSortedIndexes& to_remove, size_t base_index = 0)
+            {
+                for (const auto index_to_remove : to_remove) {
+                    if (const auto found = std::find(begin(), end(), index_to_remove + base_index); found != end())
+                        erase(found);
+                    std::for_each(begin(), end(), [index_to_remove](size_t& index) { if (index > index_to_remove) --index; });
+                }
+            }
+
     }; // class DrawingOrder
 
 // ----------------------------------------------------------------------

@@ -110,13 +110,13 @@ namespace acmacs::chart
          public:
             using T_list_data<size_t>::T_list_data;
 
-            void remove_indexes(const Indexes& to_remove, size_t base_index = 0)
-                {
-                    for (const auto index : to_remove) {
-                        if (const auto found = std::find(begin(), end(), index + base_index); found != end())
-                            erase(found);
-                    }
-                }
+            // void remove_indexes(const Indexes& to_remove, size_t base_index = 0)
+            //     {
+            //         for (const auto index : to_remove) {
+            //             if (const auto found = std::find(begin(), end(), index + base_index); found != end())
+            //                 erase(found);
+            //         }
+            //     }
 
         }; // class index_list_data
 
