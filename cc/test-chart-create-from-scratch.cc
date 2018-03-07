@@ -22,9 +22,22 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            acmacs::chart::ChartNew chart(5, 3);
+            constexpr size_t num_antigens = 27, num_sera = 8;
+            acmacs::chart::ChartNew chart(num_antigens, num_sera);
             const auto exported = acmacs::chart::export_factory(chart, acmacs::chart::export_format::ace, args.program(), report_time::No);
-            std::cout << exported << '\n';
+            auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report_time::No);
+            // std::cout << exported << '\n';
+
+            if (imported->number_of_antigens() != num_antigens)
+                throw std::runtime_error("invalid number_of_antigens");
+            if (imported->number_of_sera() != num_sera)
+                throw std::runtime_error("invalid number_of_sera");
+
+            auto titers = chart.titers();
+            for (auto ti_source : *titers) {
+                if (!ti_source.titer.is_dont_care())
+                    throw std::runtime_error("unexpected titer: [" + acmacs::to_string(ti_source) + "], expected: *");
+            }
         }
     }
     catch (std::exception& err) {

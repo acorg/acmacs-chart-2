@@ -213,11 +213,12 @@ namespace acmacs::chart
     template <typename Base, typename Modify, typename ModifyBase> class AntigensSeraModify : public Base
     {
      public:
-        explicit AntigensSeraModify(size_t number_of) : data_(number_of, std::make_shared<Modify>()) {}
+        explicit AntigensSeraModify(size_t number_of) : data_(number_of, nullptr) { std::transform(data_.begin(), data_.end(), data_.begin(), [](const auto&) { return std::make_shared<Modify>(); }); }
         explicit AntigensSeraModify(std::shared_ptr<Base> main) : data_(main->size(), nullptr) { std::transform(main->begin(), main->end(), data_.begin(), [](auto ag_sr) { return std::make_shared<Modify>(ag_sr); }); }
 
         size_t size() const override { return data_.size(); }
         std::shared_ptr<ModifyBase> operator[](size_t aIndex) const override { return data_.at(aIndex); }
+        Modify& at(size_t aIndex) { return *data_.at(aIndex); }
 
         void remove(const ReverseSortedIndexes& indexes)
             {

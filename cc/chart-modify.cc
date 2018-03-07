@@ -15,7 +15,6 @@ ChartModify::ChartModify(size_t number_of_antigens, size_t number_of_sera)
       projections_{std::make_shared<ProjectionsModify>(*this)},
       plot_spec_{std::make_shared<PlotSpecModify>(number_of_antigens, number_of_sera)}
 {
-
 } // ChartModify::ChartModify
 
 // ----------------------------------------------------------------------
@@ -262,6 +261,31 @@ SerumModifyP ChartModify::insert_serum(size_t before)
 ChartNew::ChartNew(size_t number_of_antigens, size_t number_of_sera)
     : ChartModify(number_of_antigens, number_of_sera)
 {
+    constexpr const char* const names[] = {"red", "gold", "silver", "chocolate", "coral", "green", "blue", "aquamarine", "cyan", "magenta", "azure", "orchid", "pink", "tomato", "salade", "violet", "wheat", "turquoise", "yellow", "black", "grey", "sienna", "white", "beige", "bisque", "brown", "burlywood"};
+    constexpr size_t num_names = sizeof(names) / sizeof(names[0]);
+
+    auto& antigens = *antigens_modify();
+    size_t name_no = 0;
+    std::string suffix = "";
+    for (auto ag_no : acmacs::range(number_of_antigens)) {
+        antigens.at(ag_no).name(names[name_no] + suffix);
+        ++name_no;
+        if (name_no >= num_names) {
+            suffix += "A";
+            name_no = 0;
+        }
+    }
+
+    auto& sera = *sera_modify();
+    suffix = "";
+    for (auto sr_no : acmacs::range(number_of_sera)) {
+        sera.at(sr_no).name(names[name_no] + suffix);
+        ++name_no;
+        if (name_no >= num_names) {
+            suffix += "S";
+            name_no = 0;
+        }
+    }
 
 } // ChartNew::ChartNew
 
