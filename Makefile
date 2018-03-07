@@ -26,6 +26,7 @@ TARGETS = \
     $(DIST)/chart-html \
     $(DIST)/chart-serum-circles \
     $(DIST)/chart-update \
+    $(DIST)/chart-remove-antigens-sera \
     $(DIST)/test-titer-iterator \
     $(DIST)/test-chart-modify
 
