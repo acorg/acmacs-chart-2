@@ -242,7 +242,7 @@ void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Pr
         }
 
         target.set_field_if_not_empty("c", static_cast<const std::string&>(projection->comment()));
-        target.set_field_if_not_default("s", projection->stress(), acmacs::chart::InvalidStress);
+        target.set_field_if_not_default("s", projection->stress(), acmacs::chart::InvalidStress, 8);
         if (const auto minimum_column_basis = projection->minimum_column_basis(); !minimum_column_basis.is_none())
             target.set_field("m", rjson::string{minimum_column_basis});
         if (const auto forced_column_bases = projection->forced_column_bases(); forced_column_bases) {
