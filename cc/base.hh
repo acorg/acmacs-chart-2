@@ -117,7 +117,8 @@ namespace acmacs::chart
                             erase(found);
                     }
                 }
-        };
+
+        }; // class index_list_data
 
 // ----------------------------------------------------------------------
 

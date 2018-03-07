@@ -59,6 +59,7 @@ namespace acmacs::chart
         virtual size_t size() const { return data_.size(); }
 
         void remove(const ReverseSortedIndexes& indexes) { acmacs::remove(indexes, data_); }
+        void insert(size_t before, double value) { data_.insert(data_.begin() + static_cast<decltype(data_)::difference_type>(before), value); }
 
      private:
         std::vector<double> data_;

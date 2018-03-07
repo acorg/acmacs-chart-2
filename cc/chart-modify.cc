@@ -230,7 +230,7 @@ AntigenModifyP ChartModify::insert_antigen(size_t before)
     auto result = antigens_modify()->insert(before);
     titers_modify()->insert_antigen(before);
     projections_modify()->insert_antigen(before);
-    // plot_spec_modify()->insert_antigen(before);
+    plot_spec_modify()->insert_antigen(before);
     return result;
 
 } // ChartModify::insert_antigen
@@ -243,9 +243,11 @@ SerumModifyP ChartModify::insert_serum(size_t before)
     auto result = sera_modify()->insert(before);
     titers_modify()->insert_serum(before);
     projections_modify()->insert_serum(before, number_of_antigens());
-    // plot_spec_modify()->insert_serum(before);
-    // if (auto fcb = forced_column_bases_modify(); fcb)
-    //     fcb->insert(before);
+    plot_spec_modify()->insert_serum(before);
+    if (auto fcb = forced_column_bases_modify(); fcb) {
+        std::cerr << "WARNING: inserting serum in the table having forced column bases, please set column basis for that serum\n";
+        fcb->insert(before, 7.0); // all titers for the new serum are dont-care, there is no real column basis, use 1280 just to have something
+    }
     return result;
 
 } // ChartModify::insert_serum
@@ -830,6 +832,48 @@ void ProjectionModifyNew::connect(const PointIndexList& to_connect)
     }
 
 } // ProjectionModifyNew::connect
+
+// ----------------------------------------------------------------------
+
+void PlotSpecModify::remove_antigens(const ReverseSortedIndexes& indexes)
+{
+    modify();
+    acmacs::remove(indexes, styles_);
+    drawing_order_.remove_indexes(indexes);
+    number_of_antigens_ -= indexes.size();
+
+} // PlotSpecModify::remove_antigens
+
+// ----------------------------------------------------------------------
+
+void PlotSpecModify::remove_sera(const ReverseSortedIndexes& indexes)
+{
+    modify();
+    acmacs::remove(indexes, styles_, number_of_antigens_);
+    drawing_order_.remove_indexes(indexes, number_of_antigens_);
+
+} // PlotSpecModify::remove_sera
+
+// ----------------------------------------------------------------------
+
+void PlotSpecModify::insert_antigen(size_t before)
+{
+    modify();
+    styles_.insert(styles_.begin() + static_cast<decltype(styles_)::difference_type>(before), PointStyle{});
+    drawing_order_.insert(before);
+    ++number_of_antigens_;
+
+} // PlotSpecModify::insert_antigen
+
+// ----------------------------------------------------------------------
+
+void PlotSpecModify::insert_serum(size_t before)
+{
+    modify();
+    styles_.insert(styles_.begin() + static_cast<decltype(styles_)::difference_type>(before + number_of_antigens_), PointStyle{});
+    drawing_order_.insert(before + number_of_antigens_);
+
+} // PlotSpecModify::insert_serum
 
 // ----------------------------------------------------------------------
 

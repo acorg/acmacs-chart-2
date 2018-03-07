@@ -208,6 +208,12 @@ namespace acmacs::chart
                     acmacs::fill_with_indexes(data(), aSize);
             }
 
+        void insert(size_t before)
+            {
+                std::for_each(begin(), end(), [before](size_t& index) { if (index >= before) ++index; });
+                push_back(before);
+            }
+
     }; // class DrawingOrder
 
 // ----------------------------------------------------------------------

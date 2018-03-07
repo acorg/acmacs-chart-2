@@ -527,8 +527,10 @@ namespace acmacs::chart
         void modify_serum(size_t serum_no, const PointStyle& style) { modify(serum_no + number_of_antigens_, style); }
         void modify_sera(const Indexes& sera, const PointStyle& style) { std::for_each(sera.begin(), sera.end(), [this,&style](size_t index) { this->modify(index + this->number_of_antigens_, style); }); }
 
-        void remove_antigens(const ReverseSortedIndexes& indexes) { modify(); acmacs::remove(indexes, styles_); drawing_order_.remove_indexes(indexes); number_of_antigens_ -= indexes.size(); }
-        void remove_sera(const ReverseSortedIndexes& indexes) { modify(); acmacs::remove(indexes, styles_, number_of_antigens_); drawing_order_.remove_indexes(indexes, number_of_antigens_); }
+        void remove_antigens(const ReverseSortedIndexes& indexes);
+        void remove_sera(const ReverseSortedIndexes& indexes);
+        void insert_antigen(size_t before);
+        void insert_serum(size_t before);
 
      protected:
         virtual bool modified() const { return modified_; }
