@@ -180,7 +180,7 @@ void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers
 
     if (!titers_exported) {
           // slow method
-        if (const double percent_of_non_dont_cares = static_cast<double>(aTiters->number_of_non_dont_cares()) / (number_of_antigens * number_of_sera); percent_of_non_dont_cares > acmacs::chart::Titers::dense_sparse_boundary) {
+        if ((number_of_antigens < 100 && number_of_sera < 100) || (static_cast<double>(aTiters->number_of_non_dont_cares()) / (number_of_antigens * number_of_sera)) > acmacs::chart::Titers::dense_sparse_boundary) {
             rjson::array& list = aTarget.set_field("l", rjson::array{});
             for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
                 rjson::array& row = list.insert(rjson::array{});
