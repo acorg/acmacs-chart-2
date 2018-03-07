@@ -349,7 +349,7 @@ void test_insert_antigen(acmacs::chart::ChartP chart, size_t before, const argc_
         auto check_inserted = [&](size_t imported_ag_no) {
             if (auto new_name = (*antigens_imported)[imported_ag_no]->full_name(); !new_name.empty())
                 throw std::runtime_error("inserted antigen has name: " + new_name);
-            for (auto sr_no : acmacs::range(chart->number_of_sera())) {
+            for (auto sr_no : acmacs::range(sera_source->size())) {
                 if (!titers_imported->titer(imported_ag_no, sr_no).is_dont_care())
                     throw std::runtime_error("inserted antigen has titer: sr_no:" + std::to_string(sr_no) + " titer:" + titers_imported->titer(imported_ag_no, sr_no));
             }
@@ -394,11 +394,54 @@ void test_insert_serum(acmacs::chart::ChartP chart, size_t before, const argc_ar
     acmacs::chart::ChartModify chart_modify{chart};
     chart_modify.insert_serum(before);
 
-    // const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
-    // auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
+    const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
+    auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
 
-    // acmacs::file::write("/r/a.ace", exported, acmacs::file::ForceCompression::Yes);
-    // throw std::runtime_error("not implemented");
+    try {
+        auto antigens_source = chart->antigens(), antigens_imported = imported->antigens();
+        auto sera_source = chart->sera(), sera_imported = imported->sera();
+        auto titers_source = chart->titers(), titers_imported = imported->titers();
+        auto projections_source = chart->projections(), projections_imported = imported->projections();
+        auto plot_spec_source = chart->plot_spec(), plot_spec_imported = imported->plot_spec();
+
+        auto check_inserted = [&](size_t imported_sr_no) {
+            if (auto new_name = (*sera_imported)[imported_sr_no]->full_name(); !new_name.empty())
+                throw std::runtime_error("inserted serum has name: " + new_name);
+            for (auto ag_no : acmacs::range(antigens_source->size())) {
+                if (!titers_imported->titer(ag_no, imported_sr_no).is_dont_care())
+                    throw std::runtime_error("inserted serum has titer: ag_no:" + std::to_string(ag_no) + " titer:" + titers_imported->titer(ag_no, imported_sr_no));
+            }
+            for (auto[p_no, projection] : acmacs::enumerate(*projections_source)) {
+                if (auto imp = (*projections_imported)[p_no]->layout()->get(imported_sr_no + antigens_source->size()); imp.not_nan())
+                    throw std::runtime_error("inserted serum has coordinates: " + acmacs::to_string(imp));
+            }
+        };
+
+        for (auto[source_ag_no, source_antigen] : acmacs::enumerate(*antigens_source))
+            compare_antigens(chart, source_ag_no, source_antigen, imported, source_ag_no, compare_titers::no);
+
+        size_t imported_sr_no = 0;
+        for (auto[source_sr_no, source_serum] : acmacs::enumerate(*sera_source)) {
+            if (source_sr_no == before) {
+                check_inserted(imported_sr_no);
+                ++imported_sr_no;
+            }
+            else {
+                compare_sera(chart, source_sr_no, source_serum, antigens_source->size(), imported, imported_sr_no, antigens_imported->size(), compare_titers::yes);
+            }
+            ++imported_sr_no;
+        }
+        if (imported_sr_no == before) {
+            check_inserted(imported_sr_no);
+            ++imported_sr_no;
+        }
+        if (imported_sr_no != imported->number_of_sera())
+            throw std::runtime_error("invalid resulting imported_sr_no: " + acmacs::to_string(imported_sr_no) + ", expected: " + acmacs::to_string(imported->number_of_sera()));
+    }
+    catch (std::exception& err) {
+        // acmacs::file::write("/r/a.ace", exported, acmacs::file::ForceCompression::Yes);
+        throw std::runtime_error(std::string("test_insert_serum: ") + err.what() + "\n  before:" + acmacs::to_string(before));
+    }
 
 } // test_insert_serum
 
