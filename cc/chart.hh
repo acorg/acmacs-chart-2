@@ -210,16 +210,17 @@ namespace acmacs::chart
 
         void insert(size_t before)
             {
-                std::for_each(begin(), end(), [before](size_t& index) { if (index >= before) ++index; });
+                std::for_each(begin(), end(), [before](size_t& point_no) { if (point_no >= before) ++point_no; });
                 push_back(before);
             }
 
         void remove_points(const ReverseSortedIndexes& to_remove, size_t base_index = 0)
             {
-                for (const auto index_to_remove : to_remove) {
-                    if (const auto found = std::find(begin(), end(), index_to_remove + base_index); found != end())
+                for (const auto index : to_remove) {
+                    const auto real_index = index + base_index;
+                    if (const auto found = std::find(begin(), end(), real_index); found != end())
                         erase(found);
-                    std::for_each(begin(), end(), [index_to_remove](size_t& index) { if (index > index_to_remove) --index; });
+                    std::for_each(begin(), end(), [real_index](size_t& point_no) { if (point_no > real_index) --point_no; });
                 }
             }
 
