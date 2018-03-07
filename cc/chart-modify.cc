@@ -7,8 +7,13 @@ using namespace acmacs::chart;
 
 // ----------------------------------------------------------------------
 
-ChartModify::ChartModify()
-    : info_{std::make_shared<InfoModify>()}
+ChartModify::ChartModify(size_t number_of_antigens, size_t number_of_sera)
+    : info_{std::make_shared<InfoModify>()},
+      antigens_{std::make_shared<AntigensModify>(number_of_antigens)},
+      sera_{std::make_shared<SeraModify>(number_of_sera)},
+      titers_{std::make_shared<TitersModify>(number_of_antigens, number_of_sera)},
+      projections_{std::make_shared<ProjectionsModify>(*this)},
+      plot_spec_{std::make_shared<PlotSpecModify>(number_of_antigens, number_of_sera)}
 {
 
 } // ChartModify::ChartModify
@@ -254,6 +259,14 @@ SerumModifyP ChartModify::insert_serum(size_t before)
 
 // ----------------------------------------------------------------------
 
+ChartNew::ChartNew(size_t number_of_antigens, size_t number_of_sera)
+    : ChartModify(number_of_antigens, number_of_sera)
+{
+
+} // ChartNew::ChartNew
+
+// ----------------------------------------------------------------------
+
 InfoModify::InfoModify(InfoP main)
     : name_{main->name(Compute::No)},
       computed_name_{main->name(Compute::Yes)},
@@ -300,8 +313,8 @@ SerumModify::SerumModify(SerumP main)
 
 // ----------------------------------------------------------------------
 
-TitersModify::TitersModify()
-    : titers_{dense_t{}}
+TitersModify::TitersModify(size_t number_of_antigens, size_t number_of_sera)
+    : number_of_sera_{number_of_sera}, titers_{dense_t{number_of_antigens * number_of_sera, Titer{}}}
 {
 } // TitersModify::TitersModify
 
@@ -832,6 +845,21 @@ void ProjectionModifyNew::connect(const PointIndexList& to_connect)
     }
 
 } // ProjectionModifyNew::connect
+
+// ----------------------------------------------------------------------
+
+PlotSpecModify::PlotSpecModify(size_t number_of_antigens, size_t number_of_sera)
+    : main_{nullptr}, number_of_antigens_(number_of_antigens), modified_{true}, styles_(number_of_antigens + number_of_sera, PointStyle{})
+{
+    for (size_t point_no : acmacs::range(number_of_antigens)) {
+        styles_[point_no].fill = "green";
+    }
+    for (size_t point_no : acmacs::range(number_of_antigens, number_of_antigens + number_of_sera)) {
+        styles_[point_no].shape = PointShape::Box;
+    }
+    drawing_order_.fill_if_empty(number_of_antigens + number_of_sera);
+
+} // PlotSpecModify::PlotSpecModify
 
 // ----------------------------------------------------------------------
 

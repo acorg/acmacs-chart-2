@@ -22,6 +22,8 @@ trap failed ERR
 
 # ======================================================================
 
+echo test-modify-projection
+
 cd "$TESTDIR"
 ../dist/chart-modify-projection --points 0,3 --move-to 10,-10 test-2004-3.ace "${TDIR}/r1.ace" >/dev/null 2>&1 || failed chart-modify-projection --points 0,3 --move-to 10,-10 test-2004-3.ace "${TDIR}/r1.ace"
 ../dist/chart-layout test-2004-3.ace "${TDIR}/o.txt" 2>/dev/null

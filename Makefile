@@ -28,7 +28,8 @@ TARGETS = \
     $(DIST)/chart-update \
     $(DIST)/chart-remove-antigens-sera \
     $(DIST)/test-titer-iterator \
-    $(DIST)/test-chart-modify
+    $(DIST)/test-chart-modify \
+    $(DIST)/test-chart-create-from-scratch
 
 SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc \
     rjson-import.cc \

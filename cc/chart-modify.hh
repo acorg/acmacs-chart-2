@@ -40,7 +40,6 @@ namespace acmacs::chart
     class ChartModify : public Chart
     {
      public:
-        explicit ChartModify();
         explicit ChartModify(ChartP main) : main_{main} {}
 
         InfoP info() const override;
@@ -69,6 +68,9 @@ namespace acmacs::chart
         AntigenModifyP insert_antigen(size_t before);
         SerumModifyP insert_serum(size_t before);
 
+     protected:
+        explicit ChartModify(size_t number_of_antigens, size_t number_of_sera);
+
      private:
         ChartP main_;
         InfoModifyP info_;
@@ -80,6 +82,15 @@ namespace acmacs::chart
         PlotSpecModifyP plot_spec_;
 
     }; // class ChartModify
+
+// ----------------------------------------------------------------------
+
+    class ChartNew : public ChartModify
+    {
+     public:
+        explicit ChartNew(size_t number_of_antigens, size_t number_of_sera);
+
+    }; // class ChartNew
 
 // ----------------------------------------------------------------------
 
@@ -202,7 +213,7 @@ namespace acmacs::chart
     template <typename Base, typename Modify, typename ModifyBase> class AntigensSeraModify : public Base
     {
      public:
-        explicit AntigensSeraModify() = default;
+        explicit AntigensSeraModify(size_t number_of) : data_(number_of, std::make_shared<Modify>()) {}
         explicit AntigensSeraModify(std::shared_ptr<Base> main) : data_(main->size(), nullptr) { std::transform(main->begin(), main->end(), data_.begin(), [](auto ag_sr) { return std::make_shared<Modify>(ag_sr); }); }
 
         size_t size() const override { return data_.size(); }
@@ -235,7 +246,7 @@ namespace acmacs::chart
     class TitersModify : public Titers
     {
      public:
-        explicit TitersModify();
+        explicit TitersModify(size_t number_of_antigens, size_t number_of_sera);
         explicit TitersModify(TitersP main);
 
         Titer titer(size_t aAntigenNo, size_t aSerumNo) const override;
@@ -444,6 +455,7 @@ namespace acmacs::chart
     class ProjectionsModify : public Projections
     {
      public:
+        explicit ProjectionsModify(const ChartModify& chart) : Projections(chart) {}
         explicit ProjectionsModify(const ChartModify& chart, ProjectionsP main)
             : Projections(chart), projections_(main->size(), nullptr)
             {
@@ -489,11 +501,12 @@ namespace acmacs::chart
     class PlotSpecModify : public PlotSpec
     {
      public:
+        explicit PlotSpecModify(size_t number_of_antigens, size_t number_of_sera);
         explicit PlotSpecModify(PlotSpecP main, size_t number_of_antigens) : main_{main}, number_of_antigens_(number_of_antigens) {}
 
         bool empty() const override { return modified() ? false : main_->empty(); }
-        Color error_line_positive_color() const override { return main_->error_line_positive_color(); }
-        Color error_line_negative_color() const override { return main_->error_line_negative_color(); }
+        Color error_line_positive_color() const override { return main_ ? main_->error_line_positive_color() : BLUE; }
+        Color error_line_negative_color() const override { return main_ ? main_->error_line_negative_color() : RED; }
         PointStyle style(size_t aPointNo) const override { return modified() ? style_modified(aPointNo) : main_->style(aPointNo); }
         std::vector<PointStyle> all_styles() const override { return modified() ? styles_ : main_->all_styles(); }
         size_t number_of_points() const override { return modified() ? styles_.size() : main_->number_of_points(); }

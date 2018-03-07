@@ -22,6 +22,8 @@ trap failed ERR
 
 # ======================================================================
 
+echo test-modify-plot-spec
+
 cd "$TESTDIR"
 ../dist/chart-modify-plot-spec --sera 4,5 --fill pink --size 25 ./test-2004-3.ace "${TDIR}/r1.ace" >/dev/null 2>&1
 xz -dc ./test-2004-3.ace >"${TDIR}/orig.json"
