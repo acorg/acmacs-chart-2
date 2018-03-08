@@ -299,7 +299,7 @@ template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry
         const auto num_digits_primary = static_cast<int>(std::log10(max_number_primary)) + 1;
         const auto num_digits_secondary = static_cast<int>(std::log10(max_number_secondary)) + 1;
 
-        stream << "common " << prefix << ": " << number_of_common_ << '\n';
+        stream << "common " << prefix << ": " << number_of_common_ << " (total primary: " << primary_.size() << " secondary: " << secondary_.size() << ")\n";
         for (const auto& m: match_) {
             if (m.use)
                 stream << std::setw(static_cast<int>(std::strlen(ignored_key) + 1)) << std::left << score_names[static_cast<size_t>(m.score)]
