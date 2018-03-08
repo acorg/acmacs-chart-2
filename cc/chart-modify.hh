@@ -219,6 +219,7 @@ namespace acmacs::chart
         size_t size() const override { return data_.size(); }
         std::shared_ptr<ModifyBase> operator[](size_t aIndex) const override { return data_.at(aIndex); }
         Modify& at(size_t aIndex) { return *data_.at(aIndex); }
+        std::shared_ptr<Modify> ptr_at(size_t aIndex) { return data_.at(aIndex); }
 
         void remove(const ReverseSortedIndexes& indexes)
             {
