@@ -157,6 +157,8 @@ namespace acmacs::chart
         void lineage(const std::string& value) { lineage_ = value; }
         void reassortant(const std::string& value) { reassortant_ = value; }
         void reference(bool value) { reference_ = value; }
+        void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
+        void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
 
      private:
         Name name_;
@@ -195,6 +197,8 @@ namespace acmacs::chart
         void reassortant(const std::string& value) { reassortant_ = value; }
         void serum_id(const std::string& value) { serum_id_ = value; }
         void serum_species(const std::string& value) { serum_species_ = value; }
+        void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
+        void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
 
      private:
         Name name_;

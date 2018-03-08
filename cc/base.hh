@@ -100,7 +100,8 @@ namespace acmacs::chart
             size_t total_length() const { return std::accumulate(begin(), end(), size_t{0}, [](size_t sum, const auto& element) { return sum + element.size(); }); }
             void push_back(const std::string& val) { if (!val.empty()) T_list_data<std::string>::push_back(val); }
             void push_back(std::string&& val) { if (!val.empty()) T_list_data<std::string>::push_back(std::move(val)); }
-
+            bool exist(const std::string& val) const { return std::find(begin(), end(), val) != end(); }
+            
         }; // class string_list_data
 
         using double_list_data = T_list_data<double>;

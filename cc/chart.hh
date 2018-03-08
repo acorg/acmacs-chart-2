@@ -148,7 +148,9 @@ namespace acmacs::chart
      public:
         using internal::string_list_data::string_list_data;
 
-        bool distinct() const { return std::find(begin(), end(), "DISTINCT") != end(); }
+        bool distinct() const { return exist("DISTINCT"); }
+        void add(const std::string& val) { if (!exist(val)) push_back(val); }
+        void remove(const std::string& val) { if (auto found = std::find(begin(), end(), val); found != end()) erase(found); }
 
     }; // class Annotations
 
