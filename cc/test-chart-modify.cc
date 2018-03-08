@@ -6,6 +6,7 @@
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/enumerate.hh"
+#include "acmacs-base/filesystem.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/factory-export.hh"
@@ -286,7 +287,8 @@ void test_remove_antigens(acmacs::chart::ChartP chart, const acmacs::Indexes& in
             compare_sera(chart, source_sr_no, source_serum, antigens_source->size(), imported, source_sr_no, antigens_imported->size(), compare_titers::no);
     }
     catch (std::exception& err) {
-        // acmacs::file::write("/r/a.ace", exported, acmacs::file::ForceCompression::Yes);
+        // const std::string prefix = fs::exists("/r/ramdisk-id") ? "/r/" : "/tmp/";
+        // acmacs::file::write(prefix + "a.ace", exported, acmacs::file::ForceCompression::Yes);
         throw std::runtime_error(std::string("test_remove_antigens: ") + err.what() + "\n  indexes:" + acmacs::to_string(indexes));
     }
 
@@ -323,7 +325,8 @@ void test_remove_sera(acmacs::chart::ChartP chart, const acmacs::Indexes& indexe
             throw std::runtime_error("invalid resulting imported_sr_no");
     }
     catch (std::exception& err) {
-        // acmacs::file::write("/r/a.ace", exported, acmacs::file::ForceCompression::Yes);
+        // const std::string prefix = fs::exists("/r/ramdisk-id") ? "/r/" : "/tmp/";
+        // acmacs::file::write(prefix + "a.ace", exported, acmacs::file::ForceCompression::Yes);
         throw std::runtime_error(std::string("test_remove_sera: ") + err.what() + "\n  indexes:" + acmacs::to_string(indexes));
     }
 
@@ -333,13 +336,14 @@ void test_remove_sera(acmacs::chart::ChartP chart, const acmacs::Indexes& indexe
 
 void test_insert_antigen(acmacs::chart::ChartP chart, size_t before, const argc_argv& args, report_time report)
 {
-    acmacs::chart::ChartModify chart_modify{chart};
-    chart_modify.insert_antigen(before);
-
-    const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
-    auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
-
+    std::string exported;
     try {
+        acmacs::chart::ChartModify chart_modify{chart};
+        chart_modify.insert_antigen(before);
+
+        exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
+        auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
+
         auto antigens_source = chart->antigens(), antigens_imported = imported->antigens();
         auto sera_source = chart->sera(), sera_imported = imported->sera();
         auto titers_source = chart->titers(), titers_imported = imported->titers();
@@ -347,17 +351,17 @@ void test_insert_antigen(acmacs::chart::ChartP chart, size_t before, const argc_
         auto plot_spec_source = chart->plot_spec(), plot_spec_imported = imported->plot_spec();
 
         auto check_inserted = [&](size_t imported_ag_no) {
-            if (auto new_name = (*antigens_imported)[imported_ag_no]->full_name(); !new_name.empty())
-                throw std::runtime_error("inserted antigen has name: " + new_name);
-            for (auto sr_no : acmacs::range(sera_source->size())) {
-                if (!titers_imported->titer(imported_ag_no, sr_no).is_dont_care())
-                    throw std::runtime_error("inserted antigen has titer: sr_no:" + std::to_string(sr_no) + " titer:" + titers_imported->titer(imported_ag_no, sr_no));
-            }
-            for (auto[p_no, projection] : acmacs::enumerate(*projections_source)) {
-                if (auto imp = (*projections_imported)[p_no]->layout()->get(imported_ag_no); imp.not_nan())
-                    throw std::runtime_error("inserted antigen has coordinates: " + acmacs::to_string(imp));
-            }
-        };
+                if (auto new_name = (*antigens_imported)[imported_ag_no]->full_name(); !new_name.empty())
+                    throw std::runtime_error("inserted antigen has name: " + new_name);
+                for (auto sr_no : acmacs::range(sera_source->size())) {
+                    if (!titers_imported->titer(imported_ag_no, sr_no).is_dont_care())
+                        throw std::runtime_error("inserted antigen has titer: sr_no:" + std::to_string(sr_no) + " titer:" + titers_imported->titer(imported_ag_no, sr_no));
+                }
+                for (auto projection : *projections_imported) {
+                    if (auto imp = projection->layout()->get(imported_ag_no); imp.not_nan())
+                        throw std::runtime_error("inserted antigen has coordinates: " + acmacs::to_string(imp));
+                }
+            };
 
         size_t imported_ag_no = 0;
         for (auto[source_ag_no, source_antigen] : acmacs::enumerate(*antigens_source)) {
@@ -381,7 +385,8 @@ void test_insert_antigen(acmacs::chart::ChartP chart, size_t before, const argc_
             compare_sera(chart, source_sr_no, source_serum, antigens_source->size(), imported, source_sr_no, antigens_imported->size(), compare_titers::no);
     }
     catch (std::exception& err) {
-        // acmacs::file::write("/r/a.ace", exported, acmacs::file::ForceCompression::Yes);
+        // const std::string prefix = fs::exists("/r/ramdisk-id") ? "/r/" : "/tmp/";
+        // acmacs::file::write(prefix + "a.ace", exported, acmacs::file::ForceCompression::Yes);
         throw std::runtime_error(std::string("test_insert_antigen: ") + err.what() + "\n  before:" + acmacs::to_string(before));
     }
 
@@ -411,8 +416,8 @@ void test_insert_serum(acmacs::chart::ChartP chart, size_t before, const argc_ar
                 if (!titers_imported->titer(ag_no, imported_sr_no).is_dont_care())
                     throw std::runtime_error("inserted serum has titer: ag_no:" + std::to_string(ag_no) + " titer:" + titers_imported->titer(ag_no, imported_sr_no));
             }
-            for (auto[p_no, projection] : acmacs::enumerate(*projections_source)) {
-                if (auto imp = (*projections_imported)[p_no]->layout()->get(imported_sr_no + antigens_source->size()); imp.not_nan())
+            for (auto projection : *projections_imported) {
+                if (auto imp = projection->layout()->get(imported_sr_no + antigens_source->size()); imp.not_nan())
                     throw std::runtime_error("inserted serum has coordinates: " + acmacs::to_string(imp));
             }
         };
@@ -439,7 +444,8 @@ void test_insert_serum(acmacs::chart::ChartP chart, size_t before, const argc_ar
             throw std::runtime_error("invalid resulting imported_sr_no: " + acmacs::to_string(imported_sr_no) + ", expected: " + acmacs::to_string(imported->number_of_sera()));
     }
     catch (std::exception& err) {
-        // acmacs::file::write("/r/a.ace", exported, acmacs::file::ForceCompression::Yes);
+        // const std::string prefix = fs::exists("/r/ramdisk-id") ? "/r/" : "/tmp/";
+        // acmacs::file::write(prefix + "a.ace", exported, acmacs::file::ForceCompression::Yes);
         throw std::runtime_error(std::string("test_insert_serum: ") + err.what() + "\n  before:" + acmacs::to_string(before));
     }
 
@@ -516,9 +522,10 @@ void test_insert_remove_antigen(acmacs::chart::ChartP chart, size_t before, cons
     const auto source_exported = acmacs::chart::export_factory(*chart, acmacs::chart::export_format::ace, args.program(), report);
     const auto modified_exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     if (source_exported != modified_exported) {
-        acmacs::file::write("/r/source.ace", source_exported, acmacs::file::ForceCompression::No);
-        acmacs::file::write("/r/modified.ace", modified_exported, acmacs::file::ForceCompression::No);
-        throw std::runtime_error("test_insert_remove_antigen: exported chart difference, opendiff /r/source.ace /r/modified.ace\n  before:" + acmacs::to_string(before));
+        const std::string prefix = fs::exists("/r/ramdisk-id") ? "/r/" : "/tmp/";
+        acmacs::file::write(prefix + "source.ace", source_exported, acmacs::file::ForceCompression::No);
+        acmacs::file::write(prefix + "modified.ace", modified_exported, acmacs::file::ForceCompression::No);
+        throw std::runtime_error("test_insert_remove_antigen: exported chart difference, opendiff " + prefix + "source.ace " + prefix + "modified.ace\n  before:" + acmacs::to_string(before));
     }
 
 } // test_insert_remove_antigen
@@ -534,9 +541,10 @@ void test_insert_remove_serum(acmacs::chart::ChartP chart, size_t before, const 
     const auto source_exported = acmacs::chart::export_factory(*chart, acmacs::chart::export_format::ace, args.program(), report);
     const auto modified_exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     if (source_exported != modified_exported) {
-        acmacs::file::write("/r/source.ace", source_exported, acmacs::file::ForceCompression::No);
-        acmacs::file::write("/r/modified.ace", modified_exported, acmacs::file::ForceCompression::No);
-        throw std::runtime_error("test_insert_remove_serum: exported chart difference, opendiff /r/source.ace /r/modified.ace\n  before:" + acmacs::to_string(before));
+        const std::string prefix = fs::exists("/r/ramdisk-id") ? "/r/" : "/tmp/";
+        acmacs::file::write(prefix + "source.ace", source_exported, acmacs::file::ForceCompression::No);
+        acmacs::file::write(prefix + "modified.ace", modified_exported, acmacs::file::ForceCompression::No);
+        throw std::runtime_error("test_insert_remove_serum: exported chart difference, opendiff " + prefix + "source.ace " + prefix + "modified.ace\n  before:" + acmacs::to_string(before));
     }
 
 } // test_insert_remove_serum
