@@ -79,7 +79,7 @@ static void singular_value_decomposition(const alglib::real_2d_array& matrix, al
 
 ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projection& secondary, const std::vector<CommonAntigensSera::common_t>& common, procrustes_scaling_t scaling)
 {
-    auto primary_layout = primary.layout();
+    auto primary_layout = primary.transformed_layout();
     auto secondary_layout = secondary.layout();
     const auto number_of_dimensions = primary_layout->number_of_dimensions();
     if (number_of_dimensions != secondary_layout->number_of_dimensions())
