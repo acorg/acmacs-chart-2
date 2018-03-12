@@ -1,3 +1,5 @@
+#include <random>
+
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -228,10 +230,18 @@ void ChartModify::remove_sera(const ReverseSortedIndexes& indexes)
 
 // ----------------------------------------------------------------------
 
+constexpr const char* const sNames[] = {"Eddard Stark", "Robert Baratheon", "Jaime Lannister", "Catelyn Stark", "Cersei Lannister", "Daenerys Targaryen", "Jorah Mormont", "Petyr Baelish", "Viserys Targaryen", "Jon Snow", "Sansa Stark", "Arya Stark", "Robb Stark", "Theon Greyjoy", "Bran Stark", "Joffrey Baratheon", "Sandor Clegane", "Tyrion Lannister", "Khal Drogo", "Tywin Lannister", "Davos Seaworth", "Samwell Tarly", "Margaery Tyrell", "Stannis Baratheon", "Melisandre", "Jeor Mormont", "Bronn", "Varys", "Shae", "Ygritte", "Talisa Maegyr", "Gendry", "Tormund Giantsbane", "Gilly", "Brienne of Tarth", "Ramsay Bolton", "Ellaria Sand", "Daario Naharis", "Missandei", "Jaqen Hghar", "Tommen Baratheon", "Roose Bolton", "The High Sparrow", "Grand Maester Pycelle", "Meryn Trant", "Hodor", "Grenn", "Osha", "Rickon Stark", "Ros", "Gregor Clegane", "Janos Slynt", "Lancel Lannister", "Myrcella Baratheon", "Rodrik Cassel", "Maester Luwin", "Irri", "Doreah", "Kevan Lannister", "Barristan Selmy", "Rast", "Maester Aemon", "Pypar", "Alliser Thorne", "Othell Yarwyck", "Loras Tyrell", "Hot Pie", "Beric Dondarrion", "Podrick Payne", "Eddison Tollett", "Yara Greyjoy", "Selyse Florent", "Little Sam", "Grey Worm", "Qyburn", "Olenna Tyrell", "Shireen Baratheon", "Meera Reed", "Jojen Reed", "Thoros of Myr", "Yohn Royce", "Olly", "Mace Tyrell", "The Waif", "Bowen Marsh"};
+constexpr size_t sNamesSize = sizeof(sNames) / sizeof(sNames[0]);
+
 AntigenModifyP ChartModify::insert_antigen(size_t before)
 {
+    std::random_device rd;  //Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    std::uniform_int_distribution<> dis(0, sNamesSize - 1);
+
     titers_modify()->modifiable_check();
     auto result = antigens_modify()->insert(before);
+    result->name(sNames[dis(gen)]);
     titers_modify()->insert_antigen(before);
     projections_modify()->insert_antigen(before);
     plot_spec_modify()->insert_antigen(before);
@@ -243,8 +253,13 @@ AntigenModifyP ChartModify::insert_antigen(size_t before)
 
 SerumModifyP ChartModify::insert_serum(size_t before)
 {
+    std::random_device rd;  //Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    std::uniform_int_distribution<> dis(0, sNamesSize - 1);
+
     titers_modify()->modifiable_check();
     auto result = sera_modify()->insert(before);
+    result->name(sNames[dis(gen)]);
     titers_modify()->insert_serum(before);
     projections_modify()->insert_serum(before, number_of_antigens());
     plot_spec_modify()->insert_serum(before);
@@ -261,30 +276,31 @@ SerumModifyP ChartModify::insert_serum(size_t before)
 ChartNew::ChartNew(size_t number_of_antigens, size_t number_of_sera)
     : ChartModify(number_of_antigens, number_of_sera)
 {
-    constexpr const char* const names[] = {"red", "gold", "silver", "chocolate", "coral", "green", "blue", "aquamarine", "cyan", "magenta", "azure", "orchid", "pink", "tomato", "salade", "violet", "wheat", "turquoise", "yellow", "black", "grey", "sienna", "white", "beige", "bisque", "brown", "burlywood"};
-    constexpr size_t num_names = sizeof(names) / sizeof(names[0]);
+    std::random_device rd;  //Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    std::uniform_int_distribution<> dis(0, sNamesSize - 1);
 
     auto& antigens = *antigens_modify();
-    size_t name_no = 0;
+      //size_t name_no = 0;
     std::string suffix = "";
     for (auto ag_no : acmacs::range(number_of_antigens)) {
-        antigens.at(ag_no).name(names[name_no] + suffix);
-        ++name_no;
-        if (name_no >= num_names) {
-            suffix += "A";
-            name_no = 0;
-        }
+        antigens.at(ag_no).name(sNames[dis(gen)] + suffix);
+        // ++name_no;
+        // if (name_no >= sNamesSize) {
+        //     suffix += "A";
+        //     name_no = 0;
+        // }
     }
 
     auto& sera = *sera_modify();
     suffix = "";
     for (auto sr_no : acmacs::range(number_of_sera)) {
-        sera.at(sr_no).name(names[name_no] + suffix);
-        ++name_no;
-        if (name_no >= num_names) {
-            suffix += "S";
-            name_no = 0;
-        }
+        sera.at(sr_no).name(sNames[dis(gen)] + suffix);
+        // ++name_no;
+        // if (name_no >= sNamesSize) {
+        //     suffix += "S";
+        //     name_no = 0;
+        // }
     }
 
 } // ChartNew::ChartNew
