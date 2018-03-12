@@ -131,8 +131,10 @@ ColumnBasesP ChartModify::forced_column_bases() const
 {
     if (forced_column_bases_)
         return forced_column_bases_;
-    else
+    else if (main_)
         return main_->forced_column_bases();
+    else
+        return {};
 
 } // ChartModify::forced_column_bases
 
