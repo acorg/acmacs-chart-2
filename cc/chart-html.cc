@@ -199,7 +199,7 @@ void serum_rows(std::ostream& output, const acmacs::chart::Chart& chart, bool al
         if (field_present(serum_annotations)) {
             output << "<tr>";
             make_skip(antigen_fields.skip_left() + 2);
-            for (auto [sr_no, serum] : acmacs::enumerate(*sera))
+            for (auto [sr_no, _] : acmacs::enumerate(*sera))
                 output << "<td class=\"sr-annotations " << ("sr-" + std::to_string(sr_no)) << "\">" << html_escape(serum_annotations[sr_no]) << "</td>";
             make_skip(antigen_fields.skip_right());
             output << "</tr>\n";
