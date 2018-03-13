@@ -3,12 +3,14 @@
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/range.hh"
-// #include "acmacs-base/filesystem.hh"
+#include "acmacs-base/filesystem.hh"
 #include "acmacs-chart-2/factory-import.hh"
+#include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
-static void initial_info(acmacs::chart::ChartModify& chart, size_t projection_no, size_t point_no);
-static void test(acmacs::chart::ChartModify& chart, size_t projection_no, size_t point_no, double step);
+static void initial_info(acmacs::chart::ChartModify& chart, size_t projection_no);
+static void test_point(acmacs::chart::ChartModify& chart, size_t projection_no, size_t point_no, double step);
+static std::string point_name(const acmacs::chart::ChartModify& chart, size_t point_no);
 
 // ----------------------------------------------------------------------
 
@@ -23,8 +25,8 @@ int main(int argc, char* const argv[])
                 {"--help", false},
                 {"-v", false},
         });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file> <point-no>\n" << args.usage_options() << '\n';
+        if (args["-h"] || args["--help"] || args.number_of_arguments() < 2 || args.number_of_arguments() > 3) {
+            std::cerr << "Usage: " << args.program() << " [options] <chart-file> <point-no> [<output-chart>]\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {
@@ -35,8 +37,10 @@ int main(int argc, char* const argv[])
                 throw std::runtime_error("invalid point number");
             const size_t projection_no = 0;
             const double step = 0.1;
-            initial_info(chart, projection_no, point_no);
-            test(chart, projection_no, point_no, step);
+            initial_info(chart, projection_no);
+            test_point(chart, projection_no, point_no, step);
+            if (args.number_of_arguments() > 2)
+                acmacs::chart::export_factory(chart, args[2], fs::path(args.program()).filename(), report);
         }
     }
     catch (std::exception& err) {
@@ -48,21 +52,27 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-void initial_info(acmacs::chart::ChartModify& chart, size_t projection_no, size_t point_no)
+void initial_info(acmacs::chart::ChartModify& chart, size_t projection_no)
 {
     auto projection = chart.projection_modify(projection_no);
-    auto layout = projection->layout();
-
-    const auto [top_left, bottom_right] = layout->boundaries();
+    const auto [top_left, bottom_right] = projection->layout()->boundaries();
     std::cout << "Boundaries: " << top_left << ' ' << bottom_right << '\n';
 
-    if (point_no < chart.number_of_antigens())
-        std::cout << "AG " << point_no << ' ' << (*chart.antigens())[point_no]->full_name() << '\n';
-    else
-        std::cout << "SR " << point_no - chart.number_of_antigens() << ' ' << (*chart.sera())[point_no - chart.number_of_antigens()]->full_name() << '\n';
-    std::cout << "Initial: " << layout->get(point_no) << ' ' << projection->stress() << '\n';
-
 } // initial_info
+
+// ----------------------------------------------------------------------
+
+std::string point_name(const acmacs::chart::ChartModify& chart, size_t point_no)
+{
+    if (point_no < chart.number_of_antigens()) {
+        return "AG " + acmacs::to_string(point_no) + ' ' + (*chart.antigens())[point_no]->full_name();
+    }
+    else {
+        point_no -= chart.number_of_antigens();
+        return "SR " + acmacs::to_string(point_no) + ' ' + (*chart.sera())[point_no]->full_name();
+    }
+
+} // point_name
 
 // ----------------------------------------------------------------------
 
@@ -75,11 +85,15 @@ struct Entry
     bool operator<(const Entry& rhs) const { return stress < rhs.stress; }
 };
 
-void test(acmacs::chart::ChartModify& chart, size_t projection_no, size_t point_no, double step)
+void test_point(acmacs::chart::ChartModify& chart, size_t projection_no, size_t point_no, double step)
 {
     auto projection = chart.projection_modify(projection_no);
+    auto layout = projection->layout();
+    const acmacs::Layout saved_layout(*layout);
+    std::cout << point_name(chart, point_no) << ' ' << layout->get(point_no) << ' ' << std::setprecision(6) << std::fixed << projection->stress() << '\n';
+
+    const auto [top_left, bottom_right] = layout->boundaries();
     auto stress = chart.make_stress<double>(projection_no);
-    const auto [top_left, bottom_right] = projection->layout()->boundaries();
 
     std::vector<Entry> entries;
     for (double x = top_left[0]; x < bottom_right[0]; x += step) {
@@ -90,15 +104,16 @@ void test(acmacs::chart::ChartModify& chart, size_t projection_no, size_t point_
             // std::cout << coord << ' ' << projection->calculate_stress(stress) << '\n';
         }
     }
-    // std::sort(entries.begin(), entries.end());
-    // for (auto i : acmacs::range(10UL))
-    //     std::cout << std::setw(2) << i << ' ' << entries[i].coord << ' ' << entries[i].stress << '\n';
+    std::sort(entries.begin(), entries.end());
 
-    const auto& best = *std::min_element(entries.begin(), entries.end());
-    projection->move_point(point_no, best.coord);
-    std::cout << "Best: " << best.coord << ' ' << projection->calculate_stress(stress) << '\n';
-    const auto status = projection->relax(acmacs::chart::optimization_options{});
-    std::cout << "Final: " << projection->layout()->get(point_no) << ' ' << status.final_stress << '\n';
+    for (auto i : acmacs::range(10UL)) {
+        projection->set_layout(saved_layout);
+        const auto& entry = entries[i];
+        projection->move_point(point_no, entry.coord);
+        std::cout << std::setw(2) << i << ' ' << entry.coord << ' ' << std::setprecision(6) << std::fixed << projection->calculate_stress(stress);
+        const auto status = projection->relax(acmacs::chart::optimization_options{});
+        std::cout << " --> " << projection->layout()->get(point_no) << ' ' << std::setprecision(6) << status.final_stress << '\n';
+    }
 
 } // test
 
