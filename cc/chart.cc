@@ -289,9 +289,9 @@ void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, In
         const Titer titer = tts->titer(ag_no, aSerumNo);
         const double value = titer.is_dont_care() ? -1 : titer.logged_for_column_bases();
         if (value >= titer_threshold)
-            aWithin4Fold.push_back(ag_no);
+            aWithin4Fold.insert(ag_no);
         else if (value >= 0 && value < titer_threshold)
-            aOutside4Fold.push_back(ag_no);
+            aOutside4Fold.insert(ag_no);
     }
     if (aWithin4Fold.empty())
         throw serum_coverage_error("no antigens within 4fold from homologous titer (for serum coverage)"); // BUG? at least homologous antigen must be there!
@@ -603,7 +603,7 @@ acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string aName) 
     Indexes indexes;
     for (auto iter = begin(); iter != end(); ++iter) {
         if ((*iter)->name() == aName)
-            indexes.push_back(iter.index());
+            indexes.insert(iter.index());
     }
     return indexes;
 
@@ -685,7 +685,7 @@ acmacs::chart::Indexes acmacs::chart::Sera::find_by_name(std::string aName) cons
     Indexes indexes;
     for (auto iter = begin(); iter != end(); ++iter) {
         if ((*iter)->name() == aName)
-            indexes.push_back(iter.index());
+            indexes.insert(iter.index());
     }
     return indexes;
 

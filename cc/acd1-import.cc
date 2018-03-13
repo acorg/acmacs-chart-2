@@ -658,12 +658,12 @@ PointIndexList Acd1Projection::make_attributes(size_t aAttr) const
     PointIndexList result;
     for (auto [ag_no, attr]: acmacs::enumerate(attrs.get_or_empty_array("antigens"))) {
         if (static_cast<size_t>(attr) == aAttr)
-            result.push_back(ag_no);
+            result.insert(ag_no);
     }
     const size_t number_of_antigens = attrs.get_or_empty_array("antigens").size();
     for (auto [sr_no, attr]: acmacs::enumerate(attrs.get_or_empty_array("sera"))) {
         if (static_cast<size_t>(attr) == aAttr)
-            result.push_back(sr_no + number_of_antigens);
+            result.insert(sr_no + number_of_antigens);
     }
 
     return result;

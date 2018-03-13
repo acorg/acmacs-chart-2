@@ -222,9 +222,9 @@ template <typename Float> static void update(const acmacs::chart::Titers& titers
     table_distances.dodgy_is_regular(parameters.dodgy_titer_is_regular);
     if (titers.number_of_sera()) {
         for (auto p1 : acmacs::range(titers.number_of_antigens())) {
-            if (!parameters.disconnected.exist(p1)) {
+            if (!parameters.disconnected.contains(p1)) {
                 for (auto p2 : acmacs::range(titers.number_of_antigens(), number_of_points)) {
-                    if (!parameters.disconnected.exist(p2)) {
+                    if (!parameters.disconnected.contains(p2)) {
                         const auto serum_no = p2 - titers.number_of_antigens();
                         table_distances.update(titers.titer(p1, serum_no), p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);
                     }
@@ -350,6 +350,29 @@ acmacs::chart::TiterIterator acmacs::chart::Titers::end() const
     return {new TiterIteratorImplementation(*this, number_of_antigens())};
 
 } // acmacs::chart::Titers::end
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::PointIndexList acmacs::chart::Titers::having_titers_with(size_t point_no) const
+{
+    const auto num_antigens = number_of_antigens();
+    PointIndexList result;
+    if (point_no < num_antigens) {
+        for (const auto& titer_ref : *this) {
+            if (titer_ref.antigen == point_no)
+                result.insert(titer_ref.serum + num_antigens);
+        }
+    }
+    else {
+        const auto serum_no = point_no - num_antigens;
+        for (const auto& titer_ref : *this) {
+            if (titer_ref.serum == serum_no)
+                result.insert(titer_ref.antigen);
+        }
+    }
+    return result;
+
+} // acmacs::chart::Titers::having_titers_with
 
 // ----------------------------------------------------------------------
 /// Local Variables:

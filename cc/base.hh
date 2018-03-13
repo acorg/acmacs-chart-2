@@ -41,6 +41,8 @@ namespace acmacs::chart
         template <typename T> class T_list_data
         {
          public:
+            using difference_type = typename std::vector<T>::difference_type;
+
             T_list_data() = default;
             T_list_data(size_t aSize) : mData(aSize) {}
             T_list_data(const rjson::array& aSrc) : mData(aSrc.begin(), aSrc.end()) {}
@@ -51,7 +53,7 @@ namespace acmacs::chart
 
             constexpr bool empty() const { return mData.empty(); }
             constexpr size_t size() const { return mData.size(); }
-            constexpr bool exist(const T& val) const { return std::find(mData.begin(), mData.end(), val) != mData.end(); }
+            constexpr bool contains(const T& val) const { return std::find(mData.begin(), mData.end(), val) != mData.end(); }
             constexpr const std::vector<T>& data() const noexcept { return mData; }
             constexpr std::vector<T>& data() noexcept { return mData; }
             constexpr operator const std::vector<T>&() const noexcept { return mData; }
@@ -79,6 +81,7 @@ namespace acmacs::chart
             constexpr void push_back(const T& val) { mData.push_back(val); }
             constexpr void push_back(T&& val) { mData.push_back(std::forward<T>(val)); }
             constexpr typename std::vector<T>::iterator erase(typename std::vector<T>::iterator to_erase) { return mData.erase(to_erase); }
+            constexpr typename std::vector<T>::iterator erase(typename std::vector<T>::iterator first, typename std::vector<T>::iterator last) { return mData.erase(first, last); }
 
          private:
             std::vector<T> mData;
@@ -101,7 +104,7 @@ namespace acmacs::chart
             void push_back(const std::string& val) { if (!val.empty()) T_list_data<std::string>::push_back(val); }
             void push_back(std::string&& val) { if (!val.empty()) T_list_data<std::string>::push_back(std::move(val)); }
             bool exist(const std::string& val) const { return std::find(begin(), end(), val) != end(); }
-            
+
         }; // class string_list_data
 
         using double_list_data = T_list_data<double>;

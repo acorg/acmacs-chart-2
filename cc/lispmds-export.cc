@@ -76,7 +76,7 @@ std::string antigen_names(std::shared_ptr<acmacs::chart::Antigens> aAntigens, co
 {
     std::string result;
     for (auto [ag_no, antigen] : acmacs::enumerate(*aAntigens)) {
-        if (!disconnected.exist(ag_no)) {
+        if (!disconnected.contains(ag_no)) {
             if (!result.empty())
                 result += ' ';
             result += lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations());
@@ -92,7 +92,7 @@ std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera, size_t aNumb
 {
     std::string result;
     for (auto [sr_no, serum] : acmacs::enumerate(*aSera)) {
-        if (!disconnected.exist(sr_no + aNumberOfAntigens)) {
+        if (!disconnected.contains(sr_no + aNumberOfAntigens)) {
             if (!result.empty())
                 result += ' ';
             result += lispmds_serum_name_encode(serum->name(), serum->reassortant(), serum->annotations(), serum->serum_id());
@@ -108,7 +108,7 @@ std::string reference_antigens(std::shared_ptr<acmacs::chart::Antigens> aAntigen
 {
     std::string result = "  :REFERENCE-ANTIGENS '(";
     for (auto [ag_no, antigen] : acmacs::enumerate(*aAntigens)) {
-        if (antigen->reference() && !disconnected.exist(ag_no)) {
+        if (antigen->reference() && !disconnected.contains(ag_no)) {
             if (!result.empty())
                 result += ' ';
             result += lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations());
@@ -127,12 +127,12 @@ std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters, const acmacs:
     const size_t number_of_sera = aTiters->number_of_sera();
 
     for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
-        if (!disconnected.exist(ag_no)) {
+        if (!disconnected.contains(ag_no)) {
             if (ag_no)
                 result.append(1, '\n').append(12, ' ');
             result.append(1, '(');
             for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
-                if (!disconnected.exist(sr_no + number_of_antigens)) {
+                if (!disconnected.contains(sr_no + number_of_antigens)) {
                     if (sr_no)
                         result.append(1, ' ');
                     result.append(aTiters->titer(ag_no, sr_no).logged_as_string());
@@ -189,7 +189,7 @@ std::string coordinates(std::shared_ptr<acmacs::chart::Layout> aLayout, size_t n
 {
     std::string result;
     for (size_t point_no = 0; point_no < number_of_points; ++point_no) {
-        if (!disconnected.exist(point_no)) {
+        if (!disconnected.contains(point_no)) {
             if (point_no)
                 result.append(1, '\n').append(aIndent, ' ');
             result.append(1, '(');
@@ -218,7 +218,7 @@ std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_
     const auto number_of_antigens = aChart.number_of_antigens();
     const auto number_of_sera = aChart.number_of_sera();
     for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
-        if (!disconnected.exist(ag_no)) {
+        if (!disconnected.contains(ag_no)) {
             if (ag_no)
                 result.append(1, ' ');
             result.append("-1.0d+7");
@@ -229,7 +229,7 @@ std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_
     if (!cb)
         cb = aChart.computed_column_bases(aProjection->minimum_column_basis());
     for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
-        if (!disconnected.exist(sr_no + number_of_antigens)) {
+        if (!disconnected.contains(sr_no + number_of_antigens)) {
             if (sr_no)
                 result.append(1, ' ');
             result.append(acmacs::to_string(cb->column_basis(sr_no)));
@@ -239,7 +239,7 @@ std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_
 
     if (auto avidity_adjusts = aProjection->avidity_adjusts(); !avidity_adjusts.empty()) {
         for (auto[point_no, aa] : acmacs::enumerate(avidity_adjusts)) {
-            if (!disconnected.exist(point_no))
+            if (!disconnected.contains(point_no))
                 result.append(1, ' ').append(acmacs::to_string(std::log2(aa)));
         }
     }
@@ -266,7 +266,7 @@ std::string plot_spec(const acmacs::chart::Chart& aChart, const acmacs::chart::P
         auto sera = aChart.sera();
         const auto number_of_sera = sera->size();
         for (size_t point_no = 0; point_no < (number_of_antigens + number_of_sera); ++point_no) {
-            if (!disconnected.exist(point_no)) {
+            if (!disconnected.contains(point_no)) {
                 if (point_no)
                     result.append("\n               ");
                 std::string name, nm;

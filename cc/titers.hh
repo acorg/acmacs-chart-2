@@ -133,6 +133,8 @@ namespace acmacs::chart
         virtual TiterIterator begin() const;
         virtual TiterIterator end() const;
 
+        PointIndexList having_titers_with(size_t point_no) const;
+
     }; // class Titers
 
 } // namespace acmacs::chart

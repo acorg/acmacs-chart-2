@@ -19,7 +19,7 @@ namespace rjson { class array; }
 
 namespace acmacs::chart
 {
-    using Indexes = acmacs::Indexes;
+    using Indexes = PointIndexList;
     using Layout = acmacs::LayoutInterface;
 
     class invalid_data : public std::runtime_error { public: invalid_data(std::string msg) : std::runtime_error("invalid_data: " + msg) {} };
@@ -338,7 +338,7 @@ namespace acmacs::chart
                 Indexes result;
                 for (size_t no = 0; no < size(); ++no)
                     if (test(*operator[](no)))
-                        result.push_back(no);
+                        result.insert(no);
                 return result;
             }
 

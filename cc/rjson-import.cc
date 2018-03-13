@@ -225,11 +225,11 @@ template <typename Float> static void update_list(const rjson::array& data, acma
 {
     const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     for (auto p1 : acmacs::range(data.size())) {
-        if (!parameters.disconnected.exist(p1)) {
+        if (!parameters.disconnected.contains(p1)) {
             const rjson::array& row = data[p1];
             for (auto serum_no : acmacs::range(row.size())) {
                 const auto p2 = serum_no + data.size();
-                if (!parameters.disconnected.exist(p2)) {
+                if (!parameters.disconnected.contains(p2)) {
                     table_distances.update(row[serum_no], p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);
                 }
             }
@@ -242,12 +242,12 @@ template <typename Float> static void update_dict(const rjson::array& data, acma
 {
     const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     for (auto p1 : acmacs::range(data.size())) {
-        if (!parameters.disconnected.exist(p1)) {
+        if (!parameters.disconnected.contains(p1)) {
             const rjson::object& row = data[p1];
             for (auto [serum_no_s, titer_s] : row) {
                 const auto serum_no = std::stoul(std::string(serum_no_s.str()));
                 const auto p2 = serum_no + data.size();
-                if (!parameters.disconnected.exist(p2)) {
+                if (!parameters.disconnected.contains(p2)) {
                     table_distances.update(titer_s, p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);
                 }
             }
@@ -279,7 +279,7 @@ acmacs::chart::PointIndexList acmacs::chart::RjsonProjection::disconnected() con
         auto lt = layout();
         for (size_t p_no = 0; p_no < lt->number_of_points(); ++p_no) {
             if (!lt->point_has_coordinates(p_no))
-                result.push_back(p_no);
+                result.insert(p_no);
         }
     }
     return result;
