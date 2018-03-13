@@ -69,6 +69,9 @@ std::string GridTest::point_name(size_t point_no) const
 void GridTest::test_point(size_t point_no)
 {
     acmacs::Layout layout(original_layout_);
+    const auto having_titers_with = chart_.titers()->having_titers_with(point_no);
+    acmacs::Boundaries boundaries = original_layout_.boundaries(having_titers_with.data());
+
     Coordinates best_coord; //  = layout.get(point_no);
     auto best_stress = projection_->stress() * 100.0;
     for (double x = boundaries_.min[0]; x < boundaries_.max[0]; x += grid_step_) {
