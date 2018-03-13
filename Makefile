@@ -27,6 +27,7 @@ TARGETS = \
     $(DIST)/chart-serum-circles \
     $(DIST)/chart-update \
     $(DIST)/chart-remove-antigens-sera \
+    $(DIST)/chart-grid-test \
     $(DIST)/test-titer-iterator \
     $(DIST)/test-chart-modify \
     $(DIST)/test-chart-create-from-scratch
