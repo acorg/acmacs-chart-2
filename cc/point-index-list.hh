@@ -17,8 +17,10 @@ namespace acmacs::chart
         using internal::index_list_data::empty;
         using internal::index_list_data::size;
         using internal::index_list_data::erase;
+        using internal::index_list_data::clear;
         using internal::index_list_data::begin;
         using internal::index_list_data::end;
+        using internal::index_list_data::front;
 
         bool contains(size_t val) const
             {
@@ -30,6 +32,14 @@ namespace acmacs::chart
             {
                 if (const auto found = std::lower_bound(begin(), end(), val); found == end() || *found != val)
                     data().insert(found, val);
+            }
+
+        void erase_except(size_t val)
+            {
+                const auto present = contains(val);
+                clear();
+                if (present)
+                    insert(val);
             }
 
     }; // class PointIndexList

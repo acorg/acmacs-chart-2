@@ -65,6 +65,7 @@ namespace acmacs::chart
             constexpr auto end() { return mData.end(); }
             constexpr auto rbegin() { return mData.rbegin(); }
             constexpr auto rend() { return mData.rend(); }
+            constexpr const auto& front() const { return mData.front(); }
 
             bool operator==(const T_list_data<T>& other) const
                 {
@@ -82,6 +83,7 @@ namespace acmacs::chart
             constexpr void push_back(T&& val) { mData.push_back(std::forward<T>(val)); }
             constexpr typename std::vector<T>::iterator erase(typename std::vector<T>::iterator to_erase) { return mData.erase(to_erase); }
             constexpr typename std::vector<T>::iterator erase(typename std::vector<T>::iterator first, typename std::vector<T>::iterator last) { return mData.erase(first, last); }
+            constexpr void clear() { mData.clear(); }
 
          private:
             std::vector<T> mData;
