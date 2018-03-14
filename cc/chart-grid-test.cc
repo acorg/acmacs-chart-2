@@ -19,10 +19,13 @@ class GridTest
     using Stress = acmacs::chart::Stress<double>;
 
     GridTest(Chart& chart, size_t projection_no)
-        : chart_(chart), projection_(chart.projection_modify(projection_no)), boundaries_(projection_->layout()->boundaries()),
-          original_layout_(*projection_->layout()), stress_(chart.make_stress<double>(projection_no)) {}
+        : chart_(chart), projection_(chart.projection_modify(projection_no)), original_layout_(*projection_->layout()), stress_(chart.make_stress<double>(projection_no))
+        {
+            const auto boundaries = projection_->layout()->boundaries();
+            std::cout << "General boundaries: " << boundaries << ' ' << boundaries.area() << '\n';
+        }
 
-    std::string initial_report() const;
+    // std::string initial_report() const;
     std::string point_name(size_t point_no) const;
     void test_point(size_t point_no);
     void test_all();
@@ -30,7 +33,7 @@ class GridTest
  private:
     Chart& chart_;
     Projection projection_;
-    const acmacs::Boundaries boundaries_;
+    // const acmacs::Boundaries boundaries_;
     const double grid_step_ = 0.1;          // acmacs-c2: 0.01
     const double distance_threshold_ = 1.0; // from acmacs-c2 hemi-local test
     const double stress_threshold_ = 0.25;  // stress diff within threshold -> hemisphering, from acmacs-c2 hemi-local test
@@ -39,16 +42,17 @@ class GridTest
 
     bool antigen(size_t point_no) const { return point_no < chart_.number_of_antigens(); }
     size_t antigen_serum_no(size_t point_no) const { return antigen(point_no) ? point_no : (point_no - chart_.number_of_antigens()); }
+    acmacs::Boundaries boundaries_for(size_t point_no) const;
 
 }; // class GridTest
 
 // ----------------------------------------------------------------------
 
-std::string GridTest::initial_report() const
-{
-    return "Boundaries: " + acmacs::to_string(boundaries_, 4);
+// std::string GridTest::initial_report() const
+// {
+//     return "Boundaries: " + acmacs::to_string(boundaries_, 4);
 
-} // GridTest::initial_report
+// } // GridTest::initial_report
 
 // ----------------------------------------------------------------------
 
@@ -66,31 +70,49 @@ std::string GridTest::point_name(size_t point_no) const
 
 // ----------------------------------------------------------------------
 
+acmacs::Boundaries GridTest::boundaries_for(size_t point_no) const
+{
+    const auto& table_distances = stress_.table_distances();
+    auto it = table_distances.begin_for(point_no);
+    const auto coord0 = original_layout_.get(it->point_1 == point_no ? it->point_2 : it->point_1);
+    acmacs::Boundaries result(coord0 - it->table_distance, coord0 + it->table_distance);
+    ++it;
+    for (const auto last = table_distances.end_for(point_no); it != last; ++it) {
+        const auto coord = original_layout_.get(it->point_1 == point_no ? it->point_2 : it->point_1);
+        result.extend(coord - it->table_distance);
+        result.extend(coord + it->table_distance);
+    }
+    return result;
+
+} // GridTest::boundaries_for
+
+// ----------------------------------------------------------------------
+
 void GridTest::test_point(size_t point_no)
 {
     acmacs::Layout layout(original_layout_);
-    const auto having_titers_with = chart_.titers()->having_titers_with(point_no);
-    acmacs::Boundaries boundaries = original_layout_.boundaries(having_titers_with.data());
+    const auto boundaries = boundaries_for(point_no);
+    std::cout << "Boundaries for " << point_no << ": " << boundaries << ' ' << boundaries.area() << '\n';
 
-    Coordinates best_coord; //  = layout.get(point_no);
-    auto best_stress = projection_->stress() * 100.0;
-    for (double x = boundaries_.min[0]; x < boundaries_.max[0]; x += grid_step_) {
-        for (double y = boundaries_.min[1]; y < boundaries_.max[1]; y += grid_step_) {
-            const Coordinates coord{x, y};
-            layout.set(point_no, coord);
-            const auto stress = stress_.value(layout);
-            if (stress < best_stress) {
-                best_stress = stress;
-                best_coord = coord;
-            }
-            // projection->move_point(point_no, coord);
-            // entries.emplace_back(coord, projection->calculate_stress(stress));
-            // std::cout << coord << ' ' << projection->calculate_stress(stress) << '\n';
-        }
-    }
-    if (const auto distance = best_coord.distance(original_layout_.get(point_no)); best_stress < projection_->stress() || distance > distance_threshold_) {
-        std::cout << point_name(point_no) << " stress-diff: " << (best_stress - projection_->stress()) << " distance: " << distance << '\n';
-    }
+    // Coordinates best_coord; //  = layout.get(point_no);
+    // auto best_stress = projection_->stress() * 100.0;
+    // for (double x = boundaries_.min[0]; x < boundaries_.max[0]; x += grid_step_) {
+    //     for (double y = boundaries_.min[1]; y < boundaries_.max[1]; y += grid_step_) {
+    //         const Coordinates coord{x, y};
+    //         layout.set(point_no, coord);
+    //         const auto stress = stress_.value(layout);
+    //         if (stress < best_stress) {
+    //             best_stress = stress;
+    //             best_coord = coord;
+    //         }
+    //         // projection->move_point(point_no, coord);
+    //         // entries.emplace_back(coord, projection->calculate_stress(stress));
+    //         // std::cout << coord << ' ' << projection->calculate_stress(stress) << '\n';
+    //     }
+    // }
+    // if (const auto distance = best_coord.distance(original_layout_.get(point_no)); best_stress < projection_->stress() || distance > distance_threshold_) {
+    //     std::cout << point_name(point_no) << " stress-diff: " << (best_stress - projection_->stress()) << " distance: " << distance << '\n';
+    // }
 
 } // GridTest::test_point
 
@@ -130,7 +152,7 @@ int main(int argc, char* const argv[])
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
 
             GridTest test(chart, projection_no);
-            std::cout << test.initial_report() << '\n';
+            // std::cout << test.initial_report() << '\n';
             if (args[1] == std::string("all")) {
                 test.test_all();
             }

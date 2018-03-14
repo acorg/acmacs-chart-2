@@ -42,7 +42,51 @@ namespace acmacs::chart
         const entries_t& regular() const { return regular_; }
         const entries_t& less_than() const { return less_than_; }
 
-     private:
+        class IteratorForPoint
+        {
+          private:
+            friend class TableDistances<Float>;
+
+            using iterator_t = typename entries_t::const_iterator;
+            IteratorForPoint(size_t point_no, iterator_t first_regular, iterator_t last_regular, iterator_t first_less_than, iterator_t last_less_than)
+                : point_no_(point_no), current_(first_regular), last_regular_(last_regular), first_less_than_(first_less_than), last_less_than_(last_less_than)
+            {
+                if (current_->point_1 != point_no_ && current_->point_2 != point_no_)
+                    operator++();
+            }
+            IteratorForPoint(size_t point_no, iterator_t last_less_than)
+                : point_no_(point_no), current_(last_less_than), last_regular_(last_less_than), first_less_than_(last_less_than), last_less_than_(last_less_than) {}
+
+            void inc()
+                {
+                    if (current_ != last_less_than_) {
+                        ++current_;
+                        if (current_ == last_regular_)
+                            current_ = first_less_than_;
+                    }
+                }
+
+            size_t point_no_;
+            iterator_t current_, last_regular_, first_less_than_, last_less_than_;
+
+          public:
+            bool operator==(const IteratorForPoint& rhs) const { return current_ == rhs.current_; }
+            bool operator!=(const IteratorForPoint& rhs) const { return !operator==(rhs); }
+            const Entry& operator*() const { return *current_; }
+            const Entry* operator->() const { return &*current_; }
+
+            const IteratorForPoint& operator++()
+                {
+                    for (inc(); current_ != last_less_than_ && current_->point_1 != point_no_ && current_->point_2 != point_no_; inc());
+                    return *this;
+                }
+
+        }; // class IteratorForPoint
+
+        IteratorForPoint begin_for(size_t point_no) const { return IteratorForPoint(point_no, regular_.begin(), regular_.end(), less_than_.begin(), less_than_.end()); }
+        IteratorForPoint end_for(size_t point_no) const { return IteratorForPoint(point_no, less_than_.end()); }
+
+      private:
         bool dodgy_is_regular_ = false;
         entries_t regular_;
         entries_t less_than_;
