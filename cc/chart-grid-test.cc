@@ -18,8 +18,10 @@ class GridTest
     using Coordinates = acmacs::Coordinates;
     using Stress = acmacs::chart::Stress<double>;
 
-    GridTest(Chart& chart, size_t projection_no)
-        : chart_(chart), projection_(chart.projection_modify(projection_no)), original_layout_(*projection_->layout()), stress_(chart.make_stress<double>(projection_no))
+    GridTest(Chart& chart, size_t projection_no, double grid_step)
+        : chart_(chart), projection_(chart.projection_modify(projection_no)),
+          grid_step_(grid_step),
+          original_layout_(*projection_->layout()), stress_(chart.make_stress<double>(projection_no))
         {
         }
 
@@ -30,9 +32,9 @@ class GridTest
  private:
     Chart& chart_;
     Projection projection_;
-    const double grid_step_ = 0.1;          // acmacs-c2: 0.01
-    const double distance_threshold_ = 1.0; // from acmacs-c2 hemi-local test
-    const double stress_threshold_ = 0.25;  // stress diff within threshold -> hemisphering, from acmacs-c2 hemi-local test
+    const double grid_step_;          // acmacs-c2: 0.01
+    const double distance_threshold_ = 1.0; // from acmacs-c2 hemi-local test: 1.0
+    const double stress_threshold_ = 0.25;  // stress diff within threshold -> hemisphering, from acmacs-c2 hemi-local test: 0.25
     const acmacs::Layout original_layout_;
     const Stress stress_;
 
@@ -142,6 +144,7 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
+                {"--step", 0.1, "grid step"},
                 {"--verbose", false},
                 {"--time", false, "report time of loading chart"},
                 {"-h", false},
@@ -157,7 +160,7 @@ int main(int argc, char* const argv[])
             const size_t projection_no = 0;
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
 
-            GridTest test(chart, projection_no);
+            GridTest test(chart, projection_no, args["--step"]);
             // std::cout << test.initial_report() << '\n';
             if (args[1] == std::string("all")) {
                 test.test_all();
