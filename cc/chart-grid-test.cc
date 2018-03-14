@@ -33,8 +33,8 @@ class GridTest
     Chart& chart_;
     Projection projection_;
     const double grid_step_;          // acmacs-c2: 0.01
-    const double distance_threshold_ = 1.0; // from acmacs-c2 hemi-local test: 1.0
-    const double stress_threshold_ = 0.25;  // stress diff within threshold -> hemisphering, from acmacs-c2 hemi-local test: 0.25
+    const double hemisphering_distance_threshold_ = 1.0; // from acmacs-c2 hemi-local test: 1.0
+    const double hemisphering_stress_threshold_ = 0.25;  // stress diff within threshold -> hemisphering, from acmacs-c2 hemi-local test: 0.25
     const acmacs::Layout original_layout_;
     const Stress stress_;
 
@@ -108,8 +108,10 @@ void GridTest::test_point(size_t point_no)
     acmacs::Layout layout(original_layout_);
     const auto table_distances_for_point = stress_.table_distances_for(point_no);
     const auto target_contribution = stress_.contribution(point_no, table_distances_for_point, layout);
+    auto hemisphering_contribution = target_contribution + hemisphering_stress_threshold_;
+    const auto original_pos = original_layout_.get(point_no);
     auto best_contribution = target_contribution;
-    Coordinates best_coord;
+    Coordinates best_coord, hemisphering_coord;
     const auto area = area_for(table_distances_for_point);
     for (auto it = area.begin(grid_step_), last = area.end(); it != last; ++it) {
         layout.set(point_no, *it);
@@ -118,9 +120,22 @@ void GridTest::test_point(size_t point_no)
             best_contribution = contribution;
             best_coord = *it;
         }
+        else if (best_coord.empty() && contribution < hemisphering_contribution && original_pos.distance(*it) > hemisphering_distance_threshold_) {
+            hemisphering_contribution = contribution;
+            hemisphering_coord = *it;
+        }
     }
-    if (const auto distance = best_coord.distance(original_layout_.get(point_no)); best_contribution < target_contribution || distance > distance_threshold_)
-        std::cout << point_name(point_no) << " stress-diff: " << (best_contribution - target_contribution) << " distance: " << distance << '\n';
+    if (!best_coord.empty()) {
+        if ((target_contribution - best_contribution) > hemisphering_stress_threshold_)
+            std::cout << "TRAP " << point_name(point_no) << " stress-diff: " << (target_contribution - best_contribution) << " distance: " << original_pos.distance(best_coord) << '\n';
+        else
+            std::cout << "HEMI " << point_name(point_no) << " stress-diff: " << (target_contribution - best_contribution) << " distance: " << original_pos.distance(best_coord) << '\n';
+    }
+    else if (!hemisphering_coord.empty())
+        std::cout << "hemi " << point_name(point_no) << " stress-diff: " << (hemisphering_contribution - target_contribution) << " distance: " << original_pos.distance(hemisphering_coord) << '\n';
+
+    // if (const auto distance = best_coord.distance(original_pos); best_contribution < target_contribution || distance > hemisphering_distance_threshold_)
+    //     std::cout << point_name(point_no) << " stress-diff: " << (best_contribution - target_contribution) << " distance: " << distance << '\n';
 
 } // GridTest::test_point
 
