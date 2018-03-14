@@ -89,10 +89,21 @@ acmacs::Area GridTest::area_for(size_t point_no) const
 void GridTest::test_point(size_t point_no)
 {
     acmacs::Layout layout(original_layout_);
+    auto best_stress = projection_->stress() * 100.0;
+    Coordinates best_coord;
     const auto area = area_for(point_no);
-    std::cout << "Area for " << point_no << ": " << area << ' ' << area.area() << '\n';
-    for (auto it = area.begin(grid_step_), last = area.end(); it != last; ++it)
-        std::cout << ' ' << *it << '\n';
+    // std::cout << "Area for " << point_no << ": " << area << ' ' << area.area() << '\n';
+    for (auto it = area.begin(grid_step_), last = area.end(); it != last; ++it) {
+          // std::cout << ' ' << *it << '\n';
+        layout.set(point_no, *it);
+        const auto stress = stress_.value(layout);
+        if (stress < best_stress) {
+            best_stress = stress;
+            best_coord = *it;
+        }
+    }
+    if (const auto distance = best_coord.distance(original_layout_.get(point_no)); best_stress < projection_->stress() || distance > distance_threshold_)
+        std::cout << point_name(point_no) << " stress-diff: " << (best_stress - projection_->stress()) << " distance: " << distance << '\n';
 
     // Coordinates best_coord; //  = layout.get(point_no);
     // auto best_stress = projection_->stress() * 100.0;
