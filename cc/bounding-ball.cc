@@ -31,8 +31,8 @@ void acmacs::BoundingBall::extend(const acmacs::BoundingBall& aBoundingBall)
 
 acmacs::BoundingBall* acmacs::minimum_bounding_ball(const LayoutInterface& aLayout)
 {
-    const auto boundaries = aLayout.boundaries();
-    BoundingBall* bb = new BoundingBall(boundaries.min, boundaries.max);
+    const auto area = aLayout.area();
+    BoundingBall* bb = new BoundingBall(area.min, area.max);
     for (size_t point_no = 0; point_no < aLayout.number_of_points(); ++point_no)
         bb->extend(aLayout.get(point_no));
     return bb;

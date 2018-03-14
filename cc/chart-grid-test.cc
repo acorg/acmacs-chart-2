@@ -21,8 +21,6 @@ class GridTest
     GridTest(Chart& chart, size_t projection_no)
         : chart_(chart), projection_(chart.projection_modify(projection_no)), original_layout_(*projection_->layout()), stress_(chart.make_stress<double>(projection_no))
         {
-            const auto boundaries = projection_->layout()->boundaries();
-            std::cout << "General boundaries: " << boundaries << ' ' << boundaries.area() << '\n';
         }
 
     // std::string initial_report() const;
@@ -33,7 +31,7 @@ class GridTest
  private:
     Chart& chart_;
     Projection projection_;
-    // const acmacs::Boundaries boundaries_;
+    // const acmacs::Area area_;
     const double grid_step_ = 0.1;          // acmacs-c2: 0.01
     const double distance_threshold_ = 1.0; // from acmacs-c2 hemi-local test
     const double stress_threshold_ = 0.25;  // stress diff within threshold -> hemisphering, from acmacs-c2 hemi-local test
@@ -42,7 +40,7 @@ class GridTest
 
     bool antigen(size_t point_no) const { return point_no < chart_.number_of_antigens(); }
     size_t antigen_serum_no(size_t point_no) const { return antigen(point_no) ? point_no : (point_no - chart_.number_of_antigens()); }
-    acmacs::Boundaries boundaries_for(size_t point_no) const;
+    acmacs::Area area_for(size_t point_no) const;
 
 }; // class GridTest
 
@@ -50,7 +48,7 @@ class GridTest
 
 // std::string GridTest::initial_report() const
 // {
-//     return "Boundaries: " + acmacs::to_string(boundaries_, 4);
+//     return "Area: " + acmacs::to_string(area_, 4);
 
 // } // GridTest::initial_report
 
@@ -70,12 +68,12 @@ std::string GridTest::point_name(size_t point_no) const
 
 // ----------------------------------------------------------------------
 
-acmacs::Boundaries GridTest::boundaries_for(size_t point_no) const
+acmacs::Area GridTest::area_for(size_t point_no) const
 {
     const auto& table_distances = stress_.table_distances();
     auto it = table_distances.begin_for(point_no);
     const auto coord0 = original_layout_.get(it->point_1 == point_no ? it->point_2 : it->point_1);
-    acmacs::Boundaries result(coord0 - it->table_distance, coord0 + it->table_distance);
+    acmacs::Area result(coord0 - it->table_distance, coord0 + it->table_distance);
     ++it;
     for (const auto last = table_distances.end_for(point_no); it != last; ++it) {
         const auto coord = original_layout_.get(it->point_1 == point_no ? it->point_2 : it->point_1);
@@ -84,20 +82,22 @@ acmacs::Boundaries GridTest::boundaries_for(size_t point_no) const
     }
     return result;
 
-} // GridTest::boundaries_for
+} // GridTest::area_for
 
 // ----------------------------------------------------------------------
 
 void GridTest::test_point(size_t point_no)
 {
     acmacs::Layout layout(original_layout_);
-    const auto boundaries = boundaries_for(point_no);
-    std::cout << "Boundaries for " << point_no << ": " << boundaries << ' ' << boundaries.area() << '\n';
+    const auto area = area_for(point_no);
+    std::cout << "Area for " << point_no << ": " << area << ' ' << area.area() << '\n';
+    for (auto it = area.begin(grid_step_), last = area.end(); it != last; ++it)
+        std::cout << ' ' << *it << '\n';
 
     // Coordinates best_coord; //  = layout.get(point_no);
     // auto best_stress = projection_->stress() * 100.0;
-    // for (double x = boundaries_.min[0]; x < boundaries_.max[0]; x += grid_step_) {
-    //     for (double y = boundaries_.min[1]; y < boundaries_.max[1]; y += grid_step_) {
+    // for (double x = area_.min[0]; x < area_.max[0]; x += grid_step_) {
+    //     for (double y = area_.min[1]; y < area_.max[1]; y += grid_step_) {
     //         const Coordinates coord{x, y};
     //         layout.set(point_no, coord);
     //         const auto stress = stress_.value(layout);
