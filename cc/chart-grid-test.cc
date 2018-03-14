@@ -37,8 +37,8 @@ class GridTest
     const acmacs::Layout original_layout_;
     const Stress stress_;
 
-    constexpr bool antigen(size_t point_no) const { return point_no < chart_.number_of_antigens(); }
-    constexpr size_t antigen_serum_no(size_t point_no) const { return antigen(point_no) ? point_no : (point_no - chart_.number_of_antigens()); }
+    bool antigen(size_t point_no) const { return point_no < chart_.number_of_antigens(); }
+    size_t antigen_serum_no(size_t point_no) const { return antigen(point_no) ? point_no : (point_no - chart_.number_of_antigens()); }
 
 }; // class GridTest
 
