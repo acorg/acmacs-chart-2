@@ -48,26 +48,15 @@ namespace acmacs::chart
             friend class TableDistances<Float>;
 
             using iterator_t = typename entries_t::const_iterator;
-            IteratorForPoint(size_t point_no, iterator_t first_regular, iterator_t last_regular, iterator_t first_less_than, iterator_t last_less_than)
-                : point_no_(point_no), current_(first_regular), last_regular_(last_regular), first_less_than_(first_less_than), last_less_than_(last_less_than)
+            IteratorForPoint(size_t point_no, iterator_t it, iterator_t last)
+                : point_no_(point_no), current_(it), last_(last)
             {
-                if (current_->point_1 != point_no_ && current_->point_2 != point_no_)
+                if (current_ != last_ && current_->point_1 != point_no_ && current_->point_2 != point_no_)
                     operator++();
             }
-            IteratorForPoint(size_t point_no, iterator_t last_less_than)
-                : point_no_(point_no), current_(last_less_than), last_regular_(last_less_than), first_less_than_(last_less_than), last_less_than_(last_less_than) {}
-
-            void inc()
-                {
-                    if (current_ != last_less_than_) {
-                        ++current_;
-                        if (current_ == last_regular_)
-                            current_ = first_less_than_;
-                    }
-                }
 
             size_t point_no_;
-            iterator_t current_, last_regular_, first_less_than_, last_less_than_;
+            iterator_t current_, last_;
 
           public:
             bool operator==(const IteratorForPoint& rhs) const { return current_ == rhs.current_; }
@@ -76,15 +65,18 @@ namespace acmacs::chart
             const Entry* operator->() const { return &*current_; }
 
             const IteratorForPoint& operator++()
-                {
-                    for (inc(); current_ != last_less_than_ && current_->point_1 != point_no_ && current_->point_2 != point_no_; inc());
-                    return *this;
-                }
+            {
+                for (++current_; current_ != last_ && current_->point_1 != point_no_ && current_->point_2 != point_no_; ++current_)
+                    ;
+                return *this;
+            }
 
         }; // class IteratorForPoint
 
-        IteratorForPoint begin_for(size_t point_no) const { return IteratorForPoint(point_no, regular_.begin(), regular_.end(), less_than_.begin(), less_than_.end()); }
-        IteratorForPoint end_for(size_t point_no) const { return IteratorForPoint(point_no, less_than_.end()); }
+        IteratorForPoint begin_regular_for(size_t point_no) const { return IteratorForPoint(point_no, regular_.begin(), regular_.end()); }
+        IteratorForPoint end_regular_for(size_t point_no) const { return IteratorForPoint(point_no, regular_.end(), regular_.end()); }
+        IteratorForPoint begin_less_than_for(size_t point_no) const { return IteratorForPoint(point_no, less_than_.begin(), less_than_.end()); }
+        IteratorForPoint end_less_than_for(size_t point_no) const { return IteratorForPoint(point_no, less_than_.end(), less_than_.end()); }
 
       private:
         bool dodgy_is_regular_ = false;

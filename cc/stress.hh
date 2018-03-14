@@ -38,6 +38,8 @@ namespace acmacs::chart
 
         Float value(const Float* first, const Float* /* unused */ = nullptr) const;
         Float value(const acmacs::LayoutInterface& aLayout) const;
+        Float contribution(size_t point_no, const Float* first) const;
+        Float contribution(size_t point_no, const acmacs::LayoutInterface& aLayout) const;
         std::vector<Float> gradient(const Float* first, const Float* last) const;
         void gradient(const Float* first, const Float* last, Float* gradient_first) const;
         Float value_gradient(const Float* first, const Float* last, Float* gradient_first) const;

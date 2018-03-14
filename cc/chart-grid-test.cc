@@ -23,7 +23,6 @@ class GridTest
         {
         }
 
-    // std::string initial_report() const;
     std::string point_name(size_t point_no) const;
     void test_point(size_t point_no);
     void test_all();
@@ -31,7 +30,6 @@ class GridTest
  private:
     Chart& chart_;
     Projection projection_;
-    // const acmacs::Area area_;
     const double grid_step_ = 0.1;          // acmacs-c2: 0.01
     const double distance_threshold_ = 1.0; // from acmacs-c2 hemi-local test
     const double stress_threshold_ = 0.25;  // stress diff within threshold -> hemisphering, from acmacs-c2 hemi-local test
@@ -43,14 +41,6 @@ class GridTest
     acmacs::Area area_for(size_t point_no) const;
 
 }; // class GridTest
-
-// ----------------------------------------------------------------------
-
-// std::string GridTest::initial_report() const
-// {
-//     return "Area: " + acmacs::to_string(area_, 4);
-
-// } // GridTest::initial_report
 
 // ----------------------------------------------------------------------
 
@@ -71,14 +61,21 @@ std::string GridTest::point_name(size_t point_no) const
 acmacs::Area GridTest::area_for(size_t point_no) const
 {
     const auto& table_distances = stress_.table_distances();
-    auto it = table_distances.begin_for(point_no);
-    const auto coord0 = original_layout_.get(it->point_1 == point_no ? it->point_2 : it->point_1);
-    acmacs::Area result(coord0 - it->table_distance, coord0 + it->table_distance);
-    ++it;
-    for (const auto last = table_distances.end_for(point_no); it != last; ++it) {
-        const auto coord = original_layout_.get(it->point_1 == point_no ? it->point_2 : it->point_1);
-        result.extend(coord - it->table_distance);
-        result.extend(coord + it->table_distance);
+    auto it_regular = table_distances.begin_regular_for(point_no);
+    const auto coord0 = original_layout_.get(it_regular->point_1 == point_no ? it_regular->point_2 : it_regular->point_1);
+    acmacs::Area result(coord0 - it_regular->table_distance, coord0 + it_regular->table_distance);
+    ++it_regular;
+    for (const auto last_regular = table_distances.end_regular_for(point_no); it_regular != last_regular; ++it_regular) {
+        const auto coord = original_layout_.get(it_regular->point_1 == point_no ? it_regular->point_2 : it_regular->point_1);
+        const auto radius = it_regular->table_distance; // + 1;
+        result.extend(coord - radius);
+        result.extend(coord + radius);
+    }
+    for (auto it_less_than = table_distances.begin_less_than_for(point_no), last_less_than = table_distances.end_less_than_for(point_no); it_less_than != last_less_than; ++it_less_than) {
+        const auto coord = original_layout_.get(it_less_than->point_1 == point_no ? it_less_than->point_2 : it_less_than->point_1);
+        const auto radius = it_less_than->table_distance; // + 1;
+        result.extend(coord - radius);
+        result.extend(coord + radius);
     }
     return result;
 
@@ -89,41 +86,20 @@ acmacs::Area GridTest::area_for(size_t point_no) const
 void GridTest::test_point(size_t point_no)
 {
     acmacs::Layout layout(original_layout_);
-    auto best_stress = projection_->stress() * 100.0;
+    const auto target_contribution = stress_.contribution(point_no, layout);
+    auto best_contribution = target_contribution;
     Coordinates best_coord;
     const auto area = area_for(point_no);
-    // std::cout << "Area for " << point_no << ": " << area << ' ' << area.area() << '\n';
     for (auto it = area.begin(grid_step_), last = area.end(); it != last; ++it) {
-          // std::cout << ' ' << *it << '\n';
         layout.set(point_no, *it);
-        const auto stress = stress_.value(layout);
-        if (stress < best_stress) {
-            best_stress = stress;
+        const auto contribution = stress_.contribution(point_no, layout);
+        if (contribution < best_contribution) {
+            best_contribution = contribution;
             best_coord = *it;
         }
     }
-    if (const auto distance = best_coord.distance(original_layout_.get(point_no)); best_stress < projection_->stress() || distance > distance_threshold_)
-        std::cout << point_name(point_no) << " stress-diff: " << (best_stress - projection_->stress()) << " distance: " << distance << '\n';
-
-    // Coordinates best_coord; //  = layout.get(point_no);
-    // auto best_stress = projection_->stress() * 100.0;
-    // for (double x = area_.min[0]; x < area_.max[0]; x += grid_step_) {
-    //     for (double y = area_.min[1]; y < area_.max[1]; y += grid_step_) {
-    //         const Coordinates coord{x, y};
-    //         layout.set(point_no, coord);
-    //         const auto stress = stress_.value(layout);
-    //         if (stress < best_stress) {
-    //             best_stress = stress;
-    //             best_coord = coord;
-    //         }
-    //         // projection->move_point(point_no, coord);
-    //         // entries.emplace_back(coord, projection->calculate_stress(stress));
-    //         // std::cout << coord << ' ' << projection->calculate_stress(stress) << '\n';
-    //     }
-    // }
-    // if (const auto distance = best_coord.distance(original_layout_.get(point_no)); best_stress < projection_->stress() || distance > distance_threshold_) {
-    //     std::cout << point_name(point_no) << " stress-diff: " << (best_stress - projection_->stress()) << " distance: " << distance << '\n';
-    // }
+    if (const auto distance = best_coord.distance(original_layout_.get(point_no)); best_contribution < target_contribution || distance > distance_threshold_)
+        std::cout << point_name(point_no) << " stress-diff: " << (best_contribution - target_contribution) << " distance: " << distance << '\n';
 
 } // GridTest::test_point
 
