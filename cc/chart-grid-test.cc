@@ -38,7 +38,8 @@ class GridTest
 
     bool antigen(size_t point_no) const { return point_no < chart_.number_of_antigens(); }
     size_t antigen_serum_no(size_t point_no) const { return antigen(point_no) ? point_no : (point_no - chart_.number_of_antigens()); }
-    acmacs::Area area_for(size_t point_no) const;
+    // acmacs::Area area_for(size_t point_no) const;
+    acmacs::Area area_for(const Stress::TableDistancesForPoint& table_distances_for_point) const;
 
 }; // class GridTest
 
@@ -58,25 +59,42 @@ std::string GridTest::point_name(size_t point_no) const
 
 // ----------------------------------------------------------------------
 
-acmacs::Area GridTest::area_for(size_t point_no) const
+// acmacs::Area GridTest::area_for(size_t point_no) const
+// {
+//     const auto& table_distances = stress_.table_distances();
+//     auto it_regular = table_distances.begin_regular_for(point_no);
+//     const auto coord0 = original_layout_.get(it_regular->point_1 == point_no ? it_regular->point_2 : it_regular->point_1);
+//     acmacs::Area result(coord0 - it_regular->table_distance, coord0 + it_regular->table_distance);
+//     ++it_regular;
+//     for (const auto last_regular = table_distances.end_regular_for(point_no); it_regular != last_regular; ++it_regular) {
+//         const auto coord = original_layout_.get(it_regular->point_1 == point_no ? it_regular->point_2 : it_regular->point_1);
+//         const auto radius = it_regular->table_distance; // + 1;
+//         result.extend(coord - radius);
+//         result.extend(coord + radius);
+//     }
+//     for (auto it_less_than = table_distances.begin_less_than_for(point_no), last_less_than = table_distances.end_less_than_for(point_no); it_less_than != last_less_than; ++it_less_than) {
+//         const auto coord = original_layout_.get(it_less_than->point_1 == point_no ? it_less_than->point_2 : it_less_than->point_1);
+//         const auto radius = it_less_than->table_distance; // + 1;
+//         result.extend(coord - radius);
+//         result.extend(coord + radius);
+//     }
+//     return result;
+
+// } // GridTest::area_for
+
+// ----------------------------------------------------------------------
+
+acmacs::Area GridTest::area_for(const Stress::TableDistancesForPoint& table_distances_for_point) const
 {
-    const auto& table_distances = stress_.table_distances();
-    auto it_regular = table_distances.begin_regular_for(point_no);
-    const auto coord0 = original_layout_.get(it_regular->point_1 == point_no ? it_regular->point_2 : it_regular->point_1);
-    acmacs::Area result(coord0 - it_regular->table_distance, coord0 + it_regular->table_distance);
-    ++it_regular;
-    for (const auto last_regular = table_distances.end_regular_for(point_no); it_regular != last_regular; ++it_regular) {
-        const auto coord = original_layout_.get(it_regular->point_1 == point_no ? it_regular->point_2 : it_regular->point_1);
-        const auto radius = it_regular->table_distance; // + 1;
+    acmacs::Area result(original_layout_.get(table_distances_for_point.regular.front().another_point));
+    auto extend = [&result,this](const auto& entry) {
+        const auto coord = this->original_layout_.get(entry.another_point);
+        const auto radius = entry.table_distance; // + 1;
         result.extend(coord - radius);
         result.extend(coord + radius);
-    }
-    for (auto it_less_than = table_distances.begin_less_than_for(point_no), last_less_than = table_distances.end_less_than_for(point_no); it_less_than != last_less_than; ++it_less_than) {
-        const auto coord = original_layout_.get(it_less_than->point_1 == point_no ? it_less_than->point_2 : it_less_than->point_1);
-        const auto radius = it_less_than->table_distance; // + 1;
-        result.extend(coord - radius);
-        result.extend(coord + radius);
-    }
+    };
+    std::for_each(table_distances_for_point.regular.begin(), table_distances_for_point.regular.end(), extend);
+    std::for_each(table_distances_for_point.less_than.begin(), table_distances_for_point.less_than.end(), extend);
     return result;
 
 } // GridTest::area_for
@@ -86,13 +104,14 @@ acmacs::Area GridTest::area_for(size_t point_no) const
 void GridTest::test_point(size_t point_no)
 {
     acmacs::Layout layout(original_layout_);
-    const auto target_contribution = stress_.contribution(point_no, layout);
+    const auto table_distances_for_point = stress_.table_distances_for(point_no);
+    const auto target_contribution = stress_.contribution(point_no, table_distances_for_point, layout);
     auto best_contribution = target_contribution;
     Coordinates best_coord;
-    const auto area = area_for(point_no);
+    const auto area = area_for(table_distances_for_point);
     for (auto it = area.begin(grid_step_), last = area.end(); it != last; ++it) {
         layout.set(point_no, *it);
-        const auto contribution = stress_.contribution(point_no, layout);
+        const auto contribution = stress_.contribution(point_no, table_distances_for_point, layout);
         if (contribution < best_contribution) {
             best_contribution = contribution;
             best_coord = *it;

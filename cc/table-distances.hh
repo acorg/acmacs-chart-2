@@ -14,7 +14,7 @@ namespace acmacs::chart
      public:
         struct Entry
         {
-            inline Entry(size_t p1, size_t p2, Float dist) : point_1(p1), point_2(p2), table_distance{dist} {}
+            Entry(size_t p1, size_t p2, Float dist) : point_1(p1), point_2(p2), table_distance{dist} {}
             size_t point_1;
             size_t point_2;
             Float table_distance;
@@ -37,11 +37,38 @@ namespace acmacs::chart
                 }
             }
 
-          // inline void report() const { std::cerr << "TableDistances regular: " << regular_.size() << "  less-than: " << less_than_.size() << '\n'; }
+          // void report() const { std::cerr << "TableDistances regular: " << regular_.size() << "  less-than: " << less_than_.size() << '\n'; }
 
         const entries_t& regular() const { return regular_; }
         const entries_t& less_than() const { return less_than_; }
 
+        struct EntryForPoint
+        {
+            EntryForPoint(size_t ap, Float td) : another_point(ap), table_distance(td) {}
+            size_t another_point;
+            Float table_distance;
+        };
+        using entries_for_point_t = std::vector<EntryForPoint>;
+
+        static entries_for_point_t entries_for_point(const entries_t& source, size_t point_no)
+            {
+                entries_for_point_t result;
+                for (const auto& src : source) {
+                    if (src.point_1 == point_no)
+                        result.emplace_back(src.point_2, src.table_distance);
+                    else if (src.point_2 == point_no)
+                        result.emplace_back(src.point_1, src.table_distance);
+                }
+                return result;
+            }
+
+        struct EntriesForPoint
+        {
+            EntriesForPoint(size_t point_no, const TableDistances<Float>& table_distances)
+                : regular(entries_for_point(table_distances.regular(), point_no)), less_than(entries_for_point(table_distances.less_than(), point_no)) {}
+            entries_for_point_t regular, less_than;
+        };
+        
         class IteratorForPoint
         {
           private:

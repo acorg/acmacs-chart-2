@@ -34,12 +34,16 @@ namespace acmacs::chart
     template <typename Float> class Stress
     {
      public:
+        using TableDistancesForPoint = typename TableDistances<Float>::EntriesForPoint;
+
         Stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
 
         Float value(const Float* first, const Float* /* unused */ = nullptr) const;
         Float value(const acmacs::LayoutInterface& aLayout) const;
         Float contribution(size_t point_no, const Float* first) const;
         Float contribution(size_t point_no, const acmacs::LayoutInterface& aLayout) const;
+        Float contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const Float* first) const;
+        Float contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const acmacs::LayoutInterface& aLayout) const;
         std::vector<Float> gradient(const Float* first, const Float* last) const;
         void gradient(const Float* first, const Float* last, Float* gradient_first) const;
         Float value_gradient(const Float* first, const Float* last, Float* gradient_first) const;
@@ -48,6 +52,7 @@ namespace acmacs::chart
 
         const TableDistances<Float>& table_distances() const { return table_distances_; }
         TableDistances<Float>& table_distances() { return table_distances_; }
+        TableDistancesForPoint table_distances_for(size_t point_no) const { return TableDistancesForPoint(point_no, table_distances_); }
         const StressParameters& parameters() const { return parameters_; }
 
         void set_coordinates_of_disconnected(Float* first, Float value) const;

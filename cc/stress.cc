@@ -61,13 +61,21 @@ template <typename Float> static inline std::vector<Float> flatten(const acmacs:
 
 // ----------------------------------------------------------------------
 
-template <typename Float> static inline Float map_distance(const Float* first, const typename acmacs::chart::TableDistances<Float>::Entry& entry, size_t number_of_dimensions)
+template <typename Float> static inline Float map_distance(const Float* first, size_t point_1, size_t point_2, size_t number_of_dimensions)
 {
     using diff_t = typename std::vector<Float>::difference_type;
     return acmacs::vector_math::distance<Float>(
-        first + static_cast<diff_t>(number_of_dimensions * entry.point_1),
-        first + static_cast<diff_t>(number_of_dimensions * (entry.point_1 + 1)),
-        first + static_cast<diff_t>(number_of_dimensions * entry.point_2));
+        first + static_cast<diff_t>(number_of_dimensions * point_1),
+        first + static_cast<diff_t>(number_of_dimensions * (point_1 + 1)),
+        first + static_cast<diff_t>(number_of_dimensions * point_2));
+
+} // map_distance
+
+// ----------------------------------------------------------------------
+
+template <typename Float> static inline Float map_distance(const Float* first, const typename acmacs::chart::TableDistances<Float>::Entry& entry, size_t number_of_dimensions)
+{
+    return map_distance(first, entry.point_1, entry.point_2, number_of_dimensions);
 
 } // map_distance
 
@@ -82,24 +90,38 @@ template <typename Float> acmacs::chart::Stress<Float>::Stress(const Projection&
 
 // ----------------------------------------------------------------------
 
-template <typename Float> inline Float contribution_regular(const typename acmacs::chart::TableDistances<Float>::Entry& entry, const Float* first, size_t num_dim)
+template <typename Float> inline Float contribution_regular(size_t point_1, size_t point_2, Float table_distance, const Float* first, size_t num_dim)
 {
-    const Float diff = entry.table_distance - map_distance(first, entry, num_dim);
+    const Float diff = table_distance - map_distance(first, point_1, point_2, num_dim);
     return diff * diff;
 }
 
-template <typename Float> inline Float contribution_less_than(const typename acmacs::chart::TableDistances<Float>::Entry& entry, const Float* first, size_t num_dim)
+template <typename Float> inline Float contribution_less_than(size_t point_1, size_t point_2, Float table_distance, const Float* first, size_t num_dim)
 {
-    const Float diff = entry.table_distance - map_distance(first, entry, num_dim) + 1;
+    const Float diff = table_distance - map_distance(first, point_1, point_2, num_dim) + 1;
     return diff * diff * acmacs::sigmoid(diff * SigmoidMutiplier<Float>());
 }
+
+// template <typename Float> inline Float contribution_regular(const typename acmacs::chart::TableDistances<Float>::Entry& entry, const Float* first, size_t num_dim)
+// {
+//     const Float diff = entry.table_distance - map_distance(first, entry, num_dim);
+//     return diff * diff;
+// }
+
+// template <typename Float> inline Float contribution_less_than(const typename acmacs::chart::TableDistances<Float>::Entry& entry, const Float* first, size_t num_dim)
+// {
+//     const Float diff = entry.table_distance - map_distance(first, entry, num_dim) + 1;
+//     return diff * diff * acmacs::sigmoid(diff * SigmoidMutiplier<Float>());
+// }
+
+// ----------------------------------------------------------------------
 
 template <typename Float> Float acmacs::chart::Stress<Float>::value(const Float* first, const Float*) const
 {
     return std::transform_reduce(table_distances().regular().begin(), table_distances().regular().end(), Float{0}, std::plus<>(),
-                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_regular(entry, first, num_dim); }) +
+                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_regular(entry.point_1, entry.point_2, entry.table_distance, first, num_dim); }) +
            std::transform_reduce(table_distances().less_than().begin(), table_distances().less_than().end(), Float{0}, std::plus<>(),
-                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(entry, first, num_dim); });
+                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(entry.point_1, entry.point_2, entry.table_distance, first, num_dim); });
 
 } // acmacs::chart::Stress<Float>::value
 
@@ -117,9 +139,9 @@ template <typename Float> Float acmacs::chart::Stress<Float>::value(const acmacs
 template <typename Float> Float acmacs::chart::Stress<Float>::contribution(size_t point_no, const Float* first) const
 {
     return std::transform_reduce(table_distances().begin_regular_for(point_no), table_distances().end_regular_for(point_no), Float{0}, std::plus<>(),
-                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_regular(entry, first, num_dim); }) +
+                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_regular(entry.point_1, entry.point_2, entry.table_distance, first, num_dim); }) +
            std::transform_reduce(table_distances().begin_less_than_for(point_no), table_distances().end_less_than_for(point_no), Float{0}, std::plus<>(),
-                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(entry, first, num_dim); });
+                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(entry.point_1, entry.point_2, entry.table_distance, first, num_dim); });
 
 } // acmacs::chart::Stress<Float>::contribution
 
@@ -129,6 +151,28 @@ template <typename Float> Float acmacs::chart::Stress<Float>::contribution(size_
 {
     const auto arg = ::flatten<Float>(aLayout);
     return contribution(point_no, arg.data());
+
+} // acmacs::chart::Stress<Float>::contribution
+
+// ----------------------------------------------------------------------
+
+template <typename Float> Float acmacs::chart::Stress<Float>::contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const Float* first) const
+{
+    return std::transform_reduce(
+               table_distances_for_point.regular.begin(), table_distances_for_point.regular.end(), Float{0}, std::plus<>(),
+               [point_no, first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_regular(point_no, entry.another_point, entry.table_distance, first, num_dim); }) +
+           std::transform_reduce(
+               table_distances_for_point.less_than.begin(), table_distances_for_point.less_than.end(), Float{0}, std::plus<>(),
+               [point_no, first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(point_no, entry.another_point, entry.table_distance, first, num_dim); });
+
+} // acmacs::chart::Stress<Float>::contribution
+
+// ----------------------------------------------------------------------
+
+template <typename Float> Float acmacs::chart::Stress<Float>::contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const acmacs::LayoutInterface& aLayout) const
+{
+    const auto arg = ::flatten<Float>(aLayout);
+    return contribution(point_no, table_distances_for_point, arg.data());
 
 } // acmacs::chart::Stress<Float>::contribution
 
