@@ -106,7 +106,7 @@ std::string GridTest::point_name(size_t point_no) const
 
 acmacs::Area GridTest::area_for(const Stress::TableDistancesForPoint& table_distances_for_point) const
 {
-    acmacs::Area result(original_layout_.get(table_distances_for_point.regular.front().another_point));
+    acmacs::Area result(original_layout_.get(table_distances_for_point.regular.empty() ? table_distances_for_point.less_than.front().another_point : table_distances_for_point.regular.front().another_point));
     auto extend = [&result,this](const auto& entry) {
         const auto coord = this->original_layout_.get(entry.another_point);
         const auto radius = entry.table_distance; // + 1;
