@@ -54,7 +54,7 @@ class GridTest
     const double hemisphering_stress_threshold_ = 0.25;  // stress diff within threshold -> hemisphering, from acmacs-c2 hemi-local test: 0.25
     const acmacs::Layout original_layout_;
     const Stress stress_;
-    acmacs::chart::optimization_options options_;
+      //acmacs::chart::optimization_options options_{acmacs::chart::optimization_method::alglib_cg_pca, acmacs::chart::optimization_precision::rough};
 
     bool antigen(size_t point_no) const { return point_no < chart_.number_of_antigens(); }
     size_t antigen_serum_no(size_t point_no) const { return antigen(point_no) ? point_no : (point_no - chart_.number_of_antigens()); }
@@ -123,6 +123,8 @@ acmacs::Area GridTest::area_for(const Stress::TableDistancesForPoint& table_dist
 
 GridTest::Result GridTest::test_point(size_t point_no)
 {
+    constexpr auto optimization_method = acmacs::chart::optimization_method::alglib_cg_pca;
+
     acmacs::Layout layout(original_layout_);
     const auto table_distances_for_point = stress_.table_distances_for(point_no);
     const auto target_contribution = stress_.contribution(point_no, table_distances_for_point, layout);
@@ -146,7 +148,7 @@ GridTest::Result GridTest::test_point(size_t point_no)
     }
     if (!best_coord.empty()) {
         layout.set(point_no, best_coord);
-        acmacs::chart::optimize(options_.method, stress_, layout.data(), layout.data() + layout.size(), options_.precision);
+        acmacs::chart::optimize(optimization_method, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
         const auto pos = layout.get(point_no);
         const auto diff = stress_.contribution(point_no, table_distances_for_point, layout) - target_contribution;
         return Result(point_no, std::abs(diff) > hemisphering_stress_threshold_ ? Result::trapped : Result::hemisphering, pos, original_pos.distance(pos), diff);
@@ -154,9 +156,15 @@ GridTest::Result GridTest::test_point(size_t point_no)
     else if (!hemisphering_coord.empty()) {
         // relax to find real contribution
         layout.set(point_no, hemisphering_coord);
-        acmacs::chart::optimize(options_.method, stress_, layout.data(), layout.data() + layout.size(), options_.precision);
-        const auto pos = layout.get(point_no);
-        if (const auto real_distance = original_pos.distance(pos); real_distance > hemisphering_distance_threshold_) {
+        acmacs::chart::optimize(optimization_method, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
+        auto pos = layout.get(point_no);
+        auto real_distance = original_pos.distance(pos);
+        if (real_distance > hemisphering_distance_threshold_ && real_distance < (hemisphering_distance_threshold_ * 1.2)) {
+            acmacs::chart::optimize(optimization_method, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::fine);
+            pos = layout.get(point_no);
+            real_distance = original_pos.distance(pos);
+        }
+        if (real_distance > hemisphering_distance_threshold_) {
             if (const auto real_contribution_diff = stress_.contribution(point_no, table_distances_for_point, layout) - target_contribution; real_contribution_diff < hemisphering_stress_threshold_) {
                 return Result(point_no, Result::hemisphering, pos, real_distance, real_contribution_diff);
             }
