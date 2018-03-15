@@ -54,7 +54,6 @@ class GridTest
     const double hemisphering_stress_threshold_ = 0.25;  // stress diff within threshold -> hemisphering, from acmacs-c2 hemi-local test: 0.25
     const acmacs::Layout original_layout_;
     const Stress stress_;
-      //acmacs::chart::optimization_options options_{acmacs::chart::optimization_method::alglib_cg_pca, acmacs::chart::optimization_precision::rough};
 
     bool antigen(size_t point_no) const { return point_no < chart_.number_of_antigens(); }
     size_t antigen_serum_no(size_t point_no) const { return antigen(point_no) ? point_no : (point_no - chart_.number_of_antigens()); }
@@ -127,7 +126,7 @@ GridTest::Result GridTest::test_point(size_t point_no)
 
     acmacs::Layout layout(original_layout_);
     const auto table_distances_for_point = stress_.table_distances_for(point_no);
-    const auto target_contribution = stress_.contribution(point_no, table_distances_for_point, layout);
+    const auto target_contribution = stress_.contribution(point_no, table_distances_for_point, layout.data());
     const auto original_pos = original_layout_.get(point_no);
     auto best_contribution = target_contribution;
     Coordinates best_coord, hemisphering_coord;
@@ -136,7 +135,7 @@ GridTest::Result GridTest::test_point(size_t point_no)
     const auto area = area_for(table_distances_for_point);
     for (auto it = area.begin(grid_step_), last = area.end(); it != last; ++it) {
         layout.set(point_no, *it);
-        const auto contribution = stress_.contribution(point_no, table_distances_for_point, layout);
+        const auto contribution = stress_.contribution(point_no, table_distances_for_point, layout.data());
         if (contribution < best_contribution) {
             best_contribution = contribution;
             best_coord = *it;
@@ -150,7 +149,7 @@ GridTest::Result GridTest::test_point(size_t point_no)
         layout.set(point_no, best_coord);
         acmacs::chart::optimize(optimization_method, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
         const auto pos = layout.get(point_no);
-        const auto diff = stress_.contribution(point_no, table_distances_for_point, layout) - target_contribution;
+        const auto diff = stress_.contribution(point_no, table_distances_for_point, layout.data()) - target_contribution;
         return Result(point_no, std::abs(diff) > hemisphering_stress_threshold_ ? Result::trapped : Result::hemisphering, pos, original_pos.distance(pos), diff);
     }
     else if (!hemisphering_coord.empty()) {
@@ -165,7 +164,7 @@ GridTest::Result GridTest::test_point(size_t point_no)
             real_distance = original_pos.distance(pos);
         }
         if (real_distance > hemisphering_distance_threshold_) {
-            if (const auto real_contribution_diff = stress_.contribution(point_no, table_distances_for_point, layout) - target_contribution; real_contribution_diff < hemisphering_stress_threshold_) {
+            if (const auto real_contribution_diff = stress_.contribution(point_no, table_distances_for_point, layout.data()) - target_contribution; real_contribution_diff < hemisphering_stress_threshold_) {
                 return Result(point_no, Result::hemisphering, pos, real_distance, real_contribution_diff);
             }
         }
@@ -251,84 +250,6 @@ int main(int argc, char* const argv[])
     }
     return exit_code;
 }
-
-// ----------------------------------------------------------------------
-
-// struct Entry
-// {
-//     acmacs::Coordinates coord;
-//     double stress;
-
-//     Entry(const acmacs::Coordinates& a_coord, double a_stress) : coord(a_coord), stress(a_stress) {}
-//     bool operator<(const Entry& rhs) const { return stress < rhs.stress; }
-// };
-
-// void test_point(acmacs::chart::ChartModify& chart, size_t projection_no, size_t point_no, double step)
-// {
-//     auto projection = chart.projection_modify(projection_no);
-//     auto layout = projection->layout();
-//     const acmacs::Layout saved_layout(*layout);
-//     std::cout << point_name(chart, point_no) << ' ' << layout->get(point_no) << ' ' << std::setprecision(6) << std::fixed << projection->stress() << '\n';
-
-//     const auto [top_left, bottom_right] = layout->boundaries();
-//     auto stress = chart.make_stress<double>(projection_no);
-
-//     std::vector<Entry> entries;
-//     for (double x = top_left[0]; x < bottom_right[0]; x += step) {
-//         for (double y = top_left[1]; y < bottom_right[1]; y += step) {
-//             const acmacs::Coordinates coord{x, y};
-//             projection->move_point(point_no, coord);
-//             entries.emplace_back(coord, projection->calculate_stress(stress));
-//             // std::cout << coord << ' ' << projection->calculate_stress(stress) << '\n';
-//         }
-//     }
-//     std::sort(entries.begin(), entries.end());
-
-//     for (auto i : acmacs::range(10UL)) {
-//         projection->set_layout(saved_layout);
-//         const auto& entry = entries[i];
-//         projection->move_point(point_no, entry.coord);
-//         std::cout << std::setw(2) << i << ' ' << entry.coord << ' ' << std::setprecision(6) << std::fixed << projection->calculate_stress(stress);
-//         const auto status = projection->relax(acmacs::chart::optimization_options{});
-//         std::cout << " --> " << projection->layout()->get(point_no) << ' ' << std::setprecision(6) << status.final_stress << '\n';
-//     }
-
-// } // test_point
-
-// void test_point_old(acmacs::chart::ChartModify& chart, size_t projection_no, size_t point_no, double step)
-// {
-//     auto projection = chart.projection_modify(projection_no);
-//     auto layout = projection->layout();
-//     const acmacs::Layout saved_layout(*layout);
-//     std::cout << point_name(chart, point_no) << ' ' << layout->get(point_no) << ' ' << std::setprecision(6) << std::fixed << projection->stress() << '\n';
-
-//     const auto [top_left, bottom_right] = layout->boundaries();
-//     auto stress = chart.make_stress<double>(projection_no);
-
-//     std::vector<Entry> entries;
-//     for (double x = top_left[0]; x < bottom_right[0]; x += step) {
-//         for (double y = top_left[1]; y < bottom_right[1]; y += step) {
-//             const acmacs::Coordinates coord{x, y};
-//             projection->move_point(point_no, coord);
-//             entries.emplace_back(coord, projection->calculate_stress(stress));
-//             // std::cout << coord << ' ' << projection->calculate_stress(stress) << '\n';
-//         }
-//     }
-//     std::sort(entries.begin(), entries.end());
-
-//     for (auto i : acmacs::range(10UL)) {
-//         projection->set_layout(saved_layout);
-//         const auto& entry = entries[i];
-//         projection->move_point(point_no, entry.coord);
-//         std::cout << std::setw(2) << i << ' ' << entry.coord << ' ' << std::setprecision(6) << std::fixed << projection->calculate_stress(stress);
-//         const auto status = projection->relax(acmacs::chart::optimization_options{});
-//         std::cout << " --> " << projection->layout()->get(point_no) << ' ' << std::setprecision(6) << status.final_stress << '\n';
-//     }
-
-// } // test_point_old
-
-// ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:
