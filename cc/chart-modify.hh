@@ -372,6 +372,7 @@ namespace acmacs::chart
         ColumnBasesP forced_column_bases_;
 
         friend class ProjectionsModify;
+        friend class ChartModify; // to set stress_ in ChartModify::relax()
 
         LayoutRandomizerPlain make_randomizer_plain(double max_distance_multiplier) const;
 

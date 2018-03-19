@@ -201,6 +201,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
         status.initial_stress = status2.initial_stress;
         status.final_stress = status2.final_stress;
     }
+    projection->stress_ = status.final_stress;
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
     return {status, projection};
 
