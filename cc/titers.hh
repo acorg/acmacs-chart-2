@@ -24,7 +24,25 @@ namespace acmacs::chart
 
         enum Type { Invalid, Regular, DontCare, LessThan, MoreThan, Dodgy };
 
-        Type type() const;
+        constexpr Type type() const
+        {
+            if (empty())
+                return Invalid;
+            switch (front()) {
+                case '*':
+                    return DontCare;
+                case '<':
+                    return LessThan;
+                case '>':
+                    return MoreThan;
+                case '~':
+                    return Dodgy;
+                case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+                    return Regular;
+                default:
+                    return Invalid;
+            }
+        }
 
         bool is_invalid() const { return type() == Invalid; }
         bool is_dont_care() const { return type() == DontCare; }

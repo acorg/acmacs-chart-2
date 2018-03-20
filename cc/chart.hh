@@ -4,6 +4,7 @@
 #include <cmath>
 #include <optional>
 
+#include "acmacs-base/timeit.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/color.hh"
 #include "acmacs-base/point-style.hh"

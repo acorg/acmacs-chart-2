@@ -8,27 +8,27 @@
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Titer::Type acmacs::chart::Titer::type() const
-{
-    if (empty())
-        return Invalid;
-    switch (front()) {
-      case '*':
-          return DontCare;
-      case '<':
-          return LessThan;
-      case '>':
-          return MoreThan;
-      case '~':
-          return Dodgy;
-      case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-          return Regular;
-      default:
-          return Invalid;
-    }
-    // return Invalid;
+// acmacs::chart::Titer::Type acmacs::chart::Titer::type() const
+// {
+//     if (empty())
+//         return Invalid;
+//     switch (front()) {
+//       case '*':
+//           return DontCare;
+//       case '<':
+//           return LessThan;
+//       case '>':
+//           return MoreThan;
+//       case '~':
+//           return Dodgy;
+//       case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+//           return Regular;
+//       default:
+//           return Invalid;
+//     }
+//     // return Invalid;
 
-} // acmacs::chart::Titer::type
+// } // acmacs::chart::Titer::type
 
 // ----------------------------------------------------------------------
 
@@ -217,19 +217,14 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Titers::computed_colu
 
 template <typename Float> static void update(const acmacs::chart::Titers& titers, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters)
 {
-    const auto number_of_points = titers.number_of_antigens() + titers.number_of_sera();
+    const auto number_of_antigens = titers.number_of_antigens();
+    const auto number_of_points = number_of_antigens + titers.number_of_sera();
     const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     table_distances.dodgy_is_regular(parameters.dodgy_titer_is_regular);
     if (titers.number_of_sera()) {
-        for (auto p1 : acmacs::range(titers.number_of_antigens())) {
-            if (!parameters.disconnected.contains(p1)) {
-                for (auto p2 : acmacs::range(titers.number_of_antigens(), number_of_points)) {
-                    if (!parameters.disconnected.contains(p2)) {
-                        const auto serum_no = p2 - titers.number_of_antigens();
-                        table_distances.update(titers.titer(p1, serum_no), p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);
-                    }
-                }
-            }
+        for (const auto& titer_ref : titers) {
+            if (!parameters.disconnected.contains(titer_ref.antigen) && !parameters.disconnected.contains(titer_ref.serum + number_of_antigens))
+                table_distances.update(titer_ref.titer, titer_ref.antigen, titer_ref.serum + number_of_antigens, column_bases.column_basis(titer_ref.serum), logged_adjusts[titer_ref.antigen] + logged_adjusts[titer_ref.serum + number_of_antigens], parameters.mult);
         }
     }
     else {
