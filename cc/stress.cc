@@ -45,6 +45,19 @@ template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_fac
 
 // ----------------------------------------------------------------------
 
+template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_factory(const acmacs::chart::Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular)
+{
+    Stress<Float> stress(number_of_dimensions, chart.number_of_points(), mult, a_dodgy_titer_is_regular);
+    auto cb = chart.forced_column_bases();
+    if (!cb)
+        cb = chart.column_bases(minimum_column_basis);
+    chart.titers()->update(stress.table_distances(), *cb, stress.parameters());
+    return stress;
+
+} // acmacs::chart::stress_factory
+
+// ----------------------------------------------------------------------
+
 template <typename Float> constexpr inline Float SigmoidMutiplier() { return 10; }
 template <typename Float> constexpr inline Float non_zero(Float value) { return float_zero(value) ? static_cast<Float>(1e-5) : value; };
 
@@ -86,6 +99,15 @@ template <typename Float> acmacs::chart::Stress<Float>::Stress(const Projection&
       parameters_(projection.number_of_points(), projection.unmovable(), projection.disconnected(), projection.unmovable_in_the_last_dimension(),
                   mult, projection.avidity_adjusts(), projection.dodgy_titer_is_regular())
 {
+} // acmacs::chart::Stress<Float>::Stress
+
+// ----------------------------------------------------------------------
+
+template <typename Float> acmacs::chart::Stress<Float>::Stress(size_t number_of_dimensions, size_t number_of_points, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular)
+    : number_of_dimensions_(number_of_dimensions),
+      parameters_(number_of_points, mult, a_dodgy_titer_is_regular)
+{
+
 } // acmacs::chart::Stress<Float>::Stress
 
 // ----------------------------------------------------------------------
@@ -317,6 +339,8 @@ template class acmacs::chart::Stress<float>;
 template class acmacs::chart::Stress<double>;
 template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult);
 template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult);
+template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular);
+template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular);
 
 // ----------------------------------------------------------------------
 /// Local Variables:

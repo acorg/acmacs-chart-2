@@ -30,7 +30,8 @@ TARGETS = \
     $(DIST)/chart-grid-test \
     $(DIST)/test-titer-iterator \
     $(DIST)/test-chart-modify \
-    $(DIST)/test-chart-create-from-scratch
+    $(DIST)/test-chart-create-from-scratch \
+    $(DIST)/test-chart-from-text
 
 SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc \
     rjson-import.cc \

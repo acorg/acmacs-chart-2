@@ -45,10 +45,11 @@ int main(int argc, char* const argv[])
             const auto disconnected{get_disconnected(args["--disconnect-antigens"], args["--disconnect-sera"], chart.number_of_antigens(), chart.number_of_sera())};
 
             const size_t number_of_attempts = args["-n"];
-            for (size_t attempt = 0; attempt < number_of_attempts; ++attempt) {
-                auto [status, projection] = chart.relax(args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]), disconnected);
-                std::cout << (attempt + 1) << ' ' << status << '\n';
-            }
+            chart.relax(number_of_attempts, args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]), args["--verbose"] || args["-v"]);
+            // for (size_t attempt = 0; attempt < number_of_attempts; ++attempt) {
+            //     auto [status, projection] = chart.relax(args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]), disconnected);
+            //     std::cout << (attempt + 1) << ' ' << status << '\n';
+            // }
             auto projections = chart.projections_modify();
             projections->sort();
             if (const size_t keep_projections = args["--keep-projections"]; keep_projections > 0 && projections->size() > keep_projections)

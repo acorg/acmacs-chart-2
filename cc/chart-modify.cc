@@ -209,6 +209,34 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
 
 // ----------------------------------------------------------------------
 
+void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, bool report_stresses)
+{
+    const size_t start_num_dim = dimension_annealing && number_of_dimensions < 5 ? 5 : number_of_dimensions;
+    auto stress = acmacs::chart::stress_factory<double>(*this, start_num_dim, minimum_column_basis, options.mult, false);
+    for (auto opt_no : acmacs::range(number_of_optimizations)) {
+        auto projection = projections_modify()->new_from_scratch(start_num_dim, minimum_column_basis);
+        projection->randomize_layout(options.max_distance_multiplier);
+        auto layout = projection->layout_modified();
+        stress.change_number_of_dimensions(start_num_dim);
+        const auto status1 = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
+        if (start_num_dim > number_of_dimensions) {
+            acmacs::chart::dimension_annealing(options.method, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
+            layout->change_number_of_dimensions(number_of_dimensions);
+            stress.change_number_of_dimensions(number_of_dimensions);
+            const auto status2 = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
+            projection->stress_ = status2.final_stress;
+        }
+        else {
+            projection->stress_ = status1.final_stress;
+        }
+        if (report_stresses)
+            std::cout << std::setw(3) << opt_no << ' ' << std::fixed << std::setprecision(4) << *projection->stress_ << '\n';
+    }
+
+} // ChartModify::relax
+
+// ----------------------------------------------------------------------
+
 void ChartModify::remove_antigens(const ReverseSortedIndexes& indexes)
 {
     antigens_modify()->remove(indexes);
