@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <omp.h>
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/range.hh"
@@ -178,11 +179,19 @@ GridTest::Result GridTest::test_point(size_t point_no)
 void GridTest::test_all()
 {
     const auto unmovable = projection_->unmovable(), disconnected = projection_->disconnected();
-    for (auto point_no : acmacs::range(chart_.number_of_points())) {
+
+    auto test_one = [&](auto point_no) {
         if (!unmovable.contains(point_no) && !disconnected.contains(point_no)) {
             if (const auto result = test_point(point_no); result)
                 std::cout << result.report() << '\n';
         }
+    };
+
+    // std::for_each(acmacs::index_iterator(0UL), acmacs::index_iterator(chart_.number_of_points()), test_one);
+
+#pragma omp parallel for schedule(static)
+    for (size_t point_no = 0; point_no < chart_.number_of_points(); ++point_no) {
+        test_one(point_no);
     }
 
 } // GridTest::test_all
