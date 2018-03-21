@@ -248,7 +248,8 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(number_of_optimizations);
     std::transform(projections.begin(), projections.end(), projections.begin(), [start_num_dim, minimum_column_basis, pp=projections_modify()](const auto&) { return pp->new_from_scratch(start_num_dim, minimum_column_basis); });
 
-#pragma omp parallel for default(none) firstprivate(stress) shared(projections,start_num_dim,number_of_dimensions,dimension_annealing,options,report_stresses,minimum_column_basis) num_threads(omp_get_max_threads()) schedule(static, 4)
+//#pragma omp parallel for default(none) firstprivate(stress) shared(projections,start_num_dim,number_of_dimensions,dimension_annealing,options,report_stresses,minimum_column_basis) num_threads(omp_get_max_threads()) schedule(static, 4)
+#pragma omp parallel for default(shared) firstprivate(stress) schedule(static, 4) //shared(projections,start_num_dim,number_of_dimensions,dimension_annealing,options,report_stresses,minimum_column_basis)
     for (size_t p_no = 0 ; p_no < projections.size(); ++p_no) {
         auto projection = projections[p_no];
         projection->randomize_layout(options.max_distance_multiplier);
