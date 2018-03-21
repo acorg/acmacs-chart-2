@@ -1,14 +1,8 @@
 #include <iostream>
 #include <algorithm>
 
-#ifdef _OPENMP
-#include <omp.h>
-#else
-constexpr int omp_get_thread_num() { return 0; }
-constexpr int omp_get_num_threads() { return 1; }
-constexpr int omp_get_max_threads() { return 1; }
-#endif
 
+#include "acmacs-base/omp.hh"
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/filesystem.hh"
