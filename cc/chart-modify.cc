@@ -823,6 +823,16 @@ std::shared_ptr<ProjectionModifyNew> ProjectionsModify::new_from_scratch(size_t 
 
 // ----------------------------------------------------------------------
 
+std::shared_ptr<ProjectionModifyNew> ProjectionsModify::new_by_cloning(const ProjectionModify& source)
+{
+    auto projection = std::make_shared<ProjectionModifyNew>(source);
+    add(projection);
+    return projection;
+
+} // ProjectionsModify::new_by_cloning
+
+// ----------------------------------------------------------------------
+
 void ProjectionsModify::remove(size_t projection_no)
 {
     if (projection_no >= projections_.size())

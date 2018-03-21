@@ -480,6 +480,7 @@ namespace acmacs::chart
         void add(std::shared_ptr<ProjectionModify> projection);
 
         std::shared_ptr<ProjectionModifyNew> new_from_scratch(size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis);
+        std::shared_ptr<ProjectionModifyNew> new_by_cloning(const ProjectionModify& source);
 
         void keep_just(size_t number_of_projections_to_keep)
             {
