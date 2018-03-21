@@ -8,30 +8,6 @@
 
 // ----------------------------------------------------------------------
 
-// acmacs::chart::Titer::Type acmacs::chart::Titer::type() const
-// {
-//     if (empty())
-//         return Invalid;
-//     switch (front()) {
-//       case '*':
-//           return DontCare;
-//       case '<':
-//           return LessThan;
-//       case '>':
-//           return MoreThan;
-//       case '~':
-//           return Dodgy;
-//       case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-//           return Regular;
-//       default:
-//           return Invalid;
-//     }
-//     // return Invalid;
-
-// } // acmacs::chart::Titer::type
-
-// ----------------------------------------------------------------------
-
 double acmacs::chart::Titer::logged() const
 {
     constexpr auto log_titer = [](std::string source) -> double { return std::log2(std::stod(source) / 10.0); };

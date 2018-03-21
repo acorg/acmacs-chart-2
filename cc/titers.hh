@@ -24,7 +24,7 @@ namespace acmacs::chart
 
         enum Type { Invalid, Regular, DontCare, LessThan, MoreThan, Dodgy };
 
-        constexpr Type type() const
+        Type type() const
         {
             if (empty())
                 return Invalid;

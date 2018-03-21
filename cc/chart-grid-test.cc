@@ -1,6 +1,13 @@
 #include <iostream>
 #include <algorithm>
+
+#ifdef _OPENMP
 #include <omp.h>
+#else
+constexpr int omp_get_thread_num() { return 0; }
+constexpr int omp_get_num_threads() { return 1; }
+constexpr int omp_get_max_threads() { return 1; }
+#endif
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/range.hh"
@@ -28,12 +35,12 @@ class GridTest
 
     struct Result
     {
-        enum diagnosis_t { normal, trapped, hemisphering };
+        enum diagnosis_t { excluded, not_tested, normal, trapped, hemisphering };
 
-        Result(size_t a_point_no) : point_no(a_point_no), diagnosis(normal) {}
+        Result(size_t a_point_no) : point_no(a_point_no), diagnosis(not_tested) {}
         Result(size_t a_point_no, diagnosis_t a_diagnosis, const Coordinates& a_pos, double a_distance, double diff)
             : point_no(a_point_no), diagnosis(a_diagnosis), pos(a_pos), distance(a_distance), contribution_diff(diff) {}
-        operator bool() const { return diagnosis != normal; }
+        operator bool() const { return diagnosis == trapped || diagnosis == hemisphering; }
         std::string report() const;
 
         size_t point_no;
@@ -45,7 +52,8 @@ class GridTest
 
     std::string point_name(size_t point_no) const;
     Result test_point(size_t point_no);
-    void test_all();
+    void test_point(Result& result);
+    std::vector<Result> test_all();
 
  private:
     Chart& chart_;
@@ -123,76 +131,141 @@ acmacs::Area GridTest::area_for(const Stress::TableDistancesForPoint& table_dist
 
 GridTest::Result GridTest::test_point(size_t point_no)
 {
-    constexpr auto optimization_method = acmacs::chart::optimization_method::alglib_cg_pca;
+    Result result(point_no);
+    test_point(result);
+    return result;
 
-    acmacs::Layout layout(original_layout_);
-    const auto table_distances_for_point = stress_.table_distances_for(point_no);
-    const auto target_contribution = stress_.contribution(point_no, table_distances_for_point, layout.data());
-    const auto original_pos = original_layout_.get(point_no);
-    auto best_contribution = target_contribution;
-    Coordinates best_coord, hemisphering_coord;
-    const auto hemisphering_stress_threshold_rough = hemisphering_stress_threshold_ * 2;
-    auto hemisphering_contribution = target_contribution + hemisphering_stress_threshold_rough;
-    const auto area = area_for(table_distances_for_point);
-    for (auto it = area.begin(grid_step_), last = area.end(); it != last; ++it) {
-        layout.set(point_no, *it);
-        const auto contribution = stress_.contribution(point_no, table_distances_for_point, layout.data());
-        if (contribution < best_contribution) {
-            best_contribution = contribution;
-            best_coord = *it;
-        }
-        else if (best_coord.empty() && contribution < hemisphering_contribution && original_pos.distance(*it) > hemisphering_distance_threshold_) {
-            hemisphering_contribution = contribution;
-            hemisphering_coord = *it;
-        }
-    }
-    if (!best_coord.empty()) {
-        layout.set(point_no, best_coord);
-        acmacs::chart::optimize(optimization_method, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
-        const auto pos = layout.get(point_no);
-        const auto diff = stress_.contribution(point_no, table_distances_for_point, layout.data()) - target_contribution;
-        return Result(point_no, std::abs(diff) > hemisphering_stress_threshold_ ? Result::trapped : Result::hemisphering, pos, original_pos.distance(pos), diff);
-    }
-    else if (!hemisphering_coord.empty()) {
-        // relax to find real contribution
-        layout.set(point_no, hemisphering_coord);
-        acmacs::chart::optimize(optimization_method, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
-        auto pos = layout.get(point_no);
-        auto real_distance = original_pos.distance(pos);
-        if (real_distance > hemisphering_distance_threshold_ && real_distance < (hemisphering_distance_threshold_ * 1.2)) {
-            acmacs::chart::optimize(optimization_method, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::fine);
-            pos = layout.get(point_no);
-            real_distance = original_pos.distance(pos);
-        }
-        if (real_distance > hemisphering_distance_threshold_) {
-            if (const auto real_contribution_diff = stress_.contribution(point_no, table_distances_for_point, layout.data()) - target_contribution; real_contribution_diff < hemisphering_stress_threshold_) {
-                return Result(point_no, Result::hemisphering, pos, real_distance, real_contribution_diff);
-            }
-        }
-    }
-    return Result(point_no);
+    // constexpr auto optimization_method = acmacs::chart::optimization_method::alglib_cg_pca;
+
+    // acmacs::Layout layout(original_layout_);
+    // const auto table_distances_for_point = stress_.table_distances_for(point_no);
+    // const auto target_contribution = stress_.contribution(point_no, table_distances_for_point, layout.data());
+    // const auto original_pos = original_layout_.get(point_no);
+    // auto best_contribution = target_contribution;
+    // Coordinates best_coord, hemisphering_coord;
+    // const auto hemisphering_stress_threshold_rough = hemisphering_stress_threshold_ * 2;
+    // auto hemisphering_contribution = target_contribution + hemisphering_stress_threshold_rough;
+    // const auto area = area_for(table_distances_for_point);
+    // for (auto it = area.begin(grid_step_), last = area.end(); it != last; ++it) {
+    //     layout.set(point_no, *it);
+    //     const auto contribution = stress_.contribution(point_no, table_distances_for_point, layout.data());
+    //     if (contribution < best_contribution) {
+    //         best_contribution = contribution;
+    //         best_coord = *it;
+    //     }
+    //     else if (best_coord.empty() && contribution < hemisphering_contribution && original_pos.distance(*it) > hemisphering_distance_threshold_) {
+    //         hemisphering_contribution = contribution;
+    //         hemisphering_coord = *it;
+    //     }
+    // }
+    // if (!best_coord.empty()) {
+    //     layout.set(point_no, best_coord);
+    //     acmacs::chart::optimize(optimization_method, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
+    //     const auto pos = layout.get(point_no);
+    //     const auto diff = stress_.contribution(point_no, table_distances_for_point, layout.data()) - target_contribution;
+    //     return Result(point_no, std::abs(diff) > hemisphering_stress_threshold_ ? Result::trapped : Result::hemisphering, pos, original_pos.distance(pos), diff);
+    // }
+    // else if (!hemisphering_coord.empty()) {
+    //     // relax to find real contribution
+    //     layout.set(point_no, hemisphering_coord);
+    //     acmacs::chart::optimize(optimization_method, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
+    //     auto pos = layout.get(point_no);
+    //     auto real_distance = original_pos.distance(pos);
+    //     if (real_distance > hemisphering_distance_threshold_ && real_distance < (hemisphering_distance_threshold_ * 1.2)) {
+    //         acmacs::chart::optimize(optimization_method, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::fine);
+    //         pos = layout.get(point_no);
+    //         real_distance = original_pos.distance(pos);
+    //     }
+    //     if (real_distance > hemisphering_distance_threshold_) {
+    //         if (const auto real_contribution_diff = stress_.contribution(point_no, table_distances_for_point, layout.data()) - target_contribution; real_contribution_diff < hemisphering_stress_threshold_) {
+    //             return Result(point_no, Result::hemisphering, pos, real_distance, real_contribution_diff);
+    //         }
+    //     }
+    // }
+    // return Result(point_no);
 
 } // GridTest::test_point
 
 // ----------------------------------------------------------------------
 
-void GridTest::test_all()
+void GridTest::test_point(Result& result)
 {
-    const auto unmovable = projection_->unmovable(), disconnected = projection_->disconnected();
+    if (result.diagnosis == Result::not_tested) {
+        result.diagnosis = Result::normal;
+        constexpr auto optimization_method = acmacs::chart::optimization_method::alglib_cg_pca;
 
-    auto test_one = [&](auto point_no) {
-        if (!unmovable.contains(point_no) && !disconnected.contains(point_no)) {
-            if (const auto result = test_point(point_no); result)
-                std::cout << result.report() << '\n';
+        acmacs::Layout layout(original_layout_);
+        const auto table_distances_for_point = stress_.table_distances_for(result.point_no);
+        const auto target_contribution = stress_.contribution(result.point_no, table_distances_for_point, layout.data());
+        const auto original_pos = original_layout_.get(result.point_no);
+        auto best_contribution = target_contribution;
+        Coordinates best_coord, hemisphering_coord;
+        const auto hemisphering_stress_threshold_rough = hemisphering_stress_threshold_ * 2;
+        auto hemisphering_contribution = target_contribution + hemisphering_stress_threshold_rough;
+        const auto area = area_for(table_distances_for_point);
+        for (auto it = area.begin(grid_step_), last = area.end(); it != last; ++it) {
+            layout.set(result.point_no, *it);
+            const auto contribution = stress_.contribution(result.point_no, table_distances_for_point, layout.data());
+            if (contribution < best_contribution) {
+                best_contribution = contribution;
+                best_coord = *it;
+            }
+            else if (best_coord.empty() && contribution < hemisphering_contribution && original_pos.distance(*it) > hemisphering_distance_threshold_) {
+                hemisphering_contribution = contribution;
+                hemisphering_coord = *it;
+            }
         }
-    };
-
-    // std::for_each(acmacs::index_iterator(0UL), acmacs::index_iterator(chart_.number_of_points()), test_one);
-
-#pragma omp parallel for schedule(static)
-    for (size_t point_no = 0; point_no < chart_.number_of_points(); ++point_no) {
-        test_one(point_no);
+        if (!best_coord.empty()) {
+            layout.set(result.point_no, best_coord);
+            acmacs::chart::optimize(optimization_method, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
+            result.pos = layout.get(result.point_no);
+            result.distance = original_pos.distance(result.pos);
+            result.contribution_diff = stress_.contribution(result.point_no, table_distances_for_point, layout.data()) - target_contribution;
+            result.diagnosis = std::abs(result.contribution_diff) > hemisphering_stress_threshold_ ? Result::trapped : Result::hemisphering;
+        }
+        else if (!hemisphering_coord.empty()) {
+            // relax to find real contribution
+            layout.set(result.point_no, hemisphering_coord);
+            acmacs::chart::optimize(optimization_method, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
+            auto pos = layout.get(result.point_no);
+            auto real_distance = original_pos.distance(pos);
+            if (real_distance > hemisphering_distance_threshold_ && real_distance < (hemisphering_distance_threshold_ * 1.2)) {
+                acmacs::chart::optimize(optimization_method, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::fine);
+                pos = layout.get(result.point_no);
+                real_distance = original_pos.distance(pos);
+            }
+            if (real_distance > hemisphering_distance_threshold_) {
+                if (const auto real_contribution_diff = stress_.contribution(result.point_no, table_distances_for_point, layout.data()) - target_contribution;
+                    real_contribution_diff < hemisphering_stress_threshold_) {
+                    result.pos = pos;
+                    result.distance = real_distance;
+                    result.contribution_diff = real_contribution_diff;
+                    result.diagnosis = Result::hemisphering;
+                }
+            }
+        }
     }
+
+} // GridTest::test_point
+
+// ----------------------------------------------------------------------
+
+std::vector<GridTest::Result> GridTest::test_all()
+{
+    std::vector<Result> result(acmacs::index_iterator(0UL), acmacs::index_iterator(chart_.number_of_points()));
+    for (auto unmovable : projection_->unmovable())
+        result[unmovable].diagnosis = Result::excluded;
+    for (auto disconnected : projection_->disconnected())
+        result[disconnected].diagnosis = Result::excluded;
+    result.erase(std::remove_if(result.begin(), result.end(), [](const auto& entry) { return entry.diagnosis == Result::excluded; }), result.end());
+
+    std::cout << "threads: " << omp_get_num_threads() << " max threads: " << omp_get_max_threads() << '\n';
+#pragma omp parallel for default(none) shared(result) schedule(static, 1) //result.size()/static_cast<size_t>(omp_get_max_threads())/2)
+    for (size_t entry_no = 0; entry_no < result.size(); ++entry_no) {
+        test_point(result[entry_no]);
+    }
+
+    return result;
 
 } // GridTest::test_all
 
@@ -202,6 +275,12 @@ std::string GridTest::Result::report() const
 {
     std::string diag;
     switch (diagnosis) {
+      case excluded:
+          diag = "excl";
+          break;
+      case not_tested:
+          diag = "nott";
+          break;
       case normal:
           diag = "norm";
           break;
@@ -242,7 +321,11 @@ int main(int argc, char* const argv[])
             GridTest test(chart, projection_no, args["--step"]);
             // std::cout << test.initial_report() << '\n';
             if (args[1] == std::string("all")) {
-                test.test_all();
+                const auto result = test.test_all();
+                for (const auto& entry : result) {
+                    if (entry)
+                        std::cout << entry.report() << '\n';
+                }
             }
             else {
                 if (const auto result = test.test_point(std::stoul(args[1])); result)
