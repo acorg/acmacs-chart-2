@@ -405,12 +405,12 @@ std::string acmacs::chart::Projection::make_info() const
 {
     auto lt = layout();
     std::string result = std::to_string(stress()) + " " + std::to_string(lt->number_of_dimensions()) + 'd';
+    if (auto cmt = comment(); !cmt.empty())
+        result += " <" + cmt + '>';
     if (auto fcb = forced_column_bases(); fcb)
         result += " forced:" + acmacs::to_string(fcb);
     else
         result += " >=" + static_cast<std::string>(minimum_column_basis());
-    if (auto cmt = comment(); !cmt.empty())
-        result += " " + cmt;
     return result;
 
 } // acmacs::chart::Projection::make_info

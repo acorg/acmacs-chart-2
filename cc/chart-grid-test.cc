@@ -284,8 +284,8 @@ GridTest::Projection GridTest::make_new_projection_and_relax(const Results& resu
         }
     }
     const auto status = acmacs::chart::optimize(optimization_method_, stress_, layout->data(), layout->data() + layout->size(), acmacs::chart::optimization_precision::fine);
-    std::cerr << "initial stress: " << projection_->stress() << '\n';
-    std::cerr << "resulting stress: " << status.final_stress << '\n';
+    std::cout << "initial stress: " << projection_->stress() << '\n';
+    std::cout << "resulting stress: " << status.final_stress << '\n';
     return projection;
 
 } // GridTest::make_new_projection_and_relax
@@ -322,42 +322,54 @@ int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {
-                {"--step", 0.1, "grid step"},
-                {"--verbose", false},
-                {"--time", false, "report time of loading chart"},
-                {"-h", false},
-                {"--help", false},
-                {"-v", false},
-        });
+        argc_argv args(argc, argv,
+                       {
+                           {"--step", 0.1, "grid step"},
+                           {"--relax", false, "move trapped points and relax, test again, repeat while there are trapped points"},
+                           {"--verbose", false},
+                           {"--time", false, "report time of loading chart"},
+                           {"-h", false},
+                           {"--help", false},
+                           {"-v", false},
+                       });
         if (args["-h"] || args["--help"] || args.number_of_arguments() < 2 || args.number_of_arguments() > 3) {
             std::cerr << "Usage: " << args.program() << " [options] <chart-file> <point-no> [<output-chart>]\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {
             const auto report = do_report_time(args["--time"]);
+            const bool verbose = args["--verbose"] || args["-v"];
             const size_t projection_no = 0;
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
 
-            GridTest test(chart, projection_no, args["--step"]);
             // std::cout << test.initial_report() << '\n';
             if (args[1] == std::string("all")) {
-                const auto results = test.test_all();
-                for (const auto& entry : results) {
-                    if (entry)
-                        std::cout << entry.report() << '\n';
+                size_t projection_no_to_test = projection_no;
+                for (auto attempt = 1; attempt < 10; ++attempt) {
+                    GridTest test(chart, projection_no_to_test, args["--step"]);
+                    const auto results = test.test_all();
+                    if (verbose) {
+                        for (const auto& entry : results) {
+                            if (entry)
+                                std::cout << entry.report() << '\n';
+                        }
+                    }
+                    if (!args["--relax"])
+                        break;
+                    auto projection = test.make_new_projection_and_relax(results);
+                    projection->comment("grid-test-" + acmacs::to_string(attempt));
+                    if (std::all_of(results.begin(), results.end(), [](const auto& result) { return result.diagnosis != GridTest::Result::trapped; }))
+                        break;
+                    projection_no_to_test = projection->projection_no();
                 }
-                auto projection = test.make_new_projection_and_relax(results);
-
-                GridTest test2(chart, projection->projection_no(), args["--step"]);
-                const auto results2 = test2.test_all();
-                for (const auto& entry : results2) {
-                    if (entry)
-                        std::cout << entry.report() << '\n';
+                if (args.number_of_arguments() > 2) {
+                    chart.projections_modify()->sort();
+                    acmacs::chart::export_factory(chart, args[2], fs::path(args.program()).filename(), report);
                 }
-                auto projection2 = test.make_new_projection_and_relax(results2);
+                std::cerr << chart.make_info() << '\n';
             }
             else {
+                GridTest test(chart, projection_no, args["--step"]);
                 if (const auto result = test.test_point(std::stoul(args[1])); result)
                     std::cout << result.report() << '\n';
             }

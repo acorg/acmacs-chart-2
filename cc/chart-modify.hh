@@ -322,6 +322,8 @@ namespace acmacs::chart
                 }
             }
 
+        std::string comment() const override { return comment_; }
+
         std::optional<double> stored_stress() const override { return stress_; }
         void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { modify(); layout_->set(aPointNo, aCoordinates); transformed_layout_.reset(); }
         void rotate_radians(double aAngle) { modify(); transformation_.rotate(aAngle); transformed_layout_.reset(); }
@@ -338,6 +340,7 @@ namespace acmacs::chart
         virtual void randomize_layout(const PointIndexList& to_randomize, LayoutRandomizer& randomizer); // randomize just some point coordinates
         virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
         virtual void set_layout(const acmacs::LayoutInterface& layout);
+        virtual void comment(std::string comment) { modify(); comment_ = comment; }
         virtual optimization_status relax(acmacs::chart::optimization_options options)
             {
                 const auto status = acmacs::chart::optimize(*this, options);
@@ -371,6 +374,7 @@ namespace acmacs::chart
         mutable std::shared_ptr<acmacs::chart::Layout> transformed_layout_;
         mutable std::optional<double> stress_;
         ColumnBasesP forced_column_bases_;
+        std::string comment_;
 
         friend class ProjectionsModify;
         friend class ChartModify; // to set stress_ in ChartModify::relax()
@@ -390,7 +394,7 @@ namespace acmacs::chart
         std::optional<double> stored_stress() const override { if (modified()) return ProjectionModify::stored_stress(); else return main_->stored_stress(); } // no stress if projection was modified
         std::shared_ptr<Layout> layout() const override { return modified() ? layout_modified() : main_->layout(); }
         std::shared_ptr<Layout> transformed_layout() const override { return modified() ? transformed_layout_modified() : main_->transformed_layout(); }
-        std::string comment() const override { return main_->comment(); }
+        std::string comment() const override { return modified() ? ProjectionModify::comment() : main_->comment(); }
         size_t number_of_points() const override { return modified() ? number_of_points_modified() : main_->number_of_points(); }
         size_t number_of_dimensions() const override { return modified() ? number_of_dimensions_modified() : main_->number_of_dimensions(); }
         MinimumColumnBasis minimum_column_basis() const override { return main_->minimum_column_basis(); }
@@ -435,7 +439,6 @@ namespace acmacs::chart
 
         std::shared_ptr<Layout> layout() const override { return layout_modified(); }
         std::shared_ptr<Layout> transformed_layout() const override { return transformed_layout_modified(); }
-        std::string comment() const override { return {}; }
         size_t number_of_points() const override { return number_of_points_modified(); }
         size_t number_of_dimensions() const override { return number_of_dimensions_modified(); }
         MinimumColumnBasis minimum_column_basis() const override { return minimum_column_basis_; }
