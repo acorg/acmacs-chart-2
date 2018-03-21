@@ -259,8 +259,7 @@ std::vector<GridTest::Result> GridTest::test_all()
         result[disconnected].diagnosis = Result::excluded;
     result.erase(std::remove_if(result.begin(), result.end(), [](const auto& entry) { return entry.diagnosis == Result::excluded; }), result.end());
 
-    std::cout << "threads: " << omp_get_num_threads() << " max threads: " << omp_get_max_threads() << '\n';
-#pragma omp parallel for default(none) shared(result) schedule(static, 1) //result.size()/static_cast<size_t>(omp_get_max_threads())/2)
+#pragma omp parallel for default(none) shared(result) num_threads(omp_get_max_threads()) schedule(static, 4)
     for (size_t entry_no = 0; entry_no < result.size(); ++entry_no) {
         test_point(result[entry_no]);
     }
@@ -303,6 +302,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv, {
                 {"--step", 0.1, "grid step"},
+                {"--omp-chunk", 8},
                 {"--verbose", false},
                 {"--time", false, "report time of loading chart"},
                 {"-h", false},
