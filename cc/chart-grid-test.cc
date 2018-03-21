@@ -320,6 +320,7 @@ int main(int argc, char* const argv[])
                        {
                            {"--step", 0.1, "grid step"},
                            {"--relax", false, "move trapped points and relax, test again, repeat while there are trapped points"},
+                           {"--projection", 0, "projection number to test"},
                            {"--verbose", false},
                            {"--time", false, "report time of loading chart"},
                            {"-h", false},
@@ -333,7 +334,7 @@ int main(int argc, char* const argv[])
         else {
             const auto report = do_report_time(args["--time"]);
             const bool verbose = args["--verbose"] || args["-v"];
-            const size_t projection_no = 0;
+            const size_t projection_no = args["--projection"];
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
 
             // std::cout << test.initial_report() << '\n';
