@@ -347,7 +347,15 @@ int main(int argc, char* const argv[])
                     if (entry)
                         std::cout << entry.report() << '\n';
                 }
-                test.make_new_projection_and_relax(results);
+                auto projection = test.make_new_projection_and_relax(results);
+
+                GridTest test2(chart, projection->projection_no(), args["--step"]);
+                const auto results2 = test2.test_all();
+                for (const auto& entry : results2) {
+                    if (entry)
+                        std::cout << entry.report() << '\n';
+                }
+                auto projection2 = test.make_new_projection_and_relax(results2);
             }
             else {
                 if (const auto result = test.test_point(std::stoul(args[1])); result)
