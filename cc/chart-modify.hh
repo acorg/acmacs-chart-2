@@ -82,6 +82,8 @@ namespace acmacs::chart
         ProjectionsModifyP projections_;
         PlotSpecModifyP plot_spec_;
 
+        LayoutRandomizerPlain make_randomizer(const Stress<double>& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis) const;
+
     }; // class ChartModify
 
 // ----------------------------------------------------------------------
@@ -334,8 +336,8 @@ namespace acmacs::chart
 
         std::shared_ptr<acmacs::Layout> layout_modified() { modify(); return layout_; }
         std::shared_ptr<acmacs::Layout> layout_modified() const { return layout_; }
-        virtual void randomize_layout(double max_distance_multiplier = 1.0) { auto rnd = make_randomizer_plain(max_distance_multiplier); randomize_layout(rnd); }
-        virtual void randomize_layout(const PointIndexList& to_randomize, double max_distance_multiplier = 1.0) { auto rnd = make_randomizer_plain(max_distance_multiplier); randomize_layout(to_randomize, rnd); } // randomize just some point coordinates
+        virtual void randomize_layout(double max_distance_multiplier = 1.0) { auto rnd = make_randomizer_plain_with_table_max_distance(max_distance_multiplier); randomize_layout(rnd); }
+        virtual void randomize_layout(const PointIndexList& to_randomize, double max_distance_multiplier = 1.0) { auto rnd = make_randomizer_plain_with_table_max_distance(max_distance_multiplier); randomize_layout(to_randomize, rnd); } // randomize just some point coordinates
         virtual void randomize_layout(LayoutRandomizer& randomizer);
         virtual void randomize_layout(const PointIndexList& to_randomize, LayoutRandomizer& randomizer); // randomize just some point coordinates
         virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
@@ -379,7 +381,7 @@ namespace acmacs::chart
         friend class ProjectionsModify;
         friend class ChartModify; // to set stress_ in ChartModify::relax()
 
-        LayoutRandomizerPlain make_randomizer_plain(double max_distance_multiplier) const;
+        LayoutRandomizerPlain make_randomizer_plain_with_table_max_distance(double max_distance_multiplier) const;
 
     }; // class ProjectionModify
 

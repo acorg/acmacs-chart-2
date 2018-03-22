@@ -240,19 +240,35 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
 
 // ----------------------------------------------------------------------
 
+LayoutRandomizerPlain ChartModify::make_randomizer(const Stress<double>& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis) const
+{
+    ProjectionModifyNew prj(*this, number_of_dimensions, minimum_column_basis);
+    auto rnd = prj.make_randomizer_plain_with_table_max_distance(1.0);
+    prj.randomize_layout(rnd);
+    acmacs::chart::optimize(optimization_method::alglib_cg_pca, stress, prj.layout_modified()->data(), prj.layout_modified()->size(), optimization_precision::very_rough);
+    auto sq = [](double v) { return v*v; };
+    const auto mm = prj.layout_modified()->minmax();
+    const auto radius = std::sqrt(std::accumulate(mm.begin(), mm.end(), 0.0, [&sq](double sum, const auto& p) { return sum + sq(p.second - p.first); })) / 2.0;
+    rnd.radius(radius);
+    return rnd;
+
+} // ChartModify::make_randomizer
+
+// ----------------------------------------------------------------------
+
 void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, bool report_stresses)
 {
     const size_t start_num_dim = dimension_annealing && number_of_dimensions < 5 ? 5 : number_of_dimensions;
     auto stress = acmacs::chart::stress_factory<double>(*this, start_num_dim, minimum_column_basis, options.mult, false);
+    auto rnd = make_randomizer(stress, start_num_dim, minimum_column_basis);
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(number_of_optimizations);
     std::transform(projections.begin(), projections.end(), projections.begin(), [start_num_dim, minimum_column_basis, pp=projections_modify()](const auto&) { return pp->new_from_scratch(start_num_dim, minimum_column_basis); });
 
-//#pragma omp parallel for default(none) firstprivate(stress) shared(projections,start_num_dim,number_of_dimensions,dimension_annealing,options,report_stresses,minimum_column_basis) num_threads(omp_get_max_threads()) schedule(static, 4)
-#pragma omp parallel for default(shared) firstprivate(stress) schedule(static, 4) //shared(projections,start_num_dim,number_of_dimensions,dimension_annealing,options,report_stresses,minimum_column_basis)
+#pragma omp parallel for default(shared) firstprivate(stress) schedule(static, 4)
     for (size_t p_no = 0 ; p_no < projections.size(); ++p_no) {
         auto projection = projections[p_no];
-        projection->randomize_layout(options.max_distance_multiplier);
+        projection->randomize_layout(rnd);
         auto layout = projection->layout_modified();
         stress.change_number_of_dimensions(start_num_dim);
         const auto status1 = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
@@ -266,8 +282,12 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
         else {
             projection->stress_ = status1.final_stress;
         }
-        if (report_stresses)
-            std::cout << std::setw(3) << p_no << ' ' << std::fixed << std::setprecision(4) << *projection->stress_ << '\n';
+        if (report_stresses) {
+            auto sq = [](double v) { return v*v; };
+            const auto mm = layout->minmax();
+            const auto diameter = std::sqrt(sq(mm[0].second - mm[0].first) + sq(mm[1].second - mm[1].first));
+            std::cout << std::setw(3) << p_no << ' ' << std::fixed << std::setprecision(4) << *projection->stress_ << " dia:" << diameter << '\n';
+        }
     }
 
 } // ChartModify::relax
@@ -897,11 +917,8 @@ void ProjectionsModify::remove_all_except(size_t projection_no)
 void ProjectionModify::randomize_layout(LayoutRandomizer& randomizer)
 {
     modify();
-    auto layout = layout_modified();
-    for (size_t point_no = 0; point_no < layout->number_of_points(); ++point_no) {
-        for (size_t dim_no = 0; dim_no < layout->number_of_dimensions(); ++dim_no)
-            layout->set(point_no, dim_no, randomizer());
-    }
+    for (double& val : *layout_modified())
+        val = randomizer();
 
 } // ProjectionModify::randomize_layout
 
@@ -920,14 +937,16 @@ void ProjectionModify::randomize_layout(const PointIndexList& to_randomize, Layo
 
 // ----------------------------------------------------------------------
 
-LayoutRandomizerPlain ProjectionModify::make_randomizer_plain(double max_distance_multiplier) const
+LayoutRandomizerPlain ProjectionModify::make_randomizer_plain_with_table_max_distance(double max_distance_multiplier) const
 {
     auto cb = forced_column_bases();
     if (!cb)
         cb = chart().column_bases(minimum_column_basis());
-    return LayoutRandomizerPlain(chart().titers()->max_distance(*cb) * max_distance_multiplier);
+    const auto max_distance = chart().titers()->max_distance(*cb);
+    // std::cerr << "max_distance: " << max_distance << '\n';
+    return LayoutRandomizerPlain(max_distance * max_distance_multiplier);
 
-} // ProjectionModify::make_randomizer_plain
+} // ProjectionModify::make_randomizer_plain_with_table_max_distance
 
 // ----------------------------------------------------------------------
 

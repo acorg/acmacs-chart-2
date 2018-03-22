@@ -10,6 +10,7 @@ namespace acmacs::chart
     {
      public:
         LayoutRandomizer() : generator_(std::random_device()()) {}
+        LayoutRandomizer(LayoutRandomizer&&) = default;
         virtual ~LayoutRandomizer() = default;
 
         virtual double operator()() = 0;
@@ -29,8 +30,10 @@ namespace acmacs::chart
     {
      public:
         LayoutRandomizerPlain(double radius) : distribution_(-radius, radius) {}
+        LayoutRandomizerPlain(LayoutRandomizerPlain&&) = default;
 
         double operator()() override { return distribution_(generator()); }
+        void radius(double radius) { distribution_ = std::uniform_real_distribution<>(-radius, radius); }
 
      private:
         std::uniform_real_distribution<> distribution_;

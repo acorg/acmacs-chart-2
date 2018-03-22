@@ -48,7 +48,12 @@ namespace acmacs::chart
       // creates new projection and optimizes it with or without dimension annealing
     optimization_status optimize(ChartModify& chart, MinimumColumnBasis minimum_column_basis, const dimension_schedule& schedule, optimization_options options = optimization_options{});
 
-    optimization_status optimize(optimization_method optimization_method, const Stress<double>& stress, double* arg_first, double* arg_last, optimization_precision precision = optimization_precision::fine);
+    optimization_status optimize(optimization_method method, const Stress<double>& stress, double* arg_first, double* arg_last, optimization_precision precision = optimization_precision::fine);
+    inline optimization_status optimize(optimization_method method, const Stress<double>& stress, double* arg_first, size_t arg_size, optimization_precision precision = optimization_precision::fine)
+    {
+        return optimize(method, stress, arg_first, arg_first + arg_size, precision);
+    }
+
     DimensionAnnelingStatus dimension_annealing(optimization_method optimization_method, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
 
 } // namespace acmacs::chart
