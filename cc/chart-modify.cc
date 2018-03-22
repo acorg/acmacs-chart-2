@@ -181,6 +181,22 @@ PlotSpecModifyP ChartModify::plot_spec_modify()
 
 // ----------------------------------------------------------------------
 
+LayoutRandomizerPlain ChartModify::make_randomizer(const Stress<double>& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis) const
+{
+    ProjectionModifyNew prj(*this, number_of_dimensions, minimum_column_basis);
+    auto rnd = prj.make_randomizer_plain_with_table_max_distance(1.0);
+    prj.randomize_layout(rnd);
+    acmacs::chart::optimize(optimization_method::alglib_cg_pca, stress, prj.layout_modified()->data(), prj.layout_modified()->size(), optimization_precision::very_rough);
+    auto sq = [](double v) { return v*v; };
+    const auto mm = prj.layout_modified()->minmax();
+    const auto radius = std::sqrt(std::accumulate(mm.begin(), mm.end(), 0.0, [&sq](double sum, const auto& p) { return sum + sq(p.second - p.first); })) / 2.0;
+    rnd.radius(radius);
+    return rnd;
+
+} // ChartModify::make_randomizer
+
+// ----------------------------------------------------------------------
+
 std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, optimization_options options, const PointIndexList& disconnect_points)
 {
     const auto start = std::chrono::high_resolution_clock::now();
@@ -189,7 +205,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     projection->set_disconnected(disconnect_points);
     auto layout = projection->layout_modified();
     auto stress = acmacs::chart::stress_factory<double>(*projection, options.mult);
-    projection->randomize_layout(options.max_distance_multiplier);
+    projection->randomize_layout(make_randomizer(stress, start_num_dim, minimum_column_basis));
     auto status = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
     if (start_num_dim > number_of_dimensions) {
         acmacs::chart::dimension_annealing(options.method, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
@@ -207,52 +223,6 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     return {status, projection};
 
 } // ChartModify::relax
-
-// ----------------------------------------------------------------------
-
-// void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, bool report_stresses)
-// {
-//     const size_t start_num_dim = dimension_annealing && number_of_dimensions < 5 ? 5 : number_of_dimensions;
-//     auto stress = acmacs::chart::stress_factory<double>(*this, start_num_dim, minimum_column_basis, options.mult, false);
-
-// // #pragma omp parallel for default(none) firstprivate(stress) shared(start_num_dim,number_of_dimensions,dimension_annealing,options,report_stresses,number_of_optimizations,minimum_column_basis) num_threads(omp_get_max_threads()) schedule(static, 4)
-//     for (size_t opt_no = 0 ; opt_no < number_of_optimizations; ++opt_no) {
-//         auto projection = projections_modify()->new_from_scratch(start_num_dim, minimum_column_basis);
-//         projection->randomize_layout(options.max_distance_multiplier);
-//         auto layout = projection->layout_modified();
-//         stress.change_number_of_dimensions(start_num_dim);
-//         const auto status1 = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
-//         if (start_num_dim > number_of_dimensions) {
-//             acmacs::chart::dimension_annealing(options.method, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
-//             layout->change_number_of_dimensions(number_of_dimensions);
-//             stress.change_number_of_dimensions(number_of_dimensions);
-//             const auto status2 = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
-//             projection->stress_ = status2.final_stress;
-//         }
-//         else {
-//             projection->stress_ = status1.final_stress;
-//         }
-//         if (report_stresses)
-//             std::cout << std::setw(3) << opt_no << ' ' << std::fixed << std::setprecision(4) << *projection->stress_ << '\n';
-//     }
-
-// } // ChartModify::relax
-
-// ----------------------------------------------------------------------
-
-LayoutRandomizerPlain ChartModify::make_randomizer(const Stress<double>& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis) const
-{
-    ProjectionModifyNew prj(*this, number_of_dimensions, minimum_column_basis);
-    auto rnd = prj.make_randomizer_plain_with_table_max_distance(1.0);
-    prj.randomize_layout(rnd);
-    acmacs::chart::optimize(optimization_method::alglib_cg_pca, stress, prj.layout_modified()->data(), prj.layout_modified()->size(), optimization_precision::very_rough);
-    auto sq = [](double v) { return v*v; };
-    const auto mm = prj.layout_modified()->minmax();
-    const auto radius = std::sqrt(std::accumulate(mm.begin(), mm.end(), 0.0, [&sq](double sum, const auto& p) { return sum + sq(p.second - p.first); })) / 2.0;
-    rnd.radius(radius);
-    return rnd;
-
-} // ChartModify::make_randomizer
 
 // ----------------------------------------------------------------------
 
@@ -283,10 +253,7 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
             projection->stress_ = status1.final_stress;
         }
         if (report_stresses) {
-            auto sq = [](double v) { return v*v; };
-            const auto mm = layout->minmax();
-            const auto diameter = std::sqrt(sq(mm[0].second - mm[0].first) + sq(mm[1].second - mm[1].first));
-            std::cout << std::setw(3) << p_no << ' ' << std::fixed << std::setprecision(4) << *projection->stress_ << " dia:" << diameter << '\n';
+            std::cout << std::setw(3) << p_no << ' ' << std::fixed << std::setprecision(4) << *projection->stress_ << '\n';
         }
     }
 

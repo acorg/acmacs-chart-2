@@ -408,7 +408,7 @@ std::string acmacs::chart::Projection::make_info() const
     if (auto cmt = comment(); !cmt.empty())
         result += " <" + cmt + '>';
     if (auto fcb = forced_column_bases(); fcb)
-        result += " forced:" + acmacs::to_string(fcb);
+        result += " forced-column-bases"; // + acmacs::to_string(fcb);
     else
         result += " >=" + static_cast<std::string>(minimum_column_basis());
     return result;
