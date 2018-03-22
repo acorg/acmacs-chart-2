@@ -50,6 +50,7 @@ class GridTest
     Result test_point(size_t point_no);
     void test_point(Result& result);
     Results test_all();
+    std::string report(const Results& results) const;
     Projection make_new_projection_and_relax(const Results& results);
 
  private:
@@ -278,11 +279,23 @@ GridTest::Projection GridTest::make_new_projection_and_relax(const Results& resu
         }
     }
     const auto status = acmacs::chart::optimize(optimization_method_, stress_, layout->data(), layout->data() + layout->size(), acmacs::chart::optimization_precision::fine);
-    std::cout << "initial stress: " << projection_->stress() << '\n';
-    std::cout << "resulting stress: " << status.final_stress << '\n';
+    std::cout << "stress: " << projection_->stress() << " --> " << status.final_stress << '\n';
     return projection;
 
 } // GridTest::make_new_projection_and_relax
+
+// ----------------------------------------------------------------------
+
+std::string GridTest::report(const Results& results) const
+{
+    size_t trapped = 0, hemi = 0;
+    std::for_each(results.begin(), results.end(), [&](const auto& r) { if (r.diagnosis == Result::trapped) ++trapped; else if (r.diagnosis == Result::hemisphering) ++hemi; });
+    if (trapped || hemi)
+        return "trapped:" + std::to_string(trapped) + " hemisphering:" + std::to_string(hemi);
+    else
+        return "nothing found";
+
+} // GridTest::report
 
 // ----------------------------------------------------------------------
 
@@ -343,6 +356,7 @@ int main(int argc, char* const argv[])
                 for (auto attempt = 1; attempt < 10; ++attempt) {
                     GridTest test(chart, projection_no_to_test, args["--step"]);
                     const auto results = test.test_all();
+                    std::cout << test.report(results) << '\n';
                     if (verbose) {
                         for (const auto& entry : results) {
                             if (entry)
