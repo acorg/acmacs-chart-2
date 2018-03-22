@@ -167,15 +167,28 @@ static const char* alglib_lbfgs_optimize_termination_types[] = {
 
 // ----------------------------------------------------------------------
 
+inline std::pair<double, double> eps(acmacs::chart::optimization_precision precision)
+{
+    switch (precision) {
+      case acmacs::chart::optimization_precision::rough:
+          return {0.5, 1e-3};
+      case acmacs::chart::optimization_precision::very_rough:
+          return {1.0, 0.1};
+      case acmacs::chart::optimization_precision::fine:
+          return {1e-10, 0.0};
+    }
+    return {1e-10, 0.0};
+}
+
 void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision)
 {
     using namespace alglib;
 
-    const double epsg = precision == acmacs::chart::optimization_precision::rough ? 0.5 : 1e-10;
+    const auto [epsg, epsx] = eps(precision);
     const double epsf = 0;
-    const double epsx = precision == acmacs::chart::optimization_precision::rough ? 1e-3 : 0;
     const double stpmax = 0.1;
     const ae_int_t max_iterations = 0;
+
 
       // alglib does not like NaN coordinates of disconnected points, set them to 0
     stress.set_coordinates_of_disconnected(arg_first, 0.0);
@@ -203,6 +216,7 @@ void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acm
     status.termination_report = alglib_lbfgs_optimize_termination_types[(rep.terminationtype > 0 && rep.terminationtype < 9) ? rep.terminationtype - 1 : 8];
     status.number_of_iterations = static_cast<size_t>(rep.iterationscount);
     status.number_of_stress_calculations = static_cast<size_t>(rep.nfev);
+    std::cerr << "iter: " << rep.iterationscount << " str: " << rep.nfev << '\n';
 
 } // alglib_lbfgs_optimize
 
@@ -225,9 +239,8 @@ void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs
 {
     using namespace alglib;
 
-    const double epsg = precision == acmacs::chart::optimization_precision::rough ? 0.5 : 1e-10;
+    const auto [epsg, epsx] = eps(precision);
     const double epsf = 0;
-    const double epsx = precision == acmacs::chart::optimization_precision::rough ? 1e-3 : 0;
     const ae_int_t max_iterations = 0;
 
       // alglib does not like NaN coordinates of disconnected points, set them to 0

@@ -10,7 +10,7 @@
 namespace acmacs::chart
 {
     enum class optimization_method { alglib_lbfgs_pca, alglib_cg_pca };
-    enum class optimization_precision { rough, fine };
+    enum class optimization_precision { rough, very_rough, fine };
     enum class multiply_antigen_titer_until_column_adjust { no, yes };
 
     struct optimization_options
