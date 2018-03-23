@@ -34,16 +34,17 @@ namespace acmacs
             double contribution_diff;
         };
 
-        struct Results : public std::vector<Result>
+        class Results : public std::vector<Result>
         {
+         public:
             using std::vector<Result>::vector;
+            std::string report() const;
         };
 
         std::string point_name(size_t point_no) const;
         Result test_point(size_t point_no);
         void test_point(Result& result);
         Results test_all();
-        std::string report(const Results& results) const;
         Projection make_new_projection_and_relax(const Results& results);
 
       private:

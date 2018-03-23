@@ -40,7 +40,7 @@ int main(int argc, char* const argv[])
                 for (auto attempt = 1; attempt < 10; ++attempt) {
                     acmacs::GridTest test(chart, projection_no_to_test, args["--step"]);
                     const auto results = test.test_all();
-                    std::cout << test.report(results) << '\n';
+                    std::cout << results.report() << '\n';
                     if (verbose) {
                         for (const auto& entry : results) {
                             if (entry)

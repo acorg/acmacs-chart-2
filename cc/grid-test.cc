@@ -143,16 +143,16 @@ acmacs::GridTest::Projection acmacs::GridTest::make_new_projection_and_relax(con
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::GridTest::report(const Results& results) const
+std::string acmacs::GridTest::Results::report() const
 {
     size_t trapped = 0, hemi = 0;
-    std::for_each(results.begin(), results.end(), [&](const auto& r) { if (r.diagnosis == Result::trapped) ++trapped; else if (r.diagnosis == Result::hemisphering) ++hemi; });
+    std::for_each(begin(), end(), [&](const auto& r) { if (r.diagnosis == Result::trapped) ++trapped; else if (r.diagnosis == Result::hemisphering) ++hemi; });
     if (trapped || hemi)
         return "trapped:" + std::to_string(trapped) + " hemisphering:" + std::to_string(hemi);
     else
         return "nothing found";
 
-} // acmacs::GridTest::report
+} // acmacs::GridTest::Results::report
 
 // ----------------------------------------------------------------------
 
