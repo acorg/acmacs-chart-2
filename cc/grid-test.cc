@@ -3,6 +3,13 @@
 
 // ----------------------------------------------------------------------
 
+#if __GNUC__ == 7
+// workaround for a bug in gcc 7.2
+static std::vector<acmacs::GridTest::Result> _gcc72_bug;
+#endif
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::GridTest::point_name(size_t point_no) const
 {
     if (antigen(point_no)) {
