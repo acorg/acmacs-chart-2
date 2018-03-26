@@ -4,7 +4,7 @@
 
 // ----------------------------------------------------------------------
 
-namespace acmacs
+namespace acmacs::chart
 {
     class GridTest
     {
@@ -26,6 +26,7 @@ namespace acmacs
                 : point_no(a_point_no), diagnosis(a_diagnosis), pos(a_pos), distance(a_distance), contribution_diff(diff) {}
             operator bool() const { return diagnosis == trapped || diagnosis == hemisphering; }
             std::string report() const;
+            std::string diagnosis_str() const;
 
             size_t point_no;
             diagnosis_t diagnosis;
@@ -39,6 +40,7 @@ namespace acmacs
          public:
             using std::vector<Result>::vector;
             std::string report() const;
+            auto count_trapped_hemisphering() const { return std::count_if(begin(), end(), [](const auto& r) { return r.diagnosis == Result::trapped || r.diagnosis == Result::hemisphering; }); }
         };
 
         std::string point_name(size_t point_no) const;
@@ -62,7 +64,7 @@ namespace acmacs
         // acmacs::Area area_for(size_t point_no) const;
         acmacs::Area area_for(const Stress::TableDistancesForPoint& table_distances_for_point) const;
 
-    }; // class GridTest
+    }; // class GridTest::chart
 
 } // namespace acmacs
 

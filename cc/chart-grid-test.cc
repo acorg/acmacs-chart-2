@@ -38,7 +38,7 @@ int main(int argc, char* const argv[])
             if (args[1] == std::string("all")) {
                 size_t projection_no_to_test = projection_no;
                 for (auto attempt = 1; attempt < 10; ++attempt) {
-                    acmacs::GridTest test(chart, projection_no_to_test, args["--step"]);
+                    acmacs::chart::GridTest test(chart, projection_no_to_test, args["--step"]);
                     const auto results = test.test_all();
                     std::cout << results.report() << '\n';
                     if (verbose) {
@@ -51,7 +51,7 @@ int main(int argc, char* const argv[])
                         break;
                     auto projection = test.make_new_projection_and_relax(results);
                     projection->comment("grid-test-" + acmacs::to_string(attempt));
-                    if (std::all_of(results.begin(), results.end(), [](const auto& result) { return result.diagnosis != acmacs::GridTest::Result::trapped; }))
+                    if (std::all_of(results.begin(), results.end(), [](const auto& result) { return result.diagnosis != acmacs::chart::GridTest::Result::trapped; }))
                         break;
                     projection_no_to_test = projection->projection_no();
                 }
@@ -62,7 +62,7 @@ int main(int argc, char* const argv[])
                 std::cerr << chart.make_info() << '\n';
             }
             else {
-                acmacs::GridTest test(chart, projection_no, args["--step"]);
+                acmacs::chart::GridTest test(chart, projection_no, args["--step"]);
                 if (const auto result = test.test_point(std::stoul(args[1])); result)
                     std::cout << result.report() << '\n';
             }

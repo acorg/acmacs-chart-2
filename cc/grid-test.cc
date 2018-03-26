@@ -5,12 +5,12 @@
 
 #if __GNUC__ == 7
 // workaround for a bug in gcc 7.2
-static std::vector<acmacs::GridTest::Result> _gcc72_bug;
+static std::vector<acmacs::chart::GridTest::Result> _gcc72_bug;
 #endif
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::GridTest::point_name(size_t point_no) const
+std::string acmacs::chart::GridTest::point_name(size_t point_no) const
 {
     if (antigen(point_no)) {
         return "AG " + acmacs::to_string(point_no) + ' ' + (*chart_.antigens())[point_no]->full_name();
@@ -20,11 +20,11 @@ std::string acmacs::GridTest::point_name(size_t point_no) const
         return "SR " + acmacs::to_string(serum_no) + ' ' + (*chart_.sera())[serum_no]->full_name();
     }
 
-} // acmacs::GridTest::point_name
+} // acmacs::chart::GridTest::point_name
 
 // ----------------------------------------------------------------------
 
-acmacs::Area acmacs::GridTest::area_for(const Stress::TableDistancesForPoint& table_distances_for_point) const
+acmacs::Area acmacs::chart::GridTest::area_for(const Stress::TableDistancesForPoint& table_distances_for_point) const
 {
     acmacs::Area result(original_layout_.get(table_distances_for_point.regular.empty() ? table_distances_for_point.less_than.front().another_point : table_distances_for_point.regular.front().another_point));
     auto extend = [&result,this](const auto& entry) {
@@ -37,21 +37,21 @@ acmacs::Area acmacs::GridTest::area_for(const Stress::TableDistancesForPoint& ta
     std::for_each(table_distances_for_point.less_than.begin(), table_distances_for_point.less_than.end(), extend);
     return result;
 
-} // acmacs::GridTest::area_for
+} // acmacs::chart::GridTest::area_for
 
 // ----------------------------------------------------------------------
 
-acmacs::GridTest::Result acmacs::GridTest::test_point(size_t point_no)
+acmacs::chart::GridTest::Result acmacs::chart::GridTest::test_point(size_t point_no)
 {
     Result result(point_no);
     test_point(result);
     return result;
 
-} // acmacs::GridTest::test_point
+} // acmacs::chart::GridTest::test_point
 
 // ----------------------------------------------------------------------
 
-void acmacs::GridTest::test_point(Result& result)
+void acmacs::chart::GridTest::test_point(Result& result)
 {
     if (result.diagnosis == Result::not_tested) {
         result.diagnosis = Result::normal;
@@ -108,11 +108,11 @@ void acmacs::GridTest::test_point(Result& result)
         }
     }
 
-} // acmacs::GridTest::test_point
+} // acmacs::chart::GridTest::test_point
 
 // ----------------------------------------------------------------------
 
-acmacs::GridTest::Results acmacs::GridTest::test_all()
+acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all()
 {
       // std::cerr << "stress: " << stress_.value(original_layout_.data()) << '\n';
     Results result(acmacs::index_iterator(0UL), acmacs::index_iterator(chart_.number_of_points()));
@@ -129,11 +129,11 @@ acmacs::GridTest::Results acmacs::GridTest::test_all()
 
     return result;
 
-} // acmacs::GridTest::test_all
+} // acmacs::chart::GridTest::test_all
 
 // ----------------------------------------------------------------------
 
-acmacs::GridTest::Projection acmacs::GridTest::make_new_projection_and_relax(const Results& results)
+acmacs::chart::GridTest::Projection acmacs::chart::GridTest::make_new_projection_and_relax(const Results& results)
 {
     auto projection = chart_.projections_modify()->new_by_cloning(*projection_);
     auto layout = projection->layout_modified();
@@ -146,11 +146,11 @@ acmacs::GridTest::Projection acmacs::GridTest::make_new_projection_and_relax(con
     std::cout << "stress: " << projection_->stress() << " --> " << status.final_stress << '\n';
     return projection;
 
-} // acmacs::GridTest::make_new_projection_and_relax
+} // acmacs::chart::GridTest::make_new_projection_and_relax
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::GridTest::Results::report() const
+std::string acmacs::chart::GridTest::Results::report() const
 {
     size_t trapped = 0, hemi = 0;
     std::for_each(begin(), end(), [&](const auto& r) { if (r.diagnosis == Result::trapped) ++trapped; else if (r.diagnosis == Result::hemisphering) ++hemi; });
@@ -159,11 +159,11 @@ std::string acmacs::GridTest::Results::report() const
     else
         return "nothing found";
 
-} // acmacs::GridTest::Results::report
+} // acmacs::chart::GridTest::Results::report
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::GridTest::Result::report() const
+std::string acmacs::chart::GridTest::Result::report() const
 {
     std::string diag;
     switch (diagnosis) {
@@ -185,7 +185,27 @@ std::string acmacs::GridTest::Result::report() const
     }
     return diag + ' ' + acmacs::to_string(point_no) + " diff:" + acmacs::to_string(contribution_diff, 4) + " dist:" + acmacs::to_string(distance, 4);
 
-} // acmacs::GridTest::Result::report
+} // acmacs::chart::GridTest::Result::report
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::GridTest::Result::diagnosis_str() const
+{
+    switch (diagnosis) {
+      case excluded:
+          return "excluded";
+      case not_tested:
+          return "not_tested";
+      case normal:
+          return "normal";
+      case trapped:
+          return "trapped";
+      case hemisphering:
+          return "hemisphering";
+    }
+    return "not_tested";
+
+} // acmacs::chart::GridTest::Result::diagnosis_str
 
 // ----------------------------------------------------------------------
 
