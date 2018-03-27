@@ -16,13 +16,14 @@ namespace acmacs::chart
     struct optimization_options
     {
         optimization_options() = default;
-        optimization_options(optimization_method a_method, optimization_precision a_precision = optimization_precision::fine, double a_max_distance_multiplier = 1.0)
-            : method{a_method}, precision{a_precision}, max_distance_multiplier{a_max_distance_multiplier} {}
+        optimization_options(optimization_method a_method, optimization_precision a_precision = optimization_precision::fine, double a_randomization_diameter_multiplier = 2.0)
+            : method{a_method}, precision{a_precision}, randomization_diameter_multiplier{a_randomization_diameter_multiplier} {}
 
         optimization_method method = optimization_method::alglib_cg_pca;
         optimization_precision precision = optimization_precision::fine;
         multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes;
-        double max_distance_multiplier = 1.0; // for layout randomizations
+        double randomization_diameter_multiplier = 2.0; // for layout randomizations
+
     }; // struct optimization_options
 
     struct dimension_schedule

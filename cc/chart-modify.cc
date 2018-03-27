@@ -181,16 +181,16 @@ PlotSpecModifyP ChartModify::plot_spec_modify()
 
 // ----------------------------------------------------------------------
 
-LayoutRandomizerPlain ChartModify::make_randomizer(const Stress<double>& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis) const
+LayoutRandomizerPlain ChartModify::make_randomizer(const Stress<double>& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier) const
 {
     ProjectionModifyNew prj(*this, number_of_dimensions, minimum_column_basis);
-    auto rnd = prj.make_randomizer_plain_with_table_max_distance(1.0);
+    auto rnd = prj.make_randomizer_plain_with_table_max_distance();
     prj.randomize_layout(rnd);
     acmacs::chart::optimize(optimization_method::alglib_cg_pca, stress, prj.layout_modified()->data(), prj.layout_modified()->size(), optimization_precision::very_rough);
     auto sq = [](double v) { return v*v; };
     const auto mm = prj.layout_modified()->minmax();
-    const auto radius = std::sqrt(std::accumulate(mm.begin(), mm.end(), 0.0, [&sq](double sum, const auto& p) { return sum + sq(p.second - p.first); })) / 2.0;
-    rnd.radius(radius);
+    const auto diameter = std::sqrt(std::accumulate(mm.begin(), mm.end(), 0.0, [&sq](double sum, const auto& p) { return sum + sq(p.second - p.first); }));
+    rnd.diameter(diameter * diameter_multiplier);
     return rnd;
 
 } // ChartModify::make_randomizer
@@ -205,7 +205,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     projection->set_disconnected(disconnect_points);
     auto layout = projection->layout_modified();
     auto stress = acmacs::chart::stress_factory<double>(*projection, options.mult);
-    projection->randomize_layout(make_randomizer(stress, start_num_dim, minimum_column_basis));
+    projection->randomize_layout(make_randomizer(stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier));
     auto status = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
     if (start_num_dim > number_of_dimensions) {
         acmacs::chart::dimension_annealing(options.method, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
@@ -230,7 +230,7 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
 {
     const size_t start_num_dim = dimension_annealing && number_of_dimensions < 5 ? 5 : number_of_dimensions;
     auto stress = acmacs::chart::stress_factory<double>(*this, start_num_dim, minimum_column_basis, options.mult, false);
-    auto rnd = make_randomizer(stress, start_num_dim, minimum_column_basis);
+    auto rnd = make_randomizer(stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(number_of_optimizations);
     std::transform(projections.begin(), projections.end(), projections.begin(), [start_num_dim, minimum_column_basis, pp=projections_modify()](const auto&) { return pp->new_from_scratch(start_num_dim, minimum_column_basis); });
@@ -904,14 +904,14 @@ void ProjectionModify::randomize_layout(const PointIndexList& to_randomize, Layo
 
 // ----------------------------------------------------------------------
 
-LayoutRandomizerPlain ProjectionModify::make_randomizer_plain_with_table_max_distance(double max_distance_multiplier) const
+LayoutRandomizerPlain ProjectionModify::make_randomizer_plain_with_table_max_distance() const
 {
     auto cb = forced_column_bases();
     if (!cb)
         cb = chart().column_bases(minimum_column_basis());
     const auto max_distance = chart().titers()->max_distance(*cb);
     // std::cerr << "max_distance: " << max_distance << '\n';
-    return LayoutRandomizerPlain(max_distance * max_distance_multiplier);
+    return LayoutRandomizerPlain(max_distance);
 
 } // ProjectionModify::make_randomizer_plain_with_table_max_distance
 

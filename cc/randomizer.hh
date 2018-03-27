@@ -29,11 +29,12 @@ namespace acmacs::chart
     class LayoutRandomizerPlain : public LayoutRandomizer
     {
      public:
-        LayoutRandomizerPlain(double radius) : distribution_(-radius, radius) {}
+        LayoutRandomizerPlain(double diameter) : distribution_(-diameter / 2, diameter / 2) {}
         LayoutRandomizerPlain(LayoutRandomizerPlain&&) = default;
 
         double operator()() override { return distribution_(generator()); }
-        void radius(double radius) { distribution_ = std::uniform_real_distribution<>(-radius, radius); }
+        void diameter(double diameter) { distribution_ = std::uniform_real_distribution<>(-diameter / 2, diameter / 2); }
+        double diameter() const { return std::abs(distribution_.a() - distribution_.b()); }
 
      private:
         std::uniform_real_distribution<> distribution_;

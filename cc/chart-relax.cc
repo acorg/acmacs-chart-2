@@ -23,7 +23,7 @@ int main(int argc, char* const argv[])
                 {"--rough", false},
                 {"--no-dimension-annealing", false},
                 {"--method", "cg", "method: lbfgs, cg"},
-                {"--md", 1.0, "max distance multiplier"},
+                {"--md", 2.0, "randomization diameter multiplier"},
                 {"--keep-projections", 0, "number of projections to keep, 0 - keep all"},
                 {"--disconnect-antigens", "", "comma separated list of antigen/point indexes (0-based) to disconnect for the new projections"},
                 {"--disconnect-sera", "", "comma separated list of serum indexes (0-based) to disconnect for the new projections"},
