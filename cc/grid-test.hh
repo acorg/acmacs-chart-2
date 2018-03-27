@@ -16,6 +16,7 @@ namespace acmacs::chart
 
         GridTest(Chart& chart, size_t projection_no, double grid_step)
             : chart_(chart), projection_(chart.projection_modify(projection_no)), grid_step_(grid_step), original_layout_(*projection_->layout()), stress_(chart.make_stress<double>(projection_no)) {}
+        void reset(Projection projection) { projection_ = projection; original_layout_ = *projection_->layout(); stress_ = chart_.make_stress<double>(projection_->projection_no()); }
 
         struct Result
         {
@@ -41,13 +42,14 @@ namespace acmacs::chart
             using std::vector<Result>::vector;
             std::string report() const;
             auto count_trapped_hemisphering() const { return std::count_if(begin(), end(), [](const auto& r) { return r.diagnosis == Result::trapped || r.diagnosis == Result::hemisphering; }); }
+            size_t num_dimensions() const { for (const auto& result : *this) { if (auto sz = result.pos.size(); sz > 0) return sz; } return 0; }
         };
 
         std::string point_name(size_t point_no) const;
         Result test_point(size_t point_no);
         void test_point(Result& result);
         Results test_all();
-        Projection make_new_projection_and_relax(const Results& results);
+        Projection make_new_projection_and_relax(const Results& results, bool verbose);
 
       private:
         Chart& chart_;
@@ -55,8 +57,8 @@ namespace acmacs::chart
         const double grid_step_;                             // acmacs-c2: 0.01
         const double hemisphering_distance_threshold_ = 1.0; // from acmacs-c2 hemi-local test: 1.0
         const double hemisphering_stress_threshold_ = 0.25;  // stress diff within threshold -> hemisphering, from acmacs-c2 hemi-local test: 0.25
-        const acmacs::Layout original_layout_;
-        const Stress stress_;
+        acmacs::Layout original_layout_;
+        Stress stress_;
         static constexpr auto optimization_method_ = acmacs::chart::optimization_method::alglib_cg_pca;
 
         bool antigen(size_t point_no) const { return point_no < chart_.number_of_antigens(); }

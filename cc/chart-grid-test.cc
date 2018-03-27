@@ -49,7 +49,7 @@ int main(int argc, char* const argv[])
                     }
                     if (!args["--relax"])
                         break;
-                    auto projection = test.make_new_projection_and_relax(results);
+                    auto projection = test.make_new_projection_and_relax(results, true);
                     projection->comment("grid-test-" + acmacs::to_string(attempt));
                     if (std::all_of(results.begin(), results.end(), [](const auto& result) { return result.diagnosis != acmacs::chart::GridTest::Result::trapped; }))
                         break;

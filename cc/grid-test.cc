@@ -133,7 +133,7 @@ acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all()
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::GridTest::Projection acmacs::chart::GridTest::make_new_projection_and_relax(const Results& results)
+acmacs::chart::GridTest::Projection acmacs::chart::GridTest::make_new_projection_and_relax(const Results& results, bool verbose)
 {
     auto projection = chart_.projections_modify()->new_by_cloning(*projection_);
     auto layout = projection->layout_modified();
@@ -143,7 +143,8 @@ acmacs::chart::GridTest::Projection acmacs::chart::GridTest::make_new_projection
         }
     }
     const auto status = acmacs::chart::optimize(optimization_method_, stress_, layout->data(), layout->data() + layout->size(), acmacs::chart::optimization_precision::fine);
-    std::cout << "stress: " << projection_->stress() << " --> " << status.final_stress << '\n';
+    if (verbose)
+        std::cout << "stress: " << projection_->stress() << " --> " << status.final_stress << '\n';
     return projection;
 
 } // acmacs::chart::GridTest::make_new_projection_and_relax

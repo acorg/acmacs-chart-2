@@ -851,7 +851,7 @@ std::shared_ptr<ProjectionModifyNew> ProjectionsModify::new_by_cloning(const Pro
 {
     auto projection = std::make_shared<ProjectionModifyNew>(source);
     add(projection);
-    std::cerr << "new projection " << projection->projection_no() << '\n';
+      // std::cerr << "new projection " << projection->projection_no() << '\n';
     return projection;
 
 } // ProjectionsModify::new_by_cloning
