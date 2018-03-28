@@ -41,7 +41,7 @@ int main(int argc, char* const argv[])
                     acmacs::chart::GridTest test(chart, projection_no_to_test, args["--step"]);
                     const auto results = test.test_all();
                     std::cout << results.report() << '\n';
-                    if (verbose) {
+                    if (verbose || !args["--relax"]) {
                         for (const auto& entry : results) {
                             if (entry)
                                 std::cout << entry.report() << '\n';
