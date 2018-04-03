@@ -470,20 +470,13 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class PlotSpec
+    class PlotSpec : public PointStyles
     {
      public:
-        virtual ~PlotSpec();
-        PlotSpec() = default;
-        PlotSpec(const PlotSpec&) = delete;
-
-        virtual bool empty() const = 0;
         virtual DrawingOrder drawing_order() const = 0;
         virtual Color error_line_positive_color() const = 0;
         virtual Color error_line_negative_color() const = 0;
-        virtual PointStyle style(size_t aPointNo) const = 0;
         virtual std::vector<PointStyle> all_styles() const = 0;
-        virtual size_t number_of_points() const = 0;
 
     }; // class PlotSpec
 

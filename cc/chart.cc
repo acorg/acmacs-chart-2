@@ -762,12 +762,6 @@ acmacs::chart::Projections::~Projections()
 } // acmacs::chart::Projections::~Projections
 
 // ----------------------------------------------------------------------
-
-acmacs::chart::PlotSpec::~PlotSpec()
-{
-} // acmacs::chart::PlotSpec::~PlotSpec
-
-// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
