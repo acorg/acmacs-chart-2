@@ -167,20 +167,23 @@ int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {
-                {"--verify", false},
-                {"--time", false, "report time of loading chart"},
-                {"--verbose", false},
-                {"-h", false},
-                {"--help", false},
-                {"-v", false},
-            });
+        argc_argv args(argc, argv,
+                       {
+                           {"--count-not-merged", false, "also count titer found in just one layer"},
+                           {"--verify", false},
+                           {"--time", false, "report time of loading chart"},
+                           {"--verbose", false},
+                           {"-h", false},
+                           {"--help", false},
+                           {"-v", false},
+                       });
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
             std::cerr << "Usage: " << args.program() << " [options] <chart-file>\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {
             const bool verify = args["--verify"];
+            const bool count_not_merged = args["--count-not-merged"];
             const auto report = do_report_time(args["--time"]);
             auto chart = acmacs::chart::import_from_file(args[0], verify ? acmacs::chart::Verify::All : acmacs::chart::Verify::None, report);
             std::cout << chart->make_info() << '\n';
@@ -192,14 +195,17 @@ int main(int argc, char* const argv[])
             std::map<TiterMerger::Type, size_t> stat;
             size_t total = 0;
             std::vector<std::vector<TiterMerger>> merge_data(chart->number_of_antigens(), {chart->number_of_sera(), TiterMerger()});
-            for (auto ag_no: acmacs::range(0UL, chart->number_of_antigens())) {
-                for (auto sr_no: acmacs::range(0UL, chart->number_of_sera())) {
-                    merge_data[ag_no][sr_no] = TiterMerger(titers->titers_for_layers(ag_no, sr_no), titers->titer(ag_no, sr_no));
-                    const auto type = merge_data[ag_no][sr_no].merge();
-                    ++stat[type];
-                    ++total;
-                    if ((total % 1000) == 0)
-                        std::cerr << '.';
+            for (auto ag_no : acmacs::range(0UL, chart->number_of_antigens())) {
+                for (auto sr_no : acmacs::range(0UL, chart->number_of_sera())) {
+                    auto titers_for_layers = titers->titers_for_layers(ag_no, sr_no);
+                    if (titers_for_layers.size() > 1 || count_not_merged) {
+                        merge_data[ag_no][sr_no] = TiterMerger(std::move(titers_for_layers), titers->titer(ag_no, sr_no));
+                        const auto type = merge_data[ag_no][sr_no].merge();
+                        ++stat[type];
+                        ++total;
+                        if ((total % 1000) == 0)
+                            std::cerr << '.';
+                    }
                 }
             }
 
@@ -208,24 +214,31 @@ int main(int argc, char* const argv[])
             if (true) {
                 std::cout << "\n\n";
                 std::cout << "<td class=\"number\">" << total << "</td><td></td>\n";
-                std::cout << "<td class=\"number\">" << total_sans_dontcare <<                "</td><td class=\"percent\">" << std::setprecision(3) << (total_sans_dontcare / total * 100.0) << "%</td>\n";
-                std::cout << "<td class=\"number\">" << stat[TiterMerger::Regular] <<         "</td><td class=\"percent\">" << std::setprecision(3) << (stat[TiterMerger::Regular] / total_sans_dontcare * 100.0) << "%</td>\n";
-                std::cout << "<td class=\"number\">" << stat[TiterMerger::SDTooBig] <<        "</td><td class=\"percent\">" << std::setprecision(3) << (stat[TiterMerger::SDTooBig] / total_sans_dontcare * 100.0) << "%</td>\n";
-                std::cout << "<td class=\"number\">" << stat[TiterMerger::ThresholdedBoth] << "</td><td class=\"percent\">" << std::setprecision(3) << (stat[TiterMerger::ThresholdedBoth] / total_sans_dontcare * 100.0) << "%</td>\n";
-                std::cout << "<td class=\"number\">" << stat[TiterMerger::ThresholdedOnly] << "</td><td class=\"percent\">" << std::setprecision(3) << (stat[TiterMerger::ThresholdedOnly] / total_sans_dontcare * 100.0) << "%</td>\n";
-                std::cout << "<td class=\"number\">" << stat[TiterMerger::Thresholded] <<     "</td><td class=\"percent\">" << std::setprecision(3) << (stat[TiterMerger::Thresholded] / total_sans_dontcare * 100.0) << "%</td>\n";
-                std::cout << "<td class=\"number\">" << stat[TiterMerger::ThresholdedMax] <<  "</td><td class=\"percent\">" << std::setprecision(3) << (stat[TiterMerger::ThresholdedMax] / total_sans_dontcare * 100.0) << "%</td>\n";
+                std::cout << "<td class=\"number\">" << total_sans_dontcare << "</td><td class=\"percent\">" << std::setprecision(3) << (total_sans_dontcare / total * 100.0) << "%</td>\n";
+                std::cout << "<td class=\"number\">" << stat[TiterMerger::Regular] << "</td><td class=\"percent\">" << std::setprecision(3)
+                          << (stat[TiterMerger::Regular] / total_sans_dontcare * 100.0) << "%</td>\n";
+                std::cout << "<td class=\"number\">" << stat[TiterMerger::SDTooBig] << "</td><td class=\"percent\">" << std::setprecision(3)
+                          << (stat[TiterMerger::SDTooBig] / total_sans_dontcare * 100.0) << "%</td>\n";
+                std::cout << "<td class=\"number\">" << stat[TiterMerger::ThresholdedBoth] << "</td><td class=\"percent\">" << std::setprecision(3)
+                          << (stat[TiterMerger::ThresholdedBoth] / total_sans_dontcare * 100.0) << "%</td>\n";
+                std::cout << "<td class=\"number\">" << stat[TiterMerger::ThresholdedOnly] << "</td><td class=\"percent\">" << std::setprecision(3)
+                          << (stat[TiterMerger::ThresholdedOnly] / total_sans_dontcare * 100.0) << "%</td>\n";
+                std::cout << "<td class=\"number\">" << stat[TiterMerger::Thresholded] << "</td><td class=\"percent\">" << std::setprecision(3)
+                          << (stat[TiterMerger::Thresholded] / total_sans_dontcare * 100.0) << "%</td>\n";
+                std::cout << "<td class=\"number\">" << stat[TiterMerger::ThresholdedMax] << "</td><td class=\"percent\">" << std::setprecision(3)
+                          << (stat[TiterMerger::ThresholdedMax] / total_sans_dontcare * 100.0) << "%</td>\n";
             }
 
             // if (false) {
             //     std::cout << "Total:           " << std::setw(5) << total << '\n';
             //     std::cout << "With titers:     " << std::setw(5) << total_sans_dontcare << ' ' << std::setprecision(3) << (total_sans_dontcare / total * 100.0) << '%' << '\n';
-            //     std::cout << "Regular:         " << std::setw(5) << stat[TiterMerger::Regular] << ' ' << std::setprecision(3) << (stat[TiterMerger::Regular] / total_sans_dontcare * 100.0) << '%' << '\n';
-            //     std::cout << "SDTooBig:        " << std::setw(5) << stat[TiterMerger::SDTooBig] << ' ' << std::setprecision(3) << (stat[TiterMerger::SDTooBig] / total_sans_dontcare * 100.0) << '%' << '\n';
-            //     std::cout << "ThresholdedBoth: " << std::setw(5) << stat[TiterMerger::ThresholdedBoth] << ' ' << std::setprecision(3) << (stat[TiterMerger::ThresholdedBoth] / total_sans_dontcare * 100.0) << '%' << '\n';
-            //     std::cout << "ThresholdedOnly: " << std::setw(5) << stat[TiterMerger::ThresholdedOnly] << ' ' << std::setprecision(3) << (stat[TiterMerger::ThresholdedOnly] / total_sans_dontcare * 100.0) << '%' << '\n';
-            //     std::cout << "Thresholded:     " << std::setw(5) << stat[TiterMerger::Thresholded] << ' ' << std::setprecision(3) << (stat[TiterMerger::Thresholded] / total_sans_dontcare * 100.0) << '%' << '\n';
-            //     std::cout << "ThresholdedMax:  " << std::setw(5) << stat[TiterMerger::ThresholdedMax] << ' ' << std::setprecision(3) << (stat[TiterMerger::ThresholdedMax] / total_sans_dontcare * 100.0) << '%' << '\n';
+            //     std::cout << "Regular:         " << std::setw(5) << stat[TiterMerger::Regular] << ' ' << std::setprecision(3) << (stat[TiterMerger::Regular] / total_sans_dontcare * 100.0) << '%' <<
+            //     '\n'; std::cout << "SDTooBig:        " << std::setw(5) << stat[TiterMerger::SDTooBig] << ' ' << std::setprecision(3) << (stat[TiterMerger::SDTooBig] / total_sans_dontcare * 100.0)
+            //     << '%' << '\n'; std::cout << "ThresholdedBoth: " << std::setw(5) << stat[TiterMerger::ThresholdedBoth] << ' ' << std::setprecision(3) << (stat[TiterMerger::ThresholdedBoth] /
+            //     total_sans_dontcare * 100.0) << '%' << '\n'; std::cout << "ThresholdedOnly: " << std::setw(5) << stat[TiterMerger::ThresholdedOnly] << ' ' << std::setprecision(3) <<
+            //     (stat[TiterMerger::ThresholdedOnly] / total_sans_dontcare * 100.0) << '%' << '\n'; std::cout << "Thresholded:     " << std::setw(5) << stat[TiterMerger::Thresholded] << ' ' <<
+            //     std::setprecision(3) << (stat[TiterMerger::Thresholded] / total_sans_dontcare * 100.0) << '%' << '\n'; std::cout << "ThresholdedMax:  " << std::setw(5) <<
+            //     stat[TiterMerger::ThresholdedMax] << ' ' << std::setprecision(3) << (stat[TiterMerger::ThresholdedMax] / total_sans_dontcare * 100.0) << '%' << '\n';
             // }
         }
     }
