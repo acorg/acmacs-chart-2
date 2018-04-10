@@ -15,6 +15,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv,
                        {
+                           {"--point", "all", "point number to test"},
                            {"--step", 0.1, "grid step"},
                            {"--relax", false, "move trapped points and relax, test again, repeat while there are trapped points"},
                            {"--projection", 0, "projection number to test"},
@@ -24,18 +25,19 @@ int main(int argc, char* const argv[])
                            {"--help", false},
                            {"-v", false},
                        });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() < 2 || args.number_of_arguments() > 3) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file> <point-no> [<output-chart>]\n" << args.usage_options() << '\n';
+        if (args["-h"] || args["--help"] || args.number_of_arguments() < 1 || args.number_of_arguments() > 2) {
+            std::cerr << "Usage: " << args.program() << " [options] <chart-file> [<output-chart>]\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {
             const auto report = do_report_time(args["--time"]);
             const bool verbose = args["--verbose"] || args["-v"];
+            const std::string to_test = args["--point"];
             const size_t projection_no = args["--projection"];
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
 
             // std::cout << test.initial_report() << '\n';
-            if (args[1] == std::string("all")) {
+            if (to_test == "all") {
                 size_t projection_no_to_test = projection_no;
                 for (auto attempt = 1; attempt < 10; ++attempt) {
                     acmacs::chart::GridTest test(chart, projection_no_to_test, args["--step"]);
@@ -55,15 +57,15 @@ int main(int argc, char* const argv[])
                         break;
                     projection_no_to_test = projection->projection_no();
                 }
-                if (args.number_of_arguments() > 2) {
+                if (args.number_of_arguments() > 1) {
                     chart.projections_modify()->sort();
-                    acmacs::chart::export_factory(chart, args[2], fs::path(args.program()).filename(), report);
+                    acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);
                 }
                 std::cerr << chart.make_info() << '\n';
             }
             else {
                 acmacs::chart::GridTest test(chart, projection_no, args["--step"]);
-                if (const auto result = test.test_point(std::stoul(args[1])); result)
+                if (const auto result = test.test_point(std::stoul(to_test)); result)
                     std::cout << result.report() << '\n';
             }
 
