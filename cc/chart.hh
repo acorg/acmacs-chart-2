@@ -315,6 +315,7 @@ namespace acmacs::chart
 
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Antigen> operator[](size_t aIndex) const = 0;
+        std::shared_ptr<Antigen> at(size_t aIndex) const { return operator[](aIndex); }
         using iterator = internal::iterator<Antigens, std::shared_ptr<Antigen>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
@@ -367,6 +368,7 @@ namespace acmacs::chart
 
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Serum> operator[](size_t aIndex) const = 0;
+        std::shared_ptr<Serum> at(size_t aIndex) const { return operator[](aIndex); }
         using iterator = internal::iterator<Sera, std::shared_ptr<Serum>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
