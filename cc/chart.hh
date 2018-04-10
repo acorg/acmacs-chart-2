@@ -263,6 +263,9 @@ namespace acmacs::chart
         std::string location_abbreviated() const;
         std::string passage_type() const { return passage().passage_type(); }
 
+        bool is_egg() const { return !reassortant().empty() || passage().is_egg(); }
+        bool is_cell() const { return !is_egg(); }
+
     }; // class Antigen
 
 // ----------------------------------------------------------------------
@@ -296,6 +299,9 @@ namespace acmacs::chart
         std::string name_abbreviated() const;
         std::string location_abbreviated() const;
 
+        bool is_egg() const { return !reassortant().empty() || passage().is_egg(); }
+        bool is_cell() const { return !is_egg(); }
+
     }; // class Serum
 
 // ----------------------------------------------------------------------
@@ -321,8 +327,8 @@ namespace acmacs::chart
 
         void filter_reference(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.reference(); }); }
         void filter_test(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return entry.reference(); }); }
-        void filter_egg(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.passage().is_egg(); }); }
-        void filter_cell(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.passage().is_cell(); }); }
+        void filter_egg(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_egg(); }); }
+        void filter_cell(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_cell(); }); }
         void filter_reassortant(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); }); }
         void filter_date_range(Indexes& aIndexes, std::string_view first_date, std::string_view after_last_date) const { remove(aIndexes, [=](const auto& entry) -> bool { return !entry.date().within_range(first_date, after_last_date); }); }
         void filter_country(Indexes& aIndexes, std::string aCountry) const;
@@ -375,6 +381,8 @@ namespace acmacs::chart
         void filter_continent(Indexes& aIndexes, std::string aContinent) const;
         void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); }); }
         void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const { remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); }); }
+        void filter_egg(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_egg(); }); }
+        void filter_cell(Indexes& aIndexes) const { remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_cell(); }); }
 
         virtual std::optional<size_t> find_by_full_name(std::string aFullName) const;
         virtual Indexes find_by_name(std::string aName) const;
