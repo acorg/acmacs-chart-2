@@ -709,57 +709,75 @@ void acmacs::chart::Sera::filter_continent(Indexes& aIndexes, std::string aConti
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Chart::~Chart()
+acmacs::PointStylesCompacted acmacs::chart::PlotSpec::compacted() const
 {
-} // acmacs::chart::Chart::~Chart
+    acmacs::PointStylesCompacted result;
+    for (const auto& style: all_styles()) {
+        if (auto found = std::find(result.styles.begin(), result.styles.end(), style); found == result.styles.end()) {
+            result.styles.push_back(style);
+            result.index.push_back(result.styles.size() - 1);
+        }
+        else {
+            result.index.push_back(static_cast<size_t>(found - result.styles.begin()));
+        }
+    }
+    return result;
+
+} // acmacs::chart::PlotSpec::compacted
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Info::~Info()
-{
-} // acmacs::chart::Info::~Info
+// acmacs::chart::Chart::~Chart()
+// {
+// } // acmacs::chart::Chart::~Chart
 
-// ----------------------------------------------------------------------
+// // ----------------------------------------------------------------------
 
-acmacs::chart::Antigen::~Antigen()
-{
-} // acmacs::chart::Antigen::~Antigen
+// acmacs::chart::Info::~Info()
+// {
+// } // acmacs::chart::Info::~Info
 
-// ----------------------------------------------------------------------
+// // ----------------------------------------------------------------------
 
-acmacs::chart::Serum::~Serum()
-{
-} // acmacs::chart::Serum::~Serum
+// acmacs::chart::Antigen::~Antigen()
+// {
+// } // acmacs::chart::Antigen::~Antigen
 
-// ----------------------------------------------------------------------
+// // ----------------------------------------------------------------------
 
-acmacs::chart::Antigens::~Antigens()
-{
-} // acmacs::chart::Antigens::~Antigens
+// acmacs::chart::Serum::~Serum()
+// {
+// } // acmacs::chart::Serum::~Serum
 
-// ----------------------------------------------------------------------
+// // ----------------------------------------------------------------------
 
-acmacs::chart::Sera::~Sera()
-{
-} // acmacs::chart::Sera::~Sera
+// acmacs::chart::Antigens::~Antigens()
+// {
+// } // acmacs::chart::Antigens::~Antigens
 
-// ----------------------------------------------------------------------
+// // ----------------------------------------------------------------------
 
-acmacs::chart::ColumnBases::~ColumnBases()
-{
-} // acmacs::chart::ColumnBases::~ColumnBases
+// acmacs::chart::Sera::~Sera()
+// {
+// } // acmacs::chart::Sera::~Sera
 
-// ----------------------------------------------------------------------
+// // ----------------------------------------------------------------------
 
-acmacs::chart::Projection::~Projection()
-{
-} // acmacs::chart::Projection::~Projection
+// acmacs::chart::ColumnBases::~ColumnBases()
+// {
+// } // acmacs::chart::ColumnBases::~ColumnBases
 
-// ----------------------------------------------------------------------
+// // ----------------------------------------------------------------------
 
-acmacs::chart::Projections::~Projections()
-{
-} // acmacs::chart::Projections::~Projections
+// acmacs::chart::Projection::~Projection()
+// {
+// } // acmacs::chart::Projection::~Projection
+
+// // ----------------------------------------------------------------------
+
+// acmacs::chart::Projections::~Projections()
+// {
+// } // acmacs::chart::Projections::~Projections
 
 // ----------------------------------------------------------------------
 /// Local Variables:

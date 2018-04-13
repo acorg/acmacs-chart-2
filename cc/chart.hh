@@ -36,7 +36,7 @@ namespace acmacs::chart
      public:
         enum class Compute { No, Yes };
 
-        virtual ~Info();
+        virtual ~Info() = default;
         Info() = default;
         Info(const Info&) = delete;
 
@@ -234,7 +234,7 @@ namespace acmacs::chart
     class Antigen
     {
      public:
-        virtual ~Antigen();
+        virtual ~Antigen() = default;
         Antigen() = default;
         Antigen(const Antigen&) = delete;
         bool operator==(const Antigen& rhs) const { return full_name() == rhs.full_name(); }
@@ -273,7 +273,7 @@ namespace acmacs::chart
     class Serum
     {
      public:
-        virtual ~Serum();
+        virtual ~Serum() = default;
         Serum() = default;
         Serum(const Serum&) = delete;
         bool operator==(const Serum& rhs) const { return full_name() == rhs.full_name(); }
@@ -309,7 +309,7 @@ namespace acmacs::chart
     class Antigens
     {
      public:
-        virtual ~Antigens();
+        virtual ~Antigens() = default;
         Antigens() = default;
         Antigens(const Antigens&) = delete;
 
@@ -362,7 +362,7 @@ namespace acmacs::chart
     class Sera
     {
      public:
-        virtual ~Sera();
+        virtual ~Sera() = default;
         Sera() = default;
         Sera(const Sera&) = delete;
 
@@ -407,7 +407,7 @@ namespace acmacs::chart
     class Projection
     {
      public:
-        virtual ~Projection();
+        virtual ~Projection() = default;
         Projection(const Chart& chart) : chart_(chart) {}
         Projection(const Projection&) = delete;
 
@@ -456,7 +456,7 @@ namespace acmacs::chart
     class Projections
     {
      public:
-        virtual ~Projections();
+        virtual ~Projections() = default;
         Projections(const Chart& chart) : chart_(chart) {}
         Projections(const Projections&) = delete;
 
@@ -487,6 +487,7 @@ namespace acmacs::chart
         virtual Color error_line_positive_color() const = 0;
         virtual Color error_line_negative_color() const = 0;
         virtual std::vector<PointStyle> all_styles() const = 0;
+        PointStylesCompacted compacted() const override;
 
     }; // class PlotSpec
 
@@ -501,7 +502,7 @@ namespace acmacs::chart
      public:
         enum class use_cache { no, yes };
 
-        virtual ~Chart();
+        virtual ~Chart() = default;
         Chart() = default;
         Chart(const Chart&) = delete;
 

@@ -39,7 +39,7 @@ namespace acmacs::chart
     class ColumnBases
     {
       public:
-        virtual ~ColumnBases();
+        virtual ~ColumnBases() = default;
         ColumnBases() = default;
         // ColumnBases(const ColumnBases&) = delete;
 

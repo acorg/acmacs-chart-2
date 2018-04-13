@@ -13,7 +13,6 @@ static void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Se
 static void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters);
 static void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections);
 static void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec);
-static void compact_styles(const std::vector<acmacs::PointStyle>& aAllStyles, std::vector<acmacs::PointStyle>& aCompacted, std::vector<size_t>& aIndex);
 static void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle);
 
 // ----------------------------------------------------------------------
@@ -280,12 +279,10 @@ void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Plo
     if (const auto color = aPlotSpec->error_line_negative_color(); color != BLUE)
         aTarget.set_field("e", rjson::object{{{"c", rjson::string{color.to_string()}}}});
 
-    std::vector<acmacs::PointStyle> compacted;
-    std::vector<size_t> p_index;
-    compact_styles(aPlotSpec->all_styles(), compacted, p_index);
-    aTarget.set_field("p", rjson::array(rjson::array::use_iterator, p_index.begin(), p_index.end()));
+    const auto compacted = aPlotSpec->compacted();
+    aTarget.set_field("p", rjson::array(rjson::array::use_iterator, compacted.index.begin(), compacted.index.end()));
     rjson::array& target_styles = aTarget.set_field("P", rjson::array{});
-    for (const auto& style: compacted)
+    for (const auto& style: compacted.styles)
         export_style(target_styles, style);
 
       // "g": {},                  // ? grid data
@@ -295,22 +292,6 @@ void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Plo
       // "t": {}                    // title style?
 
 } // export_plot_spec
-
-// ----------------------------------------------------------------------
-
-void compact_styles(const std::vector<acmacs::PointStyle>& aAllStyles, std::vector<acmacs::PointStyle>& aCompacted, std::vector<size_t>& aIndex)
-{
-    for (const auto& style: aAllStyles) {
-        if (auto found = std::find(aCompacted.begin(), aCompacted.end(), style); found == aCompacted.end()) {
-            aCompacted.push_back(style);
-            aIndex.push_back(aCompacted.size() - 1);
-        }
-        else {
-            aIndex.push_back(static_cast<size_t>(found - aCompacted.begin()));
-        }
-    }
-
-} // compact_styles
 
 // ----------------------------------------------------------------------
 
