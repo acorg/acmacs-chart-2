@@ -312,7 +312,7 @@ template <typename T> inline void set_field(rjson::object& target, const char* n
 {
     if (field.not_default()) {
         if constexpr (std::is_same_v<T, Color>)
-            target.set_field(name, rjson::to_value(field->to_string()));
+            target.set_field(name, rjson::to_value(field->to_hex_string()));
         else
             target.set_field(name, rjson::to_value(*field));
     }
