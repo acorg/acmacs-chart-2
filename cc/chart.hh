@@ -167,6 +167,8 @@ namespace acmacs::chart
      public:
         using internal::string_list_data::string_list_data;
 
+        void add(const std::string& val) { if (!exist(val)) push_back(val); }
+
     }; // class Clades
 
     class SerumId : public internal::string_data

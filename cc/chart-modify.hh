@@ -162,6 +162,7 @@ namespace acmacs::chart
         void reassortant(const std::string& value) { reassortant_ = value; }
         void reference(bool value) { reference_ = value; }
         void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
+        void add_clade(const std::string& clade) { clades_.add(clade); }
         void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
         void continent(const std::string& value) { continent_ = value; }
 
