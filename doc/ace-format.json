@@ -26,6 +26,7 @@
         "S": "R", // string of single letter semantic boolean attributes: R - reference, V - current vaccine, v - previous vaccine, S - vaccine surrogate
         "a": ["DISTINCT", "HA-Y156T", "extra"], // annotations: DISTINCT for control duplicate, mutation information, unrecognized extra data preventing merging
         "c": ["5.2.1"],                         // clades, either provided in the original table (e.g. H5) or extracted from sequence database
+        "C": "NORTH-AMERICA",                   // continent: ASIA, AUSTRALIA-OCEANIA, NORTH-AMERICA, EUROPE, RUSSIA, AFRICA, MIDDLE-EAST, SOUTH-AMERICA, CENTRAL-AMERICA
       }
     ],
     "s": [                      // serum list
