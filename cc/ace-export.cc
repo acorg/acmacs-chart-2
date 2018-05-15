@@ -114,6 +114,7 @@ void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antig
         object.set_array_field_if_not_empty("a", antigen->annotations());
         object.set_array_field_if_not_empty("c", antigen->clades());
         export_lineage(object, antigen->lineage());
+        object.set_field_if_not_empty("C", static_cast<const std::string&>(antigen->continent()));
     }
 
 } // export_antigens

@@ -124,6 +124,13 @@ namespace acmacs::chart
 
     }; // class BLineage
 
+    class Continent : public internal::string_data
+    {
+     public:
+        using internal::string_data::string_data;
+
+    }; // class Continent
+
     inline std::ostream& operator<<(std::ostream& s, const BLineage& lineage)
     {
         switch (static_cast<BLineage::Lineage>(lineage)) {
@@ -249,6 +256,7 @@ namespace acmacs::chart
         virtual Clades clades() const = 0;
         virtual Annotations annotations() const = 0;
         virtual bool reference() const = 0;
+        virtual Continent continent() const { return {}; }
 
         std::string full_name() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations()), passage()}); }
         std::string full_name_without_passage() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations())}); }

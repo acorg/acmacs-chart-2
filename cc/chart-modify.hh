@@ -153,6 +153,7 @@ namespace acmacs::chart
         Clades clades() const override { return clades_; }
         Annotations annotations() const override { return annotations_; }
         bool reference() const override { return reference_; }
+        Continent continent() const override { return continent_; }
 
         void name(const std::string& value) { name_ = value; }
         void date(const std::string& value) { date_ = value; }
@@ -162,6 +163,7 @@ namespace acmacs::chart
         void reference(bool value) { reference_ = value; }
         void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
         void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
+        void continent(const std::string& value) { continent_ = value; }
 
      private:
         Name name_;
@@ -172,6 +174,7 @@ namespace acmacs::chart
         Annotations annotations_;
         LabIds lab_ids_;
         Clades clades_;
+        Continent continent_;
         bool reference_ = false;
 
     }; // class AntigenModify
