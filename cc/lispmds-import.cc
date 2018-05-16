@@ -134,6 +134,10 @@ std::pair<std::shared_ptr<acmacs::chart::ColumnBases>, acmacs::chart::MinimumCol
     catch (acmacs::lispmds::keyword_no_found&) {
         return {nullptr, acmacs::chart::MinimumColumnBasis()};
     }
+    catch (acmacs::lispmds::error& err) {
+        std::cerr << "WARNING: broken save: " << err.what() << '\n';
+        return {nullptr, acmacs::chart::MinimumColumnBasis()};
+    }
 
 } // forced_column_bases
 
@@ -541,6 +545,7 @@ class LispmdsLayout : public acmacs::Layout
 
 std::shared_ptr<Layout> LispmdsProjection::layout() const
 {
+    // std::cerr << "antigens: " << mNumberOfAntigens << " sera: " << mNumberOfSera << " points: " << (mNumberOfAntigens + mNumberOfSera) << '\n';
     if (!layout_)
         layout_ = std::make_shared<LispmdsLayout>(projection_layout(mData, projection_no()), mNumberOfAntigens, mNumberOfSera);
     return layout_;
@@ -646,12 +651,18 @@ PointIndexList LispmdsProjection::disconnected() const
 
 AvidityAdjusts LispmdsProjection::avidity_adjusts() const
 {
-    const auto num_points = layout()->number_of_points();
-    const acmacs::lispmds::list& cb = projection_layout(mData, projection_no())[num_points][0][1];
-    AvidityAdjusts result(num_points);
-    for (size_t i = 0; i < num_points; ++i)
-        result[i] = std::exp2(static_cast<double>(std::get<acmacs::lispmds::number>(cb[num_points + i])));
-    return result;
+    try {
+        const auto num_points = layout()->number_of_points();
+        const acmacs::lispmds::list& cb = projection_layout(mData, projection_no())[num_points][0][1];
+        AvidityAdjusts result(num_points);
+        for (size_t i = 0; i < num_points; ++i)
+            result[i] = std::exp2(static_cast<double>(std::get<acmacs::lispmds::number>(cb[num_points + i])));
+        return result;
+    }
+    catch (acmacs::lispmds::error& err) {
+        std::cerr << "WARNING: broken save: " << err.what() << '\n';
+        return {};
+    }
 
 } // LispmdsProjection::avidity_adjusts
 

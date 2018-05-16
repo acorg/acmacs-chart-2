@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <typeinfo>
 
 #include "acmacs-base/string.hh"
 
@@ -219,12 +220,13 @@ namespace acmacs::lispmds
 
     inline const value& value::operator[](size_t aIndex) const
     {
+        using namespace std::string_literals;
         return std::visit([aIndex](const auto& arg) -> const value& {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, list>)
                 return arg[aIndex];
             else
-                throw type_mismatch{"not a lispmds::list, cannot use [index]"};
+                throw type_mismatch{"not a lispmds::list, cannot use [index]: "s + typeid(arg).name()};
         }, *this);
     }
 
