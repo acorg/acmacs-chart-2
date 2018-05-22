@@ -398,15 +398,16 @@ AntigenModify::AntigenModify(AntigenP main)
 void AntigenModify::set_continent()
 {
     if (continent().empty()) {
-        const auto& locdb = get_locdb(report_time::No);
-        try {
-            continent(locdb.continent(virus_name::location(name())));
-        }
-        catch (std::exception& err) {
-            std::cerr << "WARNING: cannot figure out continent for \"" << name() << "\": " << err.what() << '\n';
-        }
-        catch (...) {
-            std::cerr << "WARNING: cannot figure out continent for \"" << name() << "\": unknown exception" << '\n';
+        if (const auto& locdb = get_locdb(report_time::No); locdb) {
+            try {
+                continent(locdb.continent(virus_name::location(name())));
+            }
+            catch (std::exception& err) {
+                std::cerr << "WARNING: cannot figure out continent for \"" << name() << "\": " << err.what() << '\n';
+            }
+            catch (...) {
+                std::cerr << "WARNING: cannot figure out continent for \"" << name() << "\": unknown exception" << '\n';
+            }
         }
     }
 
