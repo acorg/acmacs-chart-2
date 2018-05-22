@@ -17,7 +17,7 @@ static void export_style(rjson::array& target_styles, const acmacs::PointStyle& 
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::ace_export(const Chart& aChart, std::string aProgramName)
+std::string acmacs::chart::ace_export(const Chart& aChart, std::string aProgramName, size_t aIndent)
 {
     rjson::value ace{rjson::object{{
                 {"  version", rjson::string{"acmacs-ace-v1"}},
@@ -48,8 +48,11 @@ std::string acmacs::chart::ace_export(const Chart& aChart, std::string aProgramN
     // Timeit ti_plot_spec("export plot_spec ");
     if (auto plot_spec = aChart.plot_spec(); !plot_spec->empty())
         export_plot_spec(ace["c"].set_field("p", rjson::object{}), plot_spec);
-    // ti_plot_spec.report();
-    return ace.to_json_pp(1);
+      // ti_plot_spec.report();
+    if (aIndent)
+        return ace.to_json_pp(aIndent);
+    else
+        return ace.to_json();
 
 } // acmacs::chart::ace_export
 
