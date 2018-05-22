@@ -165,6 +165,7 @@ namespace acmacs::chart
         void add_clade(const std::string& clade) { clades_.add(clade); }
         void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
         void continent(const std::string& value) { continent_ = value; }
+        void set_continent();
 
      private:
         Name name_;
@@ -206,6 +207,7 @@ namespace acmacs::chart
         void serum_species(const std::string& value) { serum_species_ = value; }
         void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
         void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
+        void set_continent() {}
 
      private:
         Name name_;
@@ -246,6 +248,12 @@ namespace acmacs::chart
                 if (before > data_.size())
                     throw invalid_data{"invalid index to insert before: " + to_string(before) + ", valid values in [0.." + to_string(data_.size()) + ']'};
                 return *data_.emplace(data_.begin() + static_cast<Indexes::difference_type>(before), new Modify);
+            }
+
+        void set_continent()
+            {
+                for (auto& entry : data_)
+                    entry->set_continent();
             }
 
      private:

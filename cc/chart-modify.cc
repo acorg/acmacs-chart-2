@@ -3,6 +3,8 @@
 #include "acmacs-base/omp.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
+#include "acmacs-base/virus-name.hh"
+#include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
 using namespace std::string_literals;
@@ -390,6 +392,25 @@ AntigenModify::AntigenModify(AntigenP main)
     reference_{main->reference()}
 {
 } // AntigenModify::AntigenModify
+
+// ----------------------------------------------------------------------
+
+void AntigenModify::set_continent()
+{
+    if (continent().empty()) {
+        const auto& locdb = get_locdb(report_time::No);
+        try {
+            continent(locdb.continent(virus_name::location(name())));
+        }
+        catch (std::exception& err) {
+            std::cerr << "WARNING: cannot figure out continent for \"" << name() << "\": " << err.what() << '\n';
+        }
+        catch (...) {
+            std::cerr << "WARNING: cannot figure out continent for \"" << name() << "\": unknown exception" << '\n';
+        }
+    }
+
+} // AntigenModify::set_continent
 
 // ----------------------------------------------------------------------
 
