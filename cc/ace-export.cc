@@ -105,6 +105,12 @@ static inline void export_lineage(rjson::object& object, acmacs::chart::BLineage
 void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens)
 {
     for (auto antigen: *aAntigens) {
+        std::string semantic;
+        if (antigen->reference())
+            semantic += 'R';
+        if (antigen->passage().is_egg())
+            semantic += 'E';
+
         rjson::object& object = aTarget.insert(rjson::object{});
 
         object.set_field("N", rjson::string{antigen->name()});
@@ -112,8 +118,7 @@ void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antig
         object.set_field_if_not_empty("P", static_cast<const std::string&>(antigen->passage()));
         object.set_field_if_not_empty("R", static_cast<const std::string&>(antigen->reassortant()));
         object.set_array_field_if_not_empty("l", antigen->lab_ids());
-        if (antigen->reference())
-            object.set_field("S", rjson::string{"R"});
+        object.set_field_if_not_empty("S", semantic);
         object.set_array_field_if_not_empty("a", antigen->annotations());
         object.set_array_field_if_not_empty("c", antigen->clades());
         export_lineage(object, antigen->lineage());
@@ -127,6 +132,10 @@ void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antig
 void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera)
 {
     for (auto serum: *aSera) {
+        std::string semantic;
+        if (serum->passage().is_egg())
+            semantic += 'E';
+
         rjson::object& object = aTarget.insert(rjson::object{});
 
         object.set_field("N", rjson::string{serum->name()});
@@ -136,6 +145,7 @@ void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSe
         object.set_array_field_if_not_empty("a", serum->annotations());
         object.set_field_if_not_empty("s", static_cast<const std::string&>(serum->serum_species()));
         object.set_array_field_if_not_empty("h", serum->homologous_antigens());
+        object.set_field_if_not_empty("S", semantic);
         export_lineage(object, serum->lineage());
     }
 

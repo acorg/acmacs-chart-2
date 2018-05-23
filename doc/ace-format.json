@@ -23,7 +23,7 @@
         "P": "passage, e.g. MDCK2/SIAT1 (2016-05-12)",
         "R": "reassortant, e.g. NYMC-51C",
         "l": ["CDC#2013706008"], // lab ids, e.g. CDC#2013706008",
-        "S": "R", // string of single letter semantic boolean attributes: R - reference, V - current vaccine, v - previous vaccine, S - vaccine surrogate
+        "S": "R", // string of single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate
         "a": ["DISTINCT", "HA-Y156T", "extra"], // annotations: DISTINCT for control duplicate, mutation information, unrecognized extra data preventing merging
         "c": ["5.2.1"],                         // clades, either provided in the original table (e.g. H5) or extracted from sequence database
         "C": "NORTH-AMERICA",                   // continent: ASIA, AUSTRALIA-OCEANIA, NORTH-AMERICA, EUROPE, RUSSIA, AFRICA, MIDDLE-EAST, SOUTH-AMERICA, CENTRAL-AMERICA
@@ -37,7 +37,7 @@
         "P": "passage, e.g. MDCK2/SIAT1 (2016-05-12)",
         "R": "reassortant, e.g. NYMC-51C",
         "I": "serum id, e.g. CDC 2016-045"
-        "S": "", // string of single letter semantic boolean attributes: (set is not yet defined)
+        "S": "", // string of single letter semantic boolean attributes: E - egg
         "h": [0],                 // homologous antigen indices
         "a": ["BOOSTED", "CONC 2:1", "HA-Y156T", "extra"], // annotations: boosted, conc, mutation information, unrecognized extra data preventing merging
         "s": "serum species, e.g FERRET"
