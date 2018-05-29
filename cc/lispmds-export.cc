@@ -22,7 +22,7 @@ static std::string point_shape(const acmacs::PointShape& aShape);
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::lispmds_export(const acmacs::chart::Chart& aChart, std::string aProgramName)
+std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, std::string aProgramName)
 {
     const auto disconnected = aChart.projections()->empty() ? PointIndexList{} : (*aChart.projections())[0]->disconnected();
 
@@ -68,7 +68,7 @@ std::string acmacs::chart::lispmds_export(const acmacs::chart::Chart& aChart, st
     result.append(1, ')');
     return result;
 
-} // acmacs::chart::lispmds_export
+} // acmacs::chart::export_lispmds
 
 // ----------------------------------------------------------------------
 

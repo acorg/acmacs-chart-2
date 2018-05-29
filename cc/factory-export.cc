@@ -12,9 +12,9 @@ std::string acmacs::chart::export_factory(const Chart& aChart, acmacs::chart::ex
     Timeit ti("exporting chart: ", aReport);
     switch (aFormat) {
       case export_format::ace:
-          return ace_export(aChart, aProgramName, 1);
+          return export_ace(aChart, aProgramName, 1);
       case export_format::save:
-          return lispmds_export(aChart, aProgramName);
+          return export_lispmds(aChart, aProgramName);
     }
     return {};
 
