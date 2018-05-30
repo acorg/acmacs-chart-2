@@ -366,45 +366,80 @@ void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle)
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::export_layout(const Chart& aChart, std::string field_separator, std::string field_encloser, size_t aProjectionNo)
+template <typename DF> std::string acmacs::chart::export_layout(const Chart& aChart, size_t aProjectionNo)
 {
-    std::string result;
-    auto first_field = [&result, &field_encloser](std::string field) {
-        result.append(field_encloser);
-        result.append(field);
-        result.append(field_encloser);
-    };
-    auto second_field = [&result, &field_separator, &first_field](std::string field) {
-        result.append(field_separator);
-        first_field(field);
-    };
-    auto record_separator = [&result]() { result.append(1, '\n'); };
-
     auto antigens = aChart.antigens();
+    const auto number_of_antigens = antigens->size();
+    auto sera = aChart.sera();
     auto layout = aChart.projection(aProjectionNo)->layout();
     const auto number_of_dimensions = layout->number_of_dimensions();
 
+    std::string result;
+
     for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
-        first_field("AG");
-        second_field(string::replace(antigen->full_name(), " ", "_"));
+        DF::first_field(result, "AG");
+        DF::second_field(result, antigen->full_name());
         for (auto dim : acmacs::range(number_of_dimensions))
-            second_field(acmacs::to_string((*layout)(ag_no, dim)));
-        record_separator();
+            DF::second_field(result, (*layout)(ag_no, dim));
+        DF::end_of_record(result);
     }
 
-    auto sera = aChart.sera();
-    const auto number_of_antigens = aChart.number_of_antigens();
     for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-        first_field("SR ");
-        second_field(string::replace(serum->full_name(), " ", "_"));
+        DF::first_field(result, "SR");
+        DF::second_field(result, serum->full_name());
         for (auto dim : acmacs::range(number_of_dimensions))
-            second_field(acmacs::to_string((*layout)(sr_no + number_of_antigens, dim)));
-        record_separator();
+            DF::second_field(result, (*layout)(sr_no + number_of_antigens, dim));
+        DF::end_of_record(result);
     }
 
     return result;
 
 } // acmacs::chart::export_layout
+
+template std::string acmacs::chart::export_layout<acmacs::DataFormatterSpaceSeparated>(const Chart& aChart, size_t aProjectionNo);
+template std::string acmacs::chart::export_layout<acmacs::DataFormatterCSV>(const Chart& aChart, size_t aProjectionNo);
+
+// ----------------------------------------------------------------------
+
+// std::string acmacs::chart::export_layout(const Chart& aChart, std::string field_separator, std::string field_encloser, size_t aProjectionNo)
+// {
+//     std::string result;
+//     auto first_field = [&result, &field_encloser](std::string field) {
+//         result.append(field_encloser);
+//         result.append(field);
+//         result.append(field_encloser);
+//     };
+//     auto second_field = [&result, &field_separator, &first_field](std::string field) {
+//         result.append(field_separator);
+//         first_field(field);
+//     };
+//     auto record_separator = [&result]() { result.append(1, '\n'); };
+
+//     auto antigens = aChart.antigens();
+//     auto layout = aChart.projection(aProjectionNo)->layout();
+//     const auto number_of_dimensions = layout->number_of_dimensions();
+
+//     for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
+//         first_field("AG");
+//         second_field(string::replace(antigen->full_name(), " ", "_"));
+//         for (auto dim : acmacs::range(number_of_dimensions))
+//             second_field(acmacs::to_string((*layout)(ag_no, dim)));
+//         record_separator();
+//     }
+
+//     auto sera = aChart.sera();
+//     const auto number_of_antigens = aChart.number_of_antigens();
+//     for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
+//         first_field("SR ");
+//         second_field(string::replace(serum->full_name(), " ", "_"));
+//         for (auto dim : acmacs::range(number_of_dimensions))
+//             second_field(acmacs::to_string((*layout)(sr_no + number_of_antigens, dim)));
+//         record_separator();
+//     }
+
+//     return result;
+
+// } // acmacs::chart::export_layout
 
 // ----------------------------------------------------------------------
 
