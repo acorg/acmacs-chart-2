@@ -85,6 +85,8 @@ namespace acmacs::chart
     extern template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular);
 #endif
 
+    TableDistances<double> table_distances(const acmacs::chart::Chart& chart, MinimumColumnBasis minimum_column_basis, bool a_dodgy_titer_is_regular);
+
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------

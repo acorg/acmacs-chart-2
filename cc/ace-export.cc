@@ -401,6 +401,43 @@ template std::string acmacs::chart::export_layout<acmacs::DataFormatterCSV>(cons
 
 // ----------------------------------------------------------------------
 
+template <typename DF> std::string acmacs::chart::export_table_map_distances(const Chart& aChart, size_t aProjectionNo)
+{
+    auto projection = aChart.projection(aProjectionNo);
+    auto layout = projection->layout();
+
+    auto table_distances = acmacs::chart::table_distances(aChart, projection->minimum_column_basis(), projection->dodgy_titer_is_regular());
+
+    acmacs::chart::TableDistances<double> map_distances;
+    auto make_map_distance = [&layout](const auto& table_distance_entry) -> acmacs::chart::TableDistances<double>::Entry {
+        return {table_distance_entry.point_1, table_distance_entry.point_2, layout->distance(table_distance_entry.point_1, table_distance_entry.point_2)};
+    };
+    std::transform(table_distances.regular().begin(), table_distances.regular().end(), std::back_inserter(map_distances.regular()), make_map_distance);
+    std::transform(table_distances.less_than().begin(), table_distances.less_than().end(), std::back_inserter(map_distances.less_than()), make_map_distance);
+
+    auto antigens = aChart.antigens();
+    auto sera = aChart.sera();
+    auto point_name = [&antigens, &sera](size_t point_no) -> std::string {
+        return point_no < antigens->size() ? antigens->at(point_no)->full_name() : sera->at(point_no - antigens->size())->full_name();
+    };
+
+    std::string result;
+    for (auto td = table_distances.regular().begin(), md = map_distances.regular().begin(); td != table_distances.regular().end(); ++td, ++md) {
+        DF::first_field(result, point_name(td->point_1));
+        DF::second_field(result, point_name(td->point_2));
+        DF::second_field(result, td->table_distance);
+        DF::second_field(result, md->table_distance);
+        DF::end_of_record(result);
+    }
+    return result;
+
+} // acmacs::chart::export_table_map_distances
+
+template std::string acmacs::chart::export_table_map_distances<acmacs::DataFormatterSpaceSeparated>(const Chart& aChart, size_t aProjectionNo);
+template std::string acmacs::chart::export_table_map_distances<acmacs::DataFormatterCSV>(const Chart& aChart, size_t aProjectionNo);
+
+// ----------------------------------------------------------------------
+
 // std::string acmacs::chart::export_layout(const Chart& aChart, std::string field_separator, std::string field_encloser, size_t aProjectionNo)
 // {
 //     std::string result;

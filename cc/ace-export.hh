@@ -15,6 +15,10 @@ namespace acmacs::chart
     extern template std::string export_layout<acmacs::DataFormatterSpaceSeparated>(const Chart& aChart, size_t aProjectionNo);
     extern template std::string export_layout<acmacs::DataFormatterCSV>(const Chart& aChart, size_t aProjectionNo);
 
+    template <typename DF> std::string export_table_map_distances(const Chart& aChart, size_t aProjectionNo = 0);
+    extern template std::string export_table_map_distances<acmacs::DataFormatterSpaceSeparated>(const Chart& aChart, size_t aProjectionNo);
+    extern template std::string export_table_map_distances<acmacs::DataFormatterCSV>(const Chart& aChart, size_t aProjectionNo);
+
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------

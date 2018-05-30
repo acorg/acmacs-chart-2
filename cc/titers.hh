@@ -144,6 +144,7 @@ namespace acmacs::chart
 
         std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
 
+        TableDistances<double> table_distances(const ColumnBases& column_bases, const StressParameters& parameters);
         virtual void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters) const;
         virtual void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters) const;
         virtual double max_distance(const ColumnBases& column_bases);

@@ -58,6 +58,18 @@ template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_fac
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::TableDistances<double> acmacs::chart::table_distances(const acmacs::chart::Chart& chart, MinimumColumnBasis minimum_column_basis, bool a_dodgy_titer_is_regular)
+{
+    Stress<double> stress(2, chart.number_of_points(), multiply_antigen_titer_until_column_adjust::yes, a_dodgy_titer_is_regular);
+    auto cb = chart.forced_column_bases();
+    if (!cb)
+        cb = chart.column_bases(minimum_column_basis);
+    return chart.titers()->table_distances(*cb, stress.parameters());
+
+} // acmacs::chart::table_distances
+
+// ----------------------------------------------------------------------
+
 template <typename Float> constexpr inline Float SigmoidMutiplier() { return 10; }
 template <typename Float> constexpr inline Float non_zero(Float value) { return float_zero(value) ? static_cast<Float>(1e-5) : value; };
 

@@ -224,6 +224,16 @@ void acmacs::chart::Titers::update(acmacs::chart::TableDistances<double>& table_
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::TableDistances<double> acmacs::chart::Titers::table_distances(const ColumnBases& column_bases, const StressParameters& parameters)
+{
+    acmacs::chart::TableDistances<double> result;
+    update(result, column_bases, parameters);
+    return result;
+
+} // acmacs::chart::Titers::table_distances
+
+// ----------------------------------------------------------------------
+
 bool acmacs::chart::Titers::is_dense() const noexcept
 {
     try {

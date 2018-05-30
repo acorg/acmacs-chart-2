@@ -40,7 +40,9 @@ namespace acmacs::chart
           // void report() const { std::cerr << "TableDistances regular: " << regular_.size() << "  less-than: " << less_than_.size() << '\n'; }
 
         const entries_t& regular() const { return regular_; }
+        entries_t& regular() { return regular_; }
         const entries_t& less_than() const { return less_than_; }
+        entries_t& less_than() { return less_than_; }
 
         struct EntryForPoint
         {
@@ -68,7 +70,7 @@ namespace acmacs::chart
                 : regular(entries_for_point(table_distances.regular(), point_no)), less_than(entries_for_point(table_distances.less_than(), point_no)) {}
             entries_for_point_t regular, less_than;
         };
-        
+
         class IteratorForPoint
         {
           private:
