@@ -592,7 +592,7 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-#if __GNUC__ == 7
+#ifndef __clang__
 
 template <> struct std::iterator_traits<acmacs::chart::Antigens::iterator>
 {

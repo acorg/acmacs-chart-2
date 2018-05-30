@@ -3,7 +3,7 @@
 
 // ----------------------------------------------------------------------
 
-#if __GNUC__ == 7
+#ifndef __clang__
 // workaround for a bug in gcc 7.2
 static std::vector<acmacs::chart::GridTest::Result> _gcc72_bug;
 #endif

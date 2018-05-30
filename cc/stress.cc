@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------------
 
 // std::transform_reduce is not in g++-7.2 (nor in g++-8, see Parallelism TS in https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#status.iso.2017)
-#if __GNUC__ == 7
+#ifndef __clang__
 namespace std
 {
       // extracted from clang5 lib: /usr/local/opt/llvm/include/c++/v1/numeric
