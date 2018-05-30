@@ -110,7 +110,7 @@ namespace acmacs::chart
                   case Unknown:
                       return "";
                 }
-#if __GNUC__ == 7
+#ifndef __clang__
                 return "UNKNOWN";
 #endif
             }
