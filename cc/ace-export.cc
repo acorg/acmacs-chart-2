@@ -431,6 +431,55 @@ template std::string acmacs::chart::export_table_map_distances<acmacs::DataForma
 template std::string acmacs::chart::export_table_map_distances<acmacs::DataFormatterCSV>(const Chart& aChart, size_t aProjectionNo);
 
 // ----------------------------------------------------------------------
+
+template <typename DF> std::string acmacs::chart::export_distances_between_all_points(const Chart& aChart, size_t aProjectionNo)
+{
+    auto projection = aChart.projection(aProjectionNo);
+    auto layout = projection->layout();
+    auto antigens = aChart.antigens();
+    auto sera = aChart.sera();
+    const auto number_of_antigens = antigens->size();
+    const auto number_of_points = number_of_antigens + sera->size();
+
+    std::string result;
+    DF::first_field(result, "AG1");
+    DF::second_field(result, "No1");
+    DF::second_field(result, "Name1");
+    DF::second_field(result, "AG2");
+    DF::second_field(result, "No2");
+    DF::second_field(result, "Name2");
+    DF::second_field(result, "Distance");
+    DF::end_of_record(result);
+
+    for (auto point_1 : acmacs::range(number_of_points)) {
+        const auto ag_1 = point_1 < number_of_antigens;
+        const auto no_1 = ag_1 ? point_1 : (point_1 - number_of_antigens);
+        const auto name_1 = ag_1 ? antigens->at(no_1)->full_name() : sera->at(no_1)->full_name();
+        for (auto point_2 : acmacs::range(point_1 + 1, number_of_points)) {
+            const auto ag_2 = point_2 < number_of_antigens;
+            const auto no_2 = ag_2 ? point_2 : (point_2 - number_of_antigens);
+            const auto name_2 = ag_2 ? antigens->at(no_2)->full_name() : sera->at(no_2)->full_name();
+            const auto distance = layout->distance(point_1, point_2);
+
+            DF::first_field(result, ag_1 ? "AG" : "SR");
+            DF::second_field(result, no_1);
+            DF::second_field(result, name_1);
+            DF::second_field(result, ag_2 ? "AG" : "SR");
+            DF::second_field(result, no_2);
+            DF::second_field(result, name_2);
+            DF::second_field(result, distance);
+            DF::end_of_record(result);
+        }
+    }
+
+    return result;
+
+} // acmacs::chart::export_distances_between_all_points
+
+template std::string acmacs::chart::export_distances_between_all_points<acmacs::DataFormatterSpaceSeparated>(const Chart& aChart, size_t aProjectionNo);
+template std::string acmacs::chart::export_distances_between_all_points<acmacs::DataFormatterCSV>(const Chart& aChart, size_t aProjectionNo);
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
