@@ -29,7 +29,7 @@ acmacs::Area acmacs::chart::GridTest::area_for(const Stress::TableDistancesForPo
     acmacs::Area result(original_layout_.get(table_distances_for_point.regular.empty() ? table_distances_for_point.less_than.front().another_point : table_distances_for_point.regular.front().another_point));
     auto extend = [&result,this](const auto& entry) {
         const auto coord = this->original_layout_.get(entry.another_point);
-        const auto radius = entry.table_distance; // + 1;
+        const auto radius = entry.distance; // + 1;
         result.extend(coord - radius);
         result.extend(coord + radius);
     };

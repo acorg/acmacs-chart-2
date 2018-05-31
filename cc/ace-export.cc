@@ -406,14 +406,8 @@ template <typename DF> std::string acmacs::chart::export_table_map_distances(con
     auto projection = aChart.projection(aProjectionNo);
     auto layout = projection->layout();
 
-    auto table_distances = acmacs::chart::table_distances(aChart, projection->minimum_column_basis(), projection->dodgy_titer_is_regular());
-
-    acmacs::chart::TableDistances<double> map_distances;
-    auto make_map_distance = [&layout](const auto& table_distance_entry) -> acmacs::chart::TableDistances<double>::Entry {
-        return {table_distance_entry.point_1, table_distance_entry.point_2, layout->distance(table_distance_entry.point_1, table_distance_entry.point_2)};
-    };
-    std::transform(table_distances.regular().begin(), table_distances.regular().end(), std::back_inserter(map_distances.regular()), make_map_distance);
-    std::transform(table_distances.less_than().begin(), table_distances.less_than().end(), std::back_inserter(map_distances.less_than()), make_map_distance);
+    const auto table_distances = acmacs::chart::table_distances(aChart, projection->minimum_column_basis(), projection->dodgy_titer_is_regular());
+    const MapDistances map_distances(*layout, table_distances);
 
     auto antigens = aChart.antigens();
     auto sera = aChart.sera();
@@ -425,8 +419,8 @@ template <typename DF> std::string acmacs::chart::export_table_map_distances(con
     for (auto td = table_distances.regular().begin(), md = map_distances.regular().begin(); td != table_distances.regular().end(); ++td, ++md) {
         DF::first_field(result, point_name(td->point_1));
         DF::second_field(result, point_name(td->point_2));
-        DF::second_field(result, td->table_distance);
-        DF::second_field(result, md->table_distance);
+        DF::second_field(result, td->distance);
+        DF::second_field(result, md->distance);
         DF::end_of_record(result);
     }
     return result;
@@ -435,51 +429,6 @@ template <typename DF> std::string acmacs::chart::export_table_map_distances(con
 
 template std::string acmacs::chart::export_table_map_distances<acmacs::DataFormatterSpaceSeparated>(const Chart& aChart, size_t aProjectionNo);
 template std::string acmacs::chart::export_table_map_distances<acmacs::DataFormatterCSV>(const Chart& aChart, size_t aProjectionNo);
-
-// ----------------------------------------------------------------------
-
-// std::string acmacs::chart::export_layout(const Chart& aChart, std::string field_separator, std::string field_encloser, size_t aProjectionNo)
-// {
-//     std::string result;
-//     auto first_field = [&result, &field_encloser](std::string field) {
-//         result.append(field_encloser);
-//         result.append(field);
-//         result.append(field_encloser);
-//     };
-//     auto second_field = [&result, &field_separator, &first_field](std::string field) {
-//         result.append(field_separator);
-//         first_field(field);
-//     };
-//     auto record_separator = [&result]() { result.append(1, '\n'); };
-
-//     auto antigens = aChart.antigens();
-//     auto layout = aChart.projection(aProjectionNo)->layout();
-//     const auto number_of_dimensions = layout->number_of_dimensions();
-
-//     for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
-//         first_field("AG");
-//         second_field(string::replace(antigen->full_name(), " ", "_"));
-//         for (auto dim : acmacs::range(number_of_dimensions))
-//             second_field(acmacs::to_string((*layout)(ag_no, dim)));
-//         record_separator();
-//     }
-
-//     auto sera = aChart.sera();
-//     const auto number_of_antigens = aChart.number_of_antigens();
-//     for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-//         first_field("SR ");
-//         second_field(string::replace(serum->full_name(), " ", "_"));
-//         for (auto dim : acmacs::range(number_of_dimensions))
-//             second_field(acmacs::to_string((*layout)(sr_no + number_of_antigens, dim)));
-//         record_separator();
-//     }
-
-//     return result;
-
-// } // acmacs::chart::export_layout
-
-// ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:

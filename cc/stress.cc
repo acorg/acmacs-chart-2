@@ -153,9 +153,9 @@ template <typename Float> inline Float contribution_less_than(size_t point_1, si
 template <typename Float> Float acmacs::chart::Stress<Float>::value(const Float* first, const Float*) const
 {
     return std::transform_reduce(table_distances().regular().begin(), table_distances().regular().end(), Float{0}, std::plus<>(),
-                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_regular(entry.point_1, entry.point_2, entry.table_distance, first, num_dim); }) +
+                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_regular(entry.point_1, entry.point_2, entry.distance, first, num_dim); }) +
            std::transform_reduce(table_distances().less_than().begin(), table_distances().less_than().end(), Float{0}, std::plus<>(),
-                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(entry.point_1, entry.point_2, entry.table_distance, first, num_dim); });
+                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(entry.point_1, entry.point_2, entry.distance, first, num_dim); });
 
 } // acmacs::chart::Stress<Float>::value
 
@@ -173,9 +173,9 @@ template <typename Float> Float acmacs::chart::Stress<Float>::value(const acmacs
 template <typename Float> Float acmacs::chart::Stress<Float>::contribution(size_t point_no, const Float* first) const
 {
     return std::transform_reduce(table_distances().begin_regular_for(point_no), table_distances().end_regular_for(point_no), Float{0}, std::plus<>(),
-                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_regular(entry.point_1, entry.point_2, entry.table_distance, first, num_dim); }) +
+                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_regular(entry.point_1, entry.point_2, entry.distance, first, num_dim); }) +
            std::transform_reduce(table_distances().begin_less_than_for(point_no), table_distances().end_less_than_for(point_no), Float{0}, std::plus<>(),
-                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(entry.point_1, entry.point_2, entry.table_distance, first, num_dim); });
+                                 [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(entry.point_1, entry.point_2, entry.distance, first, num_dim); });
 
 } // acmacs::chart::Stress<Float>::contribution
 
@@ -194,10 +194,10 @@ template <typename Float> Float acmacs::chart::Stress<Float>::contribution(size_
 {
     return std::transform_reduce(
                table_distances_for_point.regular.begin(), table_distances_for_point.regular.end(), Float{0}, std::plus<>(),
-               [point_no, first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_regular(point_no, entry.another_point, entry.table_distance, first, num_dim); }) +
+               [point_no, first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_regular(point_no, entry.another_point, entry.distance, first, num_dim); }) +
            std::transform_reduce(
                table_distances_for_point.less_than.begin(), table_distances_for_point.less_than.end(), Float{0}, std::plus<>(),
-               [point_no, first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(point_no, entry.another_point, entry.table_distance, first, num_dim); });
+               [point_no, first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(point_no, entry.another_point, entry.distance, first, num_dim); });
 
 } // acmacs::chart::Stress<Float>::contribution
 
@@ -270,12 +270,12 @@ template <typename Float> void acmacs::chart::Stress<Float>::gradient_plain(cons
 
     auto contribution_regular = [first,num_dim=number_of_dimensions_,update](const auto& entry) {
         const Float map_dist = ::map_distance(first, entry, num_dim);
-        const Float inc_base = (entry.table_distance - map_dist) * 2 / non_zero(map_dist);
+        const Float inc_base = (entry.distance - map_dist) * 2 / non_zero(map_dist);
         update(entry, inc_base);
     };
     auto contribution_less_than = [first,num_dim=number_of_dimensions_,update](const auto& entry) {
         const Float map_dist = ::map_distance(first, entry, num_dim);
-        const Float diff = entry.table_distance - map_dist + 1;
+        const Float diff = entry.distance - map_dist + 1;
         const Float inc_base = (diff * 2 * acmacs::sigmoid(diff * SigmoidMutiplier<Float>())
                                 + diff * diff * acmacs::d_sigmoid(diff * SigmoidMutiplier<Float>()) * SigmoidMutiplier<Float>()) / non_zero(map_dist);
         update(entry, inc_base);
@@ -318,12 +318,12 @@ template <typename Float> void acmacs::chart::Stress<Float>::gradient_with_unmov
 
     auto contribution_regular = [first,num_dim=number_of_dimensions_,update](const auto& entry) {
         const Float map_dist = ::map_distance(first, entry, num_dim);
-        const Float inc_base = (entry.table_distance - map_dist) * 2 / non_zero(map_dist);
+        const Float inc_base = (entry.distance - map_dist) * 2 / non_zero(map_dist);
         update(entry, inc_base);
     };
     auto contribution_less_than = [first,num_dim=number_of_dimensions_,update](const auto& entry) {
         const Float map_dist = ::map_distance(first, entry, num_dim);
-        const Float diff = entry.table_distance - map_dist + 1;
+        const Float diff = entry.distance - map_dist + 1;
         const Float inc_base = (diff * 2 * acmacs::sigmoid(diff * SigmoidMutiplier<Float>())
                                 + diff * diff * acmacs::d_sigmoid(diff * SigmoidMutiplier<Float>()) * SigmoidMutiplier<Float>()) / non_zero(map_dist);
         update(entry, inc_base);
