@@ -56,6 +56,20 @@ namespace acmacs::chart
 
     DimensionAnnelingStatus dimension_annealing(optimization_method optimization_method, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
 
+// ----------------------------------------------------------------------
+
+    struct ErrorLine
+    {
+        ErrorLine(size_t p1, size_t p2, double el) : point_1{p1}, point_2{p2}, error_line{el} {}
+        size_t point_1, point_2;
+        double error_line;
+
+    }; // struct ErrorLine
+
+    using ErrorLines = std::vector<ErrorLine>;
+
+    ErrorLines error_lines(const Projection& projection);
+
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------

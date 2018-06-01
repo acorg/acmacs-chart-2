@@ -87,6 +87,8 @@ namespace acmacs::chart
 
     TableDistances<double> table_distances(const acmacs::chart::Chart& chart, MinimumColumnBasis minimum_column_basis, bool a_dodgy_titer_is_regular);
 
+    template <typename Float> constexpr inline Float SigmoidMutiplier() { return 10; }
+
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------

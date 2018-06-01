@@ -13,6 +13,7 @@
 #include "acmacs-chart-2/passage.hh"
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/stress.hh"
+#include "acmacs-chart-2/optimize.hh"
 
 // ----------------------------------------------------------------------
 
@@ -450,6 +451,8 @@ namespace acmacs::chart
         Chart& chart() { return const_cast<Chart&>(chart_); }
         const Chart& chart() const { return chart_; }
         void set_projection_no(size_t projection_no) { projection_no_ = projection_no; }
+
+        ErrorLines error_lines() const { return acmacs::chart::error_lines(*this); }
 
      protected:
         virtual double recalculate_stress() const { return calculate_stress<double>(); }

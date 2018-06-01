@@ -70,7 +70,6 @@ acmacs::chart::TableDistances<double> acmacs::chart::table_distances(const acmac
 
 // ----------------------------------------------------------------------
 
-template <typename Float> constexpr inline Float SigmoidMutiplier() { return 10; }
 template <typename Float> constexpr inline Float non_zero(Float value) { return float_zero(value) ? static_cast<Float>(1e-5) : value; };
 
 // ----------------------------------------------------------------------
@@ -133,7 +132,7 @@ template <typename Float> inline Float contribution_regular(size_t point_1, size
 template <typename Float> inline Float contribution_less_than(size_t point_1, size_t point_2, Float table_distance, const Float* first, size_t num_dim)
 {
     const Float diff = table_distance - map_distance(first, point_1, point_2, num_dim) + 1;
-    return diff * diff * acmacs::sigmoid(diff * SigmoidMutiplier<Float>());
+    return diff * diff * acmacs::sigmoid(diff * acmacs::chart::SigmoidMutiplier<Float>());
 }
 
 // template <typename Float> inline Float contribution_regular(const typename acmacs::chart::TableDistances<Float>::Entry& entry, const Float* first, size_t num_dim)

@@ -30,6 +30,8 @@ namespace acmacs::chart
             entries_t& regular() { return regular_; }
             const entries_t& less_than() const { return less_than_; }
             entries_t& less_than() { return less_than_; }
+            // const entries_t& more_than() const { return more_than_; }
+            // entries_t& more_than() { return more_than_; }
 
             class IteratorForPoint
             {
@@ -65,10 +67,13 @@ namespace acmacs::chart
             IteratorForPoint end_regular_for(size_t point_no) const { return IteratorForPoint(point_no, regular().end(), regular().end()); }
             IteratorForPoint begin_less_than_for(size_t point_no) const { return IteratorForPoint(point_no, less_than().begin(), less_than().end()); }
             IteratorForPoint end_less_than_for(size_t point_no) const { return IteratorForPoint(point_no, less_than().end(), less_than().end()); }
+            // IteratorForPoint begin_more_than_for(size_t point_no) const { return IteratorForPoint(point_no, more_than().begin(), more_than().end()); }
+            // IteratorForPoint end_more_than_for(size_t point_no) const { return IteratorForPoint(point_no, more_than().end(), more_than().end()); }
 
           private:
             entries_t regular_;
             entries_t less_than_;
+            // entries_t more_than_;
 
         }; // class DistancesBase<Float>
 
@@ -82,6 +87,7 @@ namespace acmacs::chart
         using entries_t = typename internal::DistancesBase<Float>::entries_t;
         using internal::DistancesBase<Float>::regular;
         using internal::DistancesBase<Float>::less_than;
+        // using internal::DistancesBase<Float>::more_than;
 
         void dodgy_is_regular(bool dodgy_is_regular) { dodgy_is_regular_ = dodgy_is_regular; }
 
@@ -123,7 +129,8 @@ namespace acmacs::chart
         struct EntriesForPoint
         {
             EntriesForPoint(size_t point_no, const TableDistances<Float>& table_distances)
-                : regular(entries_for_point(table_distances.regular(), point_no)), less_than(entries_for_point(table_distances.less_than(), point_no))
+                : regular(entries_for_point(table_distances.regular(), point_no)),
+                  less_than(entries_for_point(table_distances.less_than(), point_no))
             {
             }
             entries_for_point_t regular, less_than;
@@ -145,9 +152,11 @@ namespace acmacs::chart
                 case Titer::LessThan:
                     less_than().emplace_back(p1, p2, value);
                     break;
+                case Titer::MoreThan:
+                    // more_than().emplace_back(p1, p2, value);
+                    // break;
                 case Titer::Invalid:
                 case Titer::DontCare:
-                case Titer::MoreThan:
                     break;
             }
         }
@@ -159,13 +168,14 @@ namespace acmacs::chart
     class MapDistances : public internal::DistancesBase<double>
     {
      public:
-       MapDistances(const LayoutInterface& layout, const TableDistances<double> table_distances)
+       MapDistances(const LayoutInterface& layout, const TableDistances<double>& table_distances)
        {
            auto make_map_distance = [&layout](const auto& table_distance_entry) -> Entry {
                return {table_distance_entry.point_1, table_distance_entry.point_2, layout.distance(table_distance_entry.point_1, table_distance_entry.point_2)};
            };
            std::transform(table_distances.regular().begin(), table_distances.regular().end(), std::back_inserter(regular()), make_map_distance);
            std::transform(table_distances.less_than().begin(), table_distances.less_than().end(), std::back_inserter(less_than()), make_map_distance);
+           // std::transform(table_distances.more_than().begin(), table_distances.more_than().end(), std::back_inserter(more_than()), make_map_distance);
        }
 
     }; // class MapDistances

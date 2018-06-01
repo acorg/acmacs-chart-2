@@ -1,6 +1,7 @@
 #include "acmacs-base/layout.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/stream.hh"
+#include "acmacs-base/sigmoid.hh"
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
@@ -37,7 +38,7 @@ static void alglib_pca(size_t source_number_of_dimensions, size_t target_number_
 acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::ProjectionModify& projection, acmacs::chart::optimization_options options)
 {
     auto layout = projection.layout_modified();
-    auto stress = acmacs::chart::stress_factory<double>(projection, options.mult);
+    auto stress = stress_factory<double>(projection, options.mult);
     const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
     return status;
 
@@ -53,7 +54,7 @@ acmacs::chart::optimization_status acmacs::chart::optimize(ProjectionModify& pro
     const auto start = std::chrono::high_resolution_clock::now();
     optimization_status status(options.method);
     auto layout = projection.layout_modified();
-    auto stress = acmacs::chart::stress_factory<double>(projection, options.mult);
+    auto stress = stress_factory<double>(projection, options.mult);
 
     bool initial_opt = true;
     for (size_t num_dims: schedule) {
@@ -137,6 +138,29 @@ acmacs::chart::optimization_status acmacs::chart::optimize(optimization_method o
 
 } // acmacs::chart::optimize
 
+// ----------------------------------------------------------------------
+
+acmacs::chart::ErrorLines acmacs::chart::error_lines(const acmacs::chart::Projection& projection)
+{
+    auto layout = projection.layout();
+    auto stress = stress_factory<double>(projection, multiply_antigen_titer_until_column_adjust::yes);
+    const auto& table_distances = stress.table_distances();
+    const MapDistances map_distances(*layout, table_distances);
+    ErrorLines result;
+    for (auto td = table_distances.regular().begin(), md = map_distances.regular().begin(); td != table_distances.regular().end(); ++td, ++md) {
+        result.emplace_back(td->point_1, td->point_2, td->distance - md->distance);
+    }
+    for (auto td = table_distances.less_than().begin(), md = map_distances.less_than().begin(); td != table_distances.less_than().end(); ++td, ++md) {
+        auto diff = td->distance - md->distance + 1;
+        diff *= std::sqrt(acmacs::sigmoid(diff * SigmoidMutiplier<double>())); // see Derek's message Thu, 10 Mar 2016 16:32:20 +0000 (Re: acmacs error line error)
+        result.emplace_back(td->point_1, td->point_2, diff);
+    }
+    return result;
+
+} // acmacs::chart::error_lines
+
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 
 static void alglib_lbfgs_optimize_grad(const alglib::real_1d_array& x, double& func, alglib::real_1d_array& grad, void* ptr);
