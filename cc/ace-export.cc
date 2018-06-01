@@ -480,6 +480,32 @@ template std::string acmacs::chart::export_distances_between_all_points<acmacs::
 template std::string acmacs::chart::export_distances_between_all_points<acmacs::DataFormatterCSV>(const Chart& aChart, size_t aProjectionNo);
 
 // ----------------------------------------------------------------------
+
+template <typename DF> std::string acmacs::chart::export_error_lines(const Chart& aChart, size_t aProjectionNo)
+{
+    auto antigens = aChart.antigens();
+    auto sera = aChart.sera();
+    auto point_name = [&antigens, &sera](size_t point_no) -> std::string {
+        return point_no < antigens->size() ? antigens->at(point_no)->full_name() : sera->at(point_no - antigens->size())->full_name();
+    };
+
+    const auto error_lines = aChart.projection(aProjectionNo)->error_lines();
+
+    std::string result;
+    for (const auto& el : error_lines) {
+        DF::first_field(result, point_name(el.point_1));
+        DF::second_field(result, point_name(el.point_2));
+        DF::second_field(result, el.error_line);
+        DF::end_of_record(result);
+    }
+    return result;
+
+} // acmacs::chart::export_error_lines
+
+template std::string acmacs::chart::export_error_lines<acmacs::DataFormatterSpaceSeparated>(const Chart& aChart, size_t aProjectionNo);
+template std::string acmacs::chart::export_error_lines<acmacs::DataFormatterCSV>(const Chart& aChart, size_t aProjectionNo);
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
