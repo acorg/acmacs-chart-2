@@ -79,7 +79,7 @@ static void singular_value_decomposition(const alglib::real_2d_array& matrix, al
 
 ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projection& secondary, const std::vector<CommonAntigensSera::common_t>& common, procrustes_scaling_t scaling)
 {
-    auto primary_layout = primary.transformed_layout();
+    auto primary_layout = primary.number_of_dimensions() == 2 ? primary.transformed_layout() : primary.layout();
     auto secondary_layout = secondary.layout();
     const auto number_of_dimensions = primary_layout->number_of_dimensions();
     if (number_of_dimensions != secondary_layout->number_of_dimensions())
@@ -98,7 +98,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     }
 
     ProcrustesData result(number_of_dimensions);
-    auto set_transformation = [&result,number_of_dimensions=cint(number_of_dimensions)](const auto& source) {
+    auto set_transformation = [&result, number_of_dimensions = cint(number_of_dimensions)](const auto& source) {
         for (aint_t row = 0; row < number_of_dimensions; ++row)
             for (aint_t col = 0; col < number_of_dimensions; ++col)
                 result.transformation(row, col) = source(row, col);
@@ -121,46 +121,50 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
         transformation = multiply_both_transposed(vt, u);
         // std::cerr << "transformation0: " << transformation.tostring(8) << '\n';
 
-          // calculate optimal scale parameter
+        // calculate optimal scale parameter
         const auto denominator = multiply_left_transposed(y, m1);
-        const auto trace_denominator = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&denominator](double sum, auto i) { return sum + denominator(i, i); });
+        const auto trace_denominator =
+            std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&denominator](double sum, auto i) { return sum + denominator(i, i); });
         const auto m3 = multiply(y, transformation);
         const auto m4 = multiply(j, m3);
         const auto numerator = multiply_left_transposed(x, m4);
-        const auto trace_numerator = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&numerator](double sum, auto i) { return sum + numerator(i, i); });
+        const auto trace_numerator =
+            std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&numerator](double sum, auto i) { return sum + numerator(i, i); });
         const auto scale = trace_numerator / trace_denominator;
         multiply(transformation, scale);
         result.scale = scale;
     }
     set_transformation(transformation);
 
-      // translation
+    // translation
     auto m5 = multiply(y, transformation);
     multiply_add(m5, -1, x);
     for (size_t dim = 0; dim < number_of_dimensions; ++dim) {
-        const auto t_i = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(common.size())), 0.0, [&m5,dim=cint(dim)](auto sum, auto row) { return sum + m5(row, dim); });
+        const auto t_i =
+            std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(common.size())), 0.0, [&m5, dim = cint(dim)](auto sum, auto row) { return sum + m5(row, dim); });
         result.transformation.translation(dim) = t_i / common.size();
     }
 
-      // rms
+    // rms
     auto secondary_transformed = result.apply(*secondary_layout);
     result.rms = 0.0;
     size_t num_rows = 0;
-    for (const auto& cp: common) {
+    for (const auto& cp : common) {
         if (const auto pc = primary_layout->get(cp.primary), sc = secondary_transformed->get(cp.secondary); pc.not_nan() && sc.not_nan()) {
             ++num_rows;
-            auto make_rms_inc = [&pc,&sc](auto sum, auto dim) {
+            auto make_rms_inc = [&pc, &sc](auto sum, auto dim) {
                 auto square = [](auto v) { return v * v; };
                 return sum + square(pc[dim] - sc[dim]);
             };
             result.rms = std::accumulate(acmacs::index_iterator(0UL), acmacs::index_iterator(number_of_dimensions), result.rms, make_rms_inc);
+              //std::cerr << cp.primary << ' ' << cp.secondary << ' ' << result.rms << '\n';
         }
     }
     result.rms = std::sqrt(result.rms / num_rows);
 
-    // std::cerr << "common points: " << common.size() << '\n';
-    // std::cerr << "transformation: " << acmacs::to_string(result.transformation) << '\n';
-    // std::cerr << "rms: " << acmacs::to_string(result.rms) << '\n';
+      // std::cerr << "common points: " << common.size() << '\n';
+      // std::cerr << "transformation: " << acmacs::to_string(result.transformation) << '\n';
+      // std::cerr << "rms: " << acmacs::to_string(result.rms) << '\n';
 
     return result;
 
@@ -173,13 +177,11 @@ std::shared_ptr<acmacs::Layout> acmacs::chart::ProcrustesData::apply(const acmac
     assert(source.number_of_dimensions() == transformation.number_of_dimensions());
     auto result = std::make_shared<acmacs::Layout>(source.number_of_points(), source.number_of_dimensions());
 
-      // multiply source by transformation
+    // multiply source by transformation
     for (size_t row_no = 0; row_no < source.number_of_points(); ++row_no) {
         if (const auto row = source[row_no]; row.not_nan()) {
             for (size_t dim = 0; dim < transformation.number_of_dimensions(); ++dim) {
-                auto sum_squares = [&source,this,row_no,dim](double sum, size_t index) {
-                    return sum + source(row_no, index) * this->transformation(index, dim);
-                };
+                auto sum_squares = [&source, this, row_no, dim](double sum, size_t index) { return sum + source(row_no, index) * this->transformation(index, dim); };
                 result->set(row_no, dim, std::accumulate(acmacs::index_iterator(0UL), acmacs::index_iterator(source.number_of_dimensions()), 0.0, sum_squares) + transformation.translation(dim));
             }
         }
