@@ -106,6 +106,21 @@
       "s": [],                  // list of point indices for point shown on all maps in the time series
       "t": {                    // title style?
       }
+    },
+    "x": {                      // extensions
+      "vaccines": [
+        {
+          "type": "previous", // "previous", "current", "surrogate"
+          "passage": "cell", // "cell", "egg", "reassortant"
+          "antigens": [
+            {
+              "index": 0, // in "a"
+              "tables": 134, // total number of tables from hidb
+              "recent": "CDC:HI:guinea-pig:20141009" // most recent table id from hidb
+            }
+          ]
+        }
+      ]
     }
   }
 }
