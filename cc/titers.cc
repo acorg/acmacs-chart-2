@@ -3,6 +3,7 @@
 
 #include "acmacs-base/debug.hh"
 #include "acmacs-base/range.hh"
+#include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -350,6 +351,26 @@ acmacs::chart::PointIndexList acmacs::chart::Titers::having_titers_with(size_t p
     return result;
 
 } // acmacs::chart::Titers::having_titers_with
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::PointIndexList acmacs::chart::Titers::having_too_few_numeric_titers(size_t threshold) const
+{
+    std::vector<size_t> number_of_numeric_titers(number_of_antigens() + number_of_sera(), 0);
+    for (const auto& titer_ref : *this) {
+        if (titer_ref.titer.is_regular()) {
+            ++number_of_numeric_titers[titer_ref.antigen];
+            ++number_of_numeric_titers[titer_ref.serum + number_of_antigens()];
+        }
+    }
+    PointIndexList result;
+    for (auto [point_no, num_numeric_titers] : acmacs::enumerate(number_of_numeric_titers)) {
+        if (num_numeric_titers < threshold)
+            result.insert(point_no);
+    }
+    return result;
+
+} // acmacs::chart::Titers::having_too_few_numeric_titers
 
 // ----------------------------------------------------------------------
 /// Local Variables:

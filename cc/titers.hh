@@ -153,6 +153,8 @@ namespace acmacs::chart
         virtual TiterIterator end() const;
 
         PointIndexList having_titers_with(size_t point_no) const;
+          // returns list of points having less than threshold numeric titers
+        PointIndexList having_too_few_numeric_titers(size_t threshold = 3) const;
 
     }; // class Titers
 
