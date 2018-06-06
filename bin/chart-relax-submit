@@ -72,7 +72,7 @@ notify_user = eu@antigenic-cartography.org
 output = ${STDOUT_FILE}
 error = ${STDERR_FILE}
 JobBatchName = "AD chart-relax $@"
-description = "AD chart-relax $@"
+description = "ad chart-relax $@"
 coresize = -1
 queue
 EOF
