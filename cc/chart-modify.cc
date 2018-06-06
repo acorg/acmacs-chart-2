@@ -207,7 +207,6 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     projection->set_disconnected(disconnect_points);
     auto layout = projection->layout_modified();
     auto stress = acmacs::chart::stress_factory<double>(*projection, options.mult);
-    stress.set_disconnected(disconnect_points);
     projection->randomize_layout(make_randomizer(stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier));
     auto status = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
     if (start_num_dim > number_of_dimensions) {
@@ -221,7 +220,8 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
         status.initial_stress = status2.initial_stress;
         status.final_stress = status2.final_stress;
     }
-    projection->stress_ = status.final_stress;
+    if (!std::isnan(status.final_stress))
+        projection->stress_ = status.final_stress;
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
     return {status, projection};
 
@@ -257,10 +257,12 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
             layout->change_number_of_dimensions(number_of_dimensions);
             stress.change_number_of_dimensions(number_of_dimensions);
             const auto status2 = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
-            projection->stress_ = status2.final_stress;
+            if (!std::isnan(status2.final_stress))
+                projection->stress_ = status2.final_stress;
         }
         else {
-            projection->stress_ = status1.final_stress;
+            if (!std::isnan(status1.final_stress))
+                projection->stress_ = status1.final_stress;
         }
         if (report_stresses) {
             std::cout << std::setw(3) << p_no << ' ' << std::fixed << std::setprecision(4) << *projection->stress_ << '\n';
