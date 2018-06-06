@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/range.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -35,9 +36,9 @@ int main(int argc, char* const argv[])
                     // Timeit ti("column bases computing ");
                     auto cb = chart->computed_column_bases(acmacs::chart::MinimumColumnBasis{});
                     std::cout << "computed column bases: " << *cb << '\n';
-                    if (chart->number_of_projections()) {
-                        if (auto fcb = chart->projection(0)->forced_column_bases(); fcb)
-                            std::cout << "forced column bases: " << *fcb << '\n';
+                    for (auto projection_no : acmacs::range(chart->number_of_projections())) {
+                        if (auto fcb = chart->projection(projection_no)->forced_column_bases(); fcb)
+                            std::cout << "forced column bases for projection " << projection_no << ": " << *fcb << '\n';
                     }
                 }
             }
