@@ -77,6 +77,7 @@ all: check-acmacsd-root $(TARGETS)
 install: check-acmacsd-root install-headers $(TARGETS)
 	$(call install_lib,$(ACMACS_CHART_LIB))
 	ln -sf $(abspath dist)/chart-* $(AD_BIN)
+	ln -sf $(abspath bin)/chart-* $(AD_BIN)
 
 test: install
 	test/test
