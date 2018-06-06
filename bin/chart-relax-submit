@@ -72,11 +72,12 @@ notify_user = eu@antigenic-cartography.org
 output = ${STDOUT_FILE}
 error = ${STDERR_FILE}
 JobBatchName = "AD chart-relax $@"
+description = "AD chart-relax $@"
 coresize = -1
 queue
 EOF
 
-echo
-cat "${SUBMIT_FILE}"
+# echo
+# cat "${SUBMIT_FILE}"
 
 condor_submit "${SUBMIT_FILE}"
