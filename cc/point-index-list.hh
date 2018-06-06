@@ -42,6 +42,12 @@ namespace acmacs::chart
                     insert(val);
             }
 
+        void extend(const PointIndexList& source)
+            {
+                for (const auto no : source)
+                    insert(no);
+            }
+
     }; // class PointIndexList
 
 } // namespace acmacs::chart

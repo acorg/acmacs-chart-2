@@ -30,7 +30,7 @@ int main(int argc, char* const argv[])
                 auto chart = acmacs::chart::import_from_file(args[file_no], verify ? acmacs::chart::Verify::All : acmacs::chart::Verify::None, report);
                 std::cout << chart->make_info() << '\n';
                 if (const auto having_too_few_numeric_titers = chart->titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers.empty())
-                    std::cout << "Points having too few numeric titers: " << chart->titers()->having_too_few_numeric_titers() << '\n';
+                    std::cout << "Points having too few numeric titers: " << having_too_few_numeric_titers << '\n';
                 if (args["--column-bases"]) {
                     // Timeit ti("column bases computing ");
                     auto cb = chart->computed_column_bases(acmacs::chart::MinimumColumnBasis{});
