@@ -48,7 +48,7 @@ int main(int argc, char* const argv[])
                 disconnected.extend(chart.titers()->having_too_few_numeric_titers());
 
             const size_t number_of_attempts = args["-n"];
-            chart.relax(number_of_attempts, args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]), args["--verbose"] || args["-v"]);
+            chart.relax(number_of_attempts, args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]), args["--verbose"] || args["-v"], disconnected);
             // for (size_t attempt = 0; attempt < number_of_attempts; ++attempt) {
             //     auto [status, projection] = chart.relax(args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]), disconnected);
             //     std::cout << (attempt + 1) << ' ' << status << '\n';

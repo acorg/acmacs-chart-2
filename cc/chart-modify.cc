@@ -207,6 +207,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     projection->set_disconnected(disconnect_points);
     auto layout = projection->layout_modified();
     auto stress = acmacs::chart::stress_factory<double>(*projection, options.mult);
+    stress.set_disconnected(disconnect_points);
     projection->randomize_layout(make_randomizer(stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier));
     auto status = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
     if (start_num_dim > number_of_dimensions) {
@@ -228,17 +229,24 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
 
 // ----------------------------------------------------------------------
 
-void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, bool report_stresses)
+void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options,
+                        bool report_stresses, const PointIndexList& disconnect_points)
 {
     const size_t start_num_dim = dimension_annealing && number_of_dimensions < 5 ? 5 : number_of_dimensions;
     auto stress = acmacs::chart::stress_factory<double>(*this, start_num_dim, minimum_column_basis, options.mult, false);
+    stress.set_disconnected(disconnect_points);
     auto rnd = make_randomizer(stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(number_of_optimizations);
-    std::transform(projections.begin(), projections.end(), projections.begin(), [start_num_dim, minimum_column_basis, pp=projections_modify()](const auto&) { return pp->new_from_scratch(start_num_dim, minimum_column_basis); });
+    std::transform(projections.begin(), projections.end(), projections.begin(), [start_num_dim, minimum_column_basis, &disconnect_points, pp = projections_modify()](const auto&) {
+        auto projection = pp->new_from_scratch(start_num_dim, minimum_column_basis);
+        if (!disconnect_points.empty())
+            projection->set_disconnected(disconnect_points);
+        return projection;
+    });
 
 #pragma omp parallel for default(shared) firstprivate(stress) schedule(static, 4)
-    for (size_t p_no = 0 ; p_no < projections.size(); ++p_no) {
+    for (size_t p_no = 0; p_no < projections.size(); ++p_no) {
         auto projection = projections[p_no];
         projection->randomize_layout(rnd);
         auto layout = projection->layout_modified();

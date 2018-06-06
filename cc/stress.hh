@@ -57,6 +57,9 @@ namespace acmacs::chart
         TableDistances<Float>& table_distances() { return table_distances_; }
         TableDistancesForPoint table_distances_for(size_t point_no) const { return TableDistancesForPoint(point_no, table_distances_); }
         const StressParameters& parameters() const { return parameters_; }
+        void set_disconnected(const PointIndexList& to_disconnect) { parameters_.disconnected = to_disconnect; }
+        void set_unmovable(const PointIndexList& unmovable) { parameters_.unmovable = unmovable; }
+        void set_unmovable_in_the_last_dimension(const PointIndexList& unmovable_in_the_last_dimension) { parameters_.unmovable_in_the_last_dimension = unmovable_in_the_last_dimension; }
 
         void set_coordinates_of_disconnected(Float* first, Float value) const;
 
