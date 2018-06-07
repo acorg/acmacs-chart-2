@@ -46,7 +46,7 @@ namespace acmacs::chart
         AntigensP antigens() const override;
         SeraP sera() const override;
         TitersP titers() const override;
-        ColumnBasesP forced_column_bases() const override;
+        ColumnBasesP forced_column_bases(MinimumColumnBasis aMinimumColumnBasis) const override;
         ProjectionsP projections() const override;
         PlotSpecP plot_spec() const override;
 
@@ -56,7 +56,7 @@ namespace acmacs::chart
         AntigensModifyP antigens_modify();
         SeraModifyP sera_modify();
         TitersModifyP titers_modify();
-        ColumnBasesModifyP forced_column_bases_modify();
+        ColumnBasesModifyP forced_column_bases_modify(MinimumColumnBasis aMinimumColumnBasis);
         ProjectionsModifyP projections_modify();
         ProjectionModifyP projection_modify(size_t aProjectionNo);
         PlotSpecModifyP plot_spec_modify();
@@ -440,7 +440,7 @@ namespace acmacs::chart
             : ProjectionModify(chart), minimum_column_basis_(minimum_column_basis)
             {
                 new_layout(chart.number_of_points(), number_of_dimensions);
-                set_forced_column_bases(chart.forced_column_bases());
+                set_forced_column_bases(chart.forced_column_bases(minimum_column_basis));
             }
 
         explicit ProjectionModifyNew(const ProjectionModify& aSource)

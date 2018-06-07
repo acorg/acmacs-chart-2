@@ -130,12 +130,12 @@ PlotSpecP ChartModify::plot_spec() const
 
 // ----------------------------------------------------------------------
 
-ColumnBasesP ChartModify::forced_column_bases() const
+ColumnBasesP ChartModify::forced_column_bases(MinimumColumnBasis aMinimumColumnBasis) const
 {
     if (forced_column_bases_)
         return forced_column_bases_;
     else if (main_)
-        return main_->forced_column_bases();
+        return main_->forced_column_bases(aMinimumColumnBasis);
     else
         return {};
 
@@ -143,10 +143,10 @@ ColumnBasesP ChartModify::forced_column_bases() const
 
 // ----------------------------------------------------------------------
 
-ColumnBasesModifyP ChartModify::forced_column_bases_modify()
+ColumnBasesModifyP ChartModify::forced_column_bases_modify(MinimumColumnBasis aMinimumColumnBasis)
 {
     if (!forced_column_bases_ && main_) {
-        if (auto fcb = main_->forced_column_bases(); fcb)
+        if (auto fcb = main_->forced_column_bases(aMinimumColumnBasis); fcb)
             forced_column_bases_ = std::make_shared<ColumnBasesModify>(fcb);
     }
     return forced_column_bases_;
@@ -290,7 +290,7 @@ void ChartModify::remove_sera(const ReverseSortedIndexes& indexes)
     titers_modify()->remove_sera(indexes);
     projections_modify()->remove_sera(indexes, number_of_antigens());
     plot_spec_modify()->remove_sera(indexes);
-    if (auto fcb = forced_column_bases_modify(); fcb)
+    if (auto fcb = forced_column_bases_modify(MinimumColumnBasis{}); fcb)
         fcb->remove(indexes);
 
 } // ChartModify::remove_sera
@@ -330,7 +330,7 @@ SerumModifyP ChartModify::insert_serum(size_t before)
     titers_modify()->insert_serum(before);
     projections_modify()->insert_serum(before, number_of_antigens());
     plot_spec_modify()->insert_serum(before);
-    if (auto fcb = forced_column_bases_modify(); fcb) {
+    if (auto fcb = forced_column_bases_modify(MinimumColumnBasis{}); fcb) {
         std::cerr << "WARNING: inserting serum in the table having forced column bases, please set column basis for that serum\n";
         fcb->insert(before, 7.0); // all titers for the new serum are dont-care, there is no real column basis, use 1280 just to have something
     }

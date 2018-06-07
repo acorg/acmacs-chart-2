@@ -48,7 +48,7 @@ template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_fac
 template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_factory(const acmacs::chart::Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular)
 {
     Stress<Float> stress(number_of_dimensions, chart.number_of_points(), mult, a_dodgy_titer_is_regular);
-    auto cb = chart.forced_column_bases();
+    auto cb = chart.forced_column_bases(minimum_column_basis);
     if (!cb)
         cb = chart.column_bases(minimum_column_basis);
     chart.titers()->update(stress.table_distances(), *cb, stress.parameters());
@@ -61,7 +61,7 @@ template <typename Float> acmacs::chart::Stress<Float> acmacs::chart::stress_fac
 acmacs::chart::TableDistances<double> acmacs::chart::table_distances(const acmacs::chart::Chart& chart, MinimumColumnBasis minimum_column_basis, bool a_dodgy_titer_is_regular)
 {
     Stress<double> stress(2, chart.number_of_points(), multiply_antigen_titer_until_column_adjust::yes, a_dodgy_titer_is_regular);
-    auto cb = chart.forced_column_bases();
+    auto cb = chart.forced_column_bases(minimum_column_basis);
     if (!cb)
         cb = chart.column_bases(minimum_column_basis);
     return chart.titers()->table_distances(*cb, stress.parameters());

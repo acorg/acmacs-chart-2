@@ -103,7 +103,7 @@ void test_chart_modify_no_changes(acmacs::chart::ChartP chart, const argc_argv& 
     chart_modify.antigens_modify();
     chart_modify.sera_modify();
     chart_modify.titers_modify();
-    chart_modify.forced_column_bases_modify();
+    chart_modify.forced_column_bases_modify(acmacs::chart::MinimumColumnBasis{});
 
     const auto plain = acmacs::chart::export_factory(*chart, acmacs::chart::export_format::ace, args.program(), report);
     const auto modified = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);

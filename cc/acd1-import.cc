@@ -311,10 +311,10 @@ TitersP Acd1Chart::titers() const
 
 // ----------------------------------------------------------------------
 
-ColumnBasesP Acd1Chart::forced_column_bases() const
+ColumnBasesP Acd1Chart::forced_column_bases(MinimumColumnBasis aMinimumColumnBasis) const
 {
     if (const auto& cb = mData["table"].get_or_empty_array("column_bases"); !cb.empty())
-        return std::make_shared<Acd1ColumnBases>(cb);
+        return std::make_shared<Acd1ColumnBases>(cb, aMinimumColumnBasis);
     return nullptr;
 
 } // Acd1Chart::forced_column_bases

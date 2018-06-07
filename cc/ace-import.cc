@@ -115,10 +115,10 @@ TitersP AceChart::titers() const
 
 // ----------------------------------------------------------------------
 
-ColumnBasesP AceChart::forced_column_bases() const
+ColumnBasesP AceChart::forced_column_bases(MinimumColumnBasis aMinimumColumnBasis) const
 {
     if (const auto& cb = mData["c"].get_or_empty_array("C"); !cb.empty())
-        return std::make_shared<AceColumnBases>(cb);
+        return std::make_shared<AceColumnBases>(cb, aMinimumColumnBasis);
     return nullptr;
 
 } // AceChart::forced_column_bases

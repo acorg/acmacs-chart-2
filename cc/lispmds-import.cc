@@ -207,7 +207,7 @@ TitersP LispmdsChart::titers() const
 
 // ----------------------------------------------------------------------
 
-ColumnBasesP LispmdsChart::forced_column_bases() const
+ColumnBasesP LispmdsChart::forced_column_bases(MinimumColumnBasis /*aMinimumColumnBasis*/) const
 {
     return ::forced_column_bases(mData, 0).first;
 

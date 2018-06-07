@@ -60,7 +60,7 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Chart::computed_colum
 
 std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Chart::column_bases(acmacs::chart::MinimumColumnBasis aMinimumColumnBasis) const
 {
-    if (auto cb = forced_column_bases(); cb)
+    if (auto cb = forced_column_bases(aMinimumColumnBasis); cb)
         return cb;
     return computed_column_bases(aMinimumColumnBasis);
 

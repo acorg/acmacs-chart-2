@@ -21,7 +21,7 @@ namespace acmacs::chart
         AntigensP antigens() const override;
         SeraP sera() const override;
         TitersP titers() const override;
-        ColumnBasesP forced_column_bases() const override;
+        ColumnBasesP forced_column_bases(MinimumColumnBasis aMinimumColumnBasis) const override;
         ProjectionsP projections() const override;
         PlotSpecP plot_spec() const override;
         bool is_merge() const override;
@@ -158,13 +158,15 @@ namespace acmacs::chart
     class AceColumnBases : public ColumnBases
     {
       public:
-        AceColumnBases(const rjson::array& aData) : mData{aData} {}
+        AceColumnBases(const rjson::array& data) : data_{data} {}
+        AceColumnBases(const rjson::array& data, MinimumColumnBasis minimum_column_basis) : data_{data}, minimum_column_basis_{minimum_column_basis} {}
 
-        double column_basis(size_t aSerumNo) const override { return mData[aSerumNo]; }
-        size_t size() const override { return mData.size(); }
+        double column_basis(size_t aSerumNo) const override { return minimum_column_basis_.apply(data_[aSerumNo]); }
+        size_t size() const override { return data_.size(); }
 
      private:
-        const rjson::array& mData;
+        const rjson::array& data_;
+        MinimumColumnBasis minimum_column_basis_;
 
     }; // class AceColumnBases
 

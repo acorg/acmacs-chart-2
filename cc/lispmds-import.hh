@@ -17,7 +17,7 @@ namespace acmacs::chart
         AntigensP antigens() const override;
         SeraP sera() const override;
         TitersP titers() const override;
-        ColumnBasesP forced_column_bases() const override;
+        ColumnBasesP forced_column_bases(MinimumColumnBasis aMinimumColumnBasis) const override;
         ProjectionsP projections() const override;
         PlotSpecP plot_spec() const override;
         inline bool is_merge() const override { return false; }

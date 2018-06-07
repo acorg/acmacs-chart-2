@@ -24,6 +24,7 @@ namespace acmacs::chart
         constexpr bool is_none() const { return float_zero(value_); }
 
         constexpr operator double() const noexcept { return value_; }
+        double apply(double column_basis) const noexcept { return std::max(column_basis, value_); }
 
         operator std::string() const noexcept;
 
