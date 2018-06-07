@@ -4,6 +4,7 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
 #include "acmacs-base/filesystem.hh"
+#include "acmacs-base/timeit.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -40,6 +41,8 @@ int main(int argc, char* const argv[])
         }
         else {
             const auto report = do_report_time(args["--time"]);
+            const size_t number_of_attempts = args["-n"];
+            const Timeit ti("performing " + std::to_string(number_of_attempts) + " optimizations: ", report);
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
             const auto precision = args["--rough"] ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
             const auto method{acmacs::chart::optimization_method_from_string(args["--method"])};
@@ -47,7 +50,6 @@ int main(int argc, char* const argv[])
             if (!args["--no-disconnect-having-few-titers"])
                 disconnected.extend(chart.titers()->having_too_few_numeric_titers());
 
-            const size_t number_of_attempts = args["-n"];
             chart.relax(number_of_attempts, args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]), args["--verbose"] || args["-v"], disconnected);
             // for (size_t attempt = 0; attempt < number_of_attempts; ++attempt) {
             //     auto [status, projection] = chart.relax(args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]), disconnected);
