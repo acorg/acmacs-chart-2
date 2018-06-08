@@ -31,7 +31,7 @@ template <typename T> constexpr inline aint_t cint(T src) { return static_cast<a
 
 static void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
 static void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
-static void alglib_pca(size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
+static void alglib_pca(const acmacs::chart::Stress<double>& stress, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
 
 // ----------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ acmacs::chart::optimization_status acmacs::chart::optimize(ProjectionModify& pro
     bool initial_opt = true;
     for (size_t num_dims: schedule) {
         if (!initial_opt) {
-            dimension_annealing(options.method, projection.number_of_dimensions(), num_dims, layout->data(), layout->data() + layout->size());
+            dimension_annealing(options.method, stress, projection.number_of_dimensions(), num_dims, layout->data(), layout->data() + layout->size());
             layout->change_number_of_dimensions(num_dims);
             stress.change_number_of_dimensions(num_dims);
         }
@@ -124,13 +124,18 @@ acmacs::chart::optimization_status acmacs::chart::optimize(optimization_method o
     optimization_status status(optimization_method);
     status.initial_stress = stress.value(arg_first);
     const auto start = std::chrono::high_resolution_clock::now();
-    switch (optimization_method) {
-      case optimization_method::alglib_lbfgs_pca:
-          alglib_lbfgs_optimize(status, stress, arg_first, arg_last, precision);
-          break;
-      case optimization_method::alglib_cg_pca:
-          alglib_cg_optimize(status, stress, arg_first, arg_last, precision);
-          break;
+    try {
+        switch (optimization_method) {
+            case optimization_method::alglib_lbfgs_pca:
+                alglib_lbfgs_optimize(status, stress, arg_first, arg_last, precision);
+                break;
+            case optimization_method::alglib_cg_pca:
+                alglib_cg_optimize(status, stress, arg_first, arg_last, precision);
+                break;
+        }
+    }
+    catch (alglib::ap_error& err) {
+        throw optimization_error("alglib error: " + err.msg);
     }
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
     status.final_stress = stress.value(arg_first);
@@ -215,7 +220,7 @@ void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acm
 
 
       // alglib does not like NaN coordinates of disconnected points, set them to 0
-    stress.set_coordinates_of_disconnected(arg_first, 0.0);
+    stress.set_coordinates_of_disconnected(arg_first, 0.0, stress.number_of_dimensions());
 
     real_1d_array x;
     x.attach_to_ptr(arg_last - arg_first, arg_first);
@@ -229,7 +234,7 @@ void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acm
     minlbfgsresultsbuf(state, x, rep);
 
       // return back NaN for disconnected points
-    stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN());
+    stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), stress.number_of_dimensions());
 
     if (rep.terminationtype < 0) {
         const char* msg = alglib_lbfgs_optimize_errors[std::abs(rep.terminationtype) <= 8 ? (std::abs(rep.terminationtype) - 1) : 8];
@@ -268,7 +273,7 @@ void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs
     const ae_int_t max_iterations = 0;
 
       // alglib does not like NaN coordinates of disconnected points, set them to 0
-    stress.set_coordinates_of_disconnected(arg_first, 0.0);
+    stress.set_coordinates_of_disconnected(arg_first, 0.0, stress.number_of_dimensions());
 
     real_1d_array x;
     x.attach_to_ptr(arg_last - arg_first, arg_first);
@@ -281,7 +286,7 @@ void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs
     mincgresultsbuf(state, x, rep);
 
       // return back NaN for disconnected points
-    stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN());
+    stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), stress.number_of_dimensions());
 
     if (rep.terminationtype < 0) {
         const char* msg = alglib_lbfgs_optimize_errors[std::abs(rep.terminationtype) <= 8 ? (std::abs(rep.terminationtype) - 1) : 8];
@@ -297,30 +302,18 @@ void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(acmacs::chart::optimization_method optimization_method, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
+acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(optimization_method optimization_method, const Stress<double>& stress, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
 {
     // std::cerr << "dimension_annealing " << std::pair(arg_first, arg_last) << '\n';
     DimensionAnnelingStatus status;
     const auto start = std::chrono::high_resolution_clock::now();
 
-      // remember nan positions, replace nan's with 0 (pca engine cannot handle nan)
-    std::vector<long> nan_positions;
-    for (auto arg = arg_first; arg != arg_last; ++arg) {
-        if (std::isnan(*arg)) {
-            nan_positions.push_back(arg - arg_first);
-            *arg = 0;
-        }
-    }
-
     switch (optimization_method) {
       case optimization_method::alglib_lbfgs_pca:
       case optimization_method::alglib_cg_pca:
-          alglib_pca(source_number_of_dimensions, target_number_of_dimensions, arg_first, arg_last);
+          alglib_pca(stress, source_number_of_dimensions, target_number_of_dimensions, arg_first, arg_last);
           break;
     }
-
-      // return back nan's
-    std::for_each(nan_positions.begin(), nan_positions.end(), [arg_first](auto pos) { arg_first[pos] = std::numeric_limits<double>::quiet_NaN(); });
 
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
     return status;
@@ -329,11 +322,14 @@ acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(acmacs
 
 // ----------------------------------------------------------------------
 
-void alglib_pca(size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
+void alglib_pca(const acmacs::chart::Stress<double>& stress, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
 {
     const double eps{0};
     const aint_t maxits{0};
     const aint_t number_of_points = (arg_last - arg_first) / cint(source_number_of_dimensions);
+
+      // alglib does not like NaN coordinates of disconnected points, set them to 0
+    stress.set_coordinates_of_disconnected(arg_first, 0.0, source_number_of_dimensions);
 
     alglib::real_2d_array x;
     x.attach_to_ptr(number_of_points, cint(source_number_of_dimensions), arg_first);
@@ -357,6 +353,10 @@ void alglib_pca(size_t source_number_of_dimensions, size_t target_number_of_dime
             *target++ = t(p_no, dim_no);
         }
     }
+
+      // return back NaN for disconnected points
+      // number of dimensions changed!
+    stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), target_number_of_dimensions);
 
 } // alglib_pca
 

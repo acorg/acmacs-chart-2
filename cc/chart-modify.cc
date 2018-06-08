@@ -1,4 +1,5 @@
 #include <random>
+#include <typeinfo>
 
 #include "acmacs-base/omp.hh"
 #include "acmacs-base/range.hh"
@@ -210,7 +211,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     projection->randomize_layout(make_randomizer(stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier));
     auto status = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
     if (start_num_dim > number_of_dimensions) {
-        acmacs::chart::dimension_annealing(options.method, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
+        acmacs::chart::dimension_annealing(options.method, stress, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
         layout->change_number_of_dimensions(number_of_dimensions);
         stress.change_number_of_dimensions(number_of_dimensions);
         const auto status2 = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
@@ -253,7 +254,7 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
         stress.change_number_of_dimensions(start_num_dim);
         const auto status1 = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
         if (start_num_dim > number_of_dimensions) {
-            acmacs::chart::dimension_annealing(options.method, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
+            acmacs::chart::dimension_annealing(options.method, stress, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
             layout->change_number_of_dimensions(number_of_dimensions);
             stress.change_number_of_dimensions(number_of_dimensions);
             const auto status2 = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);

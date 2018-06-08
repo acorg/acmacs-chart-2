@@ -215,7 +215,7 @@ void optimize_n(acmacs::chart::optimization_method method, acmacs::chart::ChartM
             if (num_dims > projection->number_of_dimensions())
                 throw std::runtime_error("invalid schedule: " + acmacs::to_string(schedule));
             if (num_dims < projection->number_of_dimensions()) {
-                acmacs::chart::dimension_annealing(method, projection->number_of_dimensions(), num_dims, layout->data(), layout->data() + layout->size());
+                acmacs::chart::dimension_annealing(method, stress, projection->number_of_dimensions(), num_dims, layout->data(), layout->data() + layout->size());
                 layout->change_number_of_dimensions(num_dims);
                 stress.change_number_of_dimensions(num_dims);
             }

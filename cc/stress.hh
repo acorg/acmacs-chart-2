@@ -51,6 +51,7 @@ namespace acmacs::chart
         void gradient(const Float* first, const Float* last, Float* gradient_first) const;
         Float value_gradient(const Float* first, const Float* last, Float* gradient_first) const;
         std::vector<Float> gradient(const acmacs::LayoutInterface& aLayout) const;
+        constexpr size_t number_of_dimensions() const { return number_of_dimensions_; }
         void change_number_of_dimensions(size_t num_dim) { number_of_dimensions_ = num_dim; }
 
         const TableDistances<Float>& table_distances() const { return table_distances_; }
@@ -61,7 +62,7 @@ namespace acmacs::chart
         void set_unmovable(const PointIndexList& unmovable) { parameters_.unmovable = unmovable; }
         void set_unmovable_in_the_last_dimension(const PointIndexList& unmovable_in_the_last_dimension) { parameters_.unmovable_in_the_last_dimension = unmovable_in_the_last_dimension; }
 
-        void set_coordinates_of_disconnected(Float* first, Float value) const;
+        void set_coordinates_of_disconnected(Float* first, Float value, size_t number_of_dimensions) const;
 
      private:
         size_t number_of_dimensions_;

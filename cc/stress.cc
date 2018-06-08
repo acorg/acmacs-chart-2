@@ -335,11 +335,12 @@ template <typename Float> void acmacs::chart::Stress<Float>::gradient_with_unmov
 
 // ----------------------------------------------------------------------
 
-template <typename Float> void acmacs::chart::Stress<Float>::set_coordinates_of_disconnected(Float* first, Float value) const
+template <typename Float> void acmacs::chart::Stress<Float>::set_coordinates_of_disconnected(Float* first, Float value, size_t number_of_dimensions) const
 {
+      // do not use number_of_dimensions_! after pca its value is wrong!
     for (auto p_no: parameters_.disconnected) {
-        for (size_t dim = 0; dim < number_of_dimensions_; ++dim)
-            *(first + p_no * number_of_dimensions_ + dim) = value;
+        for (size_t dim = 0; dim < number_of_dimensions; ++dim)
+            *(first + p_no * number_of_dimensions + dim) = value;
     }
 
 } // acmacs::chart::Stress<Float>::set_coordinates_of_disconnected

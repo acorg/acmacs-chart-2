@@ -54,7 +54,7 @@ namespace acmacs::chart
         return optimize(method, stress, arg_first, arg_first + arg_size, precision);
     }
 
-    DimensionAnnelingStatus dimension_annealing(optimization_method optimization_method, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
+    DimensionAnnelingStatus dimension_annealing(optimization_method optimization_method, const Stress<double>& stress, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
 
 // ----------------------------------------------------------------------
 
