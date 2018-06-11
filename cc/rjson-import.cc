@@ -201,7 +201,7 @@ acmacs::chart::TiterIterator acmacs::chart::RjsonTiters::end() const
 acmacs::chart::rjson_import::Layout::Layout(const rjson::array& aData)
     : acmacs::Layout(aData.size(), rjson_import::number_of_dimensions(aData))
 {
-    auto coord = begin();
+    auto coord = Vec::begin();
     for (const rjson::array& point : aData) {
         if (point.size() == number_of_dimensions())
             std::transform(point.begin(), point.end(), coord, [](const auto& coordinate) -> double { return coordinate; });

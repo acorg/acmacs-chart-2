@@ -917,8 +917,9 @@ void ProjectionsModify::remove_all_except(size_t projection_no)
 void ProjectionModify::randomize_layout(LayoutRandomizer& randomizer)
 {
     modify();
-    for (double& val : *layout_modified())
-        val = randomizer();
+    auto layout = layout_modified();
+    for (auto iter = layout->Vec::begin(); iter != layout->Vec::end(); ++iter)
+        *iter = randomizer();
 
 } // ProjectionModify::randomize_layout
 

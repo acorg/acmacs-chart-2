@@ -523,7 +523,7 @@ class LispmdsLayout : public acmacs::Layout
     LispmdsLayout(const acmacs::lispmds::value& aData, size_t aNumberOfAntigens, size_t aNumberOfSera)
         : acmacs::Layout(aNumberOfAntigens + aNumberOfSera, aData[0].size())
         {
-            auto target = begin();
+            auto target = Vec::begin();
             for (size_t p_no = 0; p_no < number_of_points(); ++p_no) {
                 const auto& point = aData[p_no];
                 if (point.size() == number_of_dimensions()) {
