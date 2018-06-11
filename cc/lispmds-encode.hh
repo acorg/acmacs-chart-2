@@ -6,9 +6,12 @@
 
 namespace acmacs::chart
 {
-    std::string lispmds_encode(std::string aName, bool add_signature = true);
-    std::string lispmds_antigen_name_encode(const Name& aName, const Reassortant& aReassortant, const Passage& aPassage, const Annotations& aAnnotations, bool add_signature = true);
-    std::string lispmds_serum_name_encode(const Name& aName, const Reassortant& aReassortant, const Annotations& aAnnotations, const SerumId& aSerumId, bool add_signature = true);
+    enum class lispmds_encoding_signature { no, strain_name, table_name };
+
+    std::string lispmds_encode(std::string aName, lispmds_encoding_signature signature = lispmds_encoding_signature::strain_name);
+    std::string lispmds_table_name_encode(std::string name);
+    std::string lispmds_antigen_name_encode(const Name& aName, const Reassortant& aReassortant, const Passage& aPassage, const Annotations& aAnnotations, lispmds_encoding_signature signature = lispmds_encoding_signature::strain_name);
+    std::string lispmds_serum_name_encode(const Name& aName, const Reassortant& aReassortant, const Annotations& aAnnotations, const SerumId& aSerumId, lispmds_encoding_signature signature = lispmds_encoding_signature::strain_name);
     std::string lispmds_decode(std::string aName);
     void lispmds_antigen_name_decode(std::string aSource, Name& aName, Reassortant& aReassortant, Passage& aPassage, Annotations& aAnnotations);
     void lispmds_serum_name_decode(std::string aSource, Name& aName, Reassortant& aReassortant, Annotations& aAnnotations, SerumId& aSerumId);

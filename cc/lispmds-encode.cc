@@ -6,7 +6,8 @@
 
 // ----------------------------------------------------------------------
 
-static const char* sEncodedSignature = "/a";
+static const char* sEncodedSignature_strain_name = "/a";
+static const char* sEncodedSignature_table_name = "!a";
 
 #include "acmacs-base/global-constructors-push.hh"
 static std::regex sFluASubtype{"AH([0-9]+N[0-9]+).*"};
@@ -15,17 +16,24 @@ static std::regex sPassageDate{".+ ([12][90][0-9][0-9]-[0-2][0-9]-[0-3][0-9])"};
 
 // ----------------------------------------------------------------------
 
-static inline std::string append_signature(std::string aSource, bool add_signature)
+static inline std::string append_signature(std::string aSource, acmacs::chart::lispmds_encoding_signature signature)
 {
-    if (add_signature)
-        return aSource + sEncodedSignature;
-    else
-        return aSource;
+    using namespace acmacs::chart;
+
+    switch (signature) {
+      case lispmds_encoding_signature::no:
+          return aSource;
+      case lispmds_encoding_signature::strain_name:
+          return aSource + sEncodedSignature_strain_name;
+      case lispmds_encoding_signature::table_name:
+          return aSource + sEncodedSignature_table_name;
+    }
+    return aSource;
 }
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::lispmds_encode(std::string aName, bool add_signature)
+std::string acmacs::chart::lispmds_encode(std::string aName, lispmds_encoding_signature signature)
 {
     std::string result;
     for (auto c: aName) {
@@ -43,6 +51,7 @@ std::string acmacs::chart::lispmds_encode(std::string aName, bool add_signature)
           case ':':             // : is a symbol module separator in lisp
           case '%':
           case '$':             // tk tries to subst var when sees $
+          case '?':             // The "?" in strain names causes an issue with strain matching. (Blake 2018-06-11)
               result.append("%" + string::to_hex_string(c, string::NotShowBase));
               break;
           default:
@@ -50,37 +59,47 @@ std::string acmacs::chart::lispmds_encode(std::string aName, bool add_signature)
               break;
         }
     }
-    return append_signature(result, add_signature);
+    return append_signature(result, signature);
 
 } // acmacs::chart::lispmds_encode
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::lispmds_antigen_name_encode(const Name& aName, const Reassortant& aReassortant, const Passage& aPassage, const Annotations& aAnnotations, bool add_signature)
+std::string acmacs::chart::lispmds_table_name_encode(std::string name)
 {
-    std::string result = lispmds_encode(aName, false);
+      // lispmds does not like / in the table name
+      // it interprets / as being part of a file name when we doing procrustes (Blake 2018-06-11)
+    return lispmds_encode(name, lispmds_encoding_signature::table_name);
+
+} // acmacs::chart::lispmds_table_name_encode
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::lispmds_antigen_name_encode(const Name& aName, const Reassortant& aReassortant, const Passage& aPassage, const Annotations& aAnnotations, lispmds_encoding_signature signature)
+{
+    std::string result = lispmds_encode(aName, lispmds_encoding_signature::no);
     if (!aReassortant.empty())
-        result += "_r" + lispmds_encode(aReassortant, false);
+        result += "_r" + lispmds_encode(aReassortant, lispmds_encoding_signature::no);
     if (!aPassage.empty())
-        result += "_p" + lispmds_encode(aPassage, false);
+        result += "_p" + lispmds_encode(aPassage, lispmds_encoding_signature::no);
     for (const auto& anno: aAnnotations)
-        result += "_a" + lispmds_encode(anno, false);
-    return append_signature(result, add_signature);
+        result += "_a" + lispmds_encode(anno, lispmds_encoding_signature::no);
+    return append_signature(result, signature);
 
 } // acmacs::chart::lispmds_antigen_name_encode
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::lispmds_serum_name_encode(const Name& aName, const Reassortant& aReassortant, const Annotations& aAnnotations, const SerumId& aSerumId, bool add_signature)
+std::string acmacs::chart::lispmds_serum_name_encode(const Name& aName, const Reassortant& aReassortant, const Annotations& aAnnotations, const SerumId& aSerumId, lispmds_encoding_signature signature)
 {
-    std::string result = lispmds_encode(aName, false);
+    std::string result = lispmds_encode(aName, lispmds_encoding_signature::no);
     if (!aReassortant.empty())
-        result += "_r" + lispmds_encode(aReassortant, false);
+        result += "_r" + lispmds_encode(aReassortant, lispmds_encoding_signature::no);
     for (const auto& anno: aAnnotations)
-        result += "_a" + lispmds_encode(anno, false);
+        result += "_a" + lispmds_encode(anno, lispmds_encoding_signature::no);
     if (!aSerumId.empty())
-        result += "_i" + lispmds_encode(aSerumId, false);
-    return append_signature(result, add_signature);
+        result += "_i" + lispmds_encode(aSerumId, lispmds_encoding_signature::no);
+    return append_signature(result, signature);
 
 } // acmacs::chart::lispmds_serum_name_encode
 
@@ -88,7 +107,7 @@ std::string acmacs::chart::lispmds_serum_name_encode(const Name& aName, const Re
 
 std::string acmacs::chart::lispmds_decode(std::string aName)
 {
-    if (aName.size() > 2 && aName.substr(aName.size() - 2) == sEncodedSignature) {
+    if (aName.size() > 2 && (aName.substr(aName.size() - 2) == sEncodedSignature_strain_name || aName.substr(aName.size() - 2) == sEncodedSignature_table_name)) {
         std::string result;
         bool last_was_space = true;
         for (size_t pos = 0; pos < (aName.size() - 2); ++pos) {
@@ -172,7 +191,7 @@ static inline std::string fix_passage_date(std::string source)
 
 void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName, Reassortant& aReassortant, Passage& aPassage, Annotations& aAnnotations)
 {
-    if (aSource.size() > 2 && aSource.substr(aSource.size() - 2) == sEncodedSignature) {
+    if (aSource.size() > 2 && aSource.substr(aSource.size() - 2) == sEncodedSignature_strain_name) {
         const std::string stage1 = lispmds_decode(aSource);
         auto sep_pos = find_sep(stage1);
         if (!sep_pos.empty()) {
@@ -204,7 +223,7 @@ void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName
 
 void acmacs::chart::lispmds_serum_name_decode(std::string aSource, Name& aName, Reassortant& aReassortant, Annotations& aAnnotations, SerumId& aSerumId)
 {
-    if (aSource.size() > 2 && aSource.substr(aSource.size() - 2) == sEncodedSignature) {
+    if (aSource.size() > 2 && aSource.substr(aSource.size() - 2) == sEncodedSignature_strain_name) {
         const std::string stage1 = lispmds_decode(aSource);
         auto sep_pos = find_sep(stage1);
         if (!sep_pos.empty()) {

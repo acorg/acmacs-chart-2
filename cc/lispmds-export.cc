@@ -34,7 +34,7 @@ std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, st
    (HI-IN '()" + antigen_names(aChart.antigens(), disconnected) + R"()
           '()" + serum_names(aChart.sera(), aChart.number_of_antigens(), disconnected) + R"()
           '()" + titers(aChart.titers(), disconnected) + R"()
-          ')" + lispmds_encode(aChart.info()->name_non_empty()) + R"()
+          ')" + lispmds_table_name_encode(aChart.info()->name_non_empty()) + R"()
   )" + starting_coordss(aChart, disconnected) + R"(
   )" + batch_runs(aChart, disconnected) + R"(
 )";
