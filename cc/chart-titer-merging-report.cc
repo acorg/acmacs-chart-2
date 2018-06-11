@@ -2,6 +2,7 @@
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/range.hh"
+#include "acmacs-base/statistics.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -98,12 +99,12 @@ TiterMerger::Type TiterMerger::merge()
                 std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
         }
         else {
-            const auto [mean, sd] = logged.mean_and_standard_deviation();
-            if (sd > sd_threshold_) {
+            const auto sd = acmacs::statistics::standard_deviation(logged.begin(), logged.end());
+            if (sd.sd() > sd_threshold_) {
                 mType = SDTooBig;
                 // std::cerr << "SDTooBig: " << sd << ": " << mMerged << " <-- " << mTiters << '\n';
                 if (mMerged != "*")
-                    throw std::runtime_error("Invalid pre-merged titer: " + mMerged + " for sources: " + acmacs::to_string(mTiters) + ", must be: * (because SD is " + std::to_string(sd) + " > " + std::to_string(sd_threshold_) + ")");
+                    throw std::runtime_error("Invalid pre-merged titer: " + mMerged + " for sources: " + acmacs::to_string(mTiters) + ", must be: * (because SD is " + std::to_string(sd.sd()) + " > " + std::to_string(sd_threshold_) + ")");
             }
             else if (num_less) {
                 if (const auto regular_max = regular.max(), thresholded_max = thresholded.max(); thresholded_max > regular_max) {
@@ -151,7 +152,7 @@ TiterMerger::Type TiterMerger::merge()
             }
             else {
                 mType = Regular;
-                const auto value = acmacs::chart::Titer::from_logged(mean);
+                const auto value = acmacs::chart::Titer::from_logged(sd.mean());
                 if (value != mMerged)
                     throw std::runtime_error("Unexpected merged titer: " + static_cast<std::string>(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
             }
