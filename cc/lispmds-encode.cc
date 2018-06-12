@@ -55,22 +55,28 @@ std::string acmacs::chart::lispmds_encode(std::string aName, lispmds_encoding_si
             case ':': // : is a symbol module separator in lisp
             case '$': // tk tries to subst var when sees $
             case '?': // The "?" in strain names causes an issue with strain matching. (Blake 2018-06-11)
-                  // case '!':
             case '"':
             case '\'':
             case '`':
-            case '.':
-                  // case '/':
             case ';':
             case '[':
             case ']':
             case '{':
             case '}':
-            case '#':           // not clear why excluded by Derek
-            case '|':           // not clear why excluded by Derek
-            case '~':           // not clear why excluded by Derek
+            case '#': // special character in lisp that get expanded before the usual readers sees them
+            case '|': // special character in lisp that get expanded before the usual readers sees them
                 result.append("%" + string::to_hex_string(c, string::NotShowBase));
                 encoded = true;
+                break;
+            case '/':
+            case '~': // perhaps avoid in the table name
+                if (signature == lispmds_encoding_signature::table_name) {
+                    result.append("%" + string::to_hex_string(c, string::NotShowBase));
+                    encoded = true;
+                }
+                else {
+                    result.append(1, c);
+                }
                 break;
             case '+': // approved by Derek on 2018-06-11
             case '-':
@@ -82,6 +88,8 @@ std::string acmacs::chart::lispmds_encode(std::string aName, lispmds_encoding_si
             case '=':
             case '<':
             case '>':
+            case '.':
+            case '!':
             default:
                 result.append(1, c);
                 break;
