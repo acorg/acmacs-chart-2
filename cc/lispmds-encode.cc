@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------------
 
 static const char* sEncodedSignature_strain_name = "/a";
-static const char* sEncodedSignature_table_name = "!a";
+static const char* sEncodedSignature_table_name = "@a";
 
 #include "acmacs-base/global-constructors-push.hh"
 static std::regex sFluASubtype{"AH([0-9]+N[0-9]+).*"};
@@ -36,30 +36,58 @@ static inline std::string append_signature(std::string aSource, acmacs::chart::l
 std::string acmacs::chart::lispmds_encode(std::string aName, lispmds_encoding_signature signature)
 {
     std::string result;
-    for (auto c: aName) {
+    bool encoded = false;
+    for (auto c : aName) {
         switch (c) {
-          case ' ':
-              result.append(1, '_');
-              break;
-          case '(':
-          case ')':
-              break;
-          case ',':
-              result.append("..");
-              break;
-          case '\'':
-          case ':':             // : is a symbol module separator in lisp
-          case '%':
-          case '$':             // tk tries to subst var when sees $
-          case '?':             // The "?" in strain names causes an issue with strain matching. (Blake 2018-06-11)
-              result.append("%" + string::to_hex_string(c, string::NotShowBase));
-              break;
-          default:
-              result.append(1, c);
-              break;
+            case ' ':
+                result.append(1, '_');
+                encoded = true;
+                break;
+            case '(':
+            case ')':
+                encoded = true;
+                break;
+            case ',':
+                result.append("..");
+                encoded = true;
+                break;
+            case '%': // we use it as a hex code prefix
+            case ':': // : is a symbol module separator in lisp
+            case '$': // tk tries to subst var when sees $
+            case '?': // The "?" in strain names causes an issue with strain matching. (Blake 2018-06-11)
+                  // case '!':
+            case '"':
+            case '\'':
+            case '`':
+            case '.':
+                  // case '/':
+            case ';':
+            case '[':
+            case ']':
+            case '{':
+            case '}':
+            case '#':           // not clear why excluded by Derek
+            case '|':           // not clear why excluded by Derek
+            case '~':           // not clear why excluded by Derek
+                result.append("%" + string::to_hex_string(c, string::NotShowBase));
+                encoded = true;
+                break;
+            case '+': // approved by Derek on 2018-06-11
+            case '-':
+            case '*':
+            case '@':
+            case '^':
+            case '&':
+            case '_':
+            case '=':
+            case '<':
+            case '>':
+            default:
+                result.append(1, c);
+                break;
         }
     }
-    return append_signature(result, signature);
+    return encoded ? append_signature(result, signature) : result;
 
 } // acmacs::chart::lispmds_encode
 
