@@ -83,8 +83,8 @@ void print_plot_spec(const argc_argv& args)
         antigen_fields["label_font_face"].push_back(*style.label.style.font_family);
         antigen_fields["label_font_slant"].push_back(*style.label.style.slant);
         antigen_fields["label_font_weight"].push_back(*style.label.style.weight);
-        antigen_fields["label_position_x"].push_back(acmacs::to_string(style.label.offset->x));
-        antigen_fields["label_position_y"].push_back(acmacs::to_string(style.label.offset->y));
+        antigen_fields["label_position_x"].push_back(acmacs::to_string(style.label.offset->x()));
+        antigen_fields["label_position_y"].push_back(acmacs::to_string(style.label.offset->y()));
         antigen_fields["label_rotation"].push_back(acmacs::to_string(*style.label.rotation));
         antigen_fields["label_size"].push_back(acmacs::to_string(*style.label.size));
         antigen_fields["label"].push_back(*style.label_text);
@@ -119,8 +119,8 @@ void print_plot_spec(const argc_argv& args)
         serum_fields["label_font_face"].push_back(*style.label.style.font_family);
         serum_fields["label_font_slant"].push_back(*style.label.style.slant);
         serum_fields["label_font_weight"].push_back(*style.label.style.weight);
-        serum_fields["label_position_x"].push_back(acmacs::to_string(style.label.offset->x));
-        serum_fields["label_position_y"].push_back(acmacs::to_string(style.label.offset->y));
+        serum_fields["label_position_x"].push_back(acmacs::to_string(style.label.offset->x()));
+        serum_fields["label_position_y"].push_back(acmacs::to_string(style.label.offset->y()));
         serum_fields["label_rotation"].push_back(acmacs::to_string(*style.label.rotation));
         serum_fields["label_size"].push_back(acmacs::to_string(*style.label.size));
         serum_fields["label"].push_back(*style.label_text);

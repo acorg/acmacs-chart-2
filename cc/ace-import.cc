@@ -441,7 +441,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::object& a
                       label_style.shown = field_value;
                       break;
                   case 'p':
-                      label_style.offset = acmacs::Offset(field_value[0], field_value[1]);
+                      label_style.offset = acmacs::Offset{field_value[0], field_value[1]};
                       break;
                   case 's':
                       label_style.size = Pixels{static_cast<double>(field_value) * acmacs::chart::ace::LabelScale};

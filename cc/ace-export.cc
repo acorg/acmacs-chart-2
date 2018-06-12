@@ -320,7 +320,7 @@ namespace rjson
 
     template <char Tag> inline value to_value(acmacs::internal::SizeScale<Tag> aValue) { return to_value(aValue.value()); }
 
-    inline value to_value(const acmacs::Offset aValue) { return array{aValue.x, aValue.y}; }
+    inline value to_value(const acmacs::Offset aValue) { return array{aValue.x(), aValue.y()}; }
 
 } // namespace rjson
 
