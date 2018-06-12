@@ -400,6 +400,32 @@ std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAn
 
 // ----------------------------------------------------------------------
 
+std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAntigensSera::sera_as_point_indexes() const
+{
+    auto result = impl_->sera_.common();
+    std::transform(result.begin(), result.end(), result.begin(), [primary_base_=impl_->sera_.primary_base_,secondary_base=impl_->sera_.secondary_base_](const auto& entry) -> common_t { return {entry.primary + primary_base_, entry.secondary + secondary_base}; });
+    return result;
+
+} // acmacs::chart::CommonAntigensSera::sera_as_point_indexes
+
+// ----------------------------------------------------------------------
+
+std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAntigensSera::points(subset a_subset) const
+{
+    switch (a_subset) {
+      case subset::all:
+          return points();
+      case subset::antigens:
+          return impl_->antigens_.common();
+      case subset::sera:
+          return sera_as_point_indexes();
+    }
+    return {};
+
+} // acmacs::chart::CommonAntigensSera::points
+
+// ----------------------------------------------------------------------
+
 std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAntigensSera::points() const
 {
     auto result = impl_->antigens_.common();
