@@ -82,7 +82,7 @@ namespace acmacs::chart
         ProjectionsModifyP projections_;
         PlotSpecModifyP plot_spec_;
 
-        LayoutRandomizerPlain make_randomizer(const Stress<double>& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier) const;
+        // std::shared_ptr<LayoutRandomizer> make_randomizer(const Stress<double>& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier) const;
 
     }; // class ChartModify
 
@@ -348,11 +348,11 @@ namespace acmacs::chart
 
         std::shared_ptr<acmacs::Layout> layout_modified() { modify(); return layout_; }
         std::shared_ptr<acmacs::Layout> layout_modified() const { return layout_; }
-        void randomize_layout() { auto rnd = make_randomizer_plain_with_table_max_distance(); randomize_layout(rnd); }
-        void randomize_layout(const PointIndexList& to_randomize) { auto rnd = make_randomizer_plain_with_table_max_distance(); randomize_layout(to_randomize, rnd); } // randomize just some point coordinates
-        void randomize_layout(LayoutRandomizer& randomizer);
-        void randomize_layout(LayoutRandomizer&& randomizer) { randomize_layout(randomizer); }
-        void randomize_layout(const PointIndexList& to_randomize, LayoutRandomizer& randomizer); // randomize just some point coordinates
+        // void randomize_layout() { auto rnd = make_randomizer_plain_with_table_max_distance(); randomize_layout(rnd); }
+        // void randomize_layout(const PointIndexList& to_randomize) { auto rnd = make_randomizer_plain_with_table_max_distance(); randomize_layout(to_randomize, rnd); } // randomize just some point coordinates
+        void randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer);
+        // void randomize_layout(LayoutRandomizer&& randomizer) { randomize_layout(randomizer); }
+        void randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> randomizer); // randomize just some point coordinates
         virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
         virtual void set_layout(const acmacs::LayoutInterface& layout);
         virtual void comment(std::string comment) { modify(); comment_ = comment; }
@@ -394,7 +394,7 @@ namespace acmacs::chart
         friend class ProjectionsModify;
         friend class ChartModify; // to set stress_ in ChartModify::relax()
 
-        LayoutRandomizerPlain make_randomizer_plain_with_table_max_distance() const;
+        // LayoutRandomizerPlain make_randomizer_plain_with_table_max_distance() const;
 
     }; // class ProjectionModify
 

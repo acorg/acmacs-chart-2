@@ -34,7 +34,7 @@ TARGETS = \
     $(DIST)/test-chart-create-from-scratch \
     $(DIST)/test-chart-from-text
 
-SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc \
+SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc randomizer.cc \
     rjson-import.cc \
     factory-import.cc ace-import.cc acd1-import.cc lispmds-import.cc lispmds-token.cc \
     factory-export.cc ace-export.cc lispmds-export.cc lispmds-encode.cc chart-modify.cc \

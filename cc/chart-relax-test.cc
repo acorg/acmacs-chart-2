@@ -87,13 +87,14 @@ void test_randomization(acmacs::chart::ChartModify& chart, size_t attempts, std:
 {
     const size_t randomizations = 100;
     auto projection = chart.projections_modify()->new_from_scratch(num_dims, min_col_basis);
+    auto randomizer = randomizer_plain_with_table_max_distance(*projection);
     for (size_t no = 0; no < attempts; ++no) {
         Timeit ti("randomize and relax: ");
-        projection->randomize_layout();
+        projection->randomize_layout(randomizer);
         double best_stress = projection->stress();
         acmacs::Layout best_layout{*projection->layout()};
         for (size_t rnd_no = 0; rnd_no < randomizations; ++rnd_no) {
-            projection->randomize_layout();
+            projection->randomize_layout(randomizer);
             const double stress = projection->stress();
             // std::cout << "  s: " << stress << '\n';
             if (stress < best_stress) {
@@ -112,12 +113,13 @@ void test_randomization(acmacs::chart::ChartModify& chart, size_t attempts, std:
 void test_rough(acmacs::chart::ChartModify& chart, size_t attempts, std::string min_col_basis, size_t num_dims)
 {
     auto projection = chart.projections_modify()->new_from_scratch(num_dims, min_col_basis);
+    auto randomizer = randomizer_plain_with_table_max_distance(*projection);
 
     std::vector<std::tuple<size_t, double, double>> stresses;
 
     double speed_ratio_sum = 0;
     for (size_t no = 0; no < attempts; ++no) {
-        projection->randomize_layout();
+        projection->randomize_layout(randomizer);
         const auto status = projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_lbfgs_pca, acmacs::chart::optimization_precision::rough));
         std::cout << "rough " << std::setprecision(12) << status.final_stress << " time: " << acmacs::format(status.time) << " iters: " << status.number_of_iterations << " nstress: " << status.number_of_stress_calculations << ' ' << status.termination_report << '\n';
         const auto status2 = projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_lbfgs_pca, acmacs::chart::optimization_precision::fine));
@@ -157,7 +159,7 @@ void test_dimension(acmacs::chart::ChartModify& chart, std::string min_col_basis
 {
     for (size_t dims = 1; dims < chart.number_of_antigens(); ++dims) {
         auto projection = chart.projections_modify()->new_from_scratch(dims, min_col_basis);
-        projection->randomize_layout();
+        projection->randomize_layout(randomizer_plain_with_table_max_distance(*projection));
         const auto status = projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_lbfgs_pca, acmacs::chart::optimization_precision::rough));
         std::cout << std::setw(3) << dims << " " << std::setprecision(12) << status.final_stress << " time: " << acmacs::format(status.time) << " iters: " << status.number_of_iterations << " nstress: " << status.number_of_stress_calculations << '\n';
     }
@@ -169,7 +171,7 @@ void test_dimension(acmacs::chart::ChartModify& chart, std::string min_col_basis
 void test_lbfgs_cg(acmacs::chart::ChartModify& chart, std::string min_col_basis, const acmacs::chart::dimension_schedule& schedule, acmacs::chart::optimization_precision precision)
 {
     auto projection = chart.projections_modify()->new_from_scratch(schedule.initial(), min_col_basis);
-    projection->randomize_layout();
+    projection->randomize_layout(randomizer_plain_with_table_max_distance(*projection));
     auto layout = projection->layout_modified();
     acmacs::Layout starting{*layout};
 
@@ -190,7 +192,7 @@ void optimize_n(acmacs::chart::optimization_method method, acmacs::chart::ChartM
     for (size_t no = 0; no < attempts; ++no) {
           // Timeit ti("randomize and relax: ");
         auto projection = chart.projections_modify()->new_from_scratch(num_dims, min_col_basis);
-        projection->randomize_layout();
+        projection->randomize_layout(randomizer_plain_with_table_max_distance(*projection));
         const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
         std::cout << status << '\n';
     }
@@ -208,7 +210,7 @@ void optimize_n(acmacs::chart::optimization_method method, acmacs::chart::ChartM
 
     for (size_t no = 0; no < attempts; ++no) {
         auto projection = chart.projections_modify()->new_from_scratch(schedule.initial(), min_col_basis);
-        projection->randomize_layout();
+        projection->randomize_layout(randomizer_plain_with_table_max_distance(*projection));
         auto layout = projection->layout_modified();
         auto stress = acmacs::chart::stress_factory<double>(*projection, acmacs::chart::multiply_antigen_titer_until_column_adjust::yes);
         for (size_t num_dims: schedule) {

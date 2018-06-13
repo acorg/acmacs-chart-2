@@ -57,7 +57,7 @@ int main(int argc, char* const argv[])
             for (size_t attempt = 1; attempt <= number_of_attempts; ++attempt) {
                 auto projection = source_projection->clone(chart);
                 projection->connect(disconnected);
-                projection->randomize_layout(disconnected);
+                projection->randomize_layout(disconnected, acmacs::chart::randomizer_plain_with_table_max_distance(*projection));
                 const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
                 std::cout << attempt << ' ' << status << '\n';
             }
