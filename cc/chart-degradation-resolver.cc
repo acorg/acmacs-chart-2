@@ -16,6 +16,7 @@ int main(int argc, char* const argv[])
                 {"-n", 1U, "number of optimizations"},
                 {"--keep-projections", 10, "number of projections to keep, 0 - keep all"},
                 {"--no-disconnect-having-few-titers", false, "do not disconnect points having too few numeric titers"},
+                {"--serum-line-sd-threshold", 0.4, "do not run resolver if serum line sd higher than this threshold"},
                 {"--time", false, "report time of loading chart"},
                 {"--verbose", false},
                 {"-h", false},
@@ -31,8 +32,14 @@ int main(int argc, char* const argv[])
             const auto report = do_report_time(args["--time"]);
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
 
-            acmacs::chart::SerumLine serum_line(*chart.projection(projection_no));
+            auto projection = chart.projection(projection_no);
+            acmacs::chart::SerumLine serum_line(*projection);
             std::cerr << serum_line << '\n';
+            if (serum_line.standard_deviation() > static_cast<double>(args["--serum-line-sd-threshold"]))
+                throw std::runtime_error("serum line sd " + std::to_string(serum_line.standard_deviation()) + " > " + acmacs::to_string(args["--serum-line-sd-threshold"]));
+
+            const auto antigens_relative_to_line = serum_line.antigens_relative_to_line(*projection);
+            std::cerr << "antigens_relative_to_line: neg:" << antigens_relative_to_line.negative.size() << " pos:" << antigens_relative_to_line.positive.size() << '\n';
 
             // const size_t number_of_attempts = args["-n"];
             // const Timeit ti("performing " + std::to_string(number_of_attempts) + " optimizations: ", report);

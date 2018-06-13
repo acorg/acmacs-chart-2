@@ -1,3 +1,4 @@
+#include "acmacs-base/range.hh"
 #include "acmacs-base/statistics.hh"
 #include "acmacs-chart-2/chart.hh"
 #include "acmacs-chart-2/serum-line.hh"
@@ -19,6 +20,23 @@ acmacs::chart::SerumLine::SerumLine(const Projection& projection)
     standard_deviation_ = acmacs::statistics::standard_deviation(distances.begin(), distances.end()).sd();
 
 } // acmacs::chart::SerumLine::SerumLine
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::SerumLine::AntigensRelativeToLine acmacs::chart::SerumLine::antigens_relative_to_line(const Projection& projection) const
+{
+    acmacs::chart::SerumLine::AntigensRelativeToLine result;
+    auto layout = projection.layout();
+    for (auto antigen_no : acmacs::range(projection.chart().number_of_antigens())) {
+        const auto distance = line().distance_with_direction(layout->get(antigen_no));
+        if (distance < 0)
+            result.negative.insert(antigen_no);
+        else
+            result.positive.insert(antigen_no);
+    }
+    return result;
+
+} // acmacs::chart::SerumLine::antigens_relative_to_line
 
 // ----------------------------------------------------------------------
 

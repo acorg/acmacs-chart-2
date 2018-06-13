@@ -1,6 +1,7 @@
 #pragma once
 
 #include "acmacs-base/line.hh"
+#include "acmacs-chart-2/point-index-list.hh"
 
 // ----------------------------------------------------------------------
 
@@ -12,6 +13,13 @@ namespace acmacs::chart
     {
       public:
         SerumLine(const Projection& projection);
+
+        struct AntigensRelativeToLine
+        {
+            PointIndexList negative, positive;
+        };
+
+        AntigensRelativeToLine antigens_relative_to_line(const Projection& projection) const;
 
         constexpr const acmacs::LineDefinedByEquation& line() const { return line_; }
         constexpr double standard_deviation() const { return standard_deviation_; }
