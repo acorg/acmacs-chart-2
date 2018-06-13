@@ -24,6 +24,7 @@ TARGETS = \
     $(DIST)/chart-error-lines \
     $(DIST)/chart-common \
     $(DIST)/chart-procrustes \
+    $(DIST)/chart-degradation-resolver \
     $(DIST)/chart-html \
     $(DIST)/chart-serum-circles \
     $(DIST)/chart-update \
@@ -38,7 +39,7 @@ SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize
     rjson-import.cc \
     factory-import.cc ace-import.cc acd1-import.cc lispmds-import.cc lispmds-token.cc \
     factory-export.cc ace-export.cc lispmds-export.cc lispmds-encode.cc chart-modify.cc \
-    common.cc procrustes.cc grid-test.cc
+    common.cc procrustes.cc grid-test.cc serum-line.cc
 
 ALGLIB = alglib-3.13.0
 ALGLIB_SOURCES = optimization.cpp ap.cpp alglibinternal.cpp linalg.cpp alglibmisc.cpp \
