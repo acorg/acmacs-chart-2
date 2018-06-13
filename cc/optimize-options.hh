@@ -16,6 +16,8 @@ namespace acmacs::chart
     struct optimization_options
     {
         optimization_options() = default;
+        optimization_options(optimization_precision a_precision, double a_randomization_diameter_multiplier = 2.0)
+            : precision{a_precision}, randomization_diameter_multiplier{a_randomization_diameter_multiplier} {}
         optimization_options(optimization_method a_method, optimization_precision a_precision = optimization_precision::fine, double a_randomization_diameter_multiplier = 2.0)
             : method{a_method}, precision{a_precision}, randomization_diameter_multiplier{a_randomization_diameter_multiplier} {}
 
