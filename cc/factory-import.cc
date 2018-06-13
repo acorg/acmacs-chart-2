@@ -44,8 +44,11 @@ acmacs::chart::ChartP acmacs::chart::import_from_file(std::string aFilename, Ver
     try {
         return import_from_decompressed_data(acmacs::file::read(aFilename), aVerify, report_time::No);
     }
-    catch (std::exception&) {
-        throw import_error{"[acmacs::chart::import_from_file]: unrecognized file content: " + aFilename};
+    catch (acmacs::file::not_found&) {
+        throw import_error{"[acmacs::chart::import_from_file]: file not found: " + aFilename};
+    }
+    catch (std::exception& err) {
+        throw import_error{"[acmacs::chart::import_from_file]: unrecognized file content: " + aFilename + ": " + err.what()};
     }
 
 } // acmacs::chart::import_from_file
