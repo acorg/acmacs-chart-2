@@ -45,14 +45,20 @@ int main(int argc, char* const argv[])
 
             const auto antigens_relative_to_line = serum_line.antigens_relative_to_line(*original_projection);
             const bool good_side_positive = antigens_relative_to_line.negative.size() < antigens_relative_to_line.positive.size();
-            const auto antigens_to_flip = good_side_positive ? antigens_relative_to_line.negative.size() : antigens_relative_to_line.positive.size();
+            const auto& antigens_to_flip = good_side_positive ? antigens_relative_to_line.negative : antigens_relative_to_line.positive;
             std::cerr << "antigens_relative_to_line: neg:" << antigens_relative_to_line.negative.size() << " pos:" << antigens_relative_to_line.positive.size() << '\n';
+
+              // mark bad side antigens
+            acmacs::PointStyle style;
+            style.outline = "orange";
+            style.outline_width = Pixels{2};
+            chart.plot_spec_modify()->modify(antigens_to_flip, style);
 
               // flip bad side antigens to good side
             auto flipped = chart.projections_modify()->new_by_cloning(*original_projection);
-            flipped->comment((good_side_positive ? "negative " : "positive ") + std::to_string(antigens_to_flip) + " antigens flipped");
+            flipped->comment((good_side_positive ? "negative " : "positive ") + std::to_string(antigens_to_flip.size()) + " antigens flipped");
             auto layout = flipped->layout();
-            for (auto index : (good_side_positive ? antigens_relative_to_line.negative : antigens_relative_to_line.positive))
+            for (auto index : antigens_to_flip)
                 flipped->move_point(index, serum_line.line().flip_over(layout->get(index), 1.0));
             acmacs::chart::export_factory(chart, intermediate_filename(1), fs::path(args.program()).filename(), report);
 
