@@ -38,14 +38,14 @@ int main(int argc, char* const argv[])
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
 
             auto original_projection = chart.projection_modify(projection_no);
-            acmacs::chart::SerumLine serum_line(*original_projection);
-            std::cerr << serum_line << '\n';
-            if (serum_line.standard_deviation() > static_cast<double>(args["--serum-line-sd-threshold"]))
-                throw std::runtime_error("serum line sd " + std::to_string(serum_line.standard_deviation()) + " > " + acmacs::to_string(args["--serum-line-sd-threshold"]));
+            acmacs::chart::SerumLine serum_line_0(*original_projection);
+            std::cerr << serum_line_0 << '\n';
+            if (serum_line_0.standard_deviation() > static_cast<double>(args["--serum-line-sd-threshold"]))
+                throw std::runtime_error("serum line sd " + std::to_string(serum_line_0.standard_deviation()) + " > " + acmacs::to_string(args["--serum-line-sd-threshold"]));
 
-            const auto antigens_relative_to_line = serum_line.antigens_relative_to_line(*original_projection);
-            const bool good_side_positive = antigens_relative_to_line.negative.size() < antigens_relative_to_line.positive.size();
-            const auto& antigens_to_flip = good_side_positive ? antigens_relative_to_line.negative : antigens_relative_to_line.positive;
+            auto antigens_relative_to_line = serum_line_0.antigens_relative_to_line(*original_projection);
+            bool good_side_positive = antigens_relative_to_line.negative.size() < antigens_relative_to_line.positive.size();
+            auto& antigens_to_flip = good_side_positive ? antigens_relative_to_line.negative : antigens_relative_to_line.positive;
             std::cerr << "antigens_relative_to_line: neg:" << antigens_relative_to_line.negative.size() << " pos:" << antigens_relative_to_line.positive.size() << '\n';
 
               // mark bad side antigens
@@ -59,7 +59,7 @@ int main(int argc, char* const argv[])
             flipped->comment((good_side_positive ? "negative " : "positive ") + std::to_string(antigens_to_flip.size()) + " antigens flipped");
             auto layout = flipped->layout();
             for (auto index : antigens_to_flip)
-                flipped->move_point(index, serum_line.line().flip_over(layout->get(index), 1.0));
+                flipped->move_point(index, serum_line_0.line().flip_over(layout->get(index), 1.0));
               //acmacs::chart::export_factory(chart, intermediate_filename(1), fs::path(args.program()).filename(), report);
 
               // relax from flipped
@@ -68,19 +68,31 @@ int main(int argc, char* const argv[])
             relax_from_flipped->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
               //acmacs::chart::export_factory(chart, intermediate_filename(2), fs::path(args.program()).filename(), report);
 
-            auto randomized = chart.projections_modify()->new_by_cloning(*original_projection);
-            randomized->comment((good_side_positive ? "negative " : "positive ") + std::to_string(antigens_to_flip.size()) + " antigens randomized in the good side");
-            // auto stress = acmacs::chart::stress_factory<double>(*randomized);
-            // auto randomizer = acmacs::chart::randomizer_plain_from_sample_optimization(*randomized, stress, 1.0);
-            auto randomizer = acmacs::chart::randomizer_plain_with_current_layout_area(*randomized, 1.0);
-            auto layout_randomized = randomized->randomize_layout(antigens_to_flip, randomizer);
-            const auto antigens_relative_to_line_randomized = serum_line.antigens_relative_to_line(*randomized);
-            for (auto index : (good_side_positive ? antigens_relative_to_line_randomized.negative : antigens_relative_to_line_randomized.positive))
-                randomized->move_point(index, serum_line.line().flip_over(layout_randomized->get(index), 1.0));
+            auto previous_projection = original_projection;
+            for (size_t step = 1; step < 10 && !antigens_to_flip.empty(); ++step) {
+                acmacs::chart::SerumLine serum_line(*previous_projection);
+                std::cerr << serum_line << '\n';
 
-            auto randomized_relaxed = chart.projections_modify()->new_by_cloning(*randomized);
-            randomized_relaxed->comment("randomized relaxed");
-            randomized_relaxed->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
+                auto randomized = chart.projections_modify()->new_by_cloning(*previous_projection);
+                randomized->comment("step " + std::to_string(step) + ": " + (good_side_positive ? "negative" : "positive") + " " + std::to_string(antigens_to_flip.size()) + " antigens randomized in the good side");
+                  // auto stress = acmacs::chart::stress_factory<double>(*randomized);
+                  // auto randomizer = acmacs::chart::randomizer_plain_from_sample_optimization(*randomized, stress, 1.0);
+                auto randomizer = acmacs::chart::randomizer_plain_with_current_layout_area(*randomized, 1.0);
+                auto layout_randomized = randomized->randomize_layout(antigens_to_flip, randomizer);
+                const auto antigens_relative_to_line_randomized = serum_line.antigens_relative_to_line(*randomized);
+                for (auto index : (good_side_positive ? antigens_relative_to_line_randomized.negative : antigens_relative_to_line_randomized.positive))
+                    randomized->move_point(index, serum_line.line().flip_over(layout_randomized->get(index), 1.0));
+
+                auto randomized_relaxed = randomized; // chart.projections_modify()->new_by_cloning(*randomized);
+                randomized_relaxed->comment("step " + std::to_string(step) + ": " + std::to_string(antigens_to_flip.size()) + " randomized, relaxed");
+                randomized_relaxed->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
+
+                antigens_relative_to_line = serum_line.antigens_relative_to_line(*randomized_relaxed);
+                good_side_positive = antigens_relative_to_line.negative.size() < antigens_relative_to_line.positive.size();
+                antigens_to_flip = good_side_positive ? antigens_relative_to_line.negative : antigens_relative_to_line.positive;
+                std::cerr << "step: " << step << " antigens_relative_to_line: neg:" << antigens_relative_to_line.negative.size() << " pos:" << antigens_relative_to_line.positive.size() << '\n';
+                previous_projection = randomized_relaxed;
+            }
             acmacs::chart::export_factory(chart, intermediate_filename(3), fs::path(args.program()).filename(), report);
 
             std::cout << chart.make_info() << '\n';
