@@ -75,15 +75,14 @@ int main(int argc, char* const argv[])
 
                 auto randomized = chart.projections_modify()->new_by_cloning(*previous_projection);
                 randomized->comment("step " + std::to_string(step) + ": " + (good_side_positive ? "negative" : "positive") + " " + std::to_string(antigens_to_flip.size()) + " antigens randomized in the good side");
-                  // auto stress = acmacs::chart::stress_factory<double>(*randomized);
-                  // auto randomizer = acmacs::chart::randomizer_plain_from_sample_optimization(*randomized, stress, 1.0);
-                auto randomizer = acmacs::chart::randomizer_plain_with_current_layout_area(*randomized, 1.0);
+                // auto randomizer = acmacs::chart::randomizer_plain_with_current_layout_area(*randomized, 1.0);
+                auto randomizer = acmacs::chart::randomizer_border_with_current_layout_area(*randomized, 1.0, {serum_line.line(), good_side_positive ? acmacs::LineSide::side::positive : acmacs::LineSide::side::negative});
                 auto layout_randomized = randomized->randomize_layout(antigens_to_flip, randomizer);
-                const auto antigens_relative_to_line_randomized = serum_line.antigens_relative_to_line(*randomized);
-                for (auto index : (good_side_positive ? antigens_relative_to_line_randomized.negative : antigens_relative_to_line_randomized.positive))
-                    randomized->move_point(index, serum_line.line().flip_over(layout_randomized->get(index), 1.0));
+                // const auto antigens_relative_to_line_randomized = serum_line.antigens_relative_to_line(*randomized);
+                // for (auto index : (good_side_positive ? antigens_relative_to_line_randomized.negative : antigens_relative_to_line_randomized.positive))
+                //     randomized->move_point(index, serum_line.line().flip_over(layout_randomized->get(index), 1.0));
 
-                auto randomized_relaxed = randomized; // chart.projections_modify()->new_by_cloning(*randomized);
+                auto randomized_relaxed = chart.projections_modify()->new_by_cloning(*randomized); // randomized; //
                 randomized_relaxed->comment("step " + std::to_string(step) + ": " + std::to_string(antigens_to_flip.size()) + " randomized, relaxed");
                 randomized_relaxed->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
 
