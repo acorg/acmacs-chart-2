@@ -3,8 +3,6 @@
 #include <variant>
 
 #include "acmacs-chart-2/chart.hh"
-#include "acmacs-chart-2/randomizer.hh"
-#include "acmacs-chart-2/optimize.hh"
 
 // ----------------------------------------------------------------------
 
@@ -22,6 +20,7 @@ namespace acmacs::chart
     class ProjectionModify;
     class ProjectionsModify;
     class PlotSpecModify;
+    class LayoutRandomizer;
 
     using ChartModifyP = std::shared_ptr<ChartModify>;
     using InfoModifyP = std::shared_ptr<InfoModify>;
@@ -345,6 +344,8 @@ namespace acmacs::chart
         void flip(double aX, double aY) { modify(); transformation_.flip(aX, aY); transformed_layout_.reset(); }
         void flip_east_west() { flip(0, 1); }
         void flip_north_south() { flip(1, 0); }
+        void transformation(const Transformation& transformation) { modify(); transformation_ = transformation; transformed_layout_.reset(); }
+        using Projection::transformation;
 
         std::shared_ptr<acmacs::Layout> layout_modified() { modify(); return layout_; }
         std::shared_ptr<acmacs::Layout> layout_modified() const { return layout_; }
@@ -353,13 +354,9 @@ namespace acmacs::chart
         virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
         virtual void set_layout(const acmacs::LayoutInterface& layout);
         virtual void comment(std::string comment) { modify(); comment_ = comment; }
-        virtual optimization_status relax(acmacs::chart::optimization_options options)
-            {
-                const auto status = acmacs::chart::optimize(*this, options);
-                stress_ = status.final_stress;
-                return status;
-            }
+        virtual optimization_status relax(optimization_options options);
         virtual std::shared_ptr<ProjectionModifyNew> clone(ChartModify& chart) const;
+        void orient_to(const Projection& master);
 
         void remove_antigens(const ReverseSortedIndexes& indexes) { layout_modified()->remove_points(indexes, 0); }
         void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens) { layout_modified()->remove_points(indexes, number_of_antigens); }

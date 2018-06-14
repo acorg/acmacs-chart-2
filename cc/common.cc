@@ -9,6 +9,7 @@ class CommonAntigensSera::Impl
 {
  public:
     Impl(const Chart& primary, const Chart& secondary, match_level_t match_level);
+    Impl(const Chart& primary);
 
     struct CoreEntry
     {
@@ -96,6 +97,7 @@ class CommonAntigensSera::Impl
     {
      public:
         ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level);
+        ChartData(const acmacs::chart::Chart& primary);
         void report(std::ostream& stream, const char* prefix, const char* ignored_key) const;
         std::vector<CommonAntigensSera::common_t> common() const;
 
@@ -104,7 +106,7 @@ class CommonAntigensSera::Impl
         std::vector<MatchEntry> match_;
         size_t number_of_common_ = 0;
         const size_t primary_base_, secondary_base_; // 0 for antigens, number_of_antigens for sera
-        const size_t min_number_;   // for match_level_t::automatic threshold
+        const size_t min_number_ = 0;   // for match_level_t::automatic threshold
 
      private:
         template <typename AgSr> static void make(std::vector<AgSrEntry>& target, const AgSr& source)
@@ -141,6 +143,19 @@ template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::Antige
 
 // ----------------------------------------------------------------------
 
+template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::ChartData(const acmacs::chart::Chart& primary)
+    : match_(primary.number_of_antigens()), primary_base_{0}, secondary_base_{0}
+{
+    for (auto antigen_no : acmacs::range(match_.size())) {
+        match_[antigen_no].primary_index = match_[antigen_no].secondary_index = antigen_no;
+        match_[antigen_no].score = score_t::full_match;
+        match_[antigen_no].use = true;
+    }
+
+} // CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::ChartData
+
+// ----------------------------------------------------------------------
+
 template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level)
     : primary_(primary.number_of_sera()), secondary_(secondary.number_of_sera()),
       primary_base_{primary.number_of_antigens()}, secondary_base_{secondary.number_of_antigens()},
@@ -150,6 +165,19 @@ template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumE
     std::sort(primary_.begin(), primary_.end());
     make(secondary_, *secondary.sera());
     match(match_level);
+
+} // CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData
+
+// ----------------------------------------------------------------------
+
+template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData(const acmacs::chart::Chart& primary)
+    : match_(primary.number_of_sera()), primary_base_{primary.number_of_antigens()}, secondary_base_{primary.number_of_antigens()}
+{
+    for (auto serum_no : acmacs::range(match_.size())) {
+        match_[serum_no].primary_index = match_[serum_no].secondary_index = serum_no;
+        match_[serum_no].score = score_t::full_match;
+        match_[serum_no].use = true;
+    }
 
 } // CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData
 
@@ -335,10 +363,26 @@ inline CommonAntigensSera::Impl::Impl(const Chart& primary, const Chart& seconda
 
 // ----------------------------------------------------------------------
 
+inline CommonAntigensSera::Impl::Impl(const Chart& primary)
+    : antigens_(primary), sera_(primary)
+{
+}
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::CommonAntigensSera::CommonAntigensSera(const Chart& primary, const Chart& secondary, match_level_t match_level)
     : impl_(std::make_unique<Impl>(primary, secondary, match_level))
 {
 }
+
+// ----------------------------------------------------------------------
+
+// for procrustes between projections of the same chart
+acmacs::chart::CommonAntigensSera::CommonAntigensSera(const Chart& primary)
+    : impl_(std::make_unique<Impl>(primary))
+{
+
+} // acmacs::chart::CommonAntigensSera::CommonAntigensSera
 
 // ----------------------------------------------------------------------
 

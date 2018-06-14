@@ -8,6 +8,7 @@
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
+#include "acmacs-chart-2/randomizer.hh"
 
 // ----------------------------------------------------------------------
 

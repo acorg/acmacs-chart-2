@@ -7,6 +7,8 @@
 #include "acmacs-base/virus-name.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart-modify.hh"
+#include "acmacs-chart-2/randomizer.hh"
+#include "acmacs-chart-2/procrustes.hh"
 
 using namespace std::string_literals;
 using namespace acmacs::chart;
@@ -944,6 +946,26 @@ void ProjectionModify::set_layout(const acmacs::LayoutInterface& layout)
         layout_->set(point_no, layout.get(point_no));
 
 } // ProjectionModify::set_layout
+
+// ----------------------------------------------------------------------
+
+optimization_status ProjectionModify::relax(optimization_options options)
+{
+    const auto status = optimize(*this, options);
+    stress_ = status.final_stress;
+    return status;
+
+} // ProjectionModify::relax
+
+// ----------------------------------------------------------------------
+
+void ProjectionModify::orient_to(const Projection& master)
+{
+    acmacs::chart::CommonAntigensSera common(chart());
+    const auto procrustes_data = procrustes(master, *this, common.points(), procrustes_scaling_t::no);
+    transformation(procrustes_data.transformation.transformation());
+
+} // ProjectionModify::orient_to
 
 // ----------------------------------------------------------------------
 

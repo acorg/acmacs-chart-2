@@ -15,6 +15,7 @@ namespace acmacs::chart
         enum class match_level_t { strict, relaxed, ignored, automatic };
 
         CommonAntigensSera(const Chart& primary, const Chart& secondary, match_level_t match_level);
+        CommonAntigensSera(const Chart& primary); // for procrustes between projections of the same chart
         ~CommonAntigensSera();
 
         void report() const;

@@ -4,6 +4,7 @@
 #include "acmacs-base/sigmoid.hh"
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/chart-modify.hh"
+#include "acmacs-chart-2/randomizer.hh"
 
 #pragma GCC diagnostic push
 #ifdef __clang__
