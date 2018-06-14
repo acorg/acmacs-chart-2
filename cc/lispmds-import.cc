@@ -537,7 +537,7 @@ class LispmdsLayout : public acmacs::Layout
             }
         }
 
-    inline void set(size_t /*aPointNo*/, const acmacs::Coordinates& /*aCoordinates*/) override { throw acmacs::chart::chart_is_read_only{"LispmdsLayout::set: cannot modify"}; }
+    inline void set(size_t /*aPointNo*/, const acmacs::Vector& /*aCoordinates*/) override { throw acmacs::chart::chart_is_read_only{"LispmdsLayout::set: cannot modify"}; }
 
 }; // class LispmdsLayout
 

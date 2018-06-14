@@ -214,7 +214,7 @@ acmacs::chart::rjson_import::Layout::Layout(const rjson::array& aData)
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::rjson_import::Layout::set(size_t /*aPointNo*/, const acmacs::Coordinates& /*aCoordinates*/)
+void acmacs::chart::rjson_import::Layout::set(size_t /*aPointNo*/, const acmacs::Vector& /*aCoordinates*/)
 {
     throw acmacs::chart::chart_is_read_only{"rjson_import::Layout::set: cannot modify"};
 }

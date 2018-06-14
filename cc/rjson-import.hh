@@ -52,7 +52,7 @@ namespace acmacs::chart::rjson_import
      public:
         Layout(const rjson::array& aData);
 
-        void set(size_t /*aPointNo*/, const acmacs::Coordinates& /*aCoordinates*/) override;
+        void set(size_t /*aPointNo*/, const acmacs::Vector& /*aCoordinates*/) override;
 
     }; // class Layout
 
