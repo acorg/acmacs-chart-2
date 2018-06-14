@@ -48,9 +48,11 @@ namespace acmacs::chart
 
     class Chart;
     class Projection;
+    class ProjectionModify;
     template <typename Float> class Stress;
 
     std::shared_ptr<LayoutRandomizerPlain> randomizer_plain_with_table_max_distance(const Projection& projection);
+    std::shared_ptr<LayoutRandomizerPlain> randomizer_plain_with_current_layout_area(const ProjectionModify& projection, double diameter_multiplier);
 
       // makes randomizer with table max distance, generates random layout, performs very rough optimization,
       // resets randomization diameter with the resulting projection layout size
