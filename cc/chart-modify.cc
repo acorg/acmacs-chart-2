@@ -902,8 +902,9 @@ std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(std::shared_p
 {
     modify();
     auto layout = layout_modified();
-    for (auto iter = layout->Vec::begin(); iter != layout->Vec::end(); ++iter)
-        *iter = randomizer->get();
+    const auto number_of_dimensions = layout->number_of_dimensions();
+    for (auto point_no : acmacs::range(layout->number_of_points()))
+        layout->set(point_no, randomizer->get(number_of_dimensions));
     return layout;
 
 } // ProjectionModify::randomize_layout
@@ -914,26 +915,12 @@ std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(const PointIn
 {
     modify();
     auto layout = layout_modified();
-    for (auto point_no : to_randomize) {
-        for (size_t dim_no = 0; dim_no < layout->number_of_dimensions(); ++dim_no)
-            layout->set(point_no, dim_no, randomizer->get());
-    }
+    const auto number_of_dimensions = layout->number_of_dimensions();
+    for (auto point_no : to_randomize)
+        layout->set(point_no, randomizer->get(number_of_dimensions));
     return layout;
 
 } // ProjectionModify::randomize_layout
-
-// ----------------------------------------------------------------------
-
-// LayoutRandomizerPlain ProjectionModify::make_randomizer_plain_with_table_max_distance() const
-// {
-//     auto cb = forced_column_bases();
-//     if (!cb)
-//         cb = chart().column_bases(minimum_column_basis());
-//     const auto max_distance = chart().titers()->max_distance(*cb);
-//     // std::cerr << "max_distance: " << max_distance << '\n';
-//     return LayoutRandomizerPlain(max_distance);
-
-// } // ProjectionModify::make_randomizer_plain_with_table_max_distance
 
 // ----------------------------------------------------------------------
 
