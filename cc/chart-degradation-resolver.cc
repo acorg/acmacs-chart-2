@@ -60,36 +60,30 @@ int main(int argc, char* const argv[])
             auto layout = flipped->layout();
             for (auto index : antigens_to_flip)
                 flipped->move_point(index, serum_line.line().flip_over(layout->get(index), 1.0));
-            acmacs::chart::export_factory(chart, intermediate_filename(1), fs::path(args.program()).filename(), report);
+              //acmacs::chart::export_factory(chart, intermediate_filename(1), fs::path(args.program()).filename(), report);
 
               // relax from flipped
             auto relax_from_flipped = chart.projections_modify()->new_by_cloning(*flipped);
             relax_from_flipped->comment("flipped relaxed");
             relax_from_flipped->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
-            acmacs::chart::export_factory(chart, intermediate_filename(2), fs::path(args.program()).filename(), report);
+              //acmacs::chart::export_factory(chart, intermediate_filename(2), fs::path(args.program()).filename(), report);
+
+            auto randomized = chart.projections_modify()->new_by_cloning(*original_projection);
+            randomized->comment((good_side_positive ? "negative " : "positive ") + std::to_string(antigens_to_flip.size()) + " antigens randomized in the good side");
+            // auto stress = acmacs::chart::stress_factory<double>(*randomized);
+            // auto randomizer = acmacs::chart::randomizer_plain_from_sample_optimization(*randomized, stress, 1.0);
+            auto randomizer = acmacs::chart::randomizer_plain_with_current_layout_area(*randomized, 1.0);
+            auto layout_randomized = randomized->randomize_layout(antigens_to_flip, randomizer);
+            const auto antigens_relative_to_line_randomized = serum_line.antigens_relative_to_line(*randomized);
+            for (auto index : (good_side_positive ? antigens_relative_to_line_randomized.negative : antigens_relative_to_line_randomized.positive))
+                randomized->move_point(index, serum_line.line().flip_over(layout_randomized->get(index), 1.0));
+
+            auto randomized_relaxed = chart.projections_modify()->new_by_cloning(*randomized);
+            randomized_relaxed->comment("randomized relaxed");
+            randomized_relaxed->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
+            acmacs::chart::export_factory(chart, intermediate_filename(3), fs::path(args.program()).filename(), report);
 
             std::cout << chart.make_info() << '\n';
-
-            // const size_t number_of_attempts = args["-n"];
-            // const Timeit ti("performing " + std::to_string(number_of_attempts) + " optimizations: ", report);
-            // const auto precision = args["--rough"] ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
-            // const auto method{acmacs::chart::optimization_method_from_string(args["--method"])};
-            // auto disconnected{get_disconnected(args["--disconnect-antigens"], args["--disconnect-sera"], chart.number_of_antigens(), chart.number_of_sera())};
-            // if (!args["--no-disconnect-having-few-titers"])
-            //     disconnected.extend(chart.titers()->having_too_few_numeric_titers());
-
-            // chart.relax(number_of_attempts, args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]), args["--verbose"] || args["-v"], disconnected);
-            // // for (size_t attempt = 0; attempt < number_of_attempts; ++attempt) {
-            // //     auto [status, projection] = chart.relax(args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]), disconnected);
-            // //     std::cout << (attempt + 1) << ' ' << status << '\n';
-            // // }
-            // auto projections = chart.projections_modify();
-            // projections->sort();
-            // if (const size_t keep_projections = args["--keep-projections"]; keep_projections > 0 && projections->size() > keep_projections)
-            //     projections->keep_just(keep_projections);
-            // std::cout << chart.make_info() << '\n';
-            // if (args.number_of_arguments() > 1)
-            //     acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);
         }
     }
     catch (std::exception& err) {

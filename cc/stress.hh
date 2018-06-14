@@ -74,8 +74,8 @@ namespace acmacs::chart
 
     }; // class Stress
 
-    template <typename Float> Stress<Float> stress_factory(const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
-    template <typename Float> Stress<Float> stress_factory(const acmacs::chart::Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular);
+    template <typename Float> Stress<Float> stress_factory(const Projection& projection, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes);
+    template <typename Float> Stress<Float> stress_factory(const acmacs::chart::Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes, bool a_dodgy_titer_is_regular = true);
 
     extern template class Stress<float>;
     extern template class Stress<double>;

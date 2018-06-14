@@ -184,22 +184,6 @@ PlotSpecModifyP ChartModify::plot_spec_modify()
 
 // ----------------------------------------------------------------------
 
-// std::shared_ptr<LayoutRandomizer> ChartModify::make_randomizer(const Stress<double>& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier) const
-// {
-//     ProjectionModifyNew prj(*this, number_of_dimensions, minimum_column_basis);
-//     auto rnd = randomizer_plain_with_table_max_distance(prj);
-//     prj.randomize_layout(rnd);
-//     acmacs::chart::optimize(optimization_method::alglib_cg_pca, stress, prj.layout_modified()->data(), prj.layout_modified()->size(), optimization_precision::very_rough);
-//     auto sq = [](double v) { return v*v; };
-//     const auto mm = prj.layout_modified()->minmax();
-//     const auto diameter = std::sqrt(std::accumulate(mm.begin(), mm.end(), 0.0, [&sq](double sum, const auto& p) { return sum + sq(p.second - p.first); }));
-//       // rnd->diameter(diameter * diameter_multiplier);
-//     return rnd;
-
-// } // ChartModify::make_randomizer
-
-// ----------------------------------------------------------------------
-
 std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, optimization_options options, const PointIndexList& disconnect_points)
 {
     const auto start = std::chrono::high_resolution_clock::now();
@@ -914,18 +898,19 @@ void ProjectionsModify::remove_all_except(size_t projection_no)
 
 // ----------------------------------------------------------------------
 
-void ProjectionModify::randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer)
+std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer)
 {
     modify();
     auto layout = layout_modified();
     for (auto iter = layout->Vec::begin(); iter != layout->Vec::end(); ++iter)
         *iter = randomizer->get();
+    return layout;
 
 } // ProjectionModify::randomize_layout
 
 // ----------------------------------------------------------------------
 
-void ProjectionModify::randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> randomizer)
+std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> randomizer)
 {
     modify();
     auto layout = layout_modified();
@@ -933,6 +918,7 @@ void ProjectionModify::randomize_layout(const PointIndexList& to_randomize, std:
         for (size_t dim_no = 0; dim_no < layout->number_of_dimensions(); ++dim_no)
             layout->set(point_no, dim_no, randomizer->get());
     }
+    return layout;
 
 } // ProjectionModify::randomize_layout
 
