@@ -18,7 +18,7 @@ std::shared_ptr<acmacs::chart::LayoutRandomizerPlain> acmacs::chart::randomizer_
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::chart::LayoutRandomizerPlain> acmacs::chart::randomizer_plain_with_current_layout_area(const ProjectionModify& projection, double diameter_multiplier)
+std::shared_ptr<acmacs::chart::LayoutRandomizer> acmacs::chart::randomizer_plain_with_current_layout_area(const ProjectionModify& projection, double diameter_multiplier)
 {
     const auto mm = projection.layout_modified()->minmax();
     auto sq = [](double v) { return v*v; };
@@ -26,6 +26,17 @@ std::shared_ptr<acmacs::chart::LayoutRandomizerPlain> acmacs::chart::randomizer_
     return std::make_shared<LayoutRandomizerPlain>(diameter * diameter_multiplier);
 
 } // acmacs::chart::randomizer_plain_with_current_layout_area
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<acmacs::chart::LayoutRandomizer> acmacs::chart::randomizer_border_with_current_layout_area(const ProjectionModify& projection, double diameter_multiplier, const LineSide& line_side)
+{
+    const auto mm = projection.layout_modified()->minmax();
+    auto sq = [](double v) { return v*v; };
+    const auto diameter = std::sqrt(std::accumulate(mm.begin(), mm.end(), 0.0, [&sq](double sum, const auto& p) { return sum + sq(p.second - p.first); }));
+    return std::make_shared<LayoutRandomizerWithLineBorder>(diameter * diameter_multiplier, line_side);
+
+} // acmacs::chart::randomizer_border_with_current_layout_area
 
 // ----------------------------------------------------------------------
 
