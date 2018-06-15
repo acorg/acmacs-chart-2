@@ -961,7 +961,7 @@ optimization_status ProjectionModify::relax(optimization_options options)
 
 void ProjectionModify::orient_to(const Projection& master)
 {
-    acmacs::chart::CommonAntigensSera common(chart());
+    acmacs::chart::CommonAntigensSera common(master.chart(), chart(), CommonAntigensSera::match_level_t::automatic);
     const auto procrustes_data = procrustes(master, *this, common.points(), procrustes_scaling_t::no);
     transformation(procrustes_data.transformation.transformation());
 

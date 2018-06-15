@@ -371,7 +371,7 @@ inline CommonAntigensSera::Impl::Impl(const Chart& primary)
 // ----------------------------------------------------------------------
 
 acmacs::chart::CommonAntigensSera::CommonAntigensSera(const Chart& primary, const Chart& secondary, match_level_t match_level)
-    : impl_(std::make_unique<Impl>(primary, secondary, match_level))
+    : impl_(&primary == &secondary ? std::make_unique<Impl>(primary) : std::make_unique<Impl>(primary, secondary, match_level))
 {
 }
 

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <iostream>
 
 // ----------------------------------------------------------------------
 
@@ -43,6 +44,7 @@ namespace acmacs::chart
         std::unique_ptr<Impl> impl_;
 
     }; // class CommonAntigensSera
+
 
 } // namespace acmacs::chart
 
