@@ -889,13 +889,31 @@ void ProjectionsModify::remove(size_t projection_no)
 
 void ProjectionsModify::remove_all_except(size_t projection_no)
 {
+    using diff_t = decltype(projections_)::difference_type;
     if (projection_no >= projections_.size())
         throw invalid_data{"invalid projection number: " + std::to_string(projection_no)};
-    projections_.erase(projections_.begin() + static_cast<decltype(projections_)::difference_type>(projection_no + 1), projections_.end());
-    projections_.erase(projections_.begin(), projections_.begin() + static_cast<decltype(projections_)::difference_type>(projection_no));
+    projections_.erase(projections_.begin() + static_cast<diff_t>(projection_no + 1), projections_.end());
+    projections_.erase(projections_.begin(), projections_.begin() + static_cast<diff_t>(projection_no));
     set_projection_no();
 
 } // ProjectionsModify::remove_all_except
+
+// ----------------------------------------------------------------------
+
+void ProjectionsModify::remove_except(size_t number_of_initial_projections_to_keep, ProjectionP projection_to_keep)
+{
+    using diff_t = decltype(projections_)::difference_type;
+    const auto projection_no = projection_to_keep->projection_no();
+    if (projection_no >= number_of_initial_projections_to_keep) {
+        projections_.erase(projections_.begin() + static_cast<diff_t>(projection_no + 1), projections_.end());
+        projections_.erase(projections_.begin() + static_cast<diff_t>(number_of_initial_projections_to_keep), projections_.begin() + static_cast<diff_t>(projection_no));
+    }
+    else {
+        projections_.erase(projections_.begin() + static_cast<diff_t>(number_of_initial_projections_to_keep), projections_.end());
+    }
+    set_projection_no();
+
+} // ProjectionsModify::remove_except
 
 // ----------------------------------------------------------------------
 

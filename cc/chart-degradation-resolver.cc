@@ -19,95 +19,80 @@ int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {
-                {"-n", 1U, "number of optimizations"},
-                {"--keep-projections", 10, "number of projections to keep, 0 - keep all"},
-                {"--no-disconnect-having-few-titers", false, "do not disconnect points having too few numeric titers"},
-                {"--serum-line-sd-threshold", 0.4, "do not run resolver if serum line sd higher than this threshold"},
-                {"--time", false, "report time of loading chart"},
-                {"--verbose", false},
-                {"-h", false},
-                {"--help", false},
-                {"-v", false},
-                        });
+        argc_argv args(argc, argv,
+                       {
+                           {"-n", 1U, "number of resolution attempts"},
+                           {"--keep-projections", 10, "number of projections to keep, 0 - keep all"},
+                           {"--no-disconnect-having-few-titers", false, "do not disconnect points having too few numeric titers"},
+                           {"--serum-line-sd-threshold", 0.4, "do not run resolver if serum line sd higher than this threshold"},
+                           {"--rms-threshold", 0.1, "run resolver until rms between current and previous map bigger than this"},
+                           {"--time", false, "report time of loading chart"},
+                           {"--verbose", false},
+                           {"-h", false},
+                           {"--help", false},
+                           {"-v", false},
+                       });
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
             std::cerr << "Usage: " << args.program() << " [options] <chart-file> <output-chart-file>\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {
             const size_t projection_no = 0;
+            const size_t number_of_attempts = args["-n"];
+            const double rms_threshold = args["--rms-threshold"];
             const auto report = do_report_time(args["--time"]);
             fs::path output_filename(args[1]);
-            auto intermediate_filename = [&output_filename](size_t step) { fs::path fn{output_filename}; return fn.replace_extension(".i" + std::to_string(step) + ".ace"); };
+            auto intermediate_filename = [&output_filename](size_t step) {
+                fs::path fn{output_filename};
+                return fn.replace_extension(".i" + std::to_string(step) + ".ace");
+            };
 
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
             auto original_projection = chart.projection_modify(projection_no);
 
             flip_relax(chart, original_projection, args["--serum-line-sd-threshold"]);
 
-            // acmacs::chart::SerumLine serum_line_0(*original_projection);
-            // std::cerr << serum_line_0 << '\n';
-            // if (serum_line_0.standard_deviation() > static_cast<double>(args["--serum-line-sd-threshold"]))
-            //     throw std::runtime_error("serum line sd " + std::to_string(serum_line_0.standard_deviation()) + " > " + acmacs::to_string(args["--serum-line-sd-threshold"]));
+            for (size_t attempt = 0; attempt < number_of_attempts; ++attempt) {
+                auto previous_projection = original_projection;
+                auto final_projection = original_projection;
+                const auto number_of_projections_before = chart.number_of_projections();
+                for (size_t step = 0; step < 1000; ++step) {
+                    acmacs::chart::SerumLine serum_line(*previous_projection);
+                    std::cerr << serum_line << '\n';
+                    const auto antigens_relative_to_line = serum_line.antigens_relative_to_line(*previous_projection);
+                    const bool good_side_positive = antigens_relative_to_line.negative.size() < antigens_relative_to_line.positive.size();
+                    const auto& antigens_to_flip = good_side_positive ? antigens_relative_to_line.negative : antigens_relative_to_line.positive;
+                    std::cerr << "attempt: " << (attempt + 1) << " step: " << (step + 1) << " antigens_relative_to_line: neg:" << antigens_relative_to_line.negative.size() << " pos:" << antigens_relative_to_line.positive.size() << '\n';
 
-            // auto antigens_relative_to_line = serum_line_0.antigens_relative_to_line(*original_projection);
-            // bool good_side_positive = antigens_relative_to_line.negative.size() < antigens_relative_to_line.positive.size();
-            // auto& antigens_to_flip = good_side_positive ? antigens_relative_to_line.negative : antigens_relative_to_line.positive;
-            // std::cerr << "antigens_relative_to_line: neg:" << antigens_relative_to_line.negative.size() << " pos:" << antigens_relative_to_line.positive.size() << '\n';
+                    auto randomized = chart.projections_modify()->new_by_cloning(*previous_projection);
+                    // randomized->comment("step " + std::to_string(step + 1) + ": " + (good_side_positive ? "negative" : "positive") + " " + std::to_string(antigens_to_flip.size()) +
+                    //                     " antigens randomized in the good side");
+                    auto randomizer = acmacs::chart::randomizer_border_with_current_layout_area(
+                        *randomized, 1.0, {serum_line.line(), good_side_positive ? acmacs::LineSide::side::positive : acmacs::LineSide::side::negative});
+                    auto layout_randomized = randomized->randomize_layout(antigens_to_flip, randomizer);
 
-            //   // mark bad side antigens
-            // acmacs::PointStyle style;
-            // style.outline = "orange";
-            // style.outline_width = Pixels{2};
-            // chart.plot_spec_modify()->modify(antigens_to_flip, style);
+                    final_projection = randomized; // chart.projections_modify()->new_by_cloning(*randomized); // randomized; //
+                      // final_projection->comment("attempt " + std::to_string(attempt + 1) + "step " + std::to_string(step + 1) + ": " + std::to_string(antigens_to_flip.size()) + " randomized, relaxed");
+                    final_projection->comment("attempt " + std::to_string(attempt + 1) + " step " + std::to_string(step + 1));
+                    final_projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
+                    const auto procrustes_data = final_projection->orient_to(*previous_projection);
+                    std::cerr << "attempt: " << (attempt + 1) << "after step: " << (step + 1) << " stress: " << final_projection->stress() << " rms to previous: " << procrustes_data.rms << '\n';
 
-            //   // flip bad side antigens to good side
-            // auto flipped = chart.projections_modify()->new_by_cloning(*original_projection);
-            // flipped->comment((good_side_positive ? "negative " : "positive ") + std::to_string(antigens_to_flip.size()) + " antigens flipped");
-            // auto layout = flipped->layout();
-            // for (auto index : antigens_to_flip)
-            //     flipped->move_point(index, serum_line_0.line().flip_over(layout->get(index), 1.0));
-            //   //acmacs::chart::export_factory(chart, intermediate_filename(1), fs::path(args.program()).filename(), report);
+                    // acmacs::chart::SerumLine serum_line_2(*final_projection);
+                    // std::cerr << serum_line_2 << '\n';
+                    // const auto antigens_relative_to_line_2 = serum_line.antigens_relative_to_line(*final_projection);
+                    // std::cerr << "after step: " << step << " antigens_relative_to_line: neg:" << antigens_relative_to_line_2.negative.size() << " pos:" <<
+                    // antigens_relative_to_line_2.positive.size() << '\n';
 
-            //   // relax from flipped
-            // auto relax_from_flipped = chart.projections_modify()->new_by_cloning(*flipped);
-            // relax_from_flipped->comment("flipped relaxed");
-            // relax_from_flipped->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
-            //   //acmacs::chart::export_factory(chart, intermediate_filename(2), fs::path(args.program()).filename(), report);
+                    std::cerr << '\n';
 
-            auto previous_projection = original_projection;
-            for (size_t step = 1; step < 20; ++step) {
-                acmacs::chart::SerumLine serum_line(*previous_projection);
-                std::cerr << serum_line << '\n';
-                const auto antigens_relative_to_line = serum_line.antigens_relative_to_line(*previous_projection);
-                const bool good_side_positive = antigens_relative_to_line.negative.size() < antigens_relative_to_line.positive.size();
-                const auto& antigens_to_flip = good_side_positive ? antigens_relative_to_line.negative : antigens_relative_to_line.positive;
-                std::cerr << "step: " << step << " antigens_relative_to_line: neg:" << antigens_relative_to_line.negative.size() << " pos:" << antigens_relative_to_line.positive.size() << '\n';
-
-                auto randomized = chart.projections_modify()->new_by_cloning(*previous_projection);
-                randomized->comment("step " + std::to_string(step) + ": " + (good_side_positive ? "negative" : "positive") + " " + std::to_string(antigens_to_flip.size()) + " antigens randomized in the good side");
-                // auto randomizer = acmacs::chart::randomizer_plain_with_current_layout_area(*randomized, 1.0);
-                auto randomizer = acmacs::chart::randomizer_border_with_current_layout_area(*randomized, 1.0, {serum_line.line(), good_side_positive ? acmacs::LineSide::side::positive : acmacs::LineSide::side::negative});
-                auto layout_randomized = randomized->randomize_layout(antigens_to_flip, randomizer);
-                // const auto antigens_relative_to_line_randomized = serum_line.antigens_relative_to_line(*randomized);
-                // for (auto index : (good_side_positive ? antigens_relative_to_line_randomized.negative : antigens_relative_to_line_randomized.positive))
-                //     randomized->move_point(index, serum_line.line().flip_over(layout_randomized->get(index), 1.0));
-
-                auto randomized_relaxed = randomized; // chart.projections_modify()->new_by_cloning(*randomized); // randomized; //
-                randomized_relaxed->comment("step " + std::to_string(step) + ": " + std::to_string(antigens_to_flip.size()) + " randomized, relaxed");
-                randomized_relaxed->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
-                const auto procrustes_data = randomized_relaxed->orient_to(*previous_projection);
-                std::cerr << "after step: " << step << " stress: " << randomized_relaxed->stress() << " rms to previous: " << procrustes_data.rms << '\n';
-
-                // acmacs::chart::SerumLine serum_line_2(*randomized_relaxed);
-                // std::cerr << serum_line_2 << '\n';
-                // const auto antigens_relative_to_line_2 = serum_line.antigens_relative_to_line(*randomized_relaxed);
-                // std::cerr << "after step: " << step << " antigens_relative_to_line: neg:" << antigens_relative_to_line_2.negative.size() << " pos:" << antigens_relative_to_line_2.positive.size() << '\n';
-
-                std::cerr << '\n';
-
-                previous_projection = randomized_relaxed;
+                    if (procrustes_data.rms < rms_threshold)
+                        break;
+                    previous_projection = final_projection;
+                }
+                chart.projections_modify()->remove_except(number_of_projections_before, final_projection);
             }
+            chart.projections_modify()->sort();
             acmacs::chart::export_factory(chart, intermediate_filename(3), fs::path(args.program()).filename(), report);
 
             std::cout << chart.make_info() << '\n';
