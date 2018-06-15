@@ -865,11 +865,11 @@ std::shared_ptr<ProjectionModifyNew> ProjectionsModify::new_from_scratch(size_t 
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ProjectionModifyNew> ProjectionsModify::new_by_cloning(const ProjectionModify& source)
+std::shared_ptr<ProjectionModifyNew> ProjectionsModify::new_by_cloning(const ProjectionModify& source, bool add_to_chart)
 {
     auto projection = std::make_shared<ProjectionModifyNew>(source);
-    add(projection);
-      // std::cerr << "new projection " << projection->projection_no() << '\n';
+    if (add_to_chart)
+        add(projection);
     return projection;
 
 } // ProjectionsModify::new_by_cloning
