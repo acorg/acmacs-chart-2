@@ -8,7 +8,6 @@
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/randomizer.hh"
-#include "acmacs-chart-2/procrustes.hh"
 
 using namespace std::string_literals;
 using namespace acmacs::chart;
@@ -959,11 +958,12 @@ optimization_status ProjectionModify::relax(optimization_options options)
 
 // ----------------------------------------------------------------------
 
-void ProjectionModify::orient_to(const Projection& master)
+ProcrustesData ProjectionModify::orient_to(const Projection& master)
 {
     acmacs::chart::CommonAntigensSera common(master.chart(), chart(), CommonAntigensSera::match_level_t::automatic);
     const auto procrustes_data = procrustes(master, *this, common.points(), procrustes_scaling_t::no);
     transformation(procrustes_data.transformation.transformation());
+    return procrustes_data;
 
 } // ProjectionModify::orient_to
 

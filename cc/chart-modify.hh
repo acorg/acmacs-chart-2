@@ -3,6 +3,7 @@
 #include <variant>
 
 #include "acmacs-chart-2/chart.hh"
+#include "acmacs-chart-2/procrustes.hh"
 
 // ----------------------------------------------------------------------
 
@@ -356,7 +357,7 @@ namespace acmacs::chart
         virtual void comment(std::string comment) { modify(); comment_ = comment; }
         virtual optimization_status relax(optimization_options options);
         virtual std::shared_ptr<ProjectionModifyNew> clone(ChartModify& chart) const;
-        void orient_to(const Projection& master);
+        ProcrustesData orient_to(const Projection& master);
 
         void remove_antigens(const ReverseSortedIndexes& indexes) { layout_modified()->remove_points(indexes, 0); }
         void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens) { layout_modified()->remove_points(indexes, number_of_antigens); }
