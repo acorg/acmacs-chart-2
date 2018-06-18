@@ -46,6 +46,7 @@ struct SplitData
 static acmacs::chart::ProjectionModifyP flip_relax(acmacs::chart::ChartModify& chart, acmacs::chart::ProjectionModifyP original_projection, const Options& options);
 static acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line_recursive(acmacs::chart::ChartModify& chart, acmacs::chart::ProjectionModifyP original_projection, size_t level, std::string level_path, const Options& options);
 static acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line(acmacs::chart::ChartModify& chart, acmacs::chart::ProjectionModifyP original_projection, const Options& options);
+static acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line_parallel(acmacs::chart::ChartModify& chart, acmacs::chart::ProjectionModifyP original_projection, const Options& options);
 
 // ----------------------------------------------------------------------
 
@@ -56,7 +57,7 @@ int main(int argc, char* const argv[])
         argc_argv args(argc, argv,
                        {
                            {"-n", 1U, "number of resolution attempts"},
-                           {"--type", "recursive", "type of search: recursive, random"},
+                           {"--type", "random", "type of search: recursive, random"},
                            {"--keep-projections", 10, "number of projections to keep, 0 - keep all"},
                            {"--no-disconnect-having-few-titers", false, "do not disconnect points having too few numeric titers"},
                            {"--serum-line-sd-threshold", 0.4, "do not run resolver if serum line sd higher than this threshold"},
@@ -92,12 +93,11 @@ int main(int argc, char* const argv[])
             if (type == "recursive") {
                 auto found2 = randomize_found_on_the_wrong_side_of_serum_line_recursive(chart, original_projection, 0, "", options);
                 chart.projections_modify()->add(found2);
-                  // std::cerr << '\n' << found2->make_info() << '\n' << '\n';
             }
             else if (type == "random") {
-                auto found2 = randomize_found_on_the_wrong_side_of_serum_line(chart, original_projection, options);
+                  // auto found2 = randomize_found_on_the_wrong_side_of_serum_line(chart, original_projection, options);
+                auto found2 = randomize_found_on_the_wrong_side_of_serum_line_parallel(chart, original_projection, options);
                 chart.projections_modify()->add(found2);
-                  // std::cerr << '\n' << found2->make_info() << '\n' << '\n';
             }
             else {
                 std::cerr << "Unrecognized type of search: " << type << '\n';
@@ -142,6 +142,39 @@ acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line
     return result;
 
 } // randomize_found_on_the_wrong_side_of_serum_line
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line_parallel(acmacs::chart::ChartModify& chart, acmacs::chart::ProjectionModifyP original_projection,
+                                                                                          const Options& options)
+{
+    using Entry = std::tuple<acmacs::chart::ProjectionModifyP, size_t>; // projection, on_the_wrong_side
+    auto entry_compare = [](const auto& e1, const auto& e2) -> bool {
+        if (std::get<size_t>(e1) == std::get<size_t>(e2))
+            return std::get<acmacs::chart::ProjectionModifyP>(e1)->stress() < std::get<acmacs::chart::ProjectionModifyP>(e2)->stress();
+        else
+            return std::get<size_t>(e1) < std::get<size_t>(e2);
+    };
+
+    std::vector<Entry> results(options.number_of_attempts);
+    const SplitData split_data(*original_projection);
+
+#pragma omp parallel for default(shared) firstprivate(stress) schedule(static, 4)
+    for (size_t attempt = 0; attempt < options.number_of_attempts; ++attempt) {
+        acmacs::chart::ProjectionModifyP new_projection = chart.projections_modify()->new_by_cloning(*original_projection, false);
+        auto randomizer = acmacs::chart::randomizer_border_with_current_layout_area(*new_projection, 1.0, {split_data.serum_line.line(), split_data.good_side});
+        new_projection->randomize_layout(split_data.on_the_wrong_side, randomizer);
+        new_projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
+        const SplitData new_split_data(*new_projection);
+        new_projection->comment("resolver random, wrong_side:" + std::to_string(new_split_data.on_the_wrong_side.size()));
+        results[attempt] = {new_projection, new_split_data.on_the_wrong_side.size()};
+    }
+
+    auto result = std::get<acmacs::chart::ProjectionModifyP>(*std::min_element(results.begin(), results.end(), entry_compare));
+    result->orient_to(*original_projection);
+    return result;
+
+} // randomize_found_on_the_wrong_side_of_serum_line_parallel
 
 // ----------------------------------------------------------------------
 
