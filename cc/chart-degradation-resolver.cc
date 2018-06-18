@@ -159,7 +159,7 @@ acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line
     std::vector<Entry> results(options.number_of_attempts);
     const SplitData split_data(*original_projection);
 
-#pragma omp parallel for default(shared) firstprivate(stress) schedule(static, 4)
+#pragma omp parallel for default(shared) schedule(static, 4)
     for (size_t attempt = 0; attempt < options.number_of_attempts; ++attempt) {
         acmacs::chart::ProjectionModifyP new_projection = chart.projections_modify()->new_by_cloning(*original_projection, false);
         auto randomizer = acmacs::chart::randomizer_border_with_current_layout_area(*new_projection, 1.0, {split_data.serum_line.line(), split_data.good_side});
@@ -171,6 +171,7 @@ acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line
     }
 
     auto result = std::get<acmacs::chart::ProjectionModifyP>(*std::min_element(results.begin(), results.end(), entry_compare));
+    result->relax({acmacs::chart::optimization_precision::fine});
     result->orient_to(*original_projection);
     return result;
 
