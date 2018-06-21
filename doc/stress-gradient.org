@@ -1,0 +1,17 @@
+* Stress
+Stress is the sum of contributions for each titer.
+** Contribution for numeric titer
+Square of differences between map distance (between antigen and serum) and table distance.
+** Contribution for less-than titer
+Difference is computed by subtracting the map distance from the table
+distance and adding 1. Difference is then squared and multipled by
+sigmoid of difference. The result of multiplication is contribution.
+** Contribution for more-than titer
+More-than titers are ignored.
+** Table distance
+Titer is divided by 10 and logged (base 2), then subtructed from column basis.
+** Sigmoid
+sigmoid(x) = 1/(1 + exp(-x * 10))
+http://en.wikipedia.org/wiki/Sigmoid_function
+https://groups.google.com/forum/#!topic/comp.ai.neural-nets/gqekclNH3No
+* Gradient
