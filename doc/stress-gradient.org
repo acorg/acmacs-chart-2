@@ -1,3 +1,14 @@
+#+OPTIONS: toc:nil
+
+* Sigmoid
+** sigmoid
+sigmoid(x) = 1/(1 + exp(-x * 10))
+http://en.wikipedia.org/wiki/Sigmoid_function
+https://groups.google.com/forum/#!topic/comp.ai.neural-nets/gqekclNH3No
+** d_sigmoid (sigmoid derivative)
+acmacs and Alan use: d_sigmoid = sigmoid*(1-sigmoid)
+Derek uses: d_sigmoid = sigmoid * sigmoid * e^(-x)  [both variants are the same]
+http://atlas.web.cern.ch/Atlas/GROUPS/SOFTWARE/INFO/Workshops/9905/slides/thu.7/sld007.htm suggests dSigmoid = sigmoid / (1 + e^x) which is slower but more accurate for big x
 * Stress
 Stress is the sum of contributions for each titer.
 ** Contribution for numeric titer
@@ -10,8 +21,34 @@ sigmoid of difference. The result of multiplication is contribution.
 More-than titers are ignored.
 ** Table distance
 Titer is divided by 10 and logged (base 2), then subtructed from column basis.
-** Sigmoid
-sigmoid(x) = 1/(1 + exp(-x * 10))
-http://en.wikipedia.org/wiki/Sigmoid_function
-https://groups.google.com/forum/#!topic/comp.ai.neural-nets/gqekclNH3No
 * Gradient
+** initialisation
+all gradient values are set to 0
+** inc_base for antigen-serum pair
+For each antigen-serum pair having titer inc_base value is computed.
+*** numeric titer
+inc_base = (table_distance - map_distance) * 2 / map_distance
+if map_distance is 0, divide by 1e-5
+*** less-than titer
+diff = table_distance - map_distance + 1
+inc_base = (diff * 2 * sigmoid(diff) + diff * diff * d_sigmoid(diff) * 10) / map_dist
+if map_distance is 0, divide by 1e-5
+** updating gradient for antigen-serum pair
+for each dimension we have:
+p1 - coordinate of antigen
+p2 - coordinate of serum
+g1 - gradient of antigen
+g2 - gradient of serum
+then
+g1 = g1 - inc_base * (p1 - p2)
+g2 = g2 + inc_base * (p1 - p2)
+** unmovable points
+if antigen is unmovable, g1 is not updated
+if serum is unmovable, g2 is not updated
+** unmovable in the last dimension points
+(for the case where antigens are in 2D and sera are in 3D)
+if antigen is unmovable in the last dimension, g1 is not updated for that dimension
+** disconnected points
+disconnected points do not contribute to gradient, i.e. if either
+antigen or serum is disconnected, gradient contribution is not
+computed.
