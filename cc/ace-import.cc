@@ -107,6 +107,19 @@ SeraP AceChart::sera() const
 
 // ----------------------------------------------------------------------
 
+const rjson::value& AceChart::field(std::string field_name) const
+{
+    try {
+        return mData[field_name];
+    }
+    catch (rjson::field_not_found&) {
+        return rjson::sNull;
+    }
+
+} // AceChart::field
+
+// ----------------------------------------------------------------------
+
 TitersP AceChart::titers() const
 {
     return std::make_shared<AceTiters>(mData["c"].get_or_empty_object("t"));

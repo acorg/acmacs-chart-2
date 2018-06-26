@@ -28,6 +28,9 @@ namespace acmacs::chart
 
         void verify_data(Verify aVerify) const;
 
+          // to obtain extension fields (e.g. group_sets)
+        const rjson::value& field(std::string field_name) const;
+
      private:
         rjson::value mData;
         mutable ace::name_index_t mAntigenNameIndex;
