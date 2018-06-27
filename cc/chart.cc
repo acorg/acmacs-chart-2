@@ -512,8 +512,8 @@ std::string name_abbreviated(std::string aName);
 std::string name_abbreviated(std::string aName)
 {
     try {
-        std::string virus_type, host, location, isolation, year, passage;
-        virus_name::split(aName, virus_type, host, location, isolation, year, passage);
+        std::string virus_type, host, location, isolation, year, passage, extra;
+        virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
         return string::join("/", {get_locdb().abbreviation(location), isolation, year.substr(2)});
     }
     catch (virus_name::Unrecognized&) {
