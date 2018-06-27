@@ -1,4 +1,3 @@
-#include "acmacs-base/rjson.hh"
 #include "acmacs-base/time.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/enumerate.hh"
@@ -19,7 +18,7 @@ static void export_style(rjson::array& target_styles, const acmacs::PointStyle& 
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::export_ace(const Chart& aChart, std::string aProgramName, size_t aIndent)
+rjson::value acmacs::chart::export_ace_to_rjson(const Chart& aChart, std::string aProgramName)
 {
     rjson::value ace{rjson::object{{
                 {"  version", rjson::string{"acmacs-ace-v1"}},
@@ -51,6 +50,15 @@ std::string acmacs::chart::export_ace(const Chart& aChart, std::string aProgramN
     if (auto plot_spec = aChart.plot_spec(); !plot_spec->empty())
         export_plot_spec(ace["c"].set_field("p", rjson::object{}), plot_spec);
       // ti_plot_spec.report();
+    return ace;
+
+} // acmacs::chart::export_ace_to_rjson
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::export_ace(const Chart& aChart, std::string aProgramName, size_t aIndent)
+{
+    const auto ace = export_ace_to_rjson(aChart, aProgramName);
     if (aIndent)
         return ace.to_json_pp(aIndent);
     else

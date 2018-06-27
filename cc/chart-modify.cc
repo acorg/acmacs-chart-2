@@ -157,6 +157,14 @@ ColumnBasesModifyP ChartModify::forced_column_bases_modify(MinimumColumnBasis aM
 
 // ----------------------------------------------------------------------
 
+const rjson::value& ChartModify::extension_field(std::string field_name) const
+{
+    return main_->extension_field(field_name);
+
+} // ChartModify::extension_field
+
+// ----------------------------------------------------------------------
+
 ProjectionsModifyP ChartModify::projections_modify()
 {
     if (!projections_)

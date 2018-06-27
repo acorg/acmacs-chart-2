@@ -107,16 +107,16 @@ SeraP AceChart::sera() const
 
 // ----------------------------------------------------------------------
 
-const rjson::value& AceChart::field(std::string field_name) const
+const rjson::value& AceChart::extension_field(std::string field_name) const
 {
     try {
-        return mData[field_name];
+        return mData["c"][field_name];
     }
     catch (rjson::field_not_found&) {
         return rjson::sNull;
     }
 
-} // AceChart::field
+} // AceChart::extension_field
 
 // ----------------------------------------------------------------------
 

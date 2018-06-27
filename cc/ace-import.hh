@@ -1,5 +1,6 @@
 #pragma once
 
+#include "acmacs-chart-2/chart.hh"
 #include "acmacs-chart-2/verify.hh"
 #include "acmacs-chart-2/rjson-import.hh"
 
@@ -29,7 +30,7 @@ namespace acmacs::chart
         void verify_data(Verify aVerify) const;
 
           // to obtain extension fields (e.g. group_sets)
-        const rjson::value& field(std::string field_name) const;
+        const rjson::value& extension_field(std::string field_name) const override;
 
      private:
         rjson::value mData;

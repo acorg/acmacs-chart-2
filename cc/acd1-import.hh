@@ -1,6 +1,5 @@
 #pragma once
 
-#include "acmacs-base/rjson.hh"
 #include "acmacs-chart-2/chart.hh"
 #include "acmacs-chart-2/verify.hh"
 #include "acmacs-chart-2/rjson-import.hh"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "acmacs-base/rjson.hh"
 #include "acmacs-base/data-formatter.hh"
 
 // ----------------------------------------------------------------------
@@ -9,6 +10,7 @@ namespace acmacs::chart
 {
     class Chart;
 
+    rjson::value export_ace_to_rjson(const Chart& aChart, std::string aProgramName);
     std::string export_ace(const Chart& aChart, std::string aProgramName, size_t aIndent);
 
     template <typename DF> std::string export_layout(const Chart& aChart, size_t aProjectionNo = 0);
