@@ -361,9 +361,9 @@ namespace acmacs::chart
         ProcrustesData orient_to(const Projection& master);
 
         void remove_antigens(const ReverseSortedIndexes& indexes) { layout_modified()->remove_points(indexes, 0); }
-        void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens) { layout_modified()->remove_points(indexes, number_of_antigens); }
+        void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens);
         void insert_antigen(size_t before) { layout_modified()->insert_point(before, 0); }
-        void insert_serum(size_t before, size_t number_of_antigens) { layout_modified()->insert_point(before, number_of_antigens); }
+        void insert_serum(size_t before, size_t number_of_antigens);
 
      protected:
         virtual void modify() { stress_.reset(); transformed_layout_.reset(); }
@@ -375,8 +375,8 @@ namespace acmacs::chart
         size_t number_of_points_modified() const { return layout_->number_of_points(); }
         size_t number_of_dimensions_modified() const { return layout_->number_of_dimensions(); }
         const Transformation& transformation_modified() const { return transformation_; }
-        ColumnBasesP forced_column_bases_modified() const { return forced_column_bases_; }
-        void set_forced_column_bases(ColumnBasesP aSource) { if (aSource) forced_column_bases_ = std::make_shared<ColumnBasesData>(*aSource); else forced_column_bases_.reset(); }
+        ColumnBasesModifyP forced_column_bases_modified() const { return forced_column_bases_; }
+        void set_forced_column_bases(ColumnBasesP aSource) { if (aSource) forced_column_bases_ = std::make_shared<ColumnBasesModify>(aSource); else forced_column_bases_.reset(); }
         void new_layout(size_t number_of_points, size_t number_of_dimensions) { layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions); transformation_.reset(); transformed_layout_.reset(); }
 
      private:
@@ -384,7 +384,7 @@ namespace acmacs::chart
         Transformation transformation_;
         mutable std::shared_ptr<acmacs::chart::Layout> transformed_layout_;
         mutable std::optional<double> stress_;
-        ColumnBasesP forced_column_bases_;
+        ColumnBasesModifyP forced_column_bases_;
         std::string comment_;
 
         friend class ProjectionsModify;

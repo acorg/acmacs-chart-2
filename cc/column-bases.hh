@@ -46,7 +46,7 @@ namespace acmacs::chart
 
         virtual double column_basis(size_t aSerumNo) const = 0;
         virtual size_t size() const = 0;
-
+        
     }; // class ColumnBases
 
 // ----------------------------------------------------------------------
@@ -60,7 +60,7 @@ namespace acmacs::chart
         virtual double column_basis(size_t aSerumNo) const { return data_.at(aSerumNo); }
         virtual size_t size() const { return data_.size(); }
 
-        void remove(const ReverseSortedIndexes& indexes) { acmacs::remove(indexes, data_); }
+        void remove(const ReverseSortedIndexes& indexes, ReverseSortedIndexes::difference_type base_index = 0) { acmacs::remove(indexes, data_, base_index); }
         void insert(size_t before, double value) { data_.insert(data_.begin() + static_cast<decltype(data_)::difference_type>(before), value); }
 
      private:

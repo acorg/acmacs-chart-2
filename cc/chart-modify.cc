@@ -925,6 +925,26 @@ void ProjectionsModify::remove_except(size_t number_of_initial_projections_to_ke
 
 // ----------------------------------------------------------------------
 
+void ProjectionModify::remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens)
+{
+    layout_modified()->remove_points(indexes, number_of_antigens);
+    if (forced_column_bases_)
+        forced_column_bases_->remove(indexes, - static_cast<ReverseSortedIndexes::difference_type>(number_of_antigens));
+
+} // ProjectionModify::remove_sera
+
+// ----------------------------------------------------------------------
+
+void ProjectionModify::insert_serum(size_t before, size_t number_of_antigens)
+{
+    layout_modified()->insert_point(before, number_of_antigens);
+    if (forced_column_bases_)
+        forced_column_bases_->insert(before - number_of_antigens, 7.0);
+
+} // ProjectionModify::insert_serum
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer)
 {
     modify();
@@ -1037,7 +1057,7 @@ void PlotSpecModify::remove_antigens(const ReverseSortedIndexes& indexes)
 void PlotSpecModify::remove_sera(const ReverseSortedIndexes& indexes)
 {
     modify();
-    acmacs::remove(indexes, styles_, number_of_antigens_);
+    acmacs::remove(indexes, styles_, static_cast<ReverseSortedIndexes::difference_type>(number_of_antigens_));
     drawing_order_.remove_points(indexes, number_of_antigens_);
 
 } // PlotSpecModify::remove_sera
