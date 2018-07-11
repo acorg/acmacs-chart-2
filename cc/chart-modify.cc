@@ -929,7 +929,7 @@ void ProjectionModify::remove_sera(const ReverseSortedIndexes& indexes, size_t n
 {
     layout_modified()->remove_points(indexes, number_of_antigens);
     if (forced_column_bases_)
-        forced_column_bases_->remove(indexes, - static_cast<ReverseSortedIndexes::difference_type>(number_of_antigens));
+        forced_column_bases_->remove(indexes);
 
 } // ProjectionModify::remove_sera
 
