@@ -360,9 +360,9 @@ namespace acmacs::chart
         virtual std::shared_ptr<ProjectionModifyNew> clone(ChartModify& chart) const;
         ProcrustesData orient_to(const Projection& master);
 
-        void remove_antigens(const ReverseSortedIndexes& indexes) { layout_modified()->remove_points(indexes, 0); }
+        void remove_antigens(const ReverseSortedIndexes& indexes) { modify(); layout_modified()->remove_points(indexes, 0); }
         void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens);
-        void insert_antigen(size_t before) { layout_modified()->insert_point(before, 0); }
+        void insert_antigen(size_t before) { modify(); layout_modified()->insert_point(before, 0); }
         void insert_serum(size_t before, size_t number_of_antigens);
 
      protected:

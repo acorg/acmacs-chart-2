@@ -927,6 +927,7 @@ void ProjectionsModify::remove_except(size_t number_of_initial_projections_to_ke
 
 void ProjectionModify::remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens)
 {
+    modify();
     layout_modified()->remove_points(indexes, number_of_antigens);
     if (forced_column_bases_)
         forced_column_bases_->remove(indexes);
@@ -937,6 +938,7 @@ void ProjectionModify::remove_sera(const ReverseSortedIndexes& indexes, size_t n
 
 void ProjectionModify::insert_serum(size_t before, size_t number_of_antigens)
 {
+    modify();
     layout_modified()->insert_point(before, number_of_antigens);
     if (forced_column_bases_)
         forced_column_bases_->insert(before - number_of_antigens, 7.0);
