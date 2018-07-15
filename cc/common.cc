@@ -144,13 +144,17 @@ template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::Antige
 // ----------------------------------------------------------------------
 
 template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::ChartData(const acmacs::chart::Chart& primary)
-    : match_(primary.number_of_antigens()), primary_base_{0}, secondary_base_{0}
+    : primary_(primary.number_of_antigens()), secondary_(primary.number_of_antigens()), match_(primary.number_of_antigens()), primary_base_{0}, secondary_base_{0}
 {
+    make(primary_, *primary.antigens());
+    std::sort(primary_.begin(), primary_.end());
+    make(secondary_, *primary.antigens());
     for (auto antigen_no : acmacs::range(match_.size())) {
         match_[antigen_no].primary_index = match_[antigen_no].secondary_index = antigen_no;
         match_[antigen_no].score = score_t::full_match;
         match_[antigen_no].use = true;
     }
+    number_of_common_ = match_.size();
 
 } // CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::ChartData
 
@@ -171,13 +175,18 @@ template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumE
 // ----------------------------------------------------------------------
 
 template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData(const acmacs::chart::Chart& primary)
-    : match_(primary.number_of_sera()), primary_base_{primary.number_of_antigens()}, secondary_base_{primary.number_of_antigens()}
+    : primary_(primary.number_of_sera()), secondary_(primary.number_of_sera()),
+      match_(primary.number_of_sera()), primary_base_{primary.number_of_antigens()}, secondary_base_{primary.number_of_antigens()}
 {
+    make(primary_, *primary.sera());
+    std::sort(primary_.begin(), primary_.end());
+    make(secondary_, *primary.sera());
     for (auto serum_no : acmacs::range(match_.size())) {
         match_[serum_no].primary_index = match_[serum_no].secondary_index = serum_no;
         match_[serum_no].score = score_t::full_match;
         match_[serum_no].use = true;
     }
+    number_of_common_ = match_.size();
 
 } // CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData
 

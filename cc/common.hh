@@ -45,6 +45,10 @@ namespace acmacs::chart
 
     }; // class CommonAntigensSera
 
+    inline std::ostream& operator << (std::ostream& out, const CommonAntigensSera::common_t& common)
+    {
+        return out << '{' << common.primary << ',' << common.secondary << '}';
+    }
 
 } // namespace acmacs::chart
 
