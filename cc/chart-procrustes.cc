@@ -23,8 +23,8 @@ int main(int argc, char* const argv[])
                 {"--help", false},
                 {"-v", false},
                         });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file> <chart-file>\n" << args.usage_options() << '\n';
+        if (args["-h"] || args["--help"] || args.number_of_arguments() < 1) {
+            std::cerr << "Usage: " << args.program() << " [options] <chart-file> [<chart-file>]\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {
@@ -42,11 +42,12 @@ int main(int argc, char* const argv[])
                 }
             }
             auto chart1 = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
-            auto chart2 = acmacs::chart::import_from_file(args[1], acmacs::chart::Verify::None, report);
+            auto chart2 = (args.number_of_arguments() > 1 && std::string(args[0]) != args[1]) ? acmacs::chart::import_from_file(args[1], acmacs::chart::Verify::None, report) : chart1;
             acmacs::chart::CommonAntigensSera common(*chart1, *chart2, match_level);
             if (common) {
                 auto procrustes_data = acmacs::chart::procrustes(*chart1->projection(args["-p"]), *chart2->projection(args["-r"]), common.points(), args["--scaling"] ? acmacs::chart::procrustes_scaling_t::yes : acmacs::chart::procrustes_scaling_t::no);
                 std::cout << "common antigens: " << common.common_antigens() << " sera: " << common.common_sera() << '\n';
+                  // std::cout << "common points:" << common.points() << '\n';
                 std::cout << "transformation: " << acmacs::to_string(procrustes_data.transformation) << '\n';
                 std::cout << "rms: " << acmacs::to_string(procrustes_data.rms) << '\n';
                   // common.report();
