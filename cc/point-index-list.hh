@@ -48,6 +48,8 @@ namespace acmacs::chart
                     insert(no);
             }
 
+        using internal::index_list_data::operator const std::vector<size_t>&;
+
     }; // class PointIndexList
 
 } // namespace acmacs::chart
