@@ -212,7 +212,7 @@ static inline std::vector<size_t> find_sep(std::string source)
     std::vector<size_t> sep_pos;
     for (size_t pos = 0; pos < (source.size() - 1); ++pos) {
         if (source[pos] == ' ') {
-            switch (source[pos + 1]) {
+            switch (std::tolower(source[pos + 1])) {
               case 'r':
               case 'p':
               case 'a':
@@ -246,7 +246,7 @@ void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName
             aName = stage1.substr(0, sep_pos[0]);
             for (size_t sep_no = 0; sep_no < sep_pos.size(); ++sep_no) {
                 const size_t chunk_len = (sep_no + 1) < sep_pos.size() ? (sep_pos[sep_no + 1] - sep_pos[sep_no] - 2) : std::string::npos;
-                switch (stage1[sep_pos[sep_no] + 1]) {
+                switch (std::tolower(stage1[sep_pos[sep_no] + 1])) {
                   case 'r':
                       aReassortant = stage1.substr(sep_pos[sep_no] + 2, chunk_len);
                       break;
@@ -278,7 +278,7 @@ void acmacs::chart::lispmds_serum_name_decode(std::string aSource, Name& aName, 
             aName = stage1.substr(0, sep_pos[0]);
             for (size_t sep_no = 0; sep_no < sep_pos.size(); ++sep_no) {
                 const size_t chunk_len = (sep_no + 1) < sep_pos.size() ? (sep_pos[sep_no + 1] - sep_pos[sep_no] - 2) : std::string::npos;
-                switch (stage1[sep_pos[sep_no] + 1]) {
+                switch (std::tolower(stage1[sep_pos[sep_no] + 1])) {
                   case 'r':
                       aReassortant = stage1.substr(sep_pos[sep_no] + 2, chunk_len);
                       break;
