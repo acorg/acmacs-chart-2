@@ -536,15 +536,15 @@ void test_insert_remove_serum(acmacs::chart::ChartP chart, size_t before, const 
 {
     acmacs::chart::ChartModify chart_modify{chart};
     chart_modify.insert_serum(before);
-    chart_modify.remove_sera(acmacs::ReverseSortedIndexes({before}));
+    chart_modify.remove_sera(acmacs::ReverseSortedIndexes(acmacs::Indexes{before}));
 
     const auto source_exported = acmacs::chart::export_factory(*chart, acmacs::chart::export_format::ace, args.program(), report);
     const auto modified_exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     if (source_exported != modified_exported) {
-        const std::string prefix = fs::exists("/r/ramdisk-id") ? "/r/" : "/tmp/";
+        const std::string prefix = /* fs::exists("/r/ramdisk-id") ? "/r/" : */ "/tmp/";
         acmacs::file::write(prefix + "source.ace", source_exported, acmacs::file::ForceCompression::No);
         acmacs::file::write(prefix + "modified.ace", modified_exported, acmacs::file::ForceCompression::No);
-        throw std::runtime_error("test_insert_remove_serum: exported chart difference, opendiff " + prefix + "source.ace " + prefix + "modified.ace\n  before:" + acmacs::to_string(before));
+        throw std::runtime_error("test_insert_remove_serum (before: " + std::to_string(before) + "): exported chart difference, (no ediff!) opendiff " + prefix + "source.ace " + prefix + "modified.ace\n  before:" + acmacs::to_string(before));
     }
 
 } // test_insert_remove_serum
