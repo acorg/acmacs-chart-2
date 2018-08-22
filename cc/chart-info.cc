@@ -13,6 +13,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv, {
                 {"--column-bases", false},
+                {"--list-tables", false},
                 {"--verify", false},
                 {"--time", false, "report time of loading chart"},
                 {"-h", false},
@@ -40,6 +41,11 @@ int main(int argc, char* const argv[])
                         if (auto fcb = chart->projection(projection_no)->forced_column_bases(); fcb)
                             std::cout << "forced column bases for projection " << projection_no << ": " << *fcb << '\n';
                     }
+                }
+                if (auto info = chart->info(); args["--list-tables"] && info->number_of_sources() > 0) {
+                    std::cout << "\nTables:\n";
+                    for (auto src_no : acmacs::range(info->number_of_sources()))
+                        std::cout << std::setw(3) << src_no << ' ' << info->source(src_no)->make_name() << '\n';
                 }
             }
         }
