@@ -600,6 +600,18 @@ std::optional<size_t> acmacs::chart::Antigens::find_by_full_name(std::string aFu
 
 acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string aName) const
 {
+    if (aName.size() > 2) {
+          // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix
+        if (aName[0] == 'A' && aName[1] == '/') {
+            if (const auto first_name = (*begin())->name(); first_name.size() > 2 && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos)
+                aName = first_name.substr(0, first_name.find('/')) + aName.substr(1);
+        }
+        else if (aName[1] != '/' && aName[1] != '(') {
+            if (const auto first_name = (*begin())->name(); first_name.size() > 2 && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos)
+                aName = first_name.substr(0, first_name.find('/') + 1) + aName;
+        }
+    }
+
     Indexes indexes;
     for (auto iter = begin(); iter != end(); ++iter) {
         if ((*iter)->name() == aName)
