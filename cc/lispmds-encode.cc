@@ -77,13 +77,13 @@ std::string acmacs::chart::lispmds_encode(std::string aName, lispmds_encoding_si
             case '}':
             case '#': // special character in lisp that get expanded before the usual readers sees them
             case '|': // special character in lisp that get expanded before the usual readers sees them
-                result.append("%" + string::to_hex_string(c, string::NotShowBase));
+                result.append("%" + acmacs::to_hex_string(c, acmacs::NotShowBase));
                 encoded = true;
                 break;
             case '/':
             case '~': // perhaps avoid in the table name
                 if (signature == lispmds_encoding_signature::table_name) {
-                    result.append("%" + string::to_hex_string(c, string::NotShowBase));
+                    result.append("%" + acmacs::to_hex_string(c, acmacs::NotShowBase));
                     encoded = true;
                 }
                 else {
