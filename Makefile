@@ -38,7 +38,8 @@ TARGETS = \
     $(DIST)/test-chart-modify \
     $(DIST)/test-chart-create-from-scratch \
     $(DIST)/test-chart-from-text \
-    $(DIST)/chart-serum-titers-check
+    $(DIST)/chart-serum-titers-check \
+    $(DIST)/chart-column-bases
 
 SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc randomizer.cc \
     rjson-import.cc \
