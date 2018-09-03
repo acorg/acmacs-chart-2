@@ -39,9 +39,10 @@ int main(int argc, char* const argv[])
                     if (const auto titer = titers->titer(antigen_no, serum_no); !titer.is_dont_care())
                         std::cout << std::setw(6) << std::right << titer;
                 }
+                const auto cb = column_bases->column_basis(serum_no);
                 std::cout << '\n'
-                          << "  column basis: " << column_bases->column_basis(serum_no) << '\n'
-                          << '\n';
+                        << "  const olumn basis: " << cb << " --> " << std::lround(std::exp2(cb) * 10) << '\n'
+                        << '\n';
             }
 
         }
