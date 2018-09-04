@@ -7,7 +7,6 @@
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/color.hh"
-#include "acmacs-base/rjson.hh"
 #include "acmacs-base/point-style.hh"
 #include "acmacs-base/layout.hh"
 #include "acmacs-chart-2/base.hh"
@@ -17,8 +16,6 @@
 #include "acmacs-chart-2/optimize.hh"
 
 // ----------------------------------------------------------------------
-
-namespace rjson { class array; }
 
 namespace acmacs::chart
 {
@@ -537,7 +534,7 @@ namespace acmacs::chart
         size_t number_of_points() const { return number_of_antigens() + number_of_sera(); }
         virtual size_t number_of_projections() const { return projections()->size(); }
 
-        virtual const rjson::value& extension_field(std::string /*field_name*/) const { return rjson::sNull; }
+        virtual const rjson::value& extension_field(std::string /*field_name*/) const { return rjson::ConstNull; }
 
         std::shared_ptr<Antigen> antigen(size_t aAntigenNo) const { return antigens()->operator[](aAntigenNo); }
         std::shared_ptr<Serum> serum(size_t aSerumNo) const { return sera()->operator[](aSerumNo); }

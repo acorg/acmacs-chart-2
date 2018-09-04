@@ -57,7 +57,7 @@ namespace acmacs::chart
         std::string lab(Compute aCompute = Compute::No) const override { return make_field("l", "+", aCompute); }
         std::string rbc_species(Compute aCompute = Compute::No) const override { return make_field("r", "+", aCompute); }
         std::string date(Compute aCompute = Compute::No) const override;
-        size_t number_of_sources() const override { return mData.get_or_empty_array("S").size(); }
+        size_t number_of_sources() const override { return mData["S"].size(); }
         InfoP source(size_t aSourceNo) const override { return std::make_shared<AceInfo>(mData.get_or_empty_array("S")[aSourceNo]); }
 
      private:
