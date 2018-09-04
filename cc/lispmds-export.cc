@@ -1,4 +1,3 @@
-#include "acmacs-base/rjson.hh"
 #include "acmacs-base/time.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
