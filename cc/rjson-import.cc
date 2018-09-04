@@ -29,7 +29,7 @@ std::vector<acmacs::chart::Titer> acmacs::chart::RjsonTiters::titers_for_layers(
     if (layers.empty())
         throw acmacs::chart::data_not_available("no layers");
     std::vector<Titer> result;
-    rjson::for_each(layers, [&result,aAntigenNo,aSerumNo](const auto& layer) {
+    rjson::for_each(layers, [&result,aAntigenNo,aSerumNo](const rjson::value& layer) {
         if (const auto& for_ag = layer[aAntigenNo]; !for_ag.empty())
             if (const auto& titer = for_ag[aSerumNo]; !titer.is_null())
                 result.push_back(titer);
@@ -44,15 +44,15 @@ size_t acmacs::chart::RjsonTiters::number_of_non_dont_cares() const
 {
     size_t result = 0;
     if (const auto& list = data_[keys_.list]; !list.is_null()) {
-        rjson::for_each(list, [&result](const auto& row) {
-            rjson::for_each(row, [&result](const auto& titer) {
+        rjson::for_each(list, [&result](const rjson::value& row) {
+            rjson::for_each(row, [&result](const rjson::value& titer) {
                 if (!Titer(titer).is_dont_care())
                     ++result;
             });
         });
     }
     else {
-        rjson::for_each(data_[keys_.dict], [&result](const auto& row) { result += row.size(); });
+        rjson::for_each(data_[keys_.dict], [&result](const rjson::value& row) { result += row.size(); });
     }
     return result;
 
@@ -151,7 +151,7 @@ namespace                       // to make class static in the module
 
         void populate_sera()
             {
-                rjson::transform(row(), sera_, [](const auto& kv) -> size_t { return std::stoul(kv.first); });
+                rjson::transform(row(), sera_, [](const rjson::object::value_type& kv) -> size_t { return std::stoul(kv.first); });
                 std::sort(sera_.begin(), sera_.end());
                 serum_ = sera_.begin();
                 data_.serum = *serum_;
@@ -189,9 +189,9 @@ acmacs::chart::rjson_import::Layout::Layout(const rjson::value& aData)
     : acmacs::Layout(aData.size(), rjson_import::number_of_dimensions(aData))
 {
     auto coord = Vec::begin();
-    rjson::for_each(aData, [&coord,num_dim=number_of_dimensions()](const auto& point) {
+    rjson::for_each(aData, [&coord,num_dim=number_of_dimensions()](const rjson::value& point) {
         if (point.size() == num_dim)
-            rjson::transform(point, coord, [](const auto& coordinate) -> double { return coordinate; });
+            rjson::transform(point, coord, [](const rjson::value& coordinate) -> double { return coordinate; });
         else if (!point.empty())
             throw invalid_data("rjson_import::Layout: point has invalid number of coordinates: " + std::to_string(point.size()) + ", expected 0 or " + std::to_string(num_dim));
         coord += static_cast<decltype(coord)::difference_type>(num_dim);
@@ -230,7 +230,7 @@ template <typename Float> static void update_dict(const rjson::value& data, acma
     const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     for (auto p1 : acmacs::range(data.size())) {
         if (!parameters.disconnected.contains(p1)) {
-            rjson::for_each(data[p1], [num_antigens=data.size(),p1,&parameters,&table_distances,&column_bases,&logged_adjusts](const auto& kv) {
+            rjson::for_each(data[p1], [num_antigens=data.size(),p1,&parameters,&table_distances,&column_bases,&logged_adjusts](const rjson::object::value_type& kv) {
                 const auto serum_no = std::stoul(kv.first);
                 const auto p2 = serum_no + num_antigens;
                 if (!parameters.disconnected.contains(p2))

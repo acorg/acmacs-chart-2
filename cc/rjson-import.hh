@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <optional>
 
+#include "acmacs-base/debug.hh"
 #include "acmacs-base/rjson2.hh"
 namespace rjson = rjson2;
 #include "acmacs-base/layout.hh"
