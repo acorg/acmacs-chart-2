@@ -27,7 +27,7 @@ namespace acmacs::chart::rjson_import
 {
     inline size_t number_of_dimensions(const rjson::value& data) noexcept
     {
-        if (const auto& non_empty = data.find_if([](const auto& val) -> bool { return !val.empty(); }); !non_empty.is_null())
+        if (const auto& non_empty = rjson::find_if(data, [](const auto& val) -> bool { return !val.empty(); }); !non_empty.is_null())
             return non_empty.size();
         else
             return 0;
