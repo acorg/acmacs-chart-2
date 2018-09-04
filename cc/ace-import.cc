@@ -50,13 +50,13 @@ ChartP acmacs::chart::ace_import(const std::string_view& aData, Verify aVerify)
 void AceChart::verify_data(Verify aVerify) const
 {
     try {
-        const auto& antigens = mData["c"].get_or_empty_array("a");
+        const auto& antigens = data_["c"].get_or_empty_array("a");
         if (antigens.empty())
             throw import_error("no antigens");
-        const auto& sera = mData["c"].get_or_empty_array("s");
+        const auto& sera = data_["c"].get_or_empty_array("s");
         if (sera.empty())
             throw import_error("no sera");
-        const auto& titers = mData["c"].get_or_empty_object("t");
+        const auto& titers = data_["c"].get_or_empty_object("t");
         if (titers.empty())
             throw import_error("no titers");
         if (auto [ll_present, ll] = titers.get_array_if("l"); ll_present) {
@@ -83,7 +83,7 @@ void AceChart::verify_data(Verify aVerify) const
 
 InfoP AceChart::info() const
 {
-    return std::make_shared<AceInfo>(mData["c"]["i"]);
+    return std::make_shared<AceInfo>(data_["c"]["i"]);
 
 } // AceChart::info
 
@@ -91,7 +91,7 @@ InfoP AceChart::info() const
 
 AntigensP AceChart::antigens() const
 {
-    return std::make_shared<AceAntigens>(mData["c"].get_or_empty_array("a"), mAntigenNameIndex);
+    return std::make_shared<AceAntigens>(data_["c"].get_or_empty_array("a"), mAntigenNameIndex);
 
 } // AceChart::antigens
 
@@ -99,7 +99,7 @@ AntigensP AceChart::antigens() const
 
 SeraP AceChart::sera() const
 {
-    auto sera = std::make_shared<AceSera>(mData["c"].get_or_empty_array("s"));
+    auto sera = std::make_shared<AceSera>(data_["c"].get_or_empty_array("s"));
     set_homologous(find_homologous_for_big_chart::no, sera);
     return sera;
 
@@ -110,7 +110,7 @@ SeraP AceChart::sera() const
 const rjson::value& AceChart::extension_field(std::string field_name) const
 {
     try {
-        return mData["c"][field_name];
+        return data_["c"][field_name];
     }
     catch (rjson::field_not_found&) {
         return rjson::sNull;
@@ -122,7 +122,7 @@ const rjson::value& AceChart::extension_field(std::string field_name) const
 
 TitersP AceChart::titers() const
 {
-    return std::make_shared<AceTiters>(mData["c"].get_or_empty_object("t"));
+    return std::make_shared<AceTiters>(data_["c"].get_or_empty_object("t"));
 
 } // AceChart::titers
 
@@ -130,7 +130,7 @@ TitersP AceChart::titers() const
 
 ColumnBasesP AceChart::forced_column_bases(MinimumColumnBasis aMinimumColumnBasis) const
 {
-    if (const auto& cb = mData["c"].get_or_empty_array("C"); !cb.empty())
+    if (const auto& cb = data_["c"].get_or_empty_array("C"); !cb.empty())
         return std::make_shared<AceColumnBases>(cb, aMinimumColumnBasis);
     return nullptr;
 
@@ -141,7 +141,7 @@ ColumnBasesP AceChart::forced_column_bases(MinimumColumnBasis aMinimumColumnBasi
 ProjectionsP AceChart::projections() const
 {
     if (!projections_)
-        projections_ = std::make_shared<AceProjections>(*this, mData["c"].get_or_empty_array("P"));
+        projections_ = std::make_shared<AceProjections>(*this, data_["c"].get_or_empty_array("P"));
     return projections_;
 
 } // AceChart::projections
@@ -150,7 +150,7 @@ ProjectionsP AceChart::projections() const
 
 PlotSpecP AceChart::plot_spec() const
 {
-    return std::make_shared<AcePlotSpec>(mData["c"].get_or_empty_object("p"), *this);
+    return std::make_shared<AcePlotSpec>(data_["c"].get_or_empty_object("p"), *this);
 
 } // AceChart::plot_spec
 
@@ -158,7 +158,7 @@ PlotSpecP AceChart::plot_spec() const
 
 bool AceChart::is_merge() const
 {
-    return !mData["c"].get_or_empty_object("t").get_or_empty_array("L").empty();
+    return !data_["c"].get_or_empty_object("t").get_or_empty_array("L").empty();
 
 } // AceChart::is_merge
 
@@ -166,9 +166,9 @@ bool AceChart::is_merge() const
 
 std::string AceInfo::name(Compute aCompute) const
 {
-    std::string result{mData.get_or_default("N", "")};
+    std::string result{data_.get_or_default("N", "")};
     if (result.empty()) {
-        if (const auto& sources{mData.get_or_empty_array("S")}; !sources.empty()) {
+        if (const auto& sources{data_.get_or_empty_array("S")}; !sources.empty()) {
             std::vector<std::string> composition;
             std::transform(std::begin(sources), std::end(sources), std::back_inserter(composition), [](const auto& sinfo) { return sinfo.get_or_default("N", ""); });
             composition.erase(std::remove_if(composition.begin(), composition.end(), [](const auto& s) { return s.empty(); }), composition.end());
@@ -187,9 +187,9 @@ std::string AceInfo::name(Compute aCompute) const
 
 std::string AceInfo::make_field(const char* aField, const char* aSeparator, Compute aCompute) const
 {
-    std::string result{mData.get_or_default(aField, "")};
+    std::string result{data_.get_or_default(aField, "")};
     if (result.empty() && aCompute == Compute::Yes) {
-        if (const auto& sources{mData.get_or_empty_array("S")}; !sources.empty()) {
+        if (const auto& sources{data_.get_or_empty_array("S")}; !sources.empty()) {
             std::set<std::string> composition;
             std::transform(std::begin(sources), std::end(sources), std::inserter(composition, composition.begin()), [aField](const auto& sinfo) { return sinfo.get_or_default(aField, ""); });
             result = string::join(aSeparator, composition);
@@ -203,9 +203,9 @@ std::string AceInfo::make_field(const char* aField, const char* aSeparator, Comp
 
 std::string AceInfo::date(Compute aCompute) const
 {
-    std::string result{mData.get_or_default("D", "")};
+    std::string result{data_.get_or_default("D", "")};
     if (result.empty() && aCompute == Compute::Yes) {
-        const auto& sources{mData.get_or_empty_array("S")};
+        const auto& sources{data_.get_or_empty_array("S")};
         if (!sources.empty()) {
             std::vector<std::string> composition{sources.size()};
             std::transform(std::begin(sources), std::end(sources), std::begin(composition), [](const auto& sinfo) { return sinfo.get_or_default("D", ""); });
@@ -221,13 +221,13 @@ std::string AceInfo::date(Compute aCompute) const
 
 BLineage AceAntigen::lineage() const
 {
-    return mData.get_or_default("L", "");
+    return data_.get_or_default("L", "");
 
 } // AceAntigen::lineage
 
 BLineage AceSerum::lineage() const
 {
-    return mData.get_or_default("L", "");
+    return data_.get_or_default("L", "");
 
 } // AceSerum::lineage
 
@@ -240,7 +240,7 @@ std::optional<size_t> AceAntigens::find_by_full_name(std::string aFullName) cons
     const std::string_view name{virus_name::name(aFullName)};
     if (const auto found = mAntigenNameIndex.find(name); found != mAntigenNameIndex.end()) {
         for (auto index: found->second) {
-            if (AceAntigen(mData[index]).full_name() == aFullName)
+            if (AceAntigen(data_[index]).full_name() == aFullName)
                 return index;
         }
     }
@@ -251,9 +251,9 @@ std::optional<size_t> AceAntigens::find_by_full_name(std::string aFullName) cons
 // std::optional<size_t> AceAntigens::find_by_full_name(std::string aFullName) const
 // {
 //     const std::string_view name{virus_name::name(aFullName)};
-//     for (auto iter = mData.begin(); iter != mData.end(); ++iter) {
+//     for (auto iter = data_.begin(); iter != data_.end(); ++iter) {
 //         if ((*iter)["N"] == name && AceAntigen(*iter).full_name() == aFullName) {
-//             return static_cast<size_t>(iter - mData.begin());
+//             return static_cast<size_t>(iter - data_.begin());
 //         }
 //     }
 //     return {};
@@ -265,8 +265,8 @@ std::optional<size_t> AceAntigens::find_by_full_name(std::string aFullName) cons
 void AceAntigens::make_name_index() const
 {
     // Timeit ti("make_name_index: ");
-    for (auto iter = mData.begin(); iter != mData.end(); ++iter) {
-        mAntigenNameIndex[(*iter)["N"]].push_back(static_cast<size_t>(iter - mData.begin()));
+    for (auto iter = data_.begin(); iter != data_.end(); ++iter) {
+        mAntigenNameIndex[(*iter)["N"]].push_back(static_cast<size_t>(iter - data_.begin()));
     }
 
 } // AceAntigens::make_name_index
@@ -276,7 +276,7 @@ void AceAntigens::make_name_index() const
 // std::shared_ptr<Layout> AceProjection::layout() const
 // {
 //     if (!layout_)
-//         layout_ = std::make_shared<rjson_import::Layout>(mData.get_or_empty_array("l"));
+//         layout_ = std::make_shared<rjson_import::Layout>(data_.get_or_empty_array("l"));
 //     return layout_;
 
 // } // AceProjection::layout
@@ -285,7 +285,7 @@ void AceAntigens::make_name_index() const
 
 // size_t AceProjection::number_of_dimensions() const
 // {
-//     return rjson_import::number_of_dimensions(mData["l"]);
+//     return rjson_import::number_of_dimensions(data_["l"]);
 
 // } // AceProjection::number_of_dimensions
 
@@ -316,7 +316,7 @@ acmacs::Transformation AceProjection::transformation() const
 Color AcePlotSpec::error_line_positive_color() const
 {
     try {
-        return Color(static_cast<std::string_view>(mData["E"]["c"]));
+        return Color(static_cast<std::string_view>(data_["E"]["c"]));
     }
     catch (rjson::field_not_found&) {
         return "red";
@@ -329,7 +329,7 @@ Color AcePlotSpec::error_line_positive_color() const
 Color AcePlotSpec::error_line_negative_color() const
 {
     try {
-        return Color(static_cast<std::string_view>(mData["e"]["c"]));
+        return Color(static_cast<std::string_view>(data_["e"]["c"]));
     }
     catch (rjson::field_not_found&) {
         return "blue";
@@ -341,11 +341,11 @@ Color AcePlotSpec::error_line_negative_color() const
 
 acmacs::PointStyle AcePlotSpec::style(size_t aPointNo) const
 {
-    const rjson::array& indices = mData.get_or_empty_array("p");
+    const rjson::array& indices = data_.get_or_empty_array("p");
     try {
         const size_t style_no = indices[aPointNo];
-        // std::cerr << "style " << aPointNo << ' ' << style_no << ' ' << mData["P"][style_no].to_json() << '\n';
-        return extract(mData["P"][style_no], aPointNo, style_no);
+        // std::cerr << "style " << aPointNo << ' ' << style_no << ' ' << data_["P"][style_no].to_json() << '\n';
+        return extract(data_["P"][style_no], aPointNo, style_no);
     }
     catch (std::exception& /*err*/) {
           // std::cerr << "WARNING: [ace]: cannot get style for point " << aPointNo << ": " << err.what() << '\n';
@@ -358,13 +358,13 @@ acmacs::PointStyle AcePlotSpec::style(size_t aPointNo) const
 
 std::vector<acmacs::PointStyle> AcePlotSpec::all_styles() const
 {
-    const rjson::array& indices = mData.get_or_empty_array("p");
+    const rjson::array& indices = data_.get_or_empty_array("p");
     if (!indices.empty()) {
         std::vector<acmacs::PointStyle> result(indices.size());
         for (auto [point_no, target]: acmacs::enumerate(result)) {
             try {
                 const size_t style_no = indices[point_no];
-                target = extract(mData["P"][style_no], point_no, style_no);
+                target = extract(data_["P"][style_no], point_no, style_no);
             }
             catch (std::exception& err) {
                 std::cerr << "WARNING: [ace]: cannot get point " << point_no << " style: " << err.what() << '\n';
@@ -384,7 +384,7 @@ std::vector<acmacs::PointStyle> AcePlotSpec::all_styles() const
 
 size_t AcePlotSpec::number_of_points() const
 {
-    const rjson::array& indices = mData.get_or_empty_array("p");
+    const rjson::array& indices = data_.get_or_empty_array("p");
     if (!indices.empty())
         return indices.size();
     else

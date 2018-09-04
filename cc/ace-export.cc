@@ -21,8 +21,8 @@ static void export_style(rjson::array& target_styles, const acmacs::PointStyle& 
 rjson::value acmacs::chart::export_ace_to_rjson(const Chart& aChart, std::string aProgramName)
 {
     rjson::value ace{rjson::object{{
-                {"  version", rjson::string{"acmacs-ace-v1"}},
-                {"?created", rjson::string{"AD " + aProgramName + " on " + acmacs::time_format()}},
+                {"  version", "acmacs-ace-v1"},
+                {"?created", "AD " + aProgramName + " on " + acmacs::time_format()},
                 {"c", rjson::object{{
                             {"i", rjson::object{}},
                             {"a", rjson::array{}},
