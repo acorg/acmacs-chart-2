@@ -153,7 +153,7 @@ PlotSpecP AceChart::plot_spec() const
 
 bool AceChart::is_merge() const
 {
-    return !data_["c"].get_or_empty_object("t").get_or_empty_array("L").empty();
+    return !data_.get("c", "t", "L").empty();
 
 } // AceChart::is_merge
 
@@ -309,12 +309,10 @@ acmacs::Transformation AceProjection::transformation() const
 
 Color AcePlotSpec::error_line_positive_color() const
 {
-    try {
-        return Color(data_["E"]["c"]);
-    }
-    catch (rjson::field_not_found&) {
+    if (const auto& color = data_.get("E", "c"); !color.is_null())
+        return Color(color);
+    else
         return "red";
-    }
 
 } // AcePlotSpec::error_line_positive_color
 
@@ -322,12 +320,10 @@ Color AcePlotSpec::error_line_positive_color() const
 
 Color AcePlotSpec::error_line_negative_color() const
 {
-    try {
-        return Color(data_["e"]["c"]);
-    }
-    catch (rjson::field_not_found&) {
+    if (const auto& color = data_.get("e", "c"); !color.is_null())
+        return Color(color);
+    else
         return "blue";
-    }
 
 } // AcePlotSpec::error_line_negative_color
 
@@ -356,9 +352,8 @@ std::vector<acmacs::PointStyle> AcePlotSpec::all_styles() const
         std::vector<acmacs::PointStyle> result(indices.size());
         for (auto [point_no, target]: acmacs::enumerate(result)) {
             try {
-                // const size_t style_no = indices[point_no];
-                // target = extract(data_["P"][style_no], point_no, style_no);
-                target = extract(data_["P"][style_no], point_no, indices[point_no]);
+                const size_t style_no = indices[point_no];
+                target = extract(data_["P"][style_no], point_no, style_no);
             }
             catch (std::exception& err) {
                 std::cerr << "WARNING: [ace]: cannot get point " << point_no << " style: " << err.what() << '\n';

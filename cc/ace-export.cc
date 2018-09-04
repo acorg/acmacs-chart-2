@@ -8,13 +8,13 @@
 
 // ----------------------------------------------------------------------
 
-static void export_info(rjson::object& aTarget, acmacs::chart::InfoP aInfo);
-static void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens);
-static void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera);
-static void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters);
-static void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections);
-static void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec);
-static void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle);
+static void export_info(rjson::value& aTarget, acmacs::chart::InfoP aInfo);
+static void export_antigens(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens);
+static void export_sera(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera);
+static void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters);
+static void export_projections(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections);
+static void export_plot_spec(rjson::value& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec);
+static void export_style(rjson::value& target_styles, const acmacs::PointStyle& aStyle);
 
 // ----------------------------------------------------------------------
 
@@ -68,9 +68,9 @@ std::string acmacs::chart::export_ace(const Chart& aChart, std::string aProgramN
 
 // ----------------------------------------------------------------------
 
-void export_info(rjson::object& aTarget, acmacs::chart::InfoP aInfo)
+void export_info(rjson::value& aTarget, acmacs::chart::InfoP aInfo)
 {
-    auto do_export = [](rjson::object& target, acmacs::chart::InfoP info, bool /*for_source*/) {
+    auto do_export = [](rjson::value& target, acmacs::chart::InfoP info, bool /*for_source*/) {
         target.set_field_if_not_empty("v", info->virus());
         target.set_field_if_not_empty("V", info->virus_type());
         target.set_field_if_not_empty("A", info->assay());
@@ -95,7 +95,7 @@ void export_info(rjson::object& aTarget, acmacs::chart::InfoP aInfo)
 
 // ----------------------------------------------------------------------
 
-static inline void export_lineage(rjson::object& object, acmacs::chart::BLineage lineage)
+static inline void export_lineage(rjson::value& object, acmacs::chart::BLineage lineage)
 {
     switch (static_cast<acmacs::chart::BLineage::Lineage>(lineage)) {
       case acmacs::chart::BLineage::Victoria:
@@ -112,7 +112,7 @@ static inline void export_lineage(rjson::object& object, acmacs::chart::BLineage
 
 // ----------------------------------------------------------------------
 
-void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens)
+void export_antigens(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens)
 {
     for (auto antigen: *aAntigens) {
         std::string semantic;
@@ -139,7 +139,7 @@ void export_antigens(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Antig
 
 // ----------------------------------------------------------------------
 
-void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera)
+void export_sera(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera)
 {
     for (auto serum: *aSera) {
         std::string semantic;
@@ -163,7 +163,7 @@ void export_sera(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Sera> aSe
 
 // ----------------------------------------------------------------------
 
-void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters)
+void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters)
 {
       // std::cerr << "number_of_non_dont_cares: " << aTiters->number_of_non_dont_cares() << '\n';
       // std::cerr << "percent_of_non_dont_cares: " << aTiters->percent_of_non_dont_cares() << '\n';
@@ -245,7 +245,7 @@ void export_titers(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Titers
 
 // ----------------------------------------------------------------------
 
-void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections)
+void export_projections(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections)
 {
     for (const auto projection: *aProjections) {
         rjson::object& target = aTarget.insert(rjson::object{});
@@ -294,7 +294,7 @@ void export_projections(rjson::array& aTarget, std::shared_ptr<acmacs::chart::Pr
 
 // ----------------------------------------------------------------------
 
-void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec)
+void export_plot_spec(rjson::value& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec)
 {
     if (const auto drawing_order = aPlotSpec->drawing_order(); ! drawing_order.empty())
         aTarget.set_field("d", rjson::array(rjson::array::use_iterator, drawing_order.begin(), drawing_order.end()));
@@ -332,7 +332,7 @@ namespace rjson
 
 } // namespace rjson
 
-template <typename T> inline void set_field(rjson::object& target, const char* name, const acmacs::internal::field_optional_with_default<T>& field)
+template <typename T> inline void set_field(rjson::value& target, const char* name, const acmacs::internal::field_optional_with_default<T>& field)
 {
     if (field.not_default()) {
         if constexpr (std::is_same_v<T, Color>)
@@ -342,7 +342,7 @@ template <typename T> inline void set_field(rjson::object& target, const char* n
     }
 }
 
-void export_style(rjson::array& target_styles, const acmacs::PointStyle& aStyle)
+void export_style(rjson::value& target_styles, const acmacs::PointStyle& aStyle)
 {
     rjson::object& st = target_styles.insert(rjson::object{});
     set_field(st, "+", aStyle.shown);
