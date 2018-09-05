@@ -352,8 +352,8 @@ std::string Acd1Info::name(Compute aCompute) const
     std::string result{data_["name"].get_or_default("")};
     if (result.empty()) {
         if (const auto& sources = data_["sources"]; !sources.empty()) {
-            std::vector<std::string> composition;
-            rjson::transform(sources, composition, [](const auto& sinfo) { return sinfo["name"].get_or_default(""); });
+            std::vector<std::string> composition(sources.size());
+            rjson::transform(sources, composition.begin(), [](const rjson::value& sinfo) { return sinfo["name"].get_or_default(""); });
             composition.erase(std::remove_if(composition.begin(), composition.end(), [](const auto& s) { return s.empty(); }), composition.end());
             if (composition.size() > (sources.size() / 2))
                 result = string::join(" + ", composition); // use only, if most sources have "name"
@@ -374,7 +374,7 @@ std::string Acd1Info::make_field(const char* aField, const char* aSeparator, Com
     if (result.empty() && aCompute == Compute::Yes) {
         if (const auto& sources = data_["sources"]; !sources.empty()) {
             std::set<std::string> composition;
-            rjson::transform(sources, std::inserter(composition, composition.begin()), [aField](const auto& sinfo) { return sinfo[aField].get_or_default(""); });
+            rjson::transform(sources, std::inserter(composition, composition.begin()), [aField](const rjson::value& sinfo) { return sinfo[aField].get_or_default(""); });
             result = string::join(aSeparator, composition);
         }
     }
@@ -390,7 +390,7 @@ std::string Acd1Info::date(Compute aCompute) const
     if (result.empty() && aCompute == Compute::Yes) {
         if (const auto& sources = data_["sources"]; !sources.empty()) {
             std::vector<std::string> composition{sources.size()};
-            rjson::transform(sources, composition, [](const auto& sinfo) { return sinfo["date"].get_or_default(""); });
+            rjson::transform(sources, composition.begin(), [](const rjson::value& sinfo) { return sinfo["date"].get_or_default(""); });
             std::sort(std::begin(composition), std::end(composition));
             result = string::join("-", {composition.front(), composition.back()});
         }
@@ -472,8 +472,8 @@ static inline Reassortant make_reassortant(const rjson::value& aData)
         const auto& complete = r_dict["complete"];
         const auto& incomplete = r_dict["incomplete"];
         std::vector<std::string> composition;
-        rjson::transform(complete, std::back_inserter(composition), [](const auto& val) -> std::string { return val.str(); });
-        rjson::transform(incomplete, std::back_inserter(composition), [](const auto& val) -> std::string { return val.str(); });
+        rjson::copy(complete, std::back_inserter(composition));
+        rjson::copy(incomplete, std::back_inserter(composition));
         return string::join(" ", composition);
     }
     else if (auto r_str = aData["reassortant"].get_or_default(""); !r_str.empty()) {
@@ -500,11 +500,7 @@ Reassortant Acd1Serum::reassortant() const
 LabIds Acd1Antigen::lab_ids() const
 {
     LabIds result;
-    rjson::transform(data_["lab_id"], result, [](const rjson::value& val) -> std::string { return static_cast<std::string>(val[0]) + '#' + static_cast<std::string>(val[1]); });
-    // if (const auto& li = data_["lab_id"]; !li.is_null()) {
-    //     for(const auto& entry: li)
-    //         result.push_back(entry[0].str() + '#' + entry[1].str());
-    // }
+    rjson::transform(data_["lab_id"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val[0]) + '#' + static_cast<std::string>(val[1]); });
     return result;
 
 } // Acd1Antigen::lab_ids
@@ -586,9 +582,9 @@ std::optional<size_t> Acd1Antigens::find_by_full_name(std::string aFullName) con
 
 void Acd1Antigens::make_name_index() const
 {
-    for (auto iter = data_.begin(); iter != data_.end(); ++iter) {
-        mAntigenNameIndex[make_name(*iter)].push_back(static_cast<size_t>(iter - data_.begin()));
-    }
+    rjson::for_each(data_, [this](const rjson::value& val, size_t index) {
+        mAntigenNameIndex[make_name(val)].push_back(index);
+    });
 
 } // Acd1Antigens::make_name_index
 
@@ -653,15 +649,14 @@ PointIndexList Acd1Projection::make_attributes(size_t aAttr) const
 {
     PointIndexList result;
     if (const rjson::value& attrs = data().get("stress_evaluator_parameters", "antigens_sera_attributes"); !attrs.is_null()) {
-        for (auto [ag_no, attr] : acmacs::enumerate(attrs.get_or_empty_array("antigens"))) {
-            if (static_cast<size_t>(attr) == aAttr)
-                result.insert(ag_no);
-        }
-        const size_t number_of_antigens = attrs.get_or_empty_array("antigens").size();
-        for (auto [sr_no, attr] : acmacs::enumerate(attrs.get_or_empty_array("sera"))) {
-            if (static_cast<size_t>(attr) == aAttr)
-                result.insert(sr_no + number_of_antigens);
-        }
+        rjson::for_each(attrs["antigens"], [&result, aAttr](const rjson::value& val, size_t index) {
+            if (static_cast<size_t>(val) == aAttr)
+                result.insert(index);
+        });
+        rjson::for_each(attrs["sera"], [&result, aAttr,number_of_antigens=attrs["antigens"].size()](const rjson::value& val, size_t index) {
+            if (static_cast<size_t>(val) == aAttr)
+                result.insert(index + number_of_antigens);
+        });
     }
     return result;
 
@@ -719,11 +714,7 @@ AvidityAdjusts Acd1Projection::avidity_adjusts() const
 DrawingOrder Acd1PlotSpec::drawing_order() const
 {
     DrawingOrder result;
-    if (const rjson::value& do1 = data_["drawing_order"]; !do1.empty()) {
-        for (const rjson::value& do2: do1)
-            for (size_t index: do2)
-                result.push_back(index);
-    }
+    rjson::for_each(data_["drawing_order"], [&result](const rjson::value& do1) { rjson::copy(do1, std::back_inserter(result)); });
     return result;
 
 } // Acd1PlotSpec::drawing_order
@@ -795,7 +786,7 @@ std::vector<acmacs::PointStyle> Acd1PlotSpec::all_styles() const
 
 size_t Acd1PlotSpec::number_of_points() const
 {
-    if (const rjson::value& indices = data_.["points"]; !indices.empty())
+    if (const rjson::value& indices = data_["points"]; !indices.empty())
         return indices.size();
     else
         return mChart.number_of_points();
@@ -807,52 +798,54 @@ size_t Acd1PlotSpec::number_of_points() const
 acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPointNo, size_t aStyleNo) const
 {
     acmacs::PointStyle result;
-    for (auto [field_name_v, field_value]: aSrc) {
-        const std::string_view field_name(field_name_v);
-        try {
-            if (field_name == "shown")
-                result.shown = field_value;
-            else if (field_name == "fill_color")
-                result.fill = Color(static_cast<size_t>(field_value));
-            else if (field_name == "outline_color")
-                result.outline = Color(static_cast<size_t>(field_value));
-            else if (field_name == "outline_width")
-                result.outline_width = Pixels{field_value};
-            else if (field_name == "line_width") // acmacs-b3
-                result.outline_width = Pixels{field_value};
-            else if (field_name == "shape")
-                result.shape = field_value.str();
-            else if (field_name == "size")
-                result.size = Pixels{static_cast<double>(field_value) * PointScale};
-            else if (field_name == "rotation")
-                result.rotation = Rotation{field_value};
-            else if (field_name == "aspect")
-                result.aspect = Aspect{field_value};
-            else if (field_name == "show_label")
-                result.label.shown = field_value;
-            else if (field_name == "label_position_x")
-                result.label.offset.set().x(field_value);
-            else if (field_name == "label_position_y")
-                result.label.offset.set().y(field_value);
-            else if (field_name == "label")
-                result.label_text = field_value.str();
-            else if (field_name == "label_size")
-                result.label.size = Pixels{static_cast<double>(field_value) * LabelScale};
-            else if (field_name == "label_color")
-                result.label.color = Color(static_cast<size_t>(field_value));
-            else if (field_name == "label_rotation")
-                result.label.rotation = Rotation{field_value};
-            else if (field_name == "label_font_face")
-                result.label.style.font_family = field_value.str();
-            else if (field_name == "label_font_slant")
-                result.label.style.slant = field_value.str();
-            else if (field_name == "label_font_weight")
-                result.label.style.weight = field_value.str();
+    rjson::for_each(aSrc, [&result, aPointNo, aStyleNo](const rjson::object::value_type& kv) {
+        if (const auto [field_name, field_value] = kv; !field_name.empty()) {
+            try {
+                if (field_name == "shown")
+                    result.shown = field_value;
+                else if (field_name == "fill_color")
+                    result.fill = Color(static_cast<size_t>(field_value));
+                else if (field_name == "outline_color")
+                    result.outline = Color(static_cast<size_t>(field_value));
+                else if (field_name == "outline_width")
+                    result.outline_width = Pixels{field_value};
+                else if (field_name == "line_width") // acmacs-b3
+                    result.outline_width = Pixels{field_value};
+                else if (field_name == "shape")
+                    result.shape = static_cast<std::string>(field_value);
+                else if (field_name == "size")
+                    result.size = Pixels{static_cast<double>(field_value) * PointScale};
+                else if (field_name == "rotation")
+                    result.rotation = Rotation{field_value};
+                else if (field_name == "aspect")
+                    result.aspect = Aspect{field_value};
+                else if (field_name == "show_label")
+                    result.label.shown = field_value;
+                else if (field_name == "label_position_x")
+                    result.label.offset.set().x(field_value);
+                else if (field_name == "label_position_y")
+                    result.label.offset.set().y(field_value);
+                else if (field_name == "label")
+                    result.label_text = field_value;
+                else if (field_name == "label_size")
+                    result.label.size = Pixels{static_cast<double>(field_value) * LabelScale};
+                else if (field_name == "label_color")
+                    result.label.color = Color(static_cast<size_t>(field_value));
+                else if (field_name == "label_rotation")
+                    result.label.rotation = Rotation{field_value};
+                else if (field_name == "label_font_face")
+                    result.label.style.font_family = field_value;
+                else if (field_name == "label_font_slant")
+                    result.label.style.slant = static_cast<std::string>(field_value);
+                else if (field_name == "label_font_weight")
+                    result.label.style.weight = static_cast<std::string>(field_value);
+            }
+            catch (std::exception& err) {
+                std::cerr << "WARNING: [acd1]: point " << aPointNo << " style " << aStyleNo << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << rjson::to_string(field_value)
+                          << '\n';
+            }
         }
-        catch (std::exception& err) {
-            std::cerr << "WARNING: [acd1]: point " << aPointNo << " style " << aStyleNo << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << field_value.to_json() << '\n';
-        }
-    }
+    });
     return result;
 
 } // Acd1PlotSpec::extract

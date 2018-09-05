@@ -43,10 +43,11 @@ namespace acmacs::chart
         {
          public:
             using difference_type = typename std::vector<T>::difference_type;
+            using value_type = typename std::vector<T>::value_type;
 
             T_list_data() = default;
             T_list_data(size_t aSize) : mData(aSize) {}
-            T_list_data(const rjson::value& aSrc) : mData(aSrc.size()) { rjson::copy(aSrc, mData); }
+            T_list_data(const rjson::value& aSrc) : mData(aSrc.size()) { rjson::copy(aSrc, mData.begin()); }
             T_list_data(const std::vector<T>& aSrc) : mData(aSrc) {}
             template <typename Iter> T_list_data(Iter first, Iter last) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), [](const auto& src) -> T { return src; }); }
             template <typename Iter> T_list_data(Iter first, Iter last, std::function<T (const typename Iter::value_type&)> convert) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), convert); }
