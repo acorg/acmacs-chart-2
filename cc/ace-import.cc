@@ -164,8 +164,8 @@ std::string AceInfo::name(Compute aCompute) const
     std::string result{data_["N"].get_or_default("")};
     if (result.empty()) {
         if (const auto& sources = data_["S"]; !sources.empty()) {
-            std::vector<std::string> composition;
-            rjson::transform(sources, composition, [](const rjson::value& sinfo) { return sinfo["N"].get_or_default(""); });
+            std::vector<std::string> composition(sources.size());
+            rjson::transform(sources, composition.begin(), [](const rjson::value& sinfo) { return sinfo["N"].get_or_default(""); });
             composition.erase(std::remove_if(composition.begin(), composition.end(), [](const auto& s) { return s.empty(); }), composition.end());
             if (composition.size() > (sources.size() / 2))
                 result = string::join(" + ", composition);
@@ -202,7 +202,7 @@ std::string AceInfo::date(Compute aCompute) const
     if (result.empty() && aCompute == Compute::Yes) {
         if (const auto& sources = data_["S"]; !sources.empty()) {
             std::vector<std::string> composition{sources.size()};
-            rjson::transform(sources, composition, [](const rjson::value& sinfo) { return sinfo["D"].get_or_default(""); });
+            rjson::transform(sources, composition.begin(), [](const rjson::value& sinfo) { return sinfo["D"].get_or_default(""); });
             std::sort(std::begin(composition), std::end(composition));
             result = string::join("-", {composition.front(), composition.back()});
         }
@@ -384,9 +384,8 @@ size_t AcePlotSpec::number_of_points() const
 acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointNo, size_t aStyleNo) const
 {
     acmacs::PointStyle result;
-    for (auto [field_name_v, field_value]: aSrc) {
-        const std::string_view field_name(field_name_v);
-        if (!field_name.empty()) {
+    rjson::for_each(aSrc, [&result,aPointNo,aStyleNo,this](const rjson::object::value_type& kv) {
+        if (const auto [field_name, field_value] = kv; !field_name.empty()) {
             try {
                 switch (field_name[0]) {
                   case '+':
@@ -411,18 +410,18 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointN
                       result.aspect = Aspect{field_value};
                       break;
                   case 'S':
-                      result.shape = field_value.str();
+                      result.shape = static_cast<std::string>(field_value);
                       break;
                   case 'l':
-                      label_style(result, field_value);
+                      this->label_style(result, field_value);
                       break;
                 }
             }
             catch (std::exception& err) {
-                std::cerr << "WARNING: [ace]: point " << aPointNo << " style " << aStyleNo << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << field_value.to_json() << '\n';
+                std::cerr << "WARNING: [ace]: point " << aPointNo << " style " << aStyleNo << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << rjson::to_string(field_value) << '\n';
             }
         }
-    }
+    });
     return result;
 
 } // AcePlotSpec::extract
@@ -431,11 +430,10 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointN
 
 void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aData) const
 {
-    auto& label_style = aStyle.label;
-    for (auto [field_name_v, field_value]: aData) {
-        const std::string_view field_name(field_name_v);
-        if (!field_name.empty()) {
+    rjson::for_each(aData, [&aStyle](const rjson::object::value_type& kv) {
+        if (const auto [field_name, field_value] = kv; !field_name.empty()) {
             try {
+                auto& label_style = aStyle.label;
                 switch (field_name[0]) {
                   case '+':
                       label_style.shown = field_value;
@@ -456,24 +454,24 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
                       label_style.interline = field_value;
                       break;
                   case 'f':
-                      label_style.style.font_family = field_value.str();
+                      label_style.style.font_family = field_value;
                       break;
                   case 'S':
-                      label_style.style.slant = field_value.str();
+                      label_style.style.slant = static_cast<std::string>(field_value);
                       break;
                   case 'W':
-                      label_style.style.weight = field_value.str();
+                      label_style.style.weight = static_cast<std::string>(field_value);
                       break;
                   case 't':
-                      aStyle.label_text = field_value.str();
+                      aStyle.label_text = field_value;
                       break;
                 }
             }
             catch (std::exception& err) {
-                std::cerr << "WARNING: [ace]: label style field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << field_value.to_json() << '\n';
+                std::cerr << "WARNING: [ace]: label style field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << rjson::to_string(field_value) << '\n';
             }
         }
-    }
+    });
 
 } // AcePlotSpec::label_style
 
