@@ -50,13 +50,13 @@ ChartP acmacs::chart::ace_import(const std::string_view& aData, Verify aVerify)
 void AceChart::verify_data(Verify aVerify) const
 {
     try {
-        const auto& antigens = data_["c"]["a"];
+        const auto& antigens = data_.get("c", "a");
         if (antigens.empty())
             throw import_error("no antigens");
-        const auto& sera = data_["c"]["s"];
+        const auto& sera = data_.get("c", "s");
         if (sera.empty())
             throw import_error("no sera");
-        const auto& titers = data_["c"]["t"];
+        const auto& titers = data_.get("c", "t");
         if (titers.empty())
             throw import_error("no titers");
         if (const auto& ll = titers["l"]; !ll.is_null()) {
@@ -83,7 +83,7 @@ void AceChart::verify_data(Verify aVerify) const
 
 InfoP AceChart::info() const
 {
-    return std::make_shared<AceInfo>(data_["c"]["i"]);
+    return std::make_shared<AceInfo>(data_.get("c", "i"));
 
 } // AceChart::info
 
@@ -91,7 +91,7 @@ InfoP AceChart::info() const
 
 AntigensP AceChart::antigens() const
 {
-    return std::make_shared<AceAntigens>(data_["c"]["a"], mAntigenNameIndex);
+    return std::make_shared<AceAntigens>(data_.get("c", "a"), mAntigenNameIndex);
 
 } // AceChart::antigens
 
@@ -99,7 +99,7 @@ AntigensP AceChart::antigens() const
 
 SeraP AceChart::sera() const
 {
-    auto sera = std::make_shared<AceSera>(data_["c"]["s"]);
+    auto sera = std::make_shared<AceSera>(data_.get("c", "s"));
     set_homologous(find_homologous_for_big_chart::no, sera);
     return sera;
 
@@ -109,7 +109,7 @@ SeraP AceChart::sera() const
 
 const rjson::value& AceChart::extension_field(std::string field_name) const
 {
-    return data_["c"][field_name];
+    return data_.get("c", field_name);
 
 } // AceChart::extension_field
 
@@ -117,7 +117,7 @@ const rjson::value& AceChart::extension_field(std::string field_name) const
 
 TitersP AceChart::titers() const
 {
-    return std::make_shared<AceTiters>(data_["c"]["t"]);
+    return std::make_shared<AceTiters>(data_.get("c", "t"));
 
 } // AceChart::titers
 
@@ -136,7 +136,7 @@ ColumnBasesP AceChart::forced_column_bases(MinimumColumnBasis aMinimumColumnBasi
 ProjectionsP AceChart::projections() const
 {
     if (!projections_)
-        projections_ = std::make_shared<AceProjections>(*this, data_["c"]["P"]);
+        projections_ = std::make_shared<AceProjections>(*this, data_.get("c", "P"));
     return projections_;
 
 } // AceChart::projections
@@ -145,7 +145,7 @@ ProjectionsP AceChart::projections() const
 
 PlotSpecP AceChart::plot_spec() const
 {
-    return std::make_shared<AcePlotSpec>(data_["c"]["p"], *this);
+    return std::make_shared<AcePlotSpec>(data_.get("c", "p"), *this);
 
 } // AceChart::plot_spec
 

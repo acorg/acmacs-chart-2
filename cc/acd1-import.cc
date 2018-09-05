@@ -246,13 +246,13 @@ void Acd1Chart::verify_data(Verify aVerify) const
     try {
         // if (static_cast<size_t>(data_["version"]) != 4)
         //     throw import_error("invalid version");
-        const auto& antigens = data_["table"]["antigens"];
+        const auto& antigens = data_.get("table", "antigens");
         if (antigens.empty())
             throw import_error("no antigens");
-        const auto& sera = data_["table"]["sera"];
+        const auto& sera = data_.get("table", "sera");
         if (sera.empty())
             throw import_error("no sera");
-        const auto& titers = data_["table"]["titers"];
+        const auto& titers = data_.get("table", "titers");
         if (titers.empty())
             throw import_error("no titers");
         if (const auto& ll = titers["titers_list_of_list"]; !ll.is_null()) {
@@ -287,7 +287,7 @@ InfoP Acd1Chart::info() const
 
 AntigensP Acd1Chart::antigens() const
 {
-    return std::make_shared<Acd1Antigens>(data_["table"]["antigens"], mAntigenNameIndex);
+    return std::make_shared<Acd1Antigens>(data_.get("table", "antigens"), mAntigenNameIndex);
 
 } // Acd1Chart::antigens
 
@@ -295,7 +295,7 @@ AntigensP Acd1Chart::antigens() const
 
 SeraP Acd1Chart::sera() const
 {
-    auto sera = std::make_shared<Acd1Sera>(data_["table"]["sera"]);
+    auto sera = std::make_shared<Acd1Sera>(data_.get("table", "sera"));
     set_homologous(find_homologous_for_big_chart::no, sera);
     return sera;
 
@@ -305,7 +305,7 @@ SeraP Acd1Chart::sera() const
 
 TitersP Acd1Chart::titers() const
 {
-    return std::make_shared<Acd1Titers>(data_["table"]["titers"]);
+    return std::make_shared<Acd1Titers>(data_.get("table", "titers"));
 
 } // Acd1Chart::titers
 
@@ -313,7 +313,7 @@ TitersP Acd1Chart::titers() const
 
 ColumnBasesP Acd1Chart::forced_column_bases(MinimumColumnBasis aMinimumColumnBasis) const
 {
-    if (const auto& cb = data_["table"]["column_bases"]; !cb.empty())
+    if (const auto& cb = data_.get("table", "column_bases"); !cb.empty())
         return std::make_shared<Acd1ColumnBases>(cb, aMinimumColumnBasis);
     return nullptr;
 

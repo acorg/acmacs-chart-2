@@ -12,6 +12,7 @@ static void export_info(rjson::value& aTarget, acmacs::chart::InfoP aInfo);
 static void export_antigens(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Antigens> aAntigens);
 static void export_sera(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Sera> aSera);
 static void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters);
+static void export_forced_column_bases(rjson::value& aTarget, std::shared_ptr<acmacs::chart::ColumnBases> column_bases);
 static void export_projections(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections);
 static void export_plot_spec(rjson::value& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec);
 static void export_style(rjson::value& target_styles, const acmacs::PointStyle& aStyle);
@@ -80,6 +81,7 @@ rjson::value acmacs::chart::export_ace_to_rjson(const Chart& aChart, std::string
     export_titers(ace["c"]["t"], aChart.titers());
     // ti_titers.report();
     // Timeit ti_projections("export projections ");
+    export_forced_column_bases(ace["c"], aChart.forced_column_bases(MinimumColumnBasis{}));
     if (auto projections = aChart.projections(); !projections->empty())
         export_projections(ace["c"]["P"], projections);
     // ti_projections.report();
@@ -280,6 +282,17 @@ void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers>
 
 // ----------------------------------------------------------------------
 
+void export_forced_column_bases(rjson::value& aTarget, std::shared_ptr<acmacs::chart::ColumnBases> column_bases)
+{
+    if (column_bases) {
+        auto& ar = aTarget["C"] = rjson::array{};
+        for (size_t sr_no = 0; sr_no < column_bases->size(); ++sr_no)
+            ar.append(column_bases->column_basis(sr_no));
+    }
+}
+
+// ----------------------------------------------------------------------
+
 void export_projections(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Projections> aProjections)
 {
     if (aTarget.is_null())
@@ -305,11 +318,7 @@ void export_projections(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Pr
         set_field_if_not_default<double>(target, "s", projection->stress(), acmacs::chart::InvalidStress);
         if (const auto minimum_column_basis = projection->minimum_column_basis(); !minimum_column_basis.is_none())
             target["m"] = static_cast<std::string>(minimum_column_basis);
-        if (const auto forced_column_bases = projection->forced_column_bases(); forced_column_bases) {
-            auto& ar = target["C"] = rjson::array{};
-            for (size_t sr_no = 0; sr_no < forced_column_bases->size(); ++sr_no)
-                ar.append(forced_column_bases->column_basis(sr_no));
-        }
+        export_forced_column_bases(target, projection->forced_column_bases());
         if (const auto transformation = projection->transformation(); transformation != acmacs::Transformation{})
             target["t"] = rjson::array{transformation.a, transformation.b, transformation.c, transformation.d};
         set_field_if_not_default(target, "d", projection->dodgy_titer_is_regular(), false);
