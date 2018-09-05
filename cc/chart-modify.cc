@@ -474,20 +474,18 @@ TitersModify::TitersModify(TitersP main)
     if (main->number_of_layers() > 0) {
         layers_.resize(main->number_of_layers());
         try {
-            auto source = main->rjson_layers();
-            for (const auto [layer_no, source_layer_v] : acmacs::enumerate(source)) {
-                const rjson::array& source_layer = source_layer_v;
-                auto& target = layers_[layer_no];
+            rjson::for_each(main->rjson_layers(), [this](const rjson::value& source_layer, size_t layer_no) {
+                auto& target = this->layers_[layer_no];
                 target.resize(source_layer.size());
-                for (const auto [ag_no, source_row] : acmacs::enumerate(source_layer)) {
-                    for (const auto& entry : static_cast<const rjson::object&>(source_row)) {
-                        target[ag_no].emplace_back(std::stoul(entry.first.str()), entry.second);
-                    }
-                }
+                rjson::for_each(source_layer, [&target](const rjson::value& source_row, size_t ag_no) {
+                    using target_t = std::remove_reference_t<decltype(target[ag_no])>;
+                    using value_type = typename target_t::value_type;
+                    rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::object::value_type& kv) -> value_type { return {std::stoul(kv.first), kv.second}; });
+                });
                   // sort entries by serum no
                 for (auto& row : target)
                     std::sort(row.begin(), row.end(), [](const auto& e1, const auto& e2) { return e1.first < e2.first; });
-            }
+            });
         }
         catch (data_not_available&) {
             for (size_t layer_no = 0; layer_no < main->number_of_layers(); ++layer_no) {
