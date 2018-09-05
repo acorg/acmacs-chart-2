@@ -83,12 +83,11 @@ namespace                       // to make class static in the module
         void operator++() override
             {
                 while (data_.antigen < number_of_rows()) {
-                    if (++data_.serum == row().size()) {
+                    ++data_.serum;
+                    if (data_.serum == row().size()) {
                         ++data_.antigen;
                         data_.serum = 0;
                     }
-                    else
-                        ++data_.serum;
                     if (data_.antigen < number_of_rows()) {
                         data_.titer = titer();
                         if (!data_.titer.is_dont_care())
@@ -124,7 +123,8 @@ namespace                       // to make class static in the module
 
         void operator++() override
             {
-                if (++serum_ == sera_.end()) {
+                ++serum_;
+                if (serum_ == sera_.end()) {
                     for (++data_.antigen; data_.antigen < number_of_rows() && row().empty(); ++data_.antigen);
                     if (data_.antigen < number_of_rows()) {
                         populate_sera();
