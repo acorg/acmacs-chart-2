@@ -472,8 +472,8 @@ static inline Reassortant make_reassortant(const rjson::value& aData)
         const auto& complete = r_dict["complete"];
         const auto& incomplete = r_dict["incomplete"];
         std::vector<std::string> composition;
-        rjson::copy(complete, std::back_inserter(composition));
-        rjson::copy(incomplete, std::back_inserter(composition));
+        rjson::transform(complete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return val; }); // cannot use rjson::copy here
+        rjson::transform(incomplete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return val; }); // cannot use rjson::copy here
         return string::join(" ", composition);
     }
     else if (auto r_str = aData["reassortant"].get_or_default(""); !r_str.empty()) {
@@ -515,8 +515,8 @@ static inline Annotations make_annotations(const rjson::value& aData)
         result.push_back("DISTINCT");
     result.push_back(aData["extra"].get_or_default(""));
     result.push_back(aData["EXTRA"].get_or_default(""));
-    rjson::copy(aData["annotations"], std::back_inserter(result));
-    rjson::copy(aData["mutations"], std::back_inserter(result));
+    rjson::transform(aData["annotations"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return val; }); // cannot use rjson::copy here
+    rjson::transform(aData["mutations"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return val; }); // cannot use rjson::copy here
     return result;
 }
 
@@ -714,7 +714,7 @@ AvidityAdjusts Acd1Projection::avidity_adjusts() const
 DrawingOrder Acd1PlotSpec::drawing_order() const
 {
     DrawingOrder result;
-    rjson::for_each(data_["drawing_order"], [&result](const rjson::value& do1) { rjson::copy(do1, std::back_inserter(result)); });
+    rjson::for_each(data_["drawing_order"], [&result](const rjson::value& do1) { rjson::transform(do1, std::back_inserter(result), [](const rjson::value& val) -> size_t { return val; }); });
     return result;
 
 } // Acd1PlotSpec::drawing_order
