@@ -246,20 +246,20 @@ void Acd1Chart::verify_data(Verify aVerify) const
     try {
         // if (static_cast<size_t>(data_["version"]) != 4)
         //     throw import_error("invalid version");
-        const auto& antigens = data_["table"].get_or_empty_array("antigens");
+        const auto& antigens = data_["table"]["antigens"];
         if (antigens.empty())
             throw import_error("no antigens");
-        const auto& sera = data_["table"].get_or_empty_array("sera");
+        const auto& sera = data_["table"]["sera"];
         if (sera.empty())
             throw import_error("no sera");
-        const auto& titers = data_["table"].get_or_empty_object("titers");
+        const auto& titers = data_["table"]["titers"];
         if (titers.empty())
             throw import_error("no titers");
-        if (auto [ll_present, ll] = titers.get_array_if("titers_list_of_list"); ll_present) {
+        if (const auto& ll = titers["titers_list_of_list"]; !ll.is_null()) {
             if (ll.size() != antigens.size())
                 throw import_error("number of the titer rows (" + acmacs::to_string(ll.size()) + ") does not correspond to the number of antigens (" + acmacs::to_string(antigens.size()) + ")");
         }
-        else if (auto [dd_present, dd] = titers.get_array_if("titers_list_of_dict"); dd_present) {
+        else if (const auto& dd = titers["titers_list_of_dict"]; !dd.is_null()) {
             if (dd.size() != antigens.size())
                 throw import_error("number of the titer rows (" + acmacs::to_string(dd.size()) + ") does not correspond to the number of antigens (" + acmacs::to_string(antigens.size()) + ")");
         }
@@ -287,7 +287,7 @@ InfoP Acd1Chart::info() const
 
 AntigensP Acd1Chart::antigens() const
 {
-    return std::make_shared<Acd1Antigens>(data_["table"].get_or_empty_array("antigens"), mAntigenNameIndex);
+    return std::make_shared<Acd1Antigens>(data_["table"]["antigens"], mAntigenNameIndex);
 
 } // Acd1Chart::antigens
 
@@ -295,7 +295,7 @@ AntigensP Acd1Chart::antigens() const
 
 SeraP Acd1Chart::sera() const
 {
-    auto sera = std::make_shared<Acd1Sera>(data_["table"].get_or_empty_array("sera"));
+    auto sera = std::make_shared<Acd1Sera>(data_["table"]["sera"]);
     set_homologous(find_homologous_for_big_chart::no, sera);
     return sera;
 
@@ -305,7 +305,7 @@ SeraP Acd1Chart::sera() const
 
 TitersP Acd1Chart::titers() const
 {
-    return std::make_shared<Acd1Titers>(data_["table"].get_or_empty_object("titers"));
+    return std::make_shared<Acd1Titers>(data_["table"]["titers"]);
 
 } // Acd1Chart::titers
 
@@ -313,7 +313,7 @@ TitersP Acd1Chart::titers() const
 
 ColumnBasesP Acd1Chart::forced_column_bases(MinimumColumnBasis aMinimumColumnBasis) const
 {
-    if (const auto& cb = data_["table"].get_or_empty_array("column_bases"); !cb.empty())
+    if (const auto& cb = data_["table"]["column_bases"]; !cb.empty())
         return std::make_shared<Acd1ColumnBases>(cb, aMinimumColumnBasis);
     return nullptr;
 
@@ -324,7 +324,7 @@ ColumnBasesP Acd1Chart::forced_column_bases(MinimumColumnBasis aMinimumColumnBas
 ProjectionsP Acd1Chart::projections() const
 {
     if (!projections_)
-        projections_ = std::make_shared<Acd1Projections>(*this, data_.get_or_empty_array("projections"));
+        projections_ = std::make_shared<Acd1Projections>(*this, data_["projections"]);
     return projections_;
 
 } // Acd1Chart::projections
@@ -333,7 +333,7 @@ ProjectionsP Acd1Chart::projections() const
 
 PlotSpecP Acd1Chart::plot_spec() const
 {
-    return std::make_shared<Acd1PlotSpec>(data_.get_or_empty_object("plot_spec"), *this);
+    return std::make_shared<Acd1PlotSpec>(data_["plot_spec"], *this);
 
 } // Acd1Chart::plot_spec
 
@@ -341,7 +341,7 @@ PlotSpecP Acd1Chart::plot_spec() const
 
 bool Acd1Chart::is_merge() const
 {
-    return !data_["table"].get_or_empty_object("titers").get_or_empty_array("layers_dict_for_antigen").empty();
+    return !data_.get("table", "titers", "layers_dict_for_antigen").empty();
 
 } // Acd1Chart::is_merge
 
@@ -349,11 +349,11 @@ bool Acd1Chart::is_merge() const
 
 std::string Acd1Info::name(Compute aCompute) const
 {
-    std::string result{data_.get_or_default("name", "")};
+    std::string result{data_["name"].get_or_default("")};
     if (result.empty()) {
-        if (const auto& sources{data_.get_or_empty_array("sources")}; !sources.empty()) {
+        if (const auto& sources = data_["sources"]; !sources.empty()) {
             std::vector<std::string> composition;
-            std::transform(std::begin(sources), std::end(sources), std::back_inserter(composition), [](const auto& sinfo) { return sinfo.get_or_default("name", ""); });
+            rjson::transform(sources, composition, [](const auto& sinfo) { return sinfo["name"].get_or_default(""); });
             composition.erase(std::remove_if(composition.begin(), composition.end(), [](const auto& s) { return s.empty(); }), composition.end());
             if (composition.size() > (sources.size() / 2))
                 result = string::join(" + ", composition); // use only, if most sources have "name"
@@ -370,11 +370,11 @@ std::string Acd1Info::name(Compute aCompute) const
 
 std::string Acd1Info::make_field(const char* aField, const char* aSeparator, Compute aCompute) const
 {
-    std::string result{data_.get_or_default(aField, "")};
+    std::string result{data_[aField].get_or_default("")};
     if (result.empty() && aCompute == Compute::Yes) {
-        if (const auto& sources{data_.get_or_empty_array("sources")}; !sources.empty()) {
+        if (const auto& sources = data_["sources"]; !sources.empty()) {
             std::set<std::string> composition;
-            std::transform(std::begin(sources), std::end(sources), std::inserter(composition, composition.begin()), [aField](const auto& sinfo) { return sinfo.get_or_default(aField, ""); });
+            rjson::transform(sources, std::inserter(composition, composition.begin()), [aField](const auto& sinfo) { return sinfo[aField].get_or_default(""); });
             result = string::join(aSeparator, composition);
         }
     }
@@ -386,12 +386,11 @@ std::string Acd1Info::make_field(const char* aField, const char* aSeparator, Com
 
 std::string Acd1Info::date(Compute aCompute) const
 {
-    std::string result{data_.get_or_default("date", "")};
+    std::string result = data_["date"].get_or_default("");
     if (result.empty() && aCompute == Compute::Yes) {
-        const auto& sources{data_.get_or_empty_array("sources")};
-        if (!sources.empty()) {
+        if (const auto& sources = data_["sources"]; !sources.empty()) {
             std::vector<std::string> composition{sources.size()};
-            std::transform(std::begin(sources), std::end(sources), std::begin(composition), [](const auto& sinfo) { return sinfo.get_or_default("date", ""); });
+            rjson::transform(sources, composition, [](const auto& sinfo) { return sinfo["date"].get_or_default(""); });
             std::sort(std::begin(composition), std::end(composition));
             result = string::join("-", {composition.front(), composition.back()});
         }
@@ -404,20 +403,20 @@ std::string Acd1Info::date(Compute aCompute) const
 
 static inline Name make_name(const rjson::value& aData)
 {
-    if (auto name = aData.get_or_default("_name", ""); !name.empty())
+    if (auto name = aData["_name"].get_or_default(""); !name.empty())
         return name;
-    if (auto isolation_number = aData.get_or_default("isolation_number", ""); !isolation_number.empty()) {
-        std::string host = aData.get_or_default("host", "");
+    if (auto isolation_number = aData["isolation_number"].get_or_default(""); !isolation_number.empty()) {
+        std::string host = aData["host"].get_or_default("");
         if (host == "HUMAN")
             host.clear();
-        return string::join("/", {aData.get_or_default("virus_type", ""), host, aData.get_or_empty_object("location").get_or_default("name", ""), isolation_number, aData.get_or_default("year", "")});
+        return string::join("/", {aData["virus_type"].get_or_default(""), host, aData.get("location", "name").get_or_default(""), isolation_number, aData["year"].get_or_default("")});
     }
-    else if (auto raw_name = aData.get_or_default("raw_name", ""); !raw_name.empty()) {
+    else if (auto raw_name = aData["raw_name"].get_or_default(""); !raw_name.empty()) {
         return raw_name;
     }
     else {
-        const std::string cdc_abbreviation = aData.get_or_empty_object("location").get_or_default("cdc_abbreviation", "");
-        std::string name = aData.get_or_default("name", "");
+        const std::string cdc_abbreviation = aData.get("location", "cdc_abbreviation").get_or_default("");
+        std::string name = aData["name"].get_or_default("");
         if (!cdc_abbreviation.empty() && name.size() > 3 && name[2] == '-' && name[0] == cdc_abbreviation[0] && name[1] == cdc_abbreviation[1])
             name.erase(0, 3);   // old cdc name (acmacs-b?) begins with cdc_abbreviation
         return string::join(" ", {cdc_abbreviation, name});
@@ -440,13 +439,13 @@ Name Acd1Serum::name() const
 
 static inline Passage make_passage(const rjson::value& aData)
 {
-    if (auto [p_dict_present, p_dict] = aData.get_object_if("passage"); p_dict_present) {
-        auto p(p_dict["passage"].str());
-        if (auto date = p_dict.get_or_default("date", ""); !date.empty())
+    if (const auto& p_dict = aData["passage"]; !p_dict.is_null()) {
+        std::string p = p_dict["passage"].get_or_default("");
+        if (auto date = p_dict["date"].get_or_default(""); !date.empty())
             p += " (" + date + ")";
         return p;
     }
-    else if (auto p_str = aData.get_or_default("passage", ""); !p_str.empty()) {
+    else if (auto p_str = aData["passage"].get_or_default(""); !p_str.empty()) {
         return p_str;
     }
     else
@@ -469,15 +468,15 @@ Passage Acd1Serum::passage() const
 
 static inline Reassortant make_reassortant(const rjson::value& aData)
 {
-    if (auto [r_dict_present, r_dict] = aData.get_object_if("reassortant"); r_dict_present) {
-        const rjson::value& complete = r_dict.get_or_empty_array("complete");
-        const rjson::value& incomplete = r_dict.get_or_empty_array("incomplete");
+    if (const auto& r_dict = aData["reassortant"]; !r_dict.is_null()) {
+        const auto& complete = r_dict["complete"];
+        const auto& incomplete = r_dict["incomplete"];
         std::vector<std::string> composition;
-        std::transform(complete.begin(), complete.end(), std::back_inserter(composition), [](const auto& val) -> std::string { return val.str(); });
-        std::transform(incomplete.begin(), incomplete.end(), std::back_inserter(composition), [](const auto& val) -> std::string { return val.str(); });
+        rjson::transform(complete, std::back_inserter(composition), [](const auto& val) -> std::string { return val.str(); });
+        rjson::transform(incomplete, std::back_inserter(composition), [](const auto& val) -> std::string { return val.str(); });
         return string::join(" ", composition);
     }
-    else if (auto r_str = aData.get_or_default("reassortant", ""); !r_str.empty()) {
+    else if (auto r_str = aData["reassortant"].get_or_default(""); !r_str.empty()) {
         return r_str;
     }
     else
@@ -501,10 +500,11 @@ Reassortant Acd1Serum::reassortant() const
 LabIds Acd1Antigen::lab_ids() const
 {
     LabIds result;
-    if (auto [li_present, li] = data_.get_array_if("lab_id"); li_present) {
-        for(const auto& entry: li)
-            result.push_back(entry[0].str() + '#' + entry[1].str());
-    }
+    rjson::transform(data_["lab_id"], result, [](const rjson::value& val) -> std::string { return static_cast<std::string>(val[0]) + '#' + static_cast<std::string>(val[1]); });
+    // if (const auto& li = data_["lab_id"]; !li.is_null()) {
+    //     for(const auto& entry: li)
+    //         result.push_back(entry[0].str() + '#' + entry[1].str());
+    // }
     return result;
 
 } // Acd1Antigen::lab_ids
@@ -515,14 +515,12 @@ static inline Annotations make_annotations(const rjson::value& aData)
 {
     Annotations result;
       // mutations, extra, distinct, annotations, control_duplicate
-    if (aData.get_or_default("distinct", false) || aData.get_or_default("DISTINCT", false) || !aData.get_or_default("control_duplicate", "").empty() || !aData.get_or_default("CONTROL_DUPLICATE", "").empty())
+    if (aData["distinct"].get_or_default(false) || aData["DISTINCT"].get_or_default(false) || !aData["control_duplicate"].get_or_default("").empty() || !aData["CONTROL_DUPLICATE"].get_or_default("").empty())
         result.push_back("DISTINCT");
-    result.push_back(aData.get_or_default("extra", ""));
-    result.push_back(aData.get_or_default("EXTRA", ""));
-    for (const auto& annotation: aData.get_or_empty_array("annotations"))
-        result.push_back(annotation.str());
-    for (const auto& mutation: aData.get_or_empty_array("mutations"))
-        result.push_back(mutation.str());
+    result.push_back(aData["extra"].get_or_default(""));
+    result.push_back(aData["EXTRA"].get_or_default(""));
+    rjson::copy(aData["annotations"], std::back_inserter(result));
+    rjson::copy(aData["mutations"], std::back_inserter(result));
     return result;
 }
 
@@ -542,13 +540,13 @@ Annotations Acd1Serum::annotations() const
 
 BLineage Acd1Antigen::lineage() const
 {
-    return data_.get_or_default("lineage", "");
+    return data_["lineage"].get_or_default("");
 
 } // Acd1Antigen::lineage
 
 BLineage Acd1Serum::lineage() const
 {
-    return data_.get_or_default("lineage", "");
+    return data_["lineage"].get_or_default("");
 
 } // Acd1Serum::lineage
 
@@ -556,10 +554,10 @@ BLineage Acd1Serum::lineage() const
 
 SerumId Acd1Serum::serum_id() const
 {
-    if (auto [s_dict_present, s_dict] = data_.get_object_if("serum_id"); s_dict_present) {
+    if (const auto& s_dict = data_["serum_id"]; !s_dict.is_null()) {
         return s_dict["serum_id"];
     }
-    else if (auto p_str = data_.get_or_default("serum_id", ""); !p_str.empty()) {
+    else if (auto p_str = data_["serum_id"].get_or_default(""); !p_str.empty()) {
         return p_str;
     }
     else
@@ -629,10 +627,9 @@ void Acd1Antigens::make_name_index() const
 
 ColumnBasesP Acd1Projection::forced_column_bases() const
 {
-    const rjson::value& sep = data().get_or_empty_object("stress_evaluator_parameters");
-    if (const rjson::value& cb = sep.get_or_empty_array("column_bases"); !cb.empty())
+    if (const rjson::value& cb = data().get("stress_evaluator_parameters", "column_bases"); !cb.empty())
         return std::make_shared<Acd1ColumnBases>(cb);
-    if (const rjson::value& cb = sep.get_or_empty_array("columns_bases"); !cb.empty())
+    if (const rjson::value& cb = data().get("stress_evaluator_parameters", "columns_bases"); !cb.empty())
         return std::make_shared<Acd1ColumnBases>(cb);
     return nullptr;
 
@@ -643,7 +640,7 @@ ColumnBasesP Acd1Projection::forced_column_bases() const
 acmacs::Transformation Acd1Projection::transformation() const
 {
     acmacs::Transformation result;
-    if (auto [present, array] = data().get_array_if("transformation"); present) {
+    if (const auto& array = data()["transformation"]; !array.empty()) {
         result.set(array[0][0], array[0][1], array[1][0], array[1][1]);
     }
     return result;
@@ -654,18 +651,18 @@ acmacs::Transformation Acd1Projection::transformation() const
 
 PointIndexList Acd1Projection::make_attributes(size_t aAttr) const
 {
-    const rjson::value& attrs = data().get_or_empty_object("stress_evaluator_parameters").get_or_empty_object("antigens_sera_attributes");
     PointIndexList result;
-    for (auto [ag_no, attr]: acmacs::enumerate(attrs.get_or_empty_array("antigens"))) {
-        if (static_cast<size_t>(attr) == aAttr)
-            result.insert(ag_no);
+    if (const rjson::value& attrs = data().get("stress_evaluator_parameters", "antigens_sera_attributes"); !attrs.is_null()) {
+        for (auto [ag_no, attr] : acmacs::enumerate(attrs.get_or_empty_array("antigens"))) {
+            if (static_cast<size_t>(attr) == aAttr)
+                result.insert(ag_no);
+        }
+        const size_t number_of_antigens = attrs.get_or_empty_array("antigens").size();
+        for (auto [sr_no, attr] : acmacs::enumerate(attrs.get_or_empty_array("sera"))) {
+            if (static_cast<size_t>(attr) == aAttr)
+                result.insert(sr_no + number_of_antigens);
+        }
     }
-    const size_t number_of_antigens = attrs.get_or_empty_array("antigens").size();
-    for (auto [sr_no, attr]: acmacs::enumerate(attrs.get_or_empty_array("sera"))) {
-        if (static_cast<size_t>(attr) == aAttr)
-            result.insert(sr_no + number_of_antigens);
-    }
-
     return result;
 
 } // Acd1Projection::make_attributes
@@ -702,9 +699,9 @@ PointIndexList Acd1Projection::make_attributes(size_t aAttr) const
 
 AvidityAdjusts Acd1Projection::avidity_adjusts() const
 {
-    if (const rjson::value& titer_multipliers = data().get_or_empty_object("stress_evaluator_parameters").get_or_empty_object("antigens_sera_titers_multipliers"); !titer_multipliers.empty()) {
-        const rjson::value& antigens = titer_multipliers.get_or_empty_array("antigens");
-        const rjson::value& sera = titer_multipliers.get_or_empty_array("sera");
+    if (const rjson::value& titer_multipliers = data().get("stress_evaluator_parameters", "antigens_sera_titers_multipliers"); !titer_multipliers.empty()) {
+        const rjson::value& antigens = titer_multipliers["antigens"];
+        const rjson::value& sera = titer_multipliers["sera"];
         AvidityAdjusts aa(antigens.size() + sera.size());
         for (size_t ag_no = 0; ag_no < antigens.size(); ++ag_no)
             aa[ag_no] = antigens[ag_no];
@@ -722,7 +719,7 @@ AvidityAdjusts Acd1Projection::avidity_adjusts() const
 DrawingOrder Acd1PlotSpec::drawing_order() const
 {
     DrawingOrder result;
-    if (const rjson::value& do1 = data_.get_or_empty_array("drawing_order"); !do1.empty()) {
+    if (const rjson::value& do1 = data_["drawing_order"]; !do1.empty()) {
         for (const rjson::value& do2: do1)
             for (size_t index: do2)
                 result.push_back(index);
@@ -735,12 +732,10 @@ DrawingOrder Acd1PlotSpec::drawing_order() const
 
 Color Acd1PlotSpec::error_line_positive_color() const
 {
-    try {
-        return Color(data_["error_line_positive"]["color"].strv());
-    }
-    catch (std::exception&) {
+    if (const auto& color = data_.get("error_line_positive", "color"); !color.is_null())
+        return Color(color);
+    else
         return "red";
-    }
 
 } // Acd1PlotSpec::error_line_positive_color
 
@@ -748,12 +743,10 @@ Color Acd1PlotSpec::error_line_positive_color() const
 
 Color Acd1PlotSpec::error_line_negative_color() const
 {
-    try {
-        return Color(data_["error_line_negative"]["color"].strv());
-    }
-    catch (std::exception&) {
+    if (const auto& color = data_.get("error_line_negative", "color"); !color.is_null())
+        return Color(color);
+    else
         return "blue";
-    }
 
 } // Acd1PlotSpec::error_line_negative_color
 
@@ -777,8 +770,7 @@ acmacs::PointStyle Acd1PlotSpec::style(size_t aPointNo) const
 
 std::vector<acmacs::PointStyle> Acd1PlotSpec::all_styles() const
 {
-    const rjson::value& indices = data_.get_or_empty_array("points");
-    if (!indices.empty()) {
+    if (const rjson::value& indices = data_["points"]; !indices.empty()) {
         std::vector<acmacs::PointStyle> result(indices.size());
         for (auto [point_no, target]: acmacs::enumerate(result)) {
             try {
@@ -803,8 +795,7 @@ std::vector<acmacs::PointStyle> Acd1PlotSpec::all_styles() const
 
 size_t Acd1PlotSpec::number_of_points() const
 {
-    const rjson::value& indices = data_.get_or_empty_array("points");
-    if (!indices.empty())
+    if (const rjson::value& indices = data_.["points"]; !indices.empty())
         return indices.size();
     else
         return mChart.number_of_points();
