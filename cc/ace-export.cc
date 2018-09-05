@@ -333,6 +333,8 @@ void export_projections(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Pr
 
 void export_plot_spec(rjson::value& aTarget, std::shared_ptr<acmacs::chart::PlotSpec> aPlotSpec)
 {
+    if (aTarget.is_null())
+        aTarget = rjson::object{};
     if (const auto drawing_order = aPlotSpec->drawing_order(); ! drawing_order.empty())
         aTarget["d"] = rjson::array(drawing_order.begin(), drawing_order.end());
     if (const auto color = aPlotSpec->error_line_positive_color(); color != RED)
