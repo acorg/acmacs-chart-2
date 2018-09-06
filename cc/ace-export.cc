@@ -39,6 +39,12 @@ template <typename T> inline void set_field_if_not_default(rjson::value& target,
         target[field_name] = aValue;
 }
 
+inline void set_field_if_not_default(rjson::value& target, const char* field_name, double aValue, double aDefault, int precision)
+{
+    if (!equal(aValue, aDefault))
+        target[field_name] = rjson::number(acmacs::to_string(aValue, precision));
+}
+
 template <typename S, typename Iterator> inline void set_array_field_if_not_empty(rjson::value& target, S key, Iterator first, Iterator last)
 {
     if (first != last) {
@@ -315,7 +321,7 @@ void export_projections(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Pr
         }
 
         set_field_if_not_empty(target, "c", projection->comment());
-        set_field_if_not_default<double>(target, "s", projection->stress(), acmacs::chart::InvalidStress);
+        set_field_if_not_default(target, "s", projection->stress(), acmacs::chart::InvalidStress, 8);
         if (const auto minimum_column_basis = projection->minimum_column_basis(); !minimum_column_basis.is_none())
             target["m"] = static_cast<std::string>(minimum_column_basis);
         export_forced_column_bases(target, projection->forced_column_bases());
