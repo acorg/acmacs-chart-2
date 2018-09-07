@@ -280,6 +280,18 @@ namespace acmacs::chart
 
     }; // class Antigen
 
+    inline std::ostream& operator<<(std::ostream& out, const Antigen& ag)
+    {
+        out << ag.full_name();
+        if (const auto date = ag.date(); !date.empty())
+            out << " [" << date << ']';
+        if (const auto lab_ids = ag.lab_ids(); !lab_ids.empty())
+            out << ' ' << lab_ids;
+        if (const auto lineage = ag.lineage(); lineage != BLineage::Unknown)
+            out << ' ' << static_cast<std::string>(lineage);
+        return out;
+    }
+
 // ----------------------------------------------------------------------
 
     class Serum
@@ -315,6 +327,16 @@ namespace acmacs::chart
         bool is_cell() const { return !is_egg(); }
 
     }; // class Serum
+
+    inline std::ostream& operator<<(std::ostream& out, const Serum& sr)
+    {
+        out << sr.full_name();
+        if (const auto lineage = sr.lineage(); lineage != BLineage::Unknown)
+            out << ' ' << static_cast<std::string>(lineage);
+        if (const auto serum_species = sr.serum_species(); !serum_species.empty())
+            out << ' ' << serum_species;
+        return out;
+    }
 
 // ----------------------------------------------------------------------
 
