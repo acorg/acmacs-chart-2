@@ -18,7 +18,7 @@
 
 // ----------------------------------------------------------------------
 
-namespace rjson { class array; }
+namespace rjson { inline namespace v1 { class array; } }
 
 namespace acmacs::chart
 {

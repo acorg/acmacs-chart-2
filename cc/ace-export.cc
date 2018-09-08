@@ -321,15 +321,18 @@ void export_plot_spec(rjson::object& aTarget, std::shared_ptr<acmacs::chart::Plo
 
 namespace rjson
 {
-    template <> struct content_type<Color> { using type = rjson::string; };
-    template <> struct content_type<acmacs::PointShape> { using type = rjson::string; };
-    template <> struct content_type<acmacs::FontSlant> { using type = rjson::string; };
-    template <> struct content_type<acmacs::FontWeight> { using type = rjson::string; };
+    inline namespace v1
+    {
+        template <> struct content_type<Color> { using type = rjson::string; };
+        template <> struct content_type<acmacs::PointShape> { using type = rjson::string; };
+        template <> struct content_type<acmacs::FontSlant> { using type = rjson::string; };
+        template <> struct content_type<acmacs::FontWeight> { using type = rjson::string; };
 
-    template <char Tag> inline value to_value(acmacs::internal::SizeScale<Tag> aValue) { return to_value(aValue.value()); }
+        template <char Tag> inline value to_value(acmacs::internal::SizeScale<Tag> aValue) { return to_value(aValue.value()); }
 
-    inline value to_value(const acmacs::Offset aValue) { return array{aValue.x(), aValue.y()}; }
+        inline value to_value(const acmacs::Offset aValue) { return array{aValue.x(), aValue.y()}; }
 
+    } // namespace v1
 } // namespace rjson
 
 template <typename T> inline void set_field(rjson::object& target, const char* name, const acmacs::internal::field_optional_with_default<T>& field)

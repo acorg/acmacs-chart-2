@@ -5,7 +5,7 @@
 #include "acmacs-chart-2/base.hh"
 #include "acmacs-chart-2/column-bases.hh"
 
-namespace rjson { class array; }
+namespace rjson { inline namespace v1 { class array; } }
 
 // ----------------------------------------------------------------------
 
