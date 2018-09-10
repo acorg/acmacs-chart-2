@@ -4,8 +4,7 @@
 #include <string_view>
 #include <vector>
 
-#include "acmacs-base/rjson2.hh"
-namespace rjson = rjson2;
+#include "acmacs-base/rjson.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/indexes.hh"
