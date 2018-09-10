@@ -18,8 +18,6 @@
 
 // ----------------------------------------------------------------------
 
-namespace rjson { inline namespace v1 { class array; } }
-
 namespace acmacs::chart
 {
     using Indexes = PointIndexList;
@@ -62,25 +60,25 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class Name : public internal::string_data
+    class Name : public detail::string_data
     {
      public:
-        using internal::string_data::string_data;
+        using detail::string_data::string_data;
 
     }; // class Name
 
-    class Date : public internal::string_data
+    class Date : public detail::string_data
     {
      public:
         Date() = default;
         Date(const Date&) = default;
-        Date(const std::string& source) : internal::string_data(source) { check(); }
-        Date(std::string&& source) : internal::string_data(std::move(source)) { check(); }
-        Date(std::string_view source) : internal::string_data(source) { check(); }
+        Date(const std::string& source) : detail::string_data(source) { check(); }
+        Date(std::string&& source) : detail::string_data(std::move(source)) { check(); }
+        Date(std::string_view source) : detail::string_data(source) { check(); }
         Date& operator=(const Date&) = default;
         Date& operator=(Date&&) = default;
-        Date& operator=(const std::string& source) { internal::string_data::operator=(source); check(); return *this; }
-        Date& operator=(std::string_view source) { internal::string_data::operator=(source); check(); return *this; }
+        Date& operator=(const std::string& source) { detail::string_data::operator=(source); check(); return *this; }
+        Date& operator=(std::string_view source) { detail::string_data::operator=(source); check(); return *this; }
 
         bool within_range(std::string_view first_date, std::string_view after_last_date) const { return !empty() && (first_date.empty() || *this >= first_date) && (after_last_date.empty() || *this < after_last_date); }
 
@@ -126,10 +124,10 @@ namespace acmacs::chart
 
     }; // class BLineage
 
-    class Continent : public internal::string_data
+    class Continent : public detail::string_data
     {
      public:
-        using internal::string_data::string_data;
+        using detail::string_data::string_data;
 
     }; // class Continent
 
@@ -146,17 +144,17 @@ namespace acmacs::chart
         return s;
     }
 
-    class LabIds : public internal::string_list_data
+    class LabIds : public detail::string_list_data
     {
      public:
-        using internal::string_list_data::string_list_data;
+        using detail::string_list_data::string_list_data;
 
     }; // class LabIds
 
-    class Annotations : public internal::string_list_data
+    class Annotations : public detail::string_list_data
     {
      public:
-        using internal::string_list_data::string_list_data;
+        using detail::string_list_data::string_list_data;
 
         bool distinct() const { return exist("DISTINCT"); }
         void add(const std::string& val) { if (!exist(val)) push_back(val); }
@@ -164,33 +162,33 @@ namespace acmacs::chart
 
     }; // class Annotations
 
-    class Clades : public internal::string_list_data
+    class Clades : public detail::string_list_data
     {
      public:
-        using internal::string_list_data::string_list_data;
+        using detail::string_list_data::string_list_data;
 
         void add(const std::string& val) { if (!exist(val)) push_back(val); }
 
     }; // class Clades
 
-    class SerumId : public internal::string_data
+    class SerumId : public detail::string_data
     {
      public:
-        using internal::string_data::string_data;
+        using detail::string_data::string_data;
 
     }; // class SerumId
 
-    class SerumSpecies : public internal::string_data
+    class SerumSpecies : public detail::string_data
     {
      public:
-        using internal::string_data::string_data;
+        using detail::string_data::string_data;
 
     }; // class SerumSpecies
 
-    class DrawingOrder : public internal::index_list_data
+    class DrawingOrder : public detail::index_list_data
     {
      public:
-        using internal::index_list_data::index_list_data;
+        using detail::index_list_data::index_list_data;
 
         size_t index_of(size_t aValue) const { return static_cast<size_t>(std::find(begin(), end(), aValue) - begin()); }
 
@@ -350,7 +348,7 @@ namespace acmacs::chart
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Antigen> operator[](size_t aIndex) const = 0;
         std::shared_ptr<Antigen> at(size_t aIndex) const { return operator[](aIndex); }
-        using iterator = internal::iterator<Antigens, std::shared_ptr<Antigen>>;
+        using iterator = detail::iterator<Antigens, std::shared_ptr<Antigen>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
 
@@ -403,7 +401,7 @@ namespace acmacs::chart
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Serum> operator[](size_t aIndex) const = 0;
         std::shared_ptr<Serum> at(size_t aIndex) const { return operator[](aIndex); }
-        using iterator = internal::iterator<Sera, std::shared_ptr<Serum>>;
+        using iterator = detail::iterator<Sera, std::shared_ptr<Serum>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
 
@@ -499,7 +497,7 @@ namespace acmacs::chart
         virtual bool empty() const = 0;
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Projection> operator[](size_t aIndex) const = 0;
-        using iterator = internal::iterator<Projections, std::shared_ptr<Projection>>;
+        using iterator = detail::iterator<Projections, std::shared_ptr<Projection>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
           // virtual size_t projection_no(const Projection* projection) const;
@@ -559,7 +557,7 @@ namespace acmacs::chart
         size_t number_of_points() const { return number_of_antigens() + number_of_sera(); }
         virtual size_t number_of_projections() const { return projections()->size(); }
 
-        virtual const rjson::value& extension_field(std::string /*field_name*/) const { return rjson::sNull; }
+        virtual const rjson::v1::value& extension_field(std::string /*field_name*/) const { return rjson::v1::sNull; }
 
         std::shared_ptr<Antigen> antigen(size_t aAntigenNo) const { return antigens()->operator[](aAntigenNo); }
         std::shared_ptr<Serum> serum(size_t aSerumNo) const { return sera()->operator[](aSerumNo); }

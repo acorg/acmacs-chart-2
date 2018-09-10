@@ -6,14 +6,14 @@
 
 namespace acmacs::chart
 {
-    class AvidityAdjusts : public internal::double_list_data
+    class AvidityAdjusts : public detail::double_list_data
     {
      public:
-        using internal::double_list_data::double_list_data;
+        using detail::double_list_data::double_list_data;
 
         constexpr inline bool empty() const
         {
-            return internal::double_list_data::empty() || std::all_of(begin(), end(), [](double val) -> bool { return float_equal(val, 1.0); });
+            return detail::double_list_data::empty() || std::all_of(begin(), end(), [](double val) -> bool { return float_equal(val, 1.0); });
         }
 
         std::vector<double> logged(size_t number_of_points) const

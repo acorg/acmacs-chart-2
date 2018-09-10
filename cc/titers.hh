@@ -2,10 +2,9 @@
 
 #include <memory>
 
+#include "acmacs-base/rjson-forward.hh"
 #include "acmacs-chart-2/base.hh"
 #include "acmacs-chart-2/column-bases.hh"
-
-namespace rjson { inline namespace v1 { class array; } }
 
 // ----------------------------------------------------------------------
 
@@ -16,11 +15,11 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class Titer : public internal::string_data
+    class Titer : public detail::string_data
     {
      public:
-        using internal::string_data::string_data;
-        Titer() : internal::string_data::string_data("*") {}
+        using detail::string_data::string_data;
+        Titer() : detail::string_data::string_data("*") {}
 
         enum Type { Invalid, Regular, DontCare, LessThan, MoreThan, Dodgy };
 
@@ -138,9 +137,9 @@ namespace acmacs::chart
         virtual bool is_dense() const noexcept;
 
           // support for fast exporting into ace, if source was ace or acd1
-        virtual const rjson::array& rjson_list_list() const { throw data_not_available{"rjson_list_list titers are not available"}; }
-        virtual const rjson::array& rjson_list_dict() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
-        virtual const rjson::array& rjson_layers() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
+        virtual const rjson::v1::array& rjson_list_list() const { throw data_not_available{"rjson_list_list titers are not available"}; }
+        virtual const rjson::v1::array& rjson_list_dict() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
+        virtual const rjson::v1::array& rjson_layers() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
 
         std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
 

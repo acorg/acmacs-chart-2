@@ -7,20 +7,20 @@
 namespace acmacs::chart
 {
       // sorted list of indexes
-    class PointIndexList : private internal::index_list_data
+    class PointIndexList : private detail::index_list_data
     {
      public:
-        using difference_type = internal::index_list_data::difference_type;
-        using internal::index_list_data::index_list_data;
-        using internal::index_list_data::operator==;
-        using internal::index_list_data::data;
-        using internal::index_list_data::empty;
-        using internal::index_list_data::size;
-        using internal::index_list_data::erase;
-        using internal::index_list_data::clear;
-        using internal::index_list_data::begin;
-        using internal::index_list_data::end;
-        using internal::index_list_data::front;
+        using difference_type = detail::index_list_data::difference_type;
+        using detail::index_list_data::index_list_data;
+        using detail::index_list_data::operator==;
+        using detail::index_list_data::data;
+        using detail::index_list_data::empty;
+        using detail::index_list_data::size;
+        using detail::index_list_data::erase;
+        using detail::index_list_data::clear;
+        using detail::index_list_data::begin;
+        using detail::index_list_data::end;
+        using detail::index_list_data::front;
 
         bool contains(size_t val) const
             {
@@ -48,7 +48,7 @@ namespace acmacs::chart
                     insert(no);
             }
 
-        using internal::index_list_data::operator const std::vector<size_t>&;
+        using detail::index_list_data::operator const std::vector<size_t>&;
 
     }; // class PointIndexList
 

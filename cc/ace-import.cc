@@ -39,7 +39,7 @@ bool acmacs::chart::is_ace(const std::string_view& aData)
 
 ChartP acmacs::chart::ace_import(const std::string_view& aData, Verify aVerify)
 {
-    auto chart = std::make_shared<AceChart>(rjson::parse_string(aData));
+    auto chart = std::make_shared<AceChart>(rjson::v1::parse_string(aData));
     chart->verify_data(aVerify);
     return chart;
 
@@ -107,13 +107,13 @@ SeraP AceChart::sera() const
 
 // ----------------------------------------------------------------------
 
-const rjson::value& AceChart::extension_field(std::string field_name) const
+const rjson::v1::value& AceChart::extension_field(std::string field_name) const
 {
     try {
         return mData["c"][field_name];
     }
-    catch (rjson::field_not_found&) {
-        return rjson::sNull;
+    catch (rjson::v1::field_not_found&) {
+        return rjson::v1::sNull;
     }
 
 } // AceChart::extension_field
@@ -318,7 +318,7 @@ Color AcePlotSpec::error_line_positive_color() const
     try {
         return Color(static_cast<std::string_view>(mData["E"]["c"]));
     }
-    catch (rjson::field_not_found&) {
+    catch (rjson::v1::field_not_found&) {
         return "red";
     }
 
@@ -331,7 +331,7 @@ Color AcePlotSpec::error_line_negative_color() const
     try {
         return Color(static_cast<std::string_view>(mData["e"]["c"]));
     }
-    catch (rjson::field_not_found&) {
+    catch (rjson::v1::field_not_found&) {
         return "blue";
     }
 
@@ -341,7 +341,7 @@ Color AcePlotSpec::error_line_negative_color() const
 
 acmacs::PointStyle AcePlotSpec::style(size_t aPointNo) const
 {
-    const rjson::array& indices = mData.get_or_empty_array("p");
+    const rjson::v1::array& indices = mData.get_or_empty_array("p");
     try {
         const size_t style_no = indices[aPointNo];
         // std::cerr << "style " << aPointNo << ' ' << style_no << ' ' << mData["P"][style_no].to_json() << '\n';
@@ -358,7 +358,7 @@ acmacs::PointStyle AcePlotSpec::style(size_t aPointNo) const
 
 std::vector<acmacs::PointStyle> AcePlotSpec::all_styles() const
 {
-    const rjson::array& indices = mData.get_or_empty_array("p");
+    const rjson::v1::array& indices = mData.get_or_empty_array("p");
     if (!indices.empty()) {
         std::vector<acmacs::PointStyle> result(indices.size());
         for (auto [point_no, target]: acmacs::enumerate(result)) {
@@ -384,7 +384,7 @@ std::vector<acmacs::PointStyle> AcePlotSpec::all_styles() const
 
 size_t AcePlotSpec::number_of_points() const
 {
-    const rjson::array& indices = mData.get_or_empty_array("p");
+    const rjson::v1::array& indices = mData.get_or_empty_array("p");
     if (!indices.empty())
         return indices.size();
     else
@@ -394,7 +394,7 @@ size_t AcePlotSpec::number_of_points() const
 
 // ----------------------------------------------------------------------
 
-acmacs::PointStyle AcePlotSpec::extract(const rjson::object& aSrc, size_t aPointNo, size_t aStyleNo) const
+acmacs::PointStyle AcePlotSpec::extract(const rjson::v1::object& aSrc, size_t aPointNo, size_t aStyleNo) const
 {
     acmacs::PointStyle result;
     for (auto [field_name_v, field_value]: aSrc) {
@@ -442,7 +442,7 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::object& aSrc, size_t aPoint
 
 // ----------------------------------------------------------------------
 
-void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::object& aData) const
+void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::v1::object& aData) const
 {
     auto& label_style = aStyle.label;
     for (auto [field_name_v, field_value]: aData) {

@@ -10,11 +10,11 @@ size_t acmacs::chart::RjsonTiters::number_of_sera() const
 {
     if (!number_of_sera_) {
         if (auto [present, list] = data_.get_array_if(keys_.list); present) {
-            number_of_sera_ = static_cast<const rjson::array&>(list[0]).size();
+            number_of_sera_ = static_cast<const rjson::v1::array&>(list[0]).size();
         }
         else {
-            const rjson::array& d = data_[keys_.dict];
-            auto max_index = [](const rjson::object& obj) -> size_t {
+            const rjson::v1::array& d = data_[keys_.dict];
+            auto max_index = [](const rjson::v1::object& obj) -> size_t {
                                  size_t result = 0;
                                  for (auto key_value: obj) {
                                      if (const size_t ind = std::stoul(std::string(key_value.first.str())); ind > result)
@@ -22,7 +22,7 @@ size_t acmacs::chart::RjsonTiters::number_of_sera() const
                                  }
                                  return result;
                              };
-            number_of_sera_ = max_index(*std::max_element(d.begin(), d.end(), [max_index](const rjson::object& a, const rjson::object& b) { return max_index(a) < max_index(b); })) + 1;
+            number_of_sera_ = max_index(*std::max_element(d.begin(), d.end(), [max_index](const rjson::v1::object& a, const rjson::v1::object& b) { return max_index(a) < max_index(b); })) + 1;
         }
     }
     return *number_of_sera_;
@@ -31,18 +31,18 @@ size_t acmacs::chart::RjsonTiters::number_of_sera() const
 
 // ----------------------------------------------------------------------
 
-std::vector<acmacs::chart::Titer> acmacs::chart::RjsonTiters::titers_for_layers(const rjson::array& layers, size_t aAntigenNo, size_t aSerumNo) const
+std::vector<acmacs::chart::Titer> acmacs::chart::RjsonTiters::titers_for_layers(const rjson::v1::array& layers, size_t aAntigenNo, size_t aSerumNo) const
 {
     if (layers.empty())
         throw acmacs::chart::data_not_available("no layers");
     const auto serum_no = std::to_string(aSerumNo);
     std::vector<Titer> result;
-    for (const rjson::array& layer: layers) {
-        const rjson::object& for_ag = layer[aAntigenNo];
+    for (const rjson::v1::array& layer: layers) {
+        const rjson::v1::object& for_ag = layer[aAntigenNo];
         try {
             result.push_back(for_ag[serum_no]);
         }
-        catch (rjson::field_not_found&) {
+        catch (rjson::v1::field_not_found&) {
         }
     }
     return result;
@@ -55,7 +55,7 @@ size_t acmacs::chart::RjsonTiters::number_of_non_dont_cares() const
 {
     size_t result = 0;
     if (auto [present, list] = data_.get_array_if(keys_.list); present) {
-        for (const rjson::array& row: list) {
+        for (const rjson::v1::array& row: list) {
             for (const Titer titer: row) {
                 if (!titer.is_dont_care())
                     ++result;
@@ -63,8 +63,8 @@ size_t acmacs::chart::RjsonTiters::number_of_non_dont_cares() const
         }
     }
     else {
-        const rjson::array& d = data_[keys_.dict];
-        result = std::accumulate(d.begin(), d.end(), size_t{0}, [](size_t a, const rjson::object& row) -> size_t { return a + row.size(); });
+        const rjson::v1::array& d = data_[keys_.dict];
+        result = std::accumulate(d.begin(), d.end(), size_t{0}, [](size_t a, const rjson::v1::object& row) -> size_t { return a + row.size(); });
     }
     return result;
 
@@ -77,7 +77,7 @@ namespace                       // to make class static in the module
     class TiterIteratorImplementationList : public acmacs::chart::TiterIterator::Implementation
     {
      public:
-        TiterIteratorImplementationList(const rjson::array& titer_data)
+        TiterIteratorImplementationList(const rjson::v1::array& titer_data)
             : row_{titer_data.begin()}, last_row_{titer_data.end()}
             {
                 init_list_column();
@@ -114,13 +114,13 @@ namespace                       // to make class static in the module
             }
 
      private:
-        rjson::array::iterator row_, last_row_;
-        rjson::array::iterator list_column_, last_list_column_;
+        rjson::v1::array::iterator row_, last_row_;
+        rjson::v1::array::iterator list_column_, last_list_column_;
 
         void init_list_column()
             {
-                list_column_ = static_cast<const rjson::array&>(*row_).begin();
-                last_list_column_ = static_cast<const rjson::array&>(*row_).end();
+                list_column_ = static_cast<const rjson::v1::array&>(*row_).begin();
+                last_list_column_ = static_cast<const rjson::v1::array&>(*row_).end();
             }
 
     }; // class TiterIteratorImplementationList
@@ -128,7 +128,7 @@ namespace                       // to make class static in the module
     class TiterIteratorImplementationDict : public acmacs::chart::TiterIterator::Implementation
     {
      public:
-        TiterIteratorImplementationDict(const rjson::array& titer_data)
+        TiterIteratorImplementationDict(const rjson::v1::array& titer_data)
             : row_{titer_data.begin()}, last_row_{titer_data.end()}
             {
                 init_dict_column();
@@ -162,13 +162,13 @@ namespace                       // to make class static in the module
             }
 
      private:
-        rjson::array::iterator row_, last_row_;
-        rjson::object::const_iterator dict_column_, last_dict_column_;
+        rjson::v1::array::iterator row_, last_row_;
+        rjson::v1::object::const_iterator dict_column_, last_dict_column_;
 
         void init_dict_column()
             {
-                dict_column_ = static_cast<const rjson::object&>(*row_).begin();
-                last_dict_column_ = static_cast<const rjson::object&>(*row_).end();
+                dict_column_ = static_cast<const rjson::v1::object&>(*row_).begin();
+                last_dict_column_ = static_cast<const rjson::v1::object&>(*row_).end();
             }
 
     }; // class TiterIteratorImplementationDict
@@ -181,7 +181,7 @@ acmacs::chart::TiterIterator acmacs::chart::RjsonTiters::begin() const
     if (auto [present, list] = data_.get_array_if(keys_.list); present)
         return {new TiterIteratorImplementationList(list)};
     else
-        return {new TiterIteratorImplementationDict(static_cast<const rjson::array&>(data_[keys_.dict]))};
+        return {new TiterIteratorImplementationDict(static_cast<const rjson::v1::array&>(data_[keys_.dict]))};
 
 } // acmacs::chart::RjsonTiters::begin
 
@@ -198,11 +198,11 @@ acmacs::chart::TiterIterator acmacs::chart::RjsonTiters::end() const
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::rjson_import::Layout::Layout(const rjson::array& aData)
+acmacs::chart::rjson_import::Layout::Layout(const rjson::v1::array& aData)
     : acmacs::Layout(aData.size(), rjson_import::number_of_dimensions(aData))
 {
     auto coord = Vec::begin();
-    for (const rjson::array& point : aData) {
+    for (const rjson::v1::array& point : aData) {
         if (point.size() == number_of_dimensions())
             std::transform(point.begin(), point.end(), coord, [](const auto& coordinate) -> double { return coordinate; });
         else if (!point.empty())
@@ -221,12 +221,12 @@ void acmacs::chart::rjson_import::Layout::set(size_t /*aPointNo*/, const acmacs:
 
 // ----------------------------------------------------------------------
 
-template <typename Float> static void update_list(const rjson::array& data, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters, size_t number_of_points)
+template <typename Float> static void update_list(const rjson::v1::array& data, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters, size_t number_of_points)
 {
     const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     for (auto p1 : acmacs::range(data.size())) {
         if (!parameters.disconnected.contains(p1)) {
-            const rjson::array& row = data[p1];
+            const rjson::v1::array& row = data[p1];
             for (auto serum_no : acmacs::range(row.size())) {
                 const auto p2 = serum_no + data.size();
                 if (!parameters.disconnected.contains(p2)) {
@@ -238,12 +238,12 @@ template <typename Float> static void update_list(const rjson::array& data, acma
 
 } // update_list
 
-template <typename Float> static void update_dict(const rjson::array& data, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters, size_t number_of_points)
+template <typename Float> static void update_dict(const rjson::v1::array& data, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters, size_t number_of_points)
 {
     const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     for (auto p1 : acmacs::range(data.size())) {
         if (!parameters.disconnected.contains(p1)) {
-            const rjson::object& row = data[p1];
+            const rjson::v1::object& row = data[p1];
             for (auto [serum_no_s, titer_s] : row) {
                 const auto serum_no = std::stoul(std::string(serum_no_s.str()));
                 const auto p2 = serum_no + data.size();
@@ -256,7 +256,7 @@ template <typename Float> static void update_dict(const rjson::array& data, acma
 
 } // update_dict
 
-template <typename Float> void acmacs::chart::rjson_import::update(const rjson::object& data, const std::string& list_key, const std::string& dict_key, TableDistances<Float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points)
+template <typename Float> void acmacs::chart::rjson_import::update(const rjson::v1::object& data, const std::string& list_key, const std::string& dict_key, TableDistances<Float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points)
 {
     table_distances.dodgy_is_regular(parameters.dodgy_titer_is_regular);
     if (auto [present, list] = data.get_array_if(list_key); present)
@@ -266,8 +266,8 @@ template <typename Float> void acmacs::chart::rjson_import::update(const rjson::
 
 } // acmacs::chart::rjson_import::update
 
-template void acmacs::chart::rjson_import::update<float>(const rjson::object& data, const std::string& list_key, const std::string& dict_key, TableDistances<float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
-template void acmacs::chart::rjson_import::update<double>(const rjson::object& data, const std::string& list_key, const std::string& dict_key, TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
+template void acmacs::chart::rjson_import::update<float>(const rjson::v1::object& data, const std::string& list_key, const std::string& dict_key, TableDistances<float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
+template void acmacs::chart::rjson_import::update<double>(const rjson::v1::object& data, const std::string& list_key, const std::string& dict_key, TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
 
 // ----------------------------------------------------------------------
 

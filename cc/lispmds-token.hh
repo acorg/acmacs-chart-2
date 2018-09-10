@@ -66,7 +66,7 @@ namespace acmacs::lispmds
 
     }; // class number
 
-    namespace internal
+    namespace detail
     {
         class string
         {
@@ -87,13 +87,13 @@ namespace acmacs::lispmds
 
         }; // class string
 
-    } // namespace internal
+    } // namespace detail
 
-    class string : public internal::string { public: using internal::string::string; };
+    class string : public detail::string { public: using detail::string::string; };
 
-    class symbol : public internal::string { public: using internal::string::string; };
+    class symbol : public detail::string { public: using detail::string::string; };
 
-    class keyword : public internal::string { public: using internal::string::string; };
+    class keyword : public detail::string { public: using detail::string::string; };
 
     class list
     {

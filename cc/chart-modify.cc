@@ -157,7 +157,7 @@ ColumnBasesModifyP ChartModify::forced_column_bases_modify(MinimumColumnBasis aM
 
 // ----------------------------------------------------------------------
 
-const rjson::value& ChartModify::extension_field(std::string field_name) const
+const rjson::v1::value& ChartModify::extension_field(std::string field_name) const
 {
     return main_->extension_field(field_name);
 
@@ -476,11 +476,11 @@ TitersModify::TitersModify(TitersP main)
         try {
             auto source = main->rjson_layers();
             for (const auto [layer_no, source_layer_v] : acmacs::enumerate(source)) {
-                const rjson::array& source_layer = source_layer_v;
+                const rjson::v1::array& source_layer = source_layer_v;
                 auto& target = layers_[layer_no];
                 target.resize(source_layer.size());
                 for (const auto [ag_no, source_row] : acmacs::enumerate(source_layer)) {
-                    for (const auto& entry : static_cast<const rjson::object&>(source_row)) {
+                    for (const auto& entry : static_cast<const rjson::v1::object&>(source_row)) {
                         target[ag_no].emplace_back(std::stoul(entry.first.str()), entry.second);
                     }
                 }

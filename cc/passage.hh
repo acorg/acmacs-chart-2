@@ -7,10 +7,10 @@
 
 namespace acmacs::chart
 {
-    class Passage : public internal::string_data
+    class Passage : public detail::string_data
     {
      public:
-        using internal::string_data::string_data;
+        using detail::string_data::string_data;
 
         bool is_egg() const { return acmacs::passage::is_egg(*this); }
         bool is_cell() const { return acmacs::passage::is_cell(*this); }
@@ -21,10 +21,10 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class Reassortant : public internal::string_data
+    class Reassortant : public detail::string_data
     {
      public:
-        using internal::string_data::string_data;
+        using detail::string_data::string_data;
 
     }; // class Reassortant
 

@@ -16,7 +16,7 @@ namespace acmacs::chart
     class Acd1Chart : public Chart
     {
       public:
-        Acd1Chart(rjson::value&& aSrc) : mData{std::move(aSrc)} {}
+        Acd1Chart(rjson::v1::value&& aSrc) : mData{std::move(aSrc)} {}
 
         InfoP info() const override;
         AntigensP antigens() const override;
@@ -30,7 +30,7 @@ namespace acmacs::chart
         void verify_data(Verify aVerify) const;
 
      private:
-        rjson::value mData;
+        rjson::v1::value mData;
         mutable acd1::name_index_t mAntigenNameIndex;
         mutable ProjectionsP projections_;
 
@@ -56,7 +56,7 @@ namespace acmacs::chart
     class Acd1Info : public Info
     {
       public:
-        Acd1Info(const rjson::value& aData) : mData{aData} {}
+        Acd1Info(const rjson::v1::value& aData) : mData{aData} {}
 
         std::string name(Compute aCompute = Compute::No) const override;
         std::string virus(Compute aCompute = Compute::No) const override { return make_field("virus", "+", aCompute); }
@@ -70,7 +70,7 @@ namespace acmacs::chart
         InfoP source(size_t aSourceNo) const override { return std::make_shared<Acd1Info>(mData.get_or_empty_array("sources")[aSourceNo]); }
 
      private:
-        const rjson::value& mData;
+        const rjson::v1::value& mData;
 
         std::string make_field(const char* aField, const char* aSeparator, Compute aCompute) const;
 
@@ -81,7 +81,7 @@ namespace acmacs::chart
     class Acd1Antigen : public Antigen
     {
       public:
-        Acd1Antigen(const rjson::object& aData) : mData{aData} {}
+        Acd1Antigen(const rjson::v1::object& aData) : mData{aData} {}
 
         Name name() const override;
         Date date() const override { return mData.get_or_default("date", ""); }
@@ -94,7 +94,7 @@ namespace acmacs::chart
         bool reference() const override { return mData.get_or_default("reference", false); }
 
      private:
-        const rjson::object& mData;
+        const rjson::v1::object& mData;
 
     }; // class Acd1Antigen
 
@@ -103,7 +103,7 @@ namespace acmacs::chart
     class Acd1Serum : public Serum
     {
       public:
-        Acd1Serum(const rjson::object& aData) : mData{aData} {}
+        Acd1Serum(const rjson::v1::object& aData) : mData{aData} {}
 
         Name name() const override;
         Passage passage() const override;
@@ -113,10 +113,10 @@ namespace acmacs::chart
         SerumId serum_id() const override;
         SerumSpecies serum_species() const override { return mData.get_or_default("serum_species", ""); }
         PointIndexList homologous_antigens() const override { return mData.get_or_empty_array("*homologous"); }
-        void set_homologous(const std::vector<size_t>& ags) const override { const_cast<rjson::object&>(mData).set_field("*homologous", rjson::array(rjson::array::use_iterator, ags.begin(), ags.end())); }
+        void set_homologous(const std::vector<size_t>& ags) const override { const_cast<rjson::v1::object&>(mData).set_field("*homologous", rjson::v1::array(rjson::v1::array::use_iterator, ags.begin(), ags.end())); }
 
      private:
-        const rjson::object& mData;
+        const rjson::v1::object& mData;
         // PointIndexList mHomologous;
 
     }; // class Acd1Serum
@@ -126,14 +126,14 @@ namespace acmacs::chart
     class Acd1Antigens : public Antigens
     {
      public:
-        Acd1Antigens(const rjson::array& aData, acd1::name_index_t& aAntigenNameIndex) : mData{aData}, mAntigenNameIndex{aAntigenNameIndex} {}
+        Acd1Antigens(const rjson::v1::array& aData, acd1::name_index_t& aAntigenNameIndex) : mData{aData}, mAntigenNameIndex{aAntigenNameIndex} {}
 
         size_t size() const override { return mData.size(); }
         AntigenP operator[](size_t aIndex) const override { return std::make_shared<Acd1Antigen>(mData[aIndex]); }
         std::optional<size_t> find_by_full_name(std::string aFullName) const override;
 
      private:
-        const rjson::array& mData;
+        const rjson::v1::array& mData;
         acd1::name_index_t& mAntigenNameIndex;
 
         void make_name_index() const;
@@ -145,13 +145,13 @@ namespace acmacs::chart
     class Acd1Sera : public Sera
     {
       public:
-        Acd1Sera(const rjson::array& aData) : mData{aData} {}
+        Acd1Sera(const rjson::v1::array& aData) : mData{aData} {}
 
         size_t size() const override { return mData.size(); }
         SerumP operator[](size_t aIndex) const override { return std::make_shared<Acd1Serum>(mData[aIndex]); }
 
      private:
-        const rjson::array& mData;
+        const rjson::v1::array& mData;
 
     }; // class Acd1Sera
 
@@ -160,7 +160,7 @@ namespace acmacs::chart
     class Acd1Titers : public RjsonTiters
     {
       public:
-        Acd1Titers(const rjson::object& data) : RjsonTiters(data, s_keys_) {}
+        Acd1Titers(const rjson::v1::object& data) : RjsonTiters(data, s_keys_) {}
 
           // old acd1 files have minimum_column_basis inside titers instead of projection
         std::optional<MinimumColumnBasis> minimum_column_basis() const
@@ -183,14 +183,14 @@ namespace acmacs::chart
     class Acd1ColumnBases : public ColumnBases
     {
       public:
-        Acd1ColumnBases(const rjson::array& data) : data_{data} {}
-        Acd1ColumnBases(const rjson::array& data, MinimumColumnBasis minimum_column_basis) : data_{data}, minimum_column_basis_{minimum_column_basis} {}
+        Acd1ColumnBases(const rjson::v1::array& data) : data_{data} {}
+        Acd1ColumnBases(const rjson::v1::array& data, MinimumColumnBasis minimum_column_basis) : data_{data}, minimum_column_basis_{minimum_column_basis} {}
 
         double column_basis(size_t aSerumNo) const override { return minimum_column_basis_.apply(data_[aSerumNo]); }
         size_t size() const override { return data_.size(); }
 
      private:
-        const rjson::array& data_;
+        const rjson::v1::array& data_;
         MinimumColumnBasis minimum_column_basis_;
 
     }; // class Acd1ColumnBases
@@ -200,8 +200,8 @@ namespace acmacs::chart
     class Acd1Projection : public RjsonProjection
     {
       public:
-        Acd1Projection(const Chart& chart, const rjson::object& aData) : RjsonProjection(chart, aData, s_keys_) {}
-        Acd1Projection(const Chart& chart, const rjson::object& aData, size_t projection_no) : RjsonProjection(chart, aData, s_keys_, projection_no) {}
+        Acd1Projection(const Chart& chart, const rjson::v1::object& aData) : RjsonProjection(chart, aData, s_keys_) {}
+        Acd1Projection(const Chart& chart, const rjson::v1::object& aData, size_t projection_no) : RjsonProjection(chart, aData, s_keys_, projection_no) {}
 
         // std::optional<double> stored_stress() const override { return mData.get<double>("stress"); }
         // std::shared_ptr<Layout> layout() const override;
@@ -221,7 +221,7 @@ namespace acmacs::chart
                 try {
                     return data().get_or_empty_object("stress_evaluator_parameters")["minimum_column_basis"].strv();
                 }
-                catch (rjson::field_not_found&) {
+                catch (rjson::v1::field_not_found&) {
                     if (const auto mcb = dynamic_cast<Acd1Titers&>(*chart().titers()).minimum_column_basis(); mcb)
                         return *mcb;
                     else
@@ -244,7 +244,7 @@ namespace acmacs::chart
     class Acd1Projections : public Projections
     {
       public:
-        Acd1Projections(const Chart& chart, const rjson::array& aData) : Projections(chart), mData{aData}, projections_(aData.size(), nullptr) {}
+        Acd1Projections(const Chart& chart, const rjson::v1::array& aData) : Projections(chart), mData{aData}, projections_(aData.size(), nullptr) {}
 
         bool empty() const override { return projections_.empty(); }
         size_t size() const override { return projections_.size(); }
@@ -256,7 +256,7 @@ namespace acmacs::chart
             }
 
      private:
-        const rjson::array& mData;
+        const rjson::v1::array& mData;
         mutable std::vector<ProjectionP> projections_;
 
     }; // class Acd1Projections
@@ -266,7 +266,7 @@ namespace acmacs::chart
     class Acd1PlotSpec : public PlotSpec
     {
       public:
-        Acd1PlotSpec(const rjson::object& aData, const Acd1Chart& aChart) : mData{aData}, mChart{aChart} {}
+        Acd1PlotSpec(const rjson::v1::object& aData, const Acd1Chart& aChart) : mData{aData}, mChart{aChart} {}
 
         bool empty() const override { return mData.empty(); }
         DrawingOrder drawing_order() const override;
@@ -277,10 +277,10 @@ namespace acmacs::chart
         size_t number_of_points() const override;
 
      private:
-        const rjson::object& mData;
+        const rjson::v1::object& mData;
         const Acd1Chart& mChart;
 
-        PointStyle extract(const rjson::object& aSrc, size_t aPointNo, size_t aStyleNo) const;
+        PointStyle extract(const rjson::v1::object& aSrc, size_t aPointNo, size_t aStyleNo) const;
 
     }; // class Acd1PlotSpec
 

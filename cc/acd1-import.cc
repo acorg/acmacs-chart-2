@@ -38,11 +38,11 @@ ChartP acmacs::chart::acd1_import(const std::string_view& aData, Verify aVerify)
 {
     const std::string json = convert_to_json(aData);
     try {
-        auto chart = std::make_shared<Acd1Chart>(rjson::parse_string(json));
+        auto chart = std::make_shared<Acd1Chart>(rjson::v1::parse_string(json));
         chart->verify_data(aVerify);
         return chart;
     }
-    catch (rjson::parse_error&) {
+    catch (rjson::v1::parse_error&) {
         std::cout << json << '\n';
         throw;
     }
@@ -402,7 +402,7 @@ std::string Acd1Info::date(Compute aCompute) const
 
 // ----------------------------------------------------------------------
 
-static inline Name make_name(const rjson::object& aData)
+static inline Name make_name(const rjson::v1::object& aData)
 {
     if (auto name = aData.get_or_default("_name", ""); !name.empty())
         return name;
@@ -438,7 +438,7 @@ Name Acd1Serum::name() const
 
 // ----------------------------------------------------------------------
 
-static inline Passage make_passage(const rjson::object& aData)
+static inline Passage make_passage(const rjson::v1::object& aData)
 {
     if (auto [p_dict_present, p_dict] = aData.get_object_if("passage"); p_dict_present) {
         auto p(p_dict["passage"].str());
@@ -467,11 +467,11 @@ Passage Acd1Serum::passage() const
 
 // ----------------------------------------------------------------------
 
-static inline Reassortant make_reassortant(const rjson::object& aData)
+static inline Reassortant make_reassortant(const rjson::v1::object& aData)
 {
     if (auto [r_dict_present, r_dict] = aData.get_object_if("reassortant"); r_dict_present) {
-        const rjson::array& complete = r_dict.get_or_empty_array("complete");
-        const rjson::array& incomplete = r_dict.get_or_empty_array("incomplete");
+        const rjson::v1::array& complete = r_dict.get_or_empty_array("complete");
+        const rjson::v1::array& incomplete = r_dict.get_or_empty_array("incomplete");
         std::vector<std::string> composition;
         std::transform(complete.begin(), complete.end(), std::back_inserter(composition), [](const auto& val) -> std::string { return val.str(); });
         std::transform(incomplete.begin(), incomplete.end(), std::back_inserter(composition), [](const auto& val) -> std::string { return val.str(); });
@@ -511,7 +511,7 @@ LabIds Acd1Antigen::lab_ids() const
 
 // ----------------------------------------------------------------------
 
-static inline Annotations make_annotations(const rjson::object& aData)
+static inline Annotations make_annotations(const rjson::v1::object& aData)
 {
     Annotations result;
       // mutations, extra, distinct, annotations, control_duplicate
@@ -629,10 +629,10 @@ void Acd1Antigens::make_name_index() const
 
 ColumnBasesP Acd1Projection::forced_column_bases() const
 {
-    const rjson::object& sep = data().get_or_empty_object("stress_evaluator_parameters");
-    if (const rjson::array& cb = sep.get_or_empty_array("column_bases"); !cb.empty())
+    const rjson::v1::object& sep = data().get_or_empty_object("stress_evaluator_parameters");
+    if (const rjson::v1::array& cb = sep.get_or_empty_array("column_bases"); !cb.empty())
         return std::make_shared<Acd1ColumnBases>(cb);
-    if (const rjson::array& cb = sep.get_or_empty_array("columns_bases"); !cb.empty())
+    if (const rjson::v1::array& cb = sep.get_or_empty_array("columns_bases"); !cb.empty())
         return std::make_shared<Acd1ColumnBases>(cb);
     return nullptr;
 
@@ -654,7 +654,7 @@ acmacs::Transformation Acd1Projection::transformation() const
 
 PointIndexList Acd1Projection::make_attributes(size_t aAttr) const
 {
-    const rjson::object& attrs = data().get_or_empty_object("stress_evaluator_parameters").get_or_empty_object("antigens_sera_attributes");
+    const rjson::v1::object& attrs = data().get_or_empty_object("stress_evaluator_parameters").get_or_empty_object("antigens_sera_attributes");
     PointIndexList result;
     for (auto [ag_no, attr]: acmacs::enumerate(attrs.get_or_empty_array("antigens"))) {
         if (static_cast<size_t>(attr) == aAttr)
@@ -672,7 +672,7 @@ PointIndexList Acd1Projection::make_attributes(size_t aAttr) const
 
 // ----------------------------------------------------------------------
 
-// static inline PointIndexList make_attributes(const rjson::object& aData, size_t aAttr)
+// static inline PointIndexList make_attributes(const rjson::v1::object& aData, size_t aAttr)
 // {
 // }
 
@@ -702,9 +702,9 @@ PointIndexList Acd1Projection::make_attributes(size_t aAttr) const
 
 AvidityAdjusts Acd1Projection::avidity_adjusts() const
 {
-    if (const rjson::object& titer_multipliers = data().get_or_empty_object("stress_evaluator_parameters").get_or_empty_object("antigens_sera_titers_multipliers"); !titer_multipliers.empty()) {
-        const rjson::array& antigens = titer_multipliers.get_or_empty_array("antigens");
-        const rjson::array& sera = titer_multipliers.get_or_empty_array("sera");
+    if (const rjson::v1::object& titer_multipliers = data().get_or_empty_object("stress_evaluator_parameters").get_or_empty_object("antigens_sera_titers_multipliers"); !titer_multipliers.empty()) {
+        const rjson::v1::array& antigens = titer_multipliers.get_or_empty_array("antigens");
+        const rjson::v1::array& sera = titer_multipliers.get_or_empty_array("sera");
         AvidityAdjusts aa(antigens.size() + sera.size());
         for (size_t ag_no = 0; ag_no < antigens.size(); ++ag_no)
             aa[ag_no] = antigens[ag_no];
@@ -722,8 +722,8 @@ AvidityAdjusts Acd1Projection::avidity_adjusts() const
 DrawingOrder Acd1PlotSpec::drawing_order() const
 {
     DrawingOrder result;
-    if (const rjson::array& do1 = mData.get_or_empty_array("drawing_order"); !do1.empty()) {
-        for (const rjson::array& do2: do1)
+    if (const rjson::v1::array& do1 = mData.get_or_empty_array("drawing_order"); !do1.empty()) {
+        for (const rjson::v1::array& do2: do1)
             for (size_t index: do2)
                 result.push_back(index);
     }
@@ -762,7 +762,7 @@ Color Acd1PlotSpec::error_line_negative_color() const
 acmacs::PointStyle Acd1PlotSpec::style(size_t aPointNo) const
 {
     try {
-        const rjson::array& indices = mData["points"];
+        const rjson::v1::array& indices = mData["points"];
         const size_t style_no = indices[aPointNo];
         return extract(mData["styles"][style_no], aPointNo, style_no);
     }
@@ -777,7 +777,7 @@ acmacs::PointStyle Acd1PlotSpec::style(size_t aPointNo) const
 
 std::vector<acmacs::PointStyle> Acd1PlotSpec::all_styles() const
 {
-    const rjson::array& indices = mData.get_or_empty_array("points");
+    const rjson::v1::array& indices = mData.get_or_empty_array("points");
     if (!indices.empty()) {
         std::vector<acmacs::PointStyle> result(indices.size());
         for (auto [point_no, target]: acmacs::enumerate(result)) {
@@ -803,7 +803,7 @@ std::vector<acmacs::PointStyle> Acd1PlotSpec::all_styles() const
 
 size_t Acd1PlotSpec::number_of_points() const
 {
-    const rjson::array& indices = mData.get_or_empty_array("points");
+    const rjson::v1::array& indices = mData.get_or_empty_array("points");
     if (!indices.empty())
         return indices.size();
     else
@@ -813,7 +813,7 @@ size_t Acd1PlotSpec::number_of_points() const
 
 // ----------------------------------------------------------------------
 
-acmacs::PointStyle Acd1PlotSpec::extract(const rjson::object& aSrc, size_t aPointNo, size_t aStyleNo) const
+acmacs::PointStyle Acd1PlotSpec::extract(const rjson::v1::object& aSrc, size_t aPointNo, size_t aStyleNo) const
 {
     acmacs::PointStyle result;
     for (auto [field_name_v, field_value]: aSrc) {

@@ -16,7 +16,7 @@ namespace acmacs::chart
     class AceChart : public Chart
     {
       public:
-        AceChart(rjson::value&& aSrc) : mData{std::move(aSrc)} {}
+        AceChart(rjson::v1::value&& aSrc) : mData{std::move(aSrc)} {}
 
         InfoP info() const override;
         AntigensP antigens() const override;
@@ -30,10 +30,10 @@ namespace acmacs::chart
         void verify_data(Verify aVerify) const;
 
           // to obtain extension fields (e.g. group_sets)
-        const rjson::value& extension_field(std::string field_name) const override;
+        const rjson::v1::value& extension_field(std::string field_name) const override;
 
      private:
-        rjson::value mData;
+        rjson::v1::value mData;
         mutable ace::name_index_t mAntigenNameIndex;
         mutable ProjectionsP projections_;
 
@@ -47,7 +47,7 @@ namespace acmacs::chart
     class AceInfo : public Info
     {
       public:
-        AceInfo(const rjson::value& aData) : mData{aData} {}
+        AceInfo(const rjson::v1::value& aData) : mData{aData} {}
 
         std::string name(Compute aCompute = Compute::No) const override;
         std::string virus(Compute aCompute = Compute::No) const override { return make_field("v", "+", aCompute); }
@@ -61,7 +61,7 @@ namespace acmacs::chart
         InfoP source(size_t aSourceNo) const override { return std::make_shared<AceInfo>(mData.get_or_empty_array("S")[aSourceNo]); }
 
      private:
-        const rjson::value& mData;
+        const rjson::v1::value& mData;
 
         std::string make_field(const char* aField, const char* aSeparator, Compute aCompute) const;
 
@@ -72,7 +72,7 @@ namespace acmacs::chart
     class AceAntigen : public Antigen
     {
       public:
-        AceAntigen(const rjson::object& aData) : mData{aData} {}
+        AceAntigen(const rjson::v1::object& aData) : mData{aData} {}
 
         Name name() const override { return mData["N"]; }
         Date date() const override { return mData.get_or_default("D", ""); }
@@ -85,7 +85,7 @@ namespace acmacs::chart
         bool reference() const override { return mData.get_or_default("S", "").find("R") != std::string::npos; }
 
      private:
-        const rjson::object& mData;
+        const rjson::v1::object& mData;
 
     }; // class AceAntigen
 
@@ -94,7 +94,7 @@ namespace acmacs::chart
     class AceSerum : public Serum
     {
       public:
-        AceSerum(const rjson::object& aData) : mData{aData} {}
+        AceSerum(const rjson::v1::object& aData) : mData{aData} {}
 
         Name name() const override { return mData["N"]; }
         Passage passage() const override { return mData.get_or_default("P", ""); }
@@ -104,10 +104,10 @@ namespace acmacs::chart
         SerumId serum_id() const override { return mData.get_or_default("I", ""); }
         SerumSpecies serum_species() const override { return mData.get_or_default("s", ""); }
         PointIndexList homologous_antigens() const override { return mData.get_or_empty_array("h"); }
-        void set_homologous(const std::vector<size_t>& ags) const override { const_cast<rjson::object&>(mData).set_field("h", rjson::array(rjson::array::use_iterator, ags.begin(), ags.end())); }
+        void set_homologous(const std::vector<size_t>& ags) const override { const_cast<rjson::v1::object&>(mData).set_field("h", rjson::v1::array(rjson::v1::array::use_iterator, ags.begin(), ags.end())); }
 
      private:
-        const rjson::object& mData;
+        const rjson::v1::object& mData;
 
     }; // class AceSerum
 
@@ -116,14 +116,14 @@ namespace acmacs::chart
     class AceAntigens : public Antigens
     {
      public:
-        AceAntigens(const rjson::array& aData, ace::name_index_t& aAntigenNameIndex) : mData{aData}, mAntigenNameIndex{aAntigenNameIndex} {}
+        AceAntigens(const rjson::v1::array& aData, ace::name_index_t& aAntigenNameIndex) : mData{aData}, mAntigenNameIndex{aAntigenNameIndex} {}
 
         size_t size() const override { return mData.size(); }
         AntigenP operator[](size_t aIndex) const override { return std::make_shared<AceAntigen>(mData[aIndex]); }
         std::optional<size_t> find_by_full_name(std::string aFullName) const override;
 
      private:
-        const rjson::array& mData;
+        const rjson::v1::array& mData;
         ace::name_index_t& mAntigenNameIndex;
 
         void make_name_index() const;
@@ -135,13 +135,13 @@ namespace acmacs::chart
     class AceSera : public Sera
     {
       public:
-        AceSera(const rjson::array& aData) : mData{aData} {}
+        AceSera(const rjson::v1::array& aData) : mData{aData} {}
 
         size_t size() const override { return mData.size(); }
         SerumP operator[](size_t aIndex) const override { return std::make_shared<AceSerum>(mData[aIndex]); }
 
      private:
-        const rjson::array& mData;
+        const rjson::v1::array& mData;
 
     }; // class AceSera
 
@@ -150,7 +150,7 @@ namespace acmacs::chart
     class AceTiters : public RjsonTiters
     {
       public:
-        AceTiters(const rjson::object& data) : RjsonTiters(data, s_keys_) {}
+        AceTiters(const rjson::v1::object& data) : RjsonTiters(data, s_keys_) {}
 
      private:
         static const Keys s_keys_;
@@ -162,14 +162,14 @@ namespace acmacs::chart
     class AceColumnBases : public ColumnBases
     {
       public:
-        AceColumnBases(const rjson::array& data) : data_{data} {}
-        AceColumnBases(const rjson::array& data, MinimumColumnBasis minimum_column_basis) : data_{data}, minimum_column_basis_{minimum_column_basis} {}
+        AceColumnBases(const rjson::v1::array& data) : data_{data} {}
+        AceColumnBases(const rjson::v1::array& data, MinimumColumnBasis minimum_column_basis) : data_{data}, minimum_column_basis_{minimum_column_basis} {}
 
         double column_basis(size_t aSerumNo) const override { return minimum_column_basis_.apply(data_[aSerumNo]); }
         size_t size() const override { return data_.size(); }
 
      private:
-        const rjson::array& data_;
+        const rjson::v1::array& data_;
         MinimumColumnBasis minimum_column_basis_;
 
     }; // class AceColumnBases
@@ -179,8 +179,8 @@ namespace acmacs::chart
     class AceProjection : public RjsonProjection
     {
       public:
-        AceProjection(const Chart& chart, const rjson::object& aData) : RjsonProjection(chart, aData, s_keys_) {}
-        AceProjection(const Chart& chart, const rjson::object& aData, size_t projection_no) : RjsonProjection(chart, aData, s_keys_, projection_no) {}
+        AceProjection(const Chart& chart, const rjson::v1::object& aData) : RjsonProjection(chart, aData, s_keys_) {}
+        AceProjection(const Chart& chart, const rjson::v1::object& aData, size_t projection_no) : RjsonProjection(chart, aData, s_keys_, projection_no) {}
 
         // std::optional<double> stored_stress() const override { return mData.get<double>("s"); }
         // std::shared_ptr<Layout> layout() const override;
@@ -209,7 +209,7 @@ namespace acmacs::chart
     class AceProjections : public Projections
     {
       public:
-        AceProjections(const Chart& chart, const rjson::array& aData) : Projections(chart), mData{aData}, projections_(aData.size(), nullptr) {}
+        AceProjections(const Chart& chart, const rjson::v1::array& aData) : Projections(chart), mData{aData}, projections_(aData.size(), nullptr) {}
 
         bool empty() const override { return projections_.empty(); }
         size_t size() const override { return projections_.size(); }
@@ -221,7 +221,7 @@ namespace acmacs::chart
             }
 
      private:
-        const rjson::array& mData;
+        const rjson::v1::array& mData;
         mutable std::vector<ProjectionP> projections_;
 
     }; // class AceProjections
@@ -231,7 +231,7 @@ namespace acmacs::chart
     class AcePlotSpec : public PlotSpec
     {
       public:
-        AcePlotSpec(const rjson::object& aData, const AceChart& aChart) : mData{aData}, mChart{aChart} {}
+        AcePlotSpec(const rjson::v1::object& aData, const AceChart& aChart) : mData{aData}, mChart{aChart} {}
 
         bool empty() const override { return mData.empty(); }
         DrawingOrder drawing_order() const override { return mData.get_or_empty_array("d"); }
@@ -242,11 +242,11 @@ namespace acmacs::chart
         size_t number_of_points() const override;
 
      private:
-        const rjson::object& mData;
+        const rjson::v1::object& mData;
         const AceChart& mChart;
 
-        PointStyle extract(const rjson::object& aSrc, size_t aPointNo, size_t aStyleNo) const;
-        void label_style(PointStyle& aStyle, const rjson::object& aData) const;
+        PointStyle extract(const rjson::v1::object& aSrc, size_t aPointNo, size_t aStyleNo) const;
+        void label_style(PointStyle& aStyle, const rjson::v1::object& aData) const;
 
     }; // class AcePlotSpec
 

@@ -13,7 +13,7 @@
 
 namespace acmacs::chart
 {
-    namespace internal
+    namespace detail
     {
         class string_data : public std::string
         {
@@ -23,7 +23,7 @@ namespace acmacs::chart
             string_data(std::string&& src) : std::string(std::move(src)) {}
             string_data(std::string_view src) : std::string(src) {}
             string_data(const char* src) : std::string(src) {}
-            string_data(const rjson::value& aSrc) : std::string(aSrc.str()) {}
+            string_data(const rjson::v1::value& aSrc) : std::string(aSrc.str()) {}
             string_data(const string_data&) = default;
             string_data(string_data&&) = default;
             using std::string::operator=;
@@ -45,8 +45,8 @@ namespace acmacs::chart
 
             T_list_data() = default;
             T_list_data(size_t aSize) : mData(aSize) {}
-            T_list_data(const rjson::array& aSrc) : mData(aSrc.begin(), aSrc.end()) {}
-            T_list_data(const rjson::value& aSrc) : T_list_data(static_cast<const rjson::array&>(aSrc)) {}
+            T_list_data(const rjson::v1::array& aSrc) : mData(aSrc.begin(), aSrc.end()) {}
+            T_list_data(const rjson::v1::value& aSrc) : T_list_data(static_cast<const rjson::v1::array&>(aSrc)) {}
             T_list_data(const std::vector<T>& aSrc) : mData(aSrc) {}
             template <typename Iter> T_list_data(Iter first, Iter last) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), [](const auto& src) -> T { return src; }); }
             template <typename Iter> T_list_data(Iter first, Iter last, std::function<T (const typename Iter::value_type&)> convert) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), convert); }
@@ -90,7 +90,7 @@ namespace acmacs::chart
 
         }; // T_list_data<>
 
-        template <> inline T_list_data<std::string>::T_list_data(const rjson::array& aSrc)
+        template <> inline T_list_data<std::string>::T_list_data(const rjson::v1::array& aSrc)
             : mData(aSrc.size())
         {
             std::transform(aSrc.begin(), aSrc.end(), mData.begin(), [](const auto& src) -> std::string { return src.str(); });
@@ -160,7 +160,7 @@ namespace acmacs::chart
             friend Parent;
         };
 
-    } // namespace internal
+    } // namespace detail
 
 } // namespace acmacs::chart
 
@@ -168,11 +168,11 @@ namespace acmacs::chart
 
 namespace acmacs
 {
-    inline std::string to_string(const acmacs::chart::internal::string_data& value) { return value; }
+    inline std::string to_string(const acmacs::chart::detail::string_data& value) { return value; }
 
-    template <typename T> inline std::string to_string(const acmacs::chart::internal::T_list_data<T>& value) { return to_string(value.data()); }
+    template <typename T> inline std::string to_string(const acmacs::chart::detail::T_list_data<T>& value) { return to_string(value.data()); }
 
-    namespace chart::internal
+    namespace chart::detail
     {
         template <typename T> inline std::ostream& operator<<(std::ostream& out, const T_list_data<T>& a) { return out << to_string(a); }
     }
