@@ -14,11 +14,11 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class Titer : public internal::string_data
+    class Titer : public detail::string_data
     {
      public:
-        using internal::string_data::string_data;
-        Titer() : internal::string_data::string_data("*") {}
+        using detail::string_data::string_data;
+        Titer() : detail::string_data::string_data("*") {}
 
         enum Type { Invalid, Regular, DontCare, LessThan, MoreThan, Dodgy };
 

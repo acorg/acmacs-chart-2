@@ -11,7 +11,7 @@
 
 namespace acmacs::chart
 {
-    namespace internal
+    namespace detail
     {
         template <typename Float> class DistancesBase
         {
@@ -77,17 +77,17 @@ namespace acmacs::chart
 
         }; // class DistancesBase<Float>
 
-    } // namespace internal
+    } // namespace detail
 
 // ----------------------------------------------------------------------
 
-    template <typename Float> class TableDistances : public internal::DistancesBase<Float>
+    template <typename Float> class TableDistances : public detail::DistancesBase<Float>
     {
      public:
-        using entries_t = typename internal::DistancesBase<Float>::entries_t;
-        using internal::DistancesBase<Float>::regular;
-        using internal::DistancesBase<Float>::less_than;
-        // using internal::DistancesBase<Float>::more_than;
+        using entries_t = typename detail::DistancesBase<Float>::entries_t;
+        using detail::DistancesBase<Float>::regular;
+        using detail::DistancesBase<Float>::less_than;
+        // using detail::DistancesBase<Float>::more_than;
 
         void dodgy_is_regular(bool dodgy_is_regular) { dodgy_is_regular_ = dodgy_is_regular; }
 
@@ -165,7 +165,7 @@ namespace acmacs::chart
 
     // ----------------------------------------------------------------------
 
-    class MapDistances : public internal::DistancesBase<double>
+    class MapDistances : public detail::DistancesBase<double>
     {
      public:
        MapDistances(const LayoutInterface& layout, const TableDistances<double>& table_distances)

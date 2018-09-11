@@ -380,13 +380,13 @@ void export_plot_spec(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Plot
 //     template <> struct content_type<acmacs::FontSlant> { using type = rjson::string; };
 //     template <> struct content_type<acmacs::FontWeight> { using type = rjson::string; };
 
-//     template <char Tag> inline value to_value(acmacs::internal::SizeScale<Tag> aValue) { return to_value(aValue.value()); }
+//     template <char Tag> inline value to_value(acmacs::detail::SizeScale<Tag> aValue) { return to_value(aValue.value()); }
 
 //     inline value to_value(const acmacs::Offset aValue) { return array{aValue.x(), aValue.y()}; }
 
 // } // namespace rjson
 
-template <typename T> inline void set_field(rjson::value& target, const char* name, const acmacs::internal::field_optional_with_default<T>& field)
+template <typename T> inline void set_field(rjson::value& target, const char* name, const acmacs::detail::field_optional_with_default<T>& field)
 {
     if (field.not_default()) {
         if constexpr (std::is_same_v<T, Color>)

@@ -13,7 +13,7 @@
 
 namespace acmacs::chart
 {
-    namespace internal
+    namespace detail
     {
         class string_data : public std::string
         {
@@ -160,7 +160,7 @@ namespace acmacs::chart
             friend Parent;
         };
 
-    } // namespace internal
+    } // namespace detail
 
 } // namespace acmacs::chart
 
@@ -168,11 +168,11 @@ namespace acmacs::chart
 
 namespace acmacs
 {
-    inline std::string to_string(const acmacs::chart::internal::string_data& value) { return value; }
+    inline std::string to_string(const acmacs::chart::detail::string_data& value) { return value; }
 
-    template <typename T> inline std::string to_string(const acmacs::chart::internal::T_list_data<T>& value) { return to_string(value.data()); }
+    template <typename T> inline std::string to_string(const acmacs::chart::detail::T_list_data<T>& value) { return to_string(value.data()); }
 
-    namespace chart::internal
+    namespace chart::detail
     {
         template <typename T> inline std::ostream& operator<<(std::ostream& out, const T_list_data<T>& a) { return out << to_string(a); }
     }
