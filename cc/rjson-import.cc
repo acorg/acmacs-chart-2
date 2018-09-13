@@ -132,21 +132,23 @@ namespace                       // to make class static in the module
             : row_{titer_data.begin()}, last_row_{titer_data.end()}
             {
                 init_dict_column();
+                data_.antigen = 0;
                 if (dict_column_ != last_dict_column_) {
-                    data_.antigen = 0;
                     data_.serum = std::stoul(dict_column_->first.str());
                     data_.titer = dict_column_->second.str();
                 }
-                else
+                else {
                     operator++();
+                }
             }
 
-        TiterIteratorImplementationDict(size_t number_of_antigens)
-            : acmacs::chart::TiterIterator::Implementation({}, number_of_antigens, 0) {}
+            TiterIteratorImplementationDict(size_t number_of_antigens) : acmacs::chart::TiterIterator::Implementation({}, number_of_antigens, 0) {}
 
-        void operator++() override
+            void operator++() override
             {
-                if (++dict_column_ == last_dict_column_) {
+                if (dict_column_ != last_dict_column_)
+                    ++dict_column_;
+                if (dict_column_ == last_dict_column_) {
                     for (++row_, ++data_.antigen; row_ != last_row_ && row_->empty(); ++row_, ++data_.antigen);
                     if (row_ != last_row_)
                         init_dict_column();
