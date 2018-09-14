@@ -19,49 +19,6 @@ static void export_style(rjson::value& target_styles, const acmacs::PointStyle& 
 
 // ----------------------------------------------------------------------
 
-inline void set_field_if_not_empty(rjson::value& target, const char* field_name, std::string source)
-{
-    if (!source.empty())
-        target[field_name] = source;
-}
-
-template <typename T> constexpr bool equal(T first, T second)
-{
-    if constexpr (std::is_same_v<T, double>)
-        return float_equal(first, second);
-    else
-        return first == second;
-}
-
-template <typename T> inline void set_field_if_not_default(rjson::value& target, const char* field_name, T aValue, T aDefault)
-{
-    if (!equal(aValue, aDefault))
-        target[field_name] = aValue;
-}
-
-inline void set_field_if_not_default(rjson::value& target, const char* field_name, double aValue, double aDefault, int precision)
-{
-    if (!equal(aValue, aDefault))
-        target[field_name] = rjson::number(acmacs::to_string(aValue, precision));
-}
-
-template <typename S, typename Iterator> inline void set_array_field_if_not_empty(rjson::value& target, S key, Iterator first, Iterator last)
-{
-    if (first != last) {
-        auto& ar = target[key] = rjson::array{};
-        for (; first != last; ++first)
-            ar.append(*first);
-    }
-
-}
-
-template <typename S, typename Container> inline void set_array_field_if_not_empty(rjson::value& target, S key, Container&& container)
-{
-    set_array_field_if_not_empty(target, key, std::begin(container), std::end(container));
-}
-
-// ----------------------------------------------------------------------
-
 rjson::value acmacs::chart::export_ace_to_rjson(const Chart& aChart, std::string aProgramName)
 {
     rjson::value ace{rjson::object{{
@@ -116,15 +73,15 @@ std::string acmacs::chart::export_ace(const Chart& aChart, std::string aProgramN
 void export_info(rjson::value& aTarget, acmacs::chart::InfoP aInfo)
 {
     auto do_export = [](rjson::value& target, acmacs::chart::InfoP info, bool /*for_source*/) {
-        set_field_if_not_empty(target, "v", info->virus());
-        set_field_if_not_empty(target, "V", info->virus_type());
-        set_field_if_not_empty(target, "A", info->assay());
-        set_field_if_not_empty(target, "D", info->date());
-        set_field_if_not_empty(target, "N", info->name());
-        set_field_if_not_empty(target, "l", info->lab());
-        set_field_if_not_empty(target, "r", info->rbc_species());
-        set_field_if_not_empty(target, "s", info->subset());
-          //set_field_if_not_empty(target, "T", info->table_type());
+        rjson::set_field_if_not_empty(target, "v", info->virus());
+        rjson::set_field_if_not_empty(target, "V", info->virus_type());
+        rjson::set_field_if_not_empty(target, "A", info->assay());
+        rjson::set_field_if_not_empty(target, "D", info->date());
+        rjson::set_field_if_not_empty(target, "N", info->name());
+        rjson::set_field_if_not_empty(target, "l", info->lab());
+        rjson::set_field_if_not_empty(target, "r", info->rbc_species());
+        rjson::set_field_if_not_empty(target, "s", info->subset());
+          //rjson::set_field_if_not_empty(target, "T", info->table_type());
     };
 
     do_export(aTarget, aInfo, false);
@@ -168,15 +125,15 @@ void export_antigens(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Antig
 
         auto& object = aTarget.append(rjson::object{});
         object["N"] = antigen->name();
-        set_field_if_not_empty(object, "D", antigen->date());
-        set_field_if_not_empty(object, "P", antigen->passage());
-        set_field_if_not_empty(object, "R", antigen->reassortant());
-        set_array_field_if_not_empty(object, "l", antigen->lab_ids());
-        set_field_if_not_empty(object, "S", semantic);
-        set_array_field_if_not_empty(object, "a", antigen->annotations());
-        set_array_field_if_not_empty(object, "c", antigen->clades());
+        rjson::set_field_if_not_empty(object, "D", antigen->date());
+        rjson::set_field_if_not_empty(object, "P", antigen->passage());
+        rjson::set_field_if_not_empty(object, "R", antigen->reassortant());
+        rjson::set_array_field_if_not_empty(object, "l", antigen->lab_ids());
+        rjson::set_field_if_not_empty(object, "S", semantic);
+        rjson::set_array_field_if_not_empty(object, "a", antigen->annotations());
+        rjson::set_array_field_if_not_empty(object, "c", antigen->clades());
         export_lineage(object, antigen->lineage());
-        set_field_if_not_empty(object, "C", antigen->continent());
+        rjson::set_field_if_not_empty(object, "C", antigen->continent());
     }
 
 } // export_antigens
@@ -192,13 +149,13 @@ void export_sera(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Sera> aSe
 
         auto& object = aTarget.append(rjson::object{});
         object["N"] = serum->name();
-        set_field_if_not_empty(object, "P", serum->passage());
-        set_field_if_not_empty(object, "R", serum->reassortant());
-        set_field_if_not_empty(object, "I", serum->serum_id());
-        set_array_field_if_not_empty(object, "a", serum->annotations());
-        set_field_if_not_empty(object, "s", serum->serum_species());
-        set_array_field_if_not_empty(object, "h", serum->homologous_antigens());
-        set_field_if_not_empty(object, "S", semantic);
+        rjson::set_field_if_not_empty(object, "P", serum->passage());
+        rjson::set_field_if_not_empty(object, "R", serum->reassortant());
+        rjson::set_field_if_not_empty(object, "I", serum->serum_id());
+        rjson::set_array_field_if_not_empty(object, "a", serum->annotations());
+        rjson::set_field_if_not_empty(object, "s", serum->serum_species());
+        rjson::set_array_field_if_not_empty(object, "h", serum->homologous_antigens());
+        rjson::set_field_if_not_empty(object, "S", semantic);
         export_lineage(object, serum->lineage());
     }
 
@@ -320,15 +277,15 @@ void export_projections(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Pr
             }
         }
 
-        set_field_if_not_empty(target, "c", projection->comment());
-        set_field_if_not_default(target, "s", projection->stress(), acmacs::chart::InvalidStress, 8);
+        rjson::set_field_if_not_empty(target, "c", projection->comment());
+        rjson::set_field_if_not_default(target, "s", projection->stress(), acmacs::chart::InvalidStress, 8);
         if (const auto minimum_column_basis = projection->minimum_column_basis(); !minimum_column_basis.is_none())
             target["m"] = static_cast<std::string>(minimum_column_basis);
         export_forced_column_bases(target, projection->forced_column_bases());
         if (const auto transformation = projection->transformation(); transformation != acmacs::Transformation{})
             target["t"] = rjson::array{transformation.a, transformation.b, transformation.c, transformation.d};
-        set_field_if_not_default(target, "d", projection->dodgy_titer_is_regular(), false);
-        set_field_if_not_default(target, "e", projection->stress_diff_to_stop(), 0.0);
+        rjson::set_field_if_not_default(target, "d", projection->dodgy_titer_is_regular(), false);
+        rjson::set_field_if_not_default(target, "e", projection->stress_diff_to_stop(), 0.0);
         if (const auto unmovable = projection->unmovable(); ! unmovable.empty())
             target["U"] = rjson::array(unmovable.begin(), unmovable.end());
         if (const auto disconnected = projection->disconnected(); ! disconnected.empty())
