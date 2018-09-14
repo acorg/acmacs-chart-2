@@ -34,7 +34,6 @@ int main(int argc, char* const argv[])
             auto sera = chart->sera();
             auto titers = chart->titers();
             auto without_titers = titers->having_too_few_numeric_titers(1);
-            std::cerr << "DEBUG: " << without_titers << '\n';
             for (auto index : without_titers) {
                 if (index < antigens->size()) {
                     if (!name_only)
