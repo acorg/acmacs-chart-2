@@ -724,7 +724,7 @@ DrawingOrder Acd1PlotSpec::drawing_order() const
 Color Acd1PlotSpec::error_line_positive_color() const
 {
     if (const auto& color = data_.get("error_line_positive", "color"); !color.is_null())
-        return Color(color);
+        return Color(static_cast<std::string_view>(color));
     else
         return "red";
 
@@ -735,7 +735,7 @@ Color Acd1PlotSpec::error_line_positive_color() const
 Color Acd1PlotSpec::error_line_negative_color() const
 {
     if (const auto& color = data_.get("error_line_negative", "color"); !color.is_null())
-        return Color(color);
+        return Color(static_cast<std::string_view>(color));
     else
         return "blue";
 
