@@ -6,19 +6,34 @@
 
 // ----------------------------------------------------------------------
 
-static const char* sEncodedSignature_strain_name_lc = "/a";
-static const char* sEncodedSignature_strain_name_uc = "/A";
-static const char* sEncodedSignature_table_name_lc = "@a";
-static const char* sEncodedSignature_table_name_uc = "@A";
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
+#endif
+
+static std::string sEncodedSignature_strain_name_lc{"!b"};
+static std::string sEncodedSignature_strain_name_uc{"!B"};
+static std::string sEncodedSignature_table_name_lc{"@b"};
+static std::string sEncodedSignature_table_name_uc{"@B"};
+
+static std::string sEncodedSignature_strain_name_lc_v1{"/a"};
+static std::string sEncodedSignature_strain_name_uc_v1{"/A"};
+static std::string sEncodedSignature_table_name_lc_v1{"@a"};
+static std::string sEncodedSignature_table_name_uc_v1{"@A"};
+
+#pragma GCC diagnostic pop
 
 inline bool strain_name_encoded(const std::string& name)
 {
-    return name.size() > 2 && (name.substr(name.size() - 2) == sEncodedSignature_strain_name_lc || name.substr(name.size() - 2) == sEncodedSignature_strain_name_uc);
+    auto eqc = [](std::string_view tail) { return tail == sEncodedSignature_strain_name_lc || tail == sEncodedSignature_strain_name_uc || tail == sEncodedSignature_strain_name_lc_v1 || tail == sEncodedSignature_strain_name_uc_v1; };
+    return name.size() > 2 && eqc(std::string_view(name.data() + name.size() - 2, 2));
 }
 
 inline bool table_name_encoded(const std::string& name)
 {
-    return name.size() > 2 && (name.substr(name.size() - 2) == sEncodedSignature_table_name_lc || name.substr(name.size() - 2) == sEncodedSignature_table_name_uc);
+    auto eqc = [](std::string_view tail) { return tail == sEncodedSignature_table_name_lc || tail == sEncodedSignature_table_name_uc || tail == sEncodedSignature_table_name_lc_v1 || tail == sEncodedSignature_table_name_uc_v1; };
+    return name.size() > 2 && eqc(std::string_view(name.data() + name.size() - 2, 2));
 }
 
 #include "acmacs-base/global-constructors-push.hh"
@@ -127,11 +142,11 @@ std::string acmacs::chart::lispmds_antigen_name_encode(const Name& aName, const 
 {
     std::string result = lispmds_encode(aName, lispmds_encoding_signature::no);
     if (!aReassortant.empty())
-        result += "_r" + lispmds_encode(aReassortant, lispmds_encoding_signature::no);
+        result += "_r!" + lispmds_encode(aReassortant, lispmds_encoding_signature::no);
     if (!aPassage.empty())
-        result += "_p" + lispmds_encode(aPassage, lispmds_encoding_signature::no);
+        result += "_p!" + lispmds_encode(aPassage, lispmds_encoding_signature::no);
     for (const auto& anno: aAnnotations)
-        result += "_a" + lispmds_encode(anno, lispmds_encoding_signature::no);
+        result += "_a!" + lispmds_encode(anno, lispmds_encoding_signature::no);
     return append_signature(result, signature);
 
 } // acmacs::chart::lispmds_antigen_name_encode
@@ -142,11 +157,11 @@ std::string acmacs::chart::lispmds_serum_name_encode(const Name& aName, const Re
 {
     std::string result = lispmds_encode(aName, lispmds_encoding_signature::no);
     if (!aReassortant.empty())
-        result += "_r" + lispmds_encode(aReassortant, lispmds_encoding_signature::no);
+        result += "_r!" + lispmds_encode(aReassortant, lispmds_encoding_signature::no);
     for (const auto& anno: aAnnotations)
-        result += "_a" + lispmds_encode(anno, lispmds_encoding_signature::no);
+        result += "_a!" + lispmds_encode(anno, lispmds_encoding_signature::no);
     if (!aSerumId.empty())
-        result += "_i" + lispmds_encode(aSerumId, lispmds_encoding_signature::no);
+        result += "_i!" + lispmds_encode(aSerumId, lispmds_encoding_signature::no);
     return append_signature(result, signature);
 
 } // acmacs::chart::lispmds_serum_name_encode
@@ -207,11 +222,11 @@ std::string acmacs::chart::lispmds_decode(std::string aName)
 
 // ----------------------------------------------------------------------
 
-static inline std::vector<size_t> find_sep(std::string source)
+static inline std::vector<size_t> find_sep(std::string source, bool v1)
 {
     std::vector<size_t> sep_pos;
-    for (size_t pos = 0; pos < (source.size() - 1); ++pos) {
-        if (source[pos] == ' ') {
+    for (size_t pos = 0; pos < (source.size() - 2); ++pos) {
+        if (source[pos] == ' ' && (v1 || source[pos+2] == '!')) {
             switch (std::tolower(source[pos + 1])) {
               case 'r':
               case 'p':
@@ -240,21 +255,23 @@ static inline std::string fix_passage_date(std::string source)
 void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName, Reassortant& aReassortant, Passage& aPassage, Annotations& aAnnotations)
 {
     if (strain_name_encoded(aSource)) {
+        const bool v1 = std::tolower(aSource.back()) == 'a';
+        const size_t sep_len = v1 ? 2 : 3;
         const std::string stage1 = lispmds_decode(aSource);
-        auto sep_pos = find_sep(stage1);
+        auto sep_pos = find_sep(stage1, v1);
         if (!sep_pos.empty()) {
             aName = stage1.substr(0, sep_pos[0]);
             for (size_t sep_no = 0; sep_no < sep_pos.size(); ++sep_no) {
-                const size_t chunk_len = (sep_no + 1) < sep_pos.size() ? (sep_pos[sep_no + 1] - sep_pos[sep_no] - 2) : std::string::npos;
+                const size_t chunk_len = (sep_no + 1) < sep_pos.size() ? (sep_pos[sep_no + 1] - sep_pos[sep_no] - sep_len) : std::string::npos;
                 switch (std::tolower(stage1[sep_pos[sep_no] + 1])) {
                   case 'r':
-                      aReassortant = stage1.substr(sep_pos[sep_no] + 2, chunk_len);
+                      aReassortant = stage1.substr(sep_pos[sep_no] + sep_len, chunk_len);
                       break;
                   case 'p':
-                      aPassage = fix_passage_date(stage1.substr(sep_pos[sep_no] + 2, chunk_len));
+                      aPassage = fix_passage_date(stage1.substr(sep_pos[sep_no] + sep_len, chunk_len));
                       break;
                   case 'a':
-                      aAnnotations.push_back(stage1.substr(sep_pos[sep_no] + 2, chunk_len));
+                      aAnnotations.push_back(stage1.substr(sep_pos[sep_no] + sep_len, chunk_len));
                       break;
                 }
             }
@@ -272,21 +289,23 @@ void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName
 void acmacs::chart::lispmds_serum_name_decode(std::string aSource, Name& aName, Reassortant& aReassortant, Annotations& aAnnotations, SerumId& aSerumId)
 {
     if (strain_name_encoded(aSource)) {
+        const bool v1 = std::tolower(aSource.back()) == 'a';
+        const size_t sep_len = v1 ? 2 : 3;
         const std::string stage1 = lispmds_decode(aSource);
-        auto sep_pos = find_sep(stage1);
+        auto sep_pos = find_sep(stage1, v1);
         if (!sep_pos.empty()) {
             aName = stage1.substr(0, sep_pos[0]);
             for (size_t sep_no = 0; sep_no < sep_pos.size(); ++sep_no) {
-                const size_t chunk_len = (sep_no + 1) < sep_pos.size() ? (sep_pos[sep_no + 1] - sep_pos[sep_no] - 2) : std::string::npos;
+                const size_t chunk_len = (sep_no + 1) < sep_pos.size() ? (sep_pos[sep_no + 1] - sep_pos[sep_no] - sep_len) : std::string::npos;
                 switch (std::tolower(stage1[sep_pos[sep_no] + 1])) {
                   case 'r':
-                      aReassortant = stage1.substr(sep_pos[sep_no] + 2, chunk_len);
+                      aReassortant = stage1.substr(sep_pos[sep_no] + sep_len, chunk_len);
                       break;
                   case 'i':
-                      aSerumId = stage1.substr(sep_pos[sep_no] + 2, chunk_len);
+                      aSerumId = stage1.substr(sep_pos[sep_no] + sep_len, chunk_len);
                       break;
                   case 'a':
-                      aAnnotations.push_back(stage1.substr(sep_pos[sep_no] + 2, chunk_len));
+                      aAnnotations.push_back(stage1.substr(sep_pos[sep_no] + sep_len, chunk_len));
                       break;
                 }
             }

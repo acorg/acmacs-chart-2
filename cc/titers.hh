@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "acmacs-base/rjson-forward.hh"
 #include "acmacs-chart-2/base.hh"
 #include "acmacs-chart-2/column-bases.hh"
 
