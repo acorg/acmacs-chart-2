@@ -500,7 +500,10 @@ Reassortant Acd1Serum::reassortant() const
 LabIds Acd1Antigen::lab_ids() const
 {
     LabIds result;
-    rjson::transform(data_["lab_id"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val[0]) + '#' + static_cast<std::string>(val[1]); });
+    if (data_["lab_id"].is_array())
+        rjson::transform(data_["lab_id"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val[0]) + '#' + static_cast<std::string>(val[1]); });
+    else
+        rjson::transform(data_["lab_id"], std::back_inserter(result), [](const std::string& key, const rjson::value& val) -> std::string { return key + '#' + static_cast<std::string_view>(val); });
     return result;
 
 } // Acd1Antigen::lab_ids
