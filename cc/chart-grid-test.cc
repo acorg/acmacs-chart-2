@@ -32,7 +32,7 @@ int main(int argc, char* const argv[])
         else {
             const auto report = do_report_time(args["--time"]);
             const bool verbose = args["--verbose"] || args["-v"];
-            const std::string to_test = args["--point"];
+            const std::string to_test(args["--point"]);
             const size_t projection_no = args["--projection"];
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
 

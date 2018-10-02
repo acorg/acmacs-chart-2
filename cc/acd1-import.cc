@@ -472,8 +472,8 @@ static inline Reassortant make_reassortant(const rjson::value& aData)
         const auto& complete = r_dict["complete"];
         const auto& incomplete = r_dict["incomplete"];
         std::vector<std::string> composition;
-        rjson::transform(complete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return val; }); // cannot use rjson::copy here
-        rjson::transform(incomplete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return val; }); // cannot use rjson::copy here
+        rjson::transform(complete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val); }); // cannot use rjson::copy here
+        rjson::transform(incomplete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val); }); // cannot use rjson::copy here
         return string::join(" ", composition);
     }
     else if (auto r_str = aData["reassortant"].get_or_default(""); !r_str.empty()) {
@@ -515,8 +515,8 @@ static inline Annotations make_annotations(const rjson::value& aData)
         result.push_back("DISTINCT");
     result.push_back(aData["extra"].get_or_default(""));
     result.push_back(aData["EXTRA"].get_or_default(""));
-    rjson::transform(aData["annotations"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return val; }); // cannot use rjson::copy here
-    rjson::transform(aData["mutations"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return val; }); // cannot use rjson::copy here
+    rjson::transform(aData["annotations"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val); }); // cannot use rjson::copy here
+    rjson::transform(aData["mutations"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val); }); // cannot use rjson::copy here
     return result;
 }
 
@@ -798,8 +798,8 @@ size_t Acd1PlotSpec::number_of_points() const
 acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPointNo, size_t aStyleNo) const
 {
     acmacs::PointStyle result;
-    rjson::for_each(aSrc, [&result, aPointNo, aStyleNo](const rjson::object::value_type& kv) {
-        if (const auto [field_name, field_value] = kv; !field_name.empty()) {
+    rjson::for_each(aSrc, [&result, aPointNo, aStyleNo](const std::string& field_name, const rjson::value& field_value) {
+        if (!field_name.empty()) {
             try {
                 if (field_name == "shown")
                     result.shown = field_value;
@@ -826,7 +826,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                 else if (field_name == "label_position_y")
                     result.label.offset.set().y(field_value);
                 else if (field_name == "label")
-                    result.label_text = field_value;
+                    result.label_text = static_cast<std::string>(field_value);
                 else if (field_name == "label_size")
                     result.label.size = Pixels{static_cast<double>(field_value) * LabelScale};
                 else if (field_name == "label_color")
@@ -834,7 +834,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                 else if (field_name == "label_rotation")
                     result.label.rotation = Rotation{field_value};
                 else if (field_name == "label_font_face")
-                    result.label.style.font_family = field_value;
+                    result.label.style.font_family = static_cast<std::string>(field_value);
                 else if (field_name == "label_font_slant")
                     result.label.style.slant = static_cast<std::string>(field_value);
                 else if (field_name == "label_font_weight")

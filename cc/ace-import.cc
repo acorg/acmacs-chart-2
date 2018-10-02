@@ -384,8 +384,8 @@ size_t AcePlotSpec::number_of_points() const
 acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointNo, size_t aStyleNo) const
 {
     acmacs::PointStyle result;
-    rjson::for_each(aSrc, [&result,aPointNo,aStyleNo,this](const rjson::object::value_type& kv) {
-        if (const auto [field_name, field_value] = kv; !field_name.empty()) {
+    rjson::for_each(aSrc, [&result,aPointNo,aStyleNo,this](const std::string& field_name, const rjson::value& field_value) {
+        if (!field_name.empty()) {
             try {
                 switch (field_name[0]) {
                   case '+':
@@ -430,8 +430,8 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointN
 
 void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aData) const
 {
-    rjson::for_each(aData, [&aStyle](const rjson::object::value_type& kv) {
-        if (const auto [field_name, field_value] = kv; !field_name.empty()) {
+    rjson::for_each(aData, [&aStyle](const std::string& field_name, const rjson::value& field_value) {
+        if (!field_name.empty()) {
             try {
                 auto& label_style = aStyle.label;
                 switch (field_name[0]) {
@@ -454,7 +454,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
                       label_style.interline = field_value;
                       break;
                   case 'f':
-                      label_style.style.font_family = field_value;
+                      label_style.style.font_family = static_cast<std::string>(field_value);
                       break;
                   case 'S':
                       label_style.style.slant = static_cast<std::string>(field_value);
@@ -463,7 +463,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
                       label_style.style.weight = static_cast<std::string>(field_value);
                       break;
                   case 't':
-                      aStyle.label_text = field_value;
+                      aStyle.label_text = static_cast<std::string>(field_value);
                       break;
                 }
             }

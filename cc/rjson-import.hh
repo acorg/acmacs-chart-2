@@ -159,7 +159,7 @@ namespace acmacs::chart
         std::optional<double> stored_stress() const override { if (const auto& stress = data_[keys_.stress]; !stress.is_null()) return stress; else return {}; }
         std::shared_ptr<Layout> layout() const override { if (!layout_) layout_ = std::make_shared<rjson_import::Layout>(data_[keys_.layout]); return layout_; }
         size_t number_of_dimensions() const override { return rjson_import::number_of_dimensions(data_[keys_.layout]); }
-        std::string comment() const override { if (const auto& comment = data_[keys_.comment]; !comment.is_null()) return comment; else return ""; }
+        std::string comment() const override { if (const auto& comment = data_[keys_.comment]; !comment.is_null()) return static_cast<std::string>(comment); else return {}; }
         size_t number_of_points() const override { return data_[keys_.layout].size(); }
         PointIndexList disconnected() const override;
 

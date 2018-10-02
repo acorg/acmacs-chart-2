@@ -230,11 +230,11 @@ template <typename Float> static void update_dict(const rjson::value& data, acma
     const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     for (auto p1 : acmacs::range(data.size())) {
         if (!parameters.disconnected.contains(p1)) {
-            rjson::for_each(data[p1], [num_antigens=data.size(),p1,&parameters,&table_distances,&column_bases,&logged_adjusts](const rjson::object::value_type& kv) {
-                const auto serum_no = std::stoul(kv.first);
+            rjson::for_each(data[p1], [num_antigens=data.size(),p1,&parameters,&table_distances,&column_bases,&logged_adjusts](const std::string& field_name, const rjson::value& field_value) {
+                const auto serum_no = std::stoul(field_name);
                 const auto p2 = serum_no + num_antigens;
                 if (!parameters.disconnected.contains(p2))
-                    table_distances.update(kv.second, p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);
+                    table_distances.update(field_value, p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);
             });
         }
     }

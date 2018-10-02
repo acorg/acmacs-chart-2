@@ -9,8 +9,8 @@
 #include "acmacs-chart-2/chart.hh"
 
 static void write_csv(std::string aFilename, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::chart::Layout> layout);
-static void write_text(std::string aFilename, std::string aFieldSeparator, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::chart::Layout> layout);
-static std::string encode_name(std::string aName, std::string aFieldSeparator);
+static void write_text(std::string aFilename, std::string_view aFieldSeparator, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::chart::Layout> layout);
+static std::string encode_name(std::string_view aName, std::string_view aFieldSeparator);
 
 // ----------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ int main(int argc, char* const argv[])
             auto antigens = chart->antigens();
             auto sera = chart->sera();
             auto layout = chart->projection(args["--projection"])->layout();
-            const std::string filename = args[1];
+            const std::string filename{args[1]};
             if (filename == "-")
                 write_text(filename, args["--field-separator"], antigens, sera, layout);
             else if (string::ends_with(filename, ".csv") || string::ends_with(filename, ".csv.xz"))
@@ -81,19 +81,20 @@ void write_csv(std::string aFilename, std::shared_ptr<acmacs::chart::Antigens> a
 
 // ----------------------------------------------------------------------
 
-void write_text(std::string aFilename, std::string aFieldSeparator, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::chart::Layout> layout)
+void write_text(std::string aFilename, std::string_view aFieldSeparator, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::chart::Layout> layout)
 {
+    using namespace std::string_literals;
     std::string result;
     const auto number_of_dimensions = layout->number_of_dimensions();
     for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-        result += "AG" + aFieldSeparator + encode_name(antigen->full_name(), aFieldSeparator);
+        result += "AG"s + aFieldSeparator + encode_name(antigen->full_name(), aFieldSeparator);
         for (size_t dim = 0; dim < number_of_dimensions; ++dim)
             result += aFieldSeparator + acmacs::to_string(layout->coordinate(ag_no, dim));
         result += '\n';
     }
     const auto number_of_antigens = antigens->size();
     for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
-        result += "SR" + aFieldSeparator + encode_name(serum->full_name(), aFieldSeparator);
+        result += "SR"s + aFieldSeparator + encode_name(serum->full_name(), aFieldSeparator);
         for (size_t dim = 0; dim < number_of_dimensions; ++dim)
             result += aFieldSeparator + acmacs::to_string(layout->coordinate(sr_no + number_of_antigens, dim));
         result += '\n';
@@ -104,11 +105,12 @@ void write_text(std::string aFilename, std::string aFieldSeparator, std::shared_
 
 // ----------------------------------------------------------------------
 
-std::string encode_name(std::string aName, std::string aFieldSeparator)
+std::string encode_name(std::string_view aName, std::string_view aFieldSeparator)
 {
     if (!aFieldSeparator.empty() && aFieldSeparator[0] == ' ')
-        aName = string::replace(aName, " ", "_");
-    return aName;
+        return string::replace(aName, " ", "_");
+    else
+        return std::string(aName);
 
 } // encode_name
 
