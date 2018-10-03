@@ -389,7 +389,7 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointN
             try {
                 switch (field_name[0]) {
                   case '+':
-                      result.shown = field_value;
+                      result.shown = field_value.get_bool();
                       break;
                   case 'F':
                       result.fill = Color(static_cast<std::string_view>(field_value));
@@ -436,7 +436,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
                 auto& label_style = aStyle.label;
                 switch (field_name[0]) {
                   case '+':
-                      label_style.shown = field_value;
+                      label_style.shown = field_value.get_bool();
                       break;
                   case 'p':
                       label_style.offset = acmacs::Offset{field_value[0], field_value[1]};

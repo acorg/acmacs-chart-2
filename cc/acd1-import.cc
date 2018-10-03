@@ -805,7 +805,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
         if (!field_name.empty()) {
             try {
                 if (field_name == "shown")
-                    result.shown = field_value;
+                    result.shown = field_value.get_bool();
                 else if (field_name == "fill_color")
                     result.fill = Color(static_cast<size_t>(field_value));
                 else if (field_name == "outline_color")
@@ -823,7 +823,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                 else if (field_name == "aspect")
                     result.aspect = Aspect{field_value};
                 else if (field_name == "show_label")
-                    result.label.shown = field_value;
+                    result.label.shown = field_value.get_bool();
                 else if (field_name == "label_position_x")
                     result.label.offset.set().x(field_value);
                 else if (field_name == "label_position_y")
