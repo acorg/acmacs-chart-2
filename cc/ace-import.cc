@@ -41,7 +41,7 @@ ChartP acmacs::chart::ace_import(const std::string_view& aData, Verify aVerify)
 {
     auto chart = std::make_shared<AceChart>(rjson::v1::parse_string(aData));
     chart->verify_data(aVerify);
-    return chart;
+    return std::move(chart);
 
 } // acmacs::chart::ace_import
 
@@ -101,7 +101,7 @@ SeraP AceChart::sera() const
 {
     auto sera = std::make_shared<AceSera>(mData["c"].get_or_empty_array("s"));
     set_homologous(find_homologous_for_big_chart::no, sera);
-    return sera;
+    return std::move(sera);
 
 } // AceChart::sera
 

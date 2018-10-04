@@ -40,7 +40,7 @@ ChartP acmacs::chart::acd1_import(const std::string_view& aData, Verify aVerify)
     try {
         auto chart = std::make_shared<Acd1Chart>(rjson::v1::parse_string(json));
         chart->verify_data(aVerify);
-        return chart;
+        return std::move(chart);
     }
     catch (rjson::v1::parse_error&) {
         std::cout << json << '\n';
@@ -297,7 +297,7 @@ SeraP Acd1Chart::sera() const
 {
     auto sera = std::make_shared<Acd1Sera>(mData["table"].get_or_empty_array("sera"));
     set_homologous(find_homologous_for_big_chart::no, sera);
-    return sera;
+    return std::move(sera);
 
 } // Acd1Chart::sera
 
@@ -405,7 +405,7 @@ std::string Acd1Info::date(Compute aCompute) const
 static inline Name make_name(const rjson::v1::object& aData)
 {
     if (auto name = aData.get_or_default("_name", ""); !name.empty())
-        return name;
+        return std::move(name);
     if (auto isolation_number = aData.get_or_default("isolation_number", ""); !isolation_number.empty()) {
         std::string host = aData.get_or_default("host", "");
         if (host == "HUMAN")
@@ -413,7 +413,7 @@ static inline Name make_name(const rjson::v1::object& aData)
         return string::join("/", {aData.get_or_default("virus_type", ""), host, aData.get_or_empty_object("location").get_or_default("name", ""), isolation_number, aData.get_or_default("year", "")});
     }
     else if (auto raw_name = aData.get_or_default("raw_name", ""); !raw_name.empty()) {
-        return raw_name;
+        return std::move(raw_name);
     }
     else {
         const std::string cdc_abbreviation = aData.get_or_empty_object("location").get_or_default("cdc_abbreviation", "");
@@ -444,10 +444,10 @@ static inline Passage make_passage(const rjson::v1::object& aData)
         auto p(p_dict["passage"].str());
         if (auto date = p_dict.get_or_default("date", ""); !date.empty())
             p += " (" + date + ")";
-        return p;
+        return std::move(p);
     }
     else if (auto p_str = aData.get_or_default("passage", ""); !p_str.empty()) {
-        return p_str;
+        return std::move(p_str);
     }
     else
         return {};
@@ -478,7 +478,7 @@ static inline Reassortant make_reassortant(const rjson::v1::object& aData)
         return string::join(" ", composition);
     }
     else if (auto r_str = aData.get_or_default("reassortant", ""); !r_str.empty()) {
-        return r_str;
+        return std::move(r_str);
     }
     else
         return {};
@@ -560,7 +560,7 @@ SerumId Acd1Serum::serum_id() const
         return s_dict["serum_id"];
     }
     else if (auto p_str = mData.get_or_default("serum_id", ""); !p_str.empty()) {
-        return p_str;
+        return std::move(p_str);
     }
     else
         return {};
