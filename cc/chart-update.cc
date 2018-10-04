@@ -29,9 +29,9 @@ int main(int argc, char* const argv[])
             const auto report = do_report_time(args["--time"]);
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
             if (args["--name"])
-                chart.info_modify()->name(args["--name"]);
+                chart.info_modify()->name(std::string(args["--name"]));
             if (args["--virus-type"])
-                chart.info_modify()->virus_type(args["--virus-type"]);
+                chart.info_modify()->virus_type(std::string(args["--virus-type"]));
             std::cout << chart.make_info() << '\n';
             if (args.number_of_arguments() > 1)
                 acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);

@@ -74,7 +74,7 @@ int main(int argc, char* const argv[])
         }
         else {
             const size_t projection_no = 0;
-            const std::string type = args["--type"];
+            const std::string type(args["--type"]);
             const Options options(args["-n"], args["--serum-line-sd-threshold"], args["--rms-threshold"]);
             // const size_t number_of_attempts = args["-n"];
             // const double rms_threshold = args["--rms-threshold"];

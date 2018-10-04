@@ -27,7 +27,7 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            const std::string sera = args["-s"];
+            const std::string sera(args["-s"]);
             acmacs::chart::PointIndexList sera_titrated_against{sera.empty() ? acmacs::Indexes{} : acmacs::string::split_into_uint(sera, ",")};
               // acmacs::ReverseSortedIndexes antigens_to_remove;
             const auto report = do_report_time(args["--time"]);

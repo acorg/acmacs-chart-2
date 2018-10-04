@@ -8,7 +8,7 @@
 
 // ----------------------------------------------------------------------
 
-static std::shared_ptr<acmacs::chart::ChartNew> import_from_file(std::string filename);
+static std::shared_ptr<acmacs::chart::ChartNew> import_from_file(std::string_view filename);
 static std::vector<std::string> read_fields(std::istream& input);
 
 // ----------------------------------------------------------------------
@@ -38,9 +38,9 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::chart::ChartNew> import_from_file(std::string filename)
+std::shared_ptr<acmacs::chart::ChartNew> import_from_file(std::string_view filename)
 {
-    std::ifstream input(filename);
+    std::ifstream input(std::string{filename});
     const auto serum_names = read_fields(input);
     std::vector<std::vector<std::string>> antigens_titers;
     while (input)

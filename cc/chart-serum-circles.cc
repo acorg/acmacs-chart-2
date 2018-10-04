@@ -91,7 +91,7 @@ void report(const argc_argv& args)
     chart->set_homologous(acmacs::chart::Chart::find_homologous_for_big_chart::yes);
     auto result = collect(*chart, projection_no);
 
-    if (std::string json_filename = args["--json"]; json_filename.empty())
+    if (std::string json_filename(args["--json"]); json_filename.empty())
         report_text(*chart, result);
     else if (json_filename == "-" || json_filename == "=")
         report_json(std::cout, *chart, result);

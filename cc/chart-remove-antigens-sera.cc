@@ -29,7 +29,7 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            const std::string antigens = args["-a"], sera = args["-s"];
+            const std::string antigens(args["-a"]), sera(args["-s"]);
             acmacs::ReverseSortedIndexes antigens_to_remove{antigens.empty() ? acmacs::Indexes{} : acmacs::string::split_into_uint(antigens, ",")};
             acmacs::ReverseSortedIndexes sera_to_remove{sera.empty() ? acmacs::Indexes{} : acmacs::string::split_into_uint(sera, ",")};
             const auto report = do_report_time(args["--time"]);
