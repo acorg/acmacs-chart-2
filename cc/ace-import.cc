@@ -101,7 +101,7 @@ SeraP AceChart::sera() const
 {
     auto sera = std::make_shared<AceSera>(data_.get("c", "s"));
     set_homologous(find_homologous_for_big_chart::no, sera);
-    return sera;
+    return std::move(sera);
 
 } // AceChart::sera
 
