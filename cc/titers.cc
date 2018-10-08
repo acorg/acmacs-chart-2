@@ -186,7 +186,7 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Titers::computed_colu
     // for (const auto& t : *this)
     //     std::cerr << "DEBUG: " << t.antigen << ' ' << t.serum << ' ' << t.titer << '\n';
     // std::cerr << "DEBUG: computed_column_bases_new: " << *cb << '\n';
-    return cb;
+    return std::move(cb);
 
 } // acmacs::chart::Titers::computed_column_bases
 

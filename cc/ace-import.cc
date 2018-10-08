@@ -41,7 +41,7 @@ ChartP acmacs::chart::ace_import(const std::string_view& aData, Verify aVerify)
 {
     auto chart = std::make_shared<AceChart>(rjson::parse_string(aData));
     chart->verify_data(aVerify);
-    return chart;
+    return std::move(chart);
 
 } // acmacs::chart::ace_import
 
