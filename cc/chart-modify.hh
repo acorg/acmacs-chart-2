@@ -263,7 +263,7 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class titers_cannot_be_modified : public std::runtime_error { public: titers_cannot_be_modified() : std::runtime_error("titers cannot be modified") {} };
+    class titers_cannot_be_modified : public std::runtime_error { public: titers_cannot_be_modified() : std::runtime_error("titers cannot be modified (table has layers?)") {} };
 
     class TitersModify : public Titers
     {
