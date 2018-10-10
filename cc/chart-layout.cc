@@ -10,7 +10,7 @@
 
 static void write_csv(std::string aFilename, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::chart::Layout> layout);
 static void write_text(std::string aFilename, std::string_view aFieldSeparator, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::chart::Layout> layout);
-static std::string encode_name(std::string aName, std::string_view aFieldSeparator);
+static std::string encode_name(std::string_view aName, std::string_view aFieldSeparator);
 
 // ----------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ int main(int argc, char* const argv[])
             auto antigens = chart->antigens();
             auto sera = chart->sera();
             auto layout = chart->projection(args["--projection"])->layout();
-            const std::string filename(args[1]);
+            const std::string filename{args[1]};
             if (filename == "-")
                 write_text(filename, args["--field-separator"], antigens, sera, layout);
             else if (string::ends_with(filename, ".csv") || string::ends_with(filename, ".csv.xz"))
@@ -105,11 +105,12 @@ void write_text(std::string aFilename, std::string_view aFieldSeparator, std::sh
 
 // ----------------------------------------------------------------------
 
-std::string encode_name(std::string aName, std::string_view aFieldSeparator)
+std::string encode_name(std::string_view aName, std::string_view aFieldSeparator)
 {
     if (!aFieldSeparator.empty() && aFieldSeparator[0] == ' ')
-        aName = string::replace(aName, " ", "_");
-    return aName;
+        return string::replace(aName, " ", "_");
+    else
+        return std::string(aName);
 
 } // encode_name
 

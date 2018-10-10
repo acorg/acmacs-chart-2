@@ -23,7 +23,7 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            auto chart = import_from_file(args[0]);
+            auto chart = import_from_file(std::string(args[0]));
             std::cout << chart->make_info() << '\n';
             size_t number_of_attempts = 20;
             chart->relax(number_of_attempts, acmacs::chart::MinimumColumnBasis("none"), 2, true, acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_cg_pca, acmacs::chart::optimization_precision::rough), true);

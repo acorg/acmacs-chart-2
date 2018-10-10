@@ -137,9 +137,9 @@ namespace acmacs::chart
         virtual bool is_dense() const noexcept;
 
           // support for fast exporting into ace, if source was ace or acd1
-        virtual const rjson::v1::array& rjson_list_list() const { throw data_not_available{"rjson_list_list titers are not available"}; }
-        virtual const rjson::v1::array& rjson_list_dict() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
-        virtual const rjson::v1::array& rjson_layers() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
+        virtual const rjson::value& rjson_list_list() const { throw data_not_available{"rjson_list_list titers are not available"}; }
+        virtual const rjson::value& rjson_list_dict() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
+        virtual const rjson::value& rjson_layers() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
 
         std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
 

@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <optional>
 
+#include "acmacs-base/debug.hh"
 #include "acmacs-base/rjson.hh"
 #include "acmacs-base/layout.hh"
 #include "acmacs-chart-2/titers.hh"
@@ -24,25 +25,12 @@ namespace acmacs::chart
 
 namespace acmacs::chart::rjson_import
 {
-    inline size_t number_of_dimensions(const rjson::v1::array& data) noexcept
+    inline size_t number_of_dimensions(const rjson::value& data) noexcept
     {
-        for (const rjson::v1::array& row: data) {
-            if (!row.empty())
-                return row.size();
-        }
-        return 0;
-
-          // try {
-          //     for (const rjson::v1::array& row: data) {
-          //         if (!row.empty())
-          //             return row.size();
-          //     }
-          // }
-          // catch (rjson::v1::field_not_found&) {
-          // }
-          // catch (std::bad_variant_access&) {
-          // }
-          // return 0;
+        if (const auto& non_empty = rjson::find_if(data, [](const auto& val) -> bool { return !val.empty(); }); !non_empty.is_null())
+            return non_empty.size();
+        else
+            return 0;
     }
 
 // ----------------------------------------------------------------------
@@ -50,7 +38,7 @@ namespace acmacs::chart::rjson_import
     class Layout : public acmacs::Layout
     {
      public:
-        Layout(const rjson::v1::array& aData);
+        Layout(const rjson::value& aData);
 
         void set(size_t /*aPointNo*/, const acmacs::Vector& /*aCoordinates*/) override;
 
@@ -58,9 +46,9 @@ namespace acmacs::chart::rjson_import
 
 // ----------------------------------------------------------------------
 
-    template <typename Float> void update(const rjson::v1::object& data, const std::string& list_key, const std::string& dict_key, TableDistances<Float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
-    extern template void update<float>(const rjson::v1::object& data, const std::string& list_key, const std::string& dict_key, TableDistances<float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
-    extern template void update<double>(const rjson::v1::object& data, const std::string& list_key, const std::string& dict_key, TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
+    template <typename Float> void update(const rjson::value& data, const std::string& list_key, const std::string& dict_key, TableDistances<Float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
+    extern template void update<float>(const rjson::value& data, const std::string& list_key, const std::string& dict_key, TableDistances<float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
+    extern template void update<double>(const rjson::value& data, const std::string& list_key, const std::string& dict_key, TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
 
 } // namespace acmacs::chart::rjson
 
@@ -73,7 +61,7 @@ namespace acmacs::chart
      public:
         Titer titer(size_t aAntigenNo, size_t aSerumNo) const override
             {
-                if (auto [present, list] = data_.get_array_if(keys_.list); present)
+                if (const auto& list = data_[keys_.list]; !list.is_null())
                     return list[aAntigenNo][aSerumNo];
                 else
                     return titer_in_d(data_[keys_.dict], aAntigenNo, aSerumNo);
@@ -86,18 +74,18 @@ namespace acmacs::chart
 
         std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const override
             {
-                return titers_for_layers(data_.get_or_empty_array(keys_.layers), aAntigenNo, aSerumNo);
+                return titers_for_layers(data_[keys_.layers], aAntigenNo, aSerumNo);
             }
 
-        size_t number_of_layers() const override { return data_.get_or_empty_array(keys_.layers).size(); }
+        size_t number_of_layers() const override { return data_[keys_.layers].size(); }
 
         size_t number_of_antigens() const override
             {
                 if (!number_of_antigens_) {
-                    if (auto [present, list] = data_.get_array_if(keys_.list); present)
+                    if (const auto& list = data_[keys_.list]; !list.is_null())
                         number_of_antigens_ = list.size();
                     else
-                        number_of_antigens_ = static_cast<const rjson::v1::array&>(data_[keys_.dict]).size();
+                        number_of_antigens_ = data_[keys_.dict].size();
                 }
                 return *number_of_antigens_;
             }
@@ -107,9 +95,9 @@ namespace acmacs::chart
         size_t number_of_non_dont_cares() const override;
 
           // support for fast exporting into ace, if source was ace or acd1
-        const rjson::v1::array& rjson_list_list() const override { const rjson::v1::array& r = data_.get_or_empty_array(keys_.list); if (r.empty()) throw data_not_available{"no \"" + keys_.list + "\""}; return r; }
-        const rjson::v1::array& rjson_list_dict() const override { const rjson::v1::array& r = data_.get_or_empty_array(keys_.dict); if (r.empty()) throw data_not_available{"no \"" + keys_.dict + "\""}; return r; }
-        const rjson::v1::array& rjson_layers() const override { const rjson::v1::array& r = data_.get_or_empty_array(keys_.layers); if (r.empty()) throw data_not_available{"no \"" + keys_.layers + "\""}; return r; }
+        const rjson::value& rjson_list_list() const override { if (const auto& list = data_[keys_.list]; !list.empty()) return list; else throw data_not_available{"no \"" + keys_.list + "\""}; }
+        const rjson::value& rjson_list_dict() const override { if (const auto& dict = data_[keys_.dict]; !dict.empty()) return dict; else throw data_not_available{"no \"" + keys_.dict + "\""}; }
+        const rjson::value& rjson_layers() const override { if (const auto& layers = data_[keys_.layers]; !layers.empty()) return layers; else throw data_not_available{"no \"" + keys_.layers + "\""}; }
 
         void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const override
             {
@@ -138,27 +126,25 @@ namespace acmacs::chart
             std::string layers;
         };
 
-        RjsonTiters(const rjson::v1::object& data, const Keys& keys) : data_{data}, keys_{keys} {}
+        RjsonTiters(const rjson::value& data, const Keys& keys) : data_{data}, keys_{keys} {}
 
-        // const rjson::v1::object& data() const { return data_; }
-        const rjson::v1::object& layer(size_t aLayerNo) const { return rjson_layers()[aLayerNo]; }
+        // const rjson::value& data() const { return data_; }
+        const rjson::value& layer(size_t aLayerNo) const { return rjson_layers()[aLayerNo]; }
 
-        Titer titer_in_d(const rjson::v1::array& aSource, size_t aAntigenNo, size_t aSerumNo) const
+        Titer titer_in_d(const rjson::value& aSource, size_t aAntigenNo, size_t aSerumNo) const
             {
-                try {
-                    return aSource[aAntigenNo][std::to_string(aSerumNo)];
-                }
-                catch (rjson::v1::field_not_found&) {
-                    return {};
-                }
+                if (const auto& row = aSource[aAntigenNo]; !row.is_null())
+                    if (const auto& titer = row[aSerumNo]; !titer.is_null())
+                        return titer;
+                return {};
             }
 
-        std::vector<Titer> titers_for_layers(const rjson::v1::array& layers, size_t aAntigenNo, size_t aSerumNo) const;
+        std::vector<Titer> titers_for_layers(const rjson::value& layers, size_t aAntigenNo, size_t aSerumNo) const;
 
-        const rjson::v1::object& data() const { return data_; }
+        const rjson::value& data() const { return data_; }
 
      private:
-        const rjson::v1::object& data_;
+        const rjson::value& data_;
         const Keys& keys_;
         mutable std::optional<size_t> number_of_antigens_;
         mutable std::optional<size_t> number_of_sera_;
@@ -170,11 +156,11 @@ namespace acmacs::chart
     class RjsonProjection : public Projection
     {
       public:
-        std::optional<double> stored_stress() const override { return data_.get<double>(keys_.stress); }
-        std::shared_ptr<Layout> layout() const override { if (!layout_) layout_ = std::make_shared<rjson_import::Layout>(data_.get_or_empty_array(keys_.layout)); return layout_; }
-        size_t number_of_dimensions() const override { return rjson_import::number_of_dimensions(data_.get_or_empty_array(keys_.layout)); }
-        std::string comment() const override { return data_.get_or_default(keys_.comment, ""); }
-        size_t number_of_points() const override { return data_.get_or_empty_array(keys_.layout).size(); }
+        std::optional<double> stored_stress() const override { if (const auto& stress = data_[keys_.stress]; !stress.is_null()) return stress; else return {}; }
+        std::shared_ptr<Layout> layout() const override { if (!layout_) layout_ = std::make_shared<rjson_import::Layout>(data_[keys_.layout]); return layout_; }
+        size_t number_of_dimensions() const override { return rjson_import::number_of_dimensions(data_[keys_.layout]); }
+        std::string comment() const override { if (const auto& comment = data_[keys_.comment]; !comment.is_null()) return static_cast<std::string>(comment); else return {}; }
+        size_t number_of_points() const override { return data_[keys_.layout].size(); }
         PointIndexList disconnected() const override;
 
      protected:
@@ -185,15 +171,15 @@ namespace acmacs::chart
             std::string comment;
         };
 
-        RjsonProjection(const Chart& chart, const rjson::v1::object& data, const Keys& keys) : Projection(chart), data_{data}, keys_{keys} {}
-        RjsonProjection(const Chart& chart, const rjson::v1::object& data, const Keys& keys, size_t projection_no) : RjsonProjection(chart, data, keys) { set_projection_no(projection_no); }
+        RjsonProjection(const Chart& chart, const rjson::value& data, const Keys& keys) : Projection(chart), data_{data}, keys_{keys} {}
+        RjsonProjection(const Chart& chart, const rjson::value& data, const Keys& keys, size_t projection_no) : RjsonProjection(chart, data, keys) { set_projection_no(projection_no); }
 
-        const rjson::v1::object& data() const { return data_; }
+        const rjson::value& data() const { return data_; }
 
         virtual PointIndexList make_disconnected() const = 0;
 
      private:
-        const rjson::v1::object& data_;
+        const rjson::value& data_;
         const Keys& keys_;
         mutable std::shared_ptr<Layout> layout_;
 

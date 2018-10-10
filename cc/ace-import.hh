@@ -16,7 +16,7 @@ namespace acmacs::chart
     class AceChart : public Chart
     {
       public:
-        AceChart(rjson::v1::value&& aSrc) : mData{std::move(aSrc)} {}
+        AceChart(rjson::value&& aSrc) : data_{std::move(aSrc)} {}
 
         InfoP info() const override;
         AntigensP antigens() const override;
@@ -30,10 +30,10 @@ namespace acmacs::chart
         void verify_data(Verify aVerify) const;
 
           // to obtain extension fields (e.g. group_sets)
-        const rjson::v1::value& extension_field(std::string field_name) const override;
+        const rjson::value& extension_field(std::string field_name) const override;
 
      private:
-        rjson::v1::value mData;
+        rjson::value data_;
         mutable ace::name_index_t mAntigenNameIndex;
         mutable ProjectionsP projections_;
 
@@ -47,7 +47,7 @@ namespace acmacs::chart
     class AceInfo : public Info
     {
       public:
-        AceInfo(const rjson::v1::value& aData) : mData{aData} {}
+        AceInfo(const rjson::value& aData) : data_{aData} {}
 
         std::string name(Compute aCompute = Compute::No) const override;
         std::string virus(Compute aCompute = Compute::No) const override { return make_field("v", "+", aCompute); }
@@ -57,11 +57,11 @@ namespace acmacs::chart
         std::string lab(Compute aCompute = Compute::No) const override { return make_field("l", "+", aCompute); }
         std::string rbc_species(Compute aCompute = Compute::No) const override { return make_field("r", "+", aCompute); }
         std::string date(Compute aCompute = Compute::No) const override;
-        size_t number_of_sources() const override { return mData.get_or_empty_array("S").size(); }
-        InfoP source(size_t aSourceNo) const override { return std::make_shared<AceInfo>(mData.get_or_empty_array("S")[aSourceNo]); }
+        size_t number_of_sources() const override { return data_["S"].size(); }
+        InfoP source(size_t aSourceNo) const override { return std::make_shared<AceInfo>(data_["S"][aSourceNo]); }
 
      private:
-        const rjson::v1::value& mData;
+        const rjson::value& data_;
 
         std::string make_field(const char* aField, const char* aSeparator, Compute aCompute) const;
 
@@ -72,20 +72,20 @@ namespace acmacs::chart
     class AceAntigen : public Antigen
     {
       public:
-        AceAntigen(const rjson::v1::object& aData) : mData{aData} {}
+        AceAntigen(const rjson::value& aData) : data_{aData} {}
 
-        Name name() const override { return mData["N"]; }
-        Date date() const override { return mData.get_or_default("D", ""); }
-        Passage passage() const override { return mData.get_or_default("P", ""); }
+        Name name() const override { return data_["N"]; }
+        Date date() const override { return data_["D"].get_or_default(""); }
+        Passage passage() const override { return data_["P"].get_or_default(""); }
         BLineage lineage() const override;
-        Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
-        LabIds lab_ids() const override { return mData.get_or_empty_array("l"); }
-        Clades clades() const override { return mData.get_or_empty_array("c"); }
-        Annotations annotations() const override { return mData.get_or_empty_array("a"); }
-        bool reference() const override { return mData.get_or_default("S", "").find("R") != std::string::npos; }
+        Reassortant reassortant() const override { return data_["R"].get_or_default(""); }
+        LabIds lab_ids() const override { return data_["l"]; }
+        Clades clades() const override { return data_["c"]; }
+        Annotations annotations() const override { return data_["a"]; }
+        bool reference() const override { return data_["S"].get_or_default("").find("R") != std::string::npos; }
 
      private:
-        const rjson::v1::object& mData;
+        const rjson::value& data_;
 
     }; // class AceAntigen
 
@@ -94,20 +94,20 @@ namespace acmacs::chart
     class AceSerum : public Serum
     {
       public:
-        AceSerum(const rjson::v1::object& aData) : mData{aData} {}
+        AceSerum(const rjson::value& aData) : data_{aData} {}
 
-        Name name() const override { return mData["N"]; }
-        Passage passage() const override { return mData.get_or_default("P", ""); }
+        Name name() const override { return data_["N"]; }
+        Passage passage() const override { return data_["P"].get_or_default(""); }
         BLineage lineage() const override;
-        Reassortant reassortant() const override { return mData.get_or_default("R", ""); }
-        Annotations annotations() const override { return mData.get_or_empty_array("a"); }
-        SerumId serum_id() const override { return mData.get_or_default("I", ""); }
-        SerumSpecies serum_species() const override { return mData.get_or_default("s", ""); }
-        PointIndexList homologous_antigens() const override { return mData.get_or_empty_array("h"); }
-        void set_homologous(const std::vector<size_t>& ags) const override { const_cast<rjson::v1::object&>(mData).set_field("h", rjson::v1::array(rjson::v1::array::use_iterator, ags.begin(), ags.end())); }
+        Reassortant reassortant() const override { return data_["R"].get_or_default(""); }
+        Annotations annotations() const override { return data_["a"]; }
+        SerumId serum_id() const override { return data_["I"].get_or_default(""); }
+        SerumSpecies serum_species() const override { return data_["s"].get_or_default(""); }
+        PointIndexList homologous_antigens() const override { return data_["h"]; }
+        void set_homologous(const std::vector<size_t>& ags) const override { const_cast<rjson::value&>(data_)["h"] = rjson::array(ags.begin(), ags.end()); }
 
      private:
-        const rjson::v1::object& mData;
+        const rjson::value& data_;
 
     }; // class AceSerum
 
@@ -116,14 +116,14 @@ namespace acmacs::chart
     class AceAntigens : public Antigens
     {
      public:
-        AceAntigens(const rjson::v1::array& aData, ace::name_index_t& aAntigenNameIndex) : mData{aData}, mAntigenNameIndex{aAntigenNameIndex} {}
+        AceAntigens(const rjson::value& aData, ace::name_index_t& aAntigenNameIndex) : data_{aData}, mAntigenNameIndex{aAntigenNameIndex} {}
 
-        size_t size() const override { return mData.size(); }
-        AntigenP operator[](size_t aIndex) const override { return std::make_shared<AceAntigen>(mData[aIndex]); }
+        size_t size() const override { return data_.size(); }
+        AntigenP operator[](size_t aIndex) const override { return std::make_shared<AceAntigen>(data_[aIndex]); }
         std::optional<size_t> find_by_full_name(std::string aFullName) const override;
 
      private:
-        const rjson::v1::array& mData;
+        const rjson::value& data_;
         ace::name_index_t& mAntigenNameIndex;
 
         void make_name_index() const;
@@ -135,13 +135,13 @@ namespace acmacs::chart
     class AceSera : public Sera
     {
       public:
-        AceSera(const rjson::v1::array& aData) : mData{aData} {}
+        AceSera(const rjson::value& aData) : data_{aData} {}
 
-        size_t size() const override { return mData.size(); }
-        SerumP operator[](size_t aIndex) const override { return std::make_shared<AceSerum>(mData[aIndex]); }
+        size_t size() const override { return data_.size(); }
+        SerumP operator[](size_t aIndex) const override { return std::make_shared<AceSerum>(data_[aIndex]); }
 
      private:
-        const rjson::v1::array& mData;
+        const rjson::value& data_;
 
     }; // class AceSera
 
@@ -150,7 +150,7 @@ namespace acmacs::chart
     class AceTiters : public RjsonTiters
     {
       public:
-        AceTiters(const rjson::v1::object& data) : RjsonTiters(data, s_keys_) {}
+        AceTiters(const rjson::value& data) : RjsonTiters(data, s_keys_) {}
 
      private:
         static const Keys s_keys_;
@@ -162,14 +162,14 @@ namespace acmacs::chart
     class AceColumnBases : public ColumnBases
     {
       public:
-        AceColumnBases(const rjson::v1::array& data) : data_{data} {}
-        AceColumnBases(const rjson::v1::array& data, MinimumColumnBasis minimum_column_basis) : data_{data}, minimum_column_basis_{minimum_column_basis} {}
+        AceColumnBases(const rjson::value& data) : data_{data} {}
+        AceColumnBases(const rjson::value& data, MinimumColumnBasis minimum_column_basis) : data_{data}, minimum_column_basis_{minimum_column_basis} {}
 
         double column_basis(size_t aSerumNo) const override { return minimum_column_basis_.apply(data_[aSerumNo]); }
         size_t size() const override { return data_.size(); }
 
      private:
-        const rjson::v1::array& data_;
+        const rjson::value& data_;
         MinimumColumnBasis minimum_column_basis_;
 
     }; // class AceColumnBases
@@ -179,25 +179,20 @@ namespace acmacs::chart
     class AceProjection : public RjsonProjection
     {
       public:
-        AceProjection(const Chart& chart, const rjson::v1::object& aData) : RjsonProjection(chart, aData, s_keys_) {}
-        AceProjection(const Chart& chart, const rjson::v1::object& aData, size_t projection_no) : RjsonProjection(chart, aData, s_keys_, projection_no) {}
+        AceProjection(const Chart& chart, const rjson::value& aData) : RjsonProjection(chart, aData, s_keys_) {}
+        AceProjection(const Chart& chart, const rjson::value& aData, size_t projection_no) : RjsonProjection(chart, aData, s_keys_, projection_no) {}
 
-        // std::optional<double> stored_stress() const override { return mData.get<double>("s"); }
-        // std::shared_ptr<Layout> layout() const override;
-        // std::string comment() const override { return mData.get_or_default("c", ""); }
-        // size_t number_of_points() const override { return mData.get_or_empty_array("l").size(); }
-        // size_t number_of_dimensions() const override;
-        MinimumColumnBasis minimum_column_basis() const override { return data().get_or_default("m", "none"); }
+        MinimumColumnBasis minimum_column_basis() const override { return data()["m"].get_or_default("none"); }
         ColumnBasesP forced_column_bases() const override;
         acmacs::Transformation transformation() const override;
-        bool dodgy_titer_is_regular() const override { return data().get_or_default("d", false); }
-        double stress_diff_to_stop() const override { return data().get_or_default("d", 0.0); }
-        PointIndexList unmovable() const override { return data().get_or_empty_array("U"); }
-        PointIndexList unmovable_in_the_last_dimension() const override { return data().get_or_empty_array("u"); }
-        AvidityAdjusts avidity_adjusts() const override { return data().get_or_empty_array("f"); }
+        bool dodgy_titer_is_regular() const override { return data()["d"].get_or_default(false); }
+        double stress_diff_to_stop() const override { return data()["d"].get_or_default(0.0); }
+        PointIndexList unmovable() const override { return data()["U"]; }
+        PointIndexList unmovable_in_the_last_dimension() const override { return data()["u"]; }
+        AvidityAdjusts avidity_adjusts() const override { return data()["f"]; }
 
      protected:
-        PointIndexList make_disconnected() const override { return data().get_or_empty_array("D"); }
+        PointIndexList make_disconnected() const override { return data()["D"]; }
 
      private:
         static const Keys s_keys_;
@@ -209,19 +204,19 @@ namespace acmacs::chart
     class AceProjections : public Projections
     {
       public:
-        AceProjections(const Chart& chart, const rjson::v1::array& aData) : Projections(chart), mData{aData}, projections_(aData.size(), nullptr) {}
+        AceProjections(const Chart& chart, const rjson::value& aData) : Projections(chart), data_{aData}, projections_(aData.size(), nullptr) {}
 
         bool empty() const override { return projections_.empty(); }
         size_t size() const override { return projections_.size(); }
         ProjectionP operator[](size_t aIndex) const override
             {
                 if (!projections_[aIndex])
-                    projections_[aIndex] = std::make_shared<AceProjection>(chart(), mData[aIndex], aIndex);
+                    projections_[aIndex] = std::make_shared<AceProjection>(chart(), data_[aIndex], aIndex);
                 return projections_[aIndex];
             }
 
      private:
-        const rjson::v1::array& mData;
+        const rjson::value& data_;
         mutable std::vector<ProjectionP> projections_;
 
     }; // class AceProjections
@@ -231,10 +226,10 @@ namespace acmacs::chart
     class AcePlotSpec : public PlotSpec
     {
       public:
-        AcePlotSpec(const rjson::v1::object& aData, const AceChart& aChart) : mData{aData}, mChart{aChart} {}
+        AcePlotSpec(const rjson::value& aData, const AceChart& aChart) : data_{aData}, mChart{aChart} {}
 
-        bool empty() const override { return mData.empty(); }
-        DrawingOrder drawing_order() const override { return mData.get_or_empty_array("d"); }
+        bool empty() const override { return data_.empty(); }
+        DrawingOrder drawing_order() const override { return data_["d"]; }
         Color error_line_positive_color() const override;
         Color error_line_negative_color() const override;
         PointStyle style(size_t aPointNo) const override;
@@ -242,11 +237,11 @@ namespace acmacs::chart
         size_t number_of_points() const override;
 
      private:
-        const rjson::v1::object& mData;
+        const rjson::value& data_;
         const AceChart& mChart;
 
-        PointStyle extract(const rjson::v1::object& aSrc, size_t aPointNo, size_t aStyleNo) const;
-        void label_style(PointStyle& aStyle, const rjson::v1::object& aData) const;
+        PointStyle extract(const rjson::value& aSrc, size_t aPointNo, size_t aStyleNo) const;
+        void label_style(PointStyle& aStyle, const rjson::value& aData) const;
 
     }; // class AcePlotSpec
 

@@ -49,7 +49,7 @@ namespace acmacs::chart
         ColumnBasesP forced_column_bases(MinimumColumnBasis aMinimumColumnBasis) const override;
         ProjectionsP projections() const override;
         PlotSpecP plot_spec() const override;
-        const rjson::v1::value& extension_field(std::string field_name) const override;
+        const rjson::value& extension_field(std::string field_name) const override;
 
         bool is_merge() const override { return main_ ? main_->is_merge() : false; }
 
@@ -263,7 +263,7 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class titers_cannot_be_modified : public std::runtime_error { public: titers_cannot_be_modified() : std::runtime_error("titers cannot be modified") {} };
+    class titers_cannot_be_modified : public std::runtime_error { public: titers_cannot_be_modified() : std::runtime_error("titers cannot be modified (table has layers?)") {} };
 
     class TitersModify : public Titers
     {

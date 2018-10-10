@@ -23,7 +23,7 @@ namespace acmacs::chart
             string_data(std::string&& src) : std::string(std::move(src)) {}
             string_data(std::string_view src) : std::string(src) {}
             string_data(const char* src) : std::string(src) {}
-            string_data(const rjson::v1::value& aSrc) : std::string(aSrc.str()) {}
+            string_data(const rjson::value& aSrc) : std::string(aSrc) {}
             string_data(const string_data&) = default;
             string_data(string_data&&) = default;
             using std::string::operator=;
@@ -42,11 +42,11 @@ namespace acmacs::chart
         {
          public:
             using difference_type = typename std::vector<T>::difference_type;
+            using value_type = typename std::vector<T>::value_type;
 
             T_list_data() = default;
             T_list_data(size_t aSize) : mData(aSize) {}
-            T_list_data(const rjson::v1::array& aSrc) : mData(aSrc.begin(), aSrc.end()) {}
-            T_list_data(const rjson::v1::value& aSrc) : T_list_data(static_cast<const rjson::v1::array&>(aSrc)) {}
+            T_list_data(const rjson::value& aSrc) : mData(aSrc.size()) { rjson::copy(aSrc, mData.begin()); }
             T_list_data(const std::vector<T>& aSrc) : mData(aSrc) {}
             template <typename Iter> T_list_data(Iter first, Iter last) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), [](const auto& src) -> T { return src; }); }
             template <typename Iter> T_list_data(Iter first, Iter last, std::function<T (const typename Iter::value_type&)> convert) : mData(static_cast<size_t>(last - first)) { std::transform(first, last, mData.begin(), convert); }
@@ -90,11 +90,11 @@ namespace acmacs::chart
 
         }; // T_list_data<>
 
-        template <> inline T_list_data<std::string>::T_list_data(const rjson::v1::array& aSrc)
-            : mData(aSrc.size())
-        {
-            std::transform(aSrc.begin(), aSrc.end(), mData.begin(), [](const auto& src) -> std::string { return src.str(); });
-        }
+        // template <> inline T_list_data<std::string>::T_list_data(const rjson::array& aSrc)
+        //     : mData(aSrc.size())
+        // {
+        //     std::transform(aSrc.begin(), aSrc.end(), mData.begin(), [](const auto& src) -> std::string { return src.str(); });
+        // }
 
         class string_list_data : public T_list_data<std::string>
         {
