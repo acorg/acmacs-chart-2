@@ -508,8 +508,8 @@ std::string acmacs::chart::Serum::full_name_with_fields() const
 
 // ----------------------------------------------------------------------
 
-std::string name_abbreviated(std::string aName);
-std::string name_abbreviated(std::string aName)
+// std::string name_abbreviated(std::string aName);
+static inline std::string name_abbreviated(std::string aName)
 {
     try {
         std::string virus_type, host, location, isolation, year, passage, extra;
@@ -532,6 +532,30 @@ std::string acmacs::chart::Antigen::name_abbreviated() const
 
 // ----------------------------------------------------------------------
 
+static inline std::string name_without_subtype(std::string aName)
+{
+    try {
+        std::string virus_type, host, location, isolation, year, passage, extra;
+        virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
+        if (virus_type.size() > 1 && virus_type[0] == 'A' && virus_type[1] == '(')
+            virus_type.resize(1);
+        return string::join("/", {virus_type, host, location, isolation, year});
+    }
+    catch (virus_name::Unrecognized&) {
+        return aName;
+    }
+}
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::Antigen::name_without_subtype() const
+{
+    return ::name_without_subtype(name());
+
+} // acmacs::chart::Antigen::name_without_subtype
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Antigen::location_abbreviated() const
 {
     return get_locdb().abbreviation(virus_name::location(name()));
@@ -543,6 +567,14 @@ std::string acmacs::chart::Antigen::location_abbreviated() const
 std::string acmacs::chart::Serum::name_abbreviated() const
 {
     return ::name_abbreviated(name());
+
+} // acmacs::chart::Serum::name_abbreviated
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::Serum::name_without_subtype() const
+{
+    return ::name_without_subtype(name());
 
 } // acmacs::chart::Serum::name_abbreviated
 
