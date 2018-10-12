@@ -15,6 +15,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv,
                        {
+                           {"--no-omp", false, "single thread test"},
                            {"--point", "all", "point number to test"},
                            {"--step", 0.1, "grid step"},
                            {"--relax", false, "move trapped points and relax, test again, repeat while there are trapped points"},
@@ -41,7 +42,7 @@ int main(int argc, char* const argv[])
                 size_t projection_no_to_test = projection_no;
                 for (auto attempt = 1; attempt < 10; ++attempt) {
                     acmacs::chart::GridTest test(chart, projection_no_to_test, args["--step"]);
-                    const auto results = test.test_all();
+                    const auto results = args["--no-omp"] ? test.test_all() : test.test_all_parallel();
                     std::cout << results.report() << '\n';
                     if (verbose || !args["--relax"]) {
                         for (const auto& entry : results) {

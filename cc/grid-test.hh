@@ -48,7 +48,8 @@ namespace acmacs::chart
         std::string point_name(size_t point_no) const;
         Result test_point(size_t point_no);
         void test_point(Result& result);
-        Results test_all();
+        Results test_all();          // single thread version
+        Results test_all_parallel(); // omp version
         Projection make_new_projection_and_relax(const Results& results, bool verbose);
 
       private:
@@ -65,6 +66,7 @@ namespace acmacs::chart
         size_t antigen_serum_no(size_t point_no) const { return antigen(point_no) ? point_no : (point_no - chart_.number_of_antigens()); }
         // acmacs::Area area_for(size_t point_no) const;
         acmacs::Area area_for(const Stress::TableDistancesForPoint& table_distances_for_point) const;
+        Results test_all_prepare();
 
     }; // class GridTest::chart
 

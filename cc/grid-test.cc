@@ -112,7 +112,7 @@ void acmacs::chart::GridTest::test_point(Result& result)
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all()
+acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all_prepare()
 {
       // std::cerr << "stress: " << stress_.value(original_layout_.data()) << '\n';
     Results result(acmacs::index_iterator(0UL), acmacs::index_iterator(chart_.number_of_points()));
@@ -121,6 +121,27 @@ acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all()
     for (auto disconnected : projection_->disconnected())
         result[disconnected].diagnosis = Result::excluded;
     result.erase(std::remove_if(result.begin(), result.end(), [](const auto& entry) { return entry.diagnosis == Result::excluded; }), result.end());
+    return result;
+
+} // acmacs::chart::GridTest::test_all_prepare
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all()
+{
+    auto result = test_all_prepare();
+    for (size_t entry_no = 0; entry_no < result.size(); ++entry_no) {
+        test_point(result[entry_no]);
+    }
+    return result;
+
+} // acmacs::chart::GridTest::test_all
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all_parallel()
+{
+    auto result = test_all_prepare();
 
 #pragma omp parallel for default(none) shared(result) num_threads(omp_get_max_threads()) schedule(static, 4)
     for (size_t entry_no = 0; entry_no < result.size(); ++entry_no) {
@@ -129,7 +150,7 @@ acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all()
 
     return result;
 
-} // acmacs::chart::GridTest::test_all
+} // acmacs::chart::GridTest::test_all_parallel
 
 // ----------------------------------------------------------------------
 
