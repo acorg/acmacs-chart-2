@@ -500,6 +500,7 @@ namespace acmacs::chart
                     projections_.erase(projections_.begin() + static_cast<decltype(projections_)::difference_type>(number_of_projections_to_keep), projections_.end());
             }
 
+        void remove_all();
         void remove(size_t projection_no);
         void remove_all_except(size_t projection_no);
         void remove_except(size_t number_of_initial_projections_to_keep, ProjectionP projection_to_keep);

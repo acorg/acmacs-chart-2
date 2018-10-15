@@ -882,6 +882,14 @@ std::shared_ptr<ProjectionModifyNew> ProjectionsModify::new_by_cloning(const Pro
 
 // ----------------------------------------------------------------------
 
+void ProjectionsModify::remove_all()
+{
+    projections_.erase(projections_.begin(), projections_.end());
+
+} // ProjectionsModify::remove_all
+
+// ----------------------------------------------------------------------
+
 void ProjectionsModify::remove(size_t projection_no)
 {
     if (projection_no >= projections_.size())
