@@ -65,6 +65,7 @@ namespace acmacs::chart
         std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {});
         void relax(size_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, bool report_stresses, const PointIndexList& disconnect_points = {});
 
+        void remove_layers();
         void remove_antigens(const ReverseSortedIndexes& indexes);
         void remove_sera(const ReverseSortedIndexes& indexes);
         AntigenModifyP insert_antigen(size_t before);
@@ -123,6 +124,7 @@ namespace acmacs::chart
         void lab(std::string value) { lab_ = value; }
         void rbc_species(std::string value) { rbc_species_ = value; }
         void date(std::string value) { date_ = value; }
+          // void remove_sources();
 
      protected:
         std::string name_;
@@ -288,6 +290,7 @@ namespace acmacs::chart
         void multiply_by_for_antigen(size_t aAntigenNo, double multiply_by);
         void multiply_by_for_serum(size_t aSerumNo, double multiply_by);
 
+        void remove_layers();
         void remove_antigens(const ReverseSortedIndexes& indexes);
         void remove_sera(const ReverseSortedIndexes& indexes);
         void insert_antigen(size_t before);

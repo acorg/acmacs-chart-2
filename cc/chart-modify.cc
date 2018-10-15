@@ -267,6 +267,16 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
 
 // ----------------------------------------------------------------------
 
+void ChartModify::remove_layers()
+{
+    titers_modify()->remove_layers();
+    std::cerr << "WARNING: remove_layers() not implemented" << DEBUG_LINE_FUNC << '\n';
+      // info_modify()->remove_sources();
+
+} // ChartModify::remove_layers
+
+// ----------------------------------------------------------------------
+
 void ChartModify::remove_antigens(const ReverseSortedIndexes& indexes)
 {
     antigens_modify()->remove(indexes);
@@ -560,6 +570,14 @@ std::vector<Titer> TitersModify::titers_for_layers(size_t aAntigenNo, size_t aSe
     return result;
 
 } // TitersModify::titers_for_layers
+
+// ----------------------------------------------------------------------
+
+void TitersModify::remove_layers()
+{
+    layers_.clear();
+
+} // TitersModify::remove_layers
 
 // ----------------------------------------------------------------------
 

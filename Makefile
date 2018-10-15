@@ -35,13 +35,14 @@ TARGETS = \
     $(DIST)/chart-keep-antigens-sera \
     $(DIST)/chart-keep-antigens-titrated-against-sera \
     $(DIST)/chart-grid-test \
+    $(DIST)/chart-serum-titers-check \
+    $(DIST)/chart-column-bases \
+    $(DIST)/chart-list-antigens-without-titers \
+    $(DIST)/chart-remove-layers \
     $(DIST)/test-titer-iterator \
     $(DIST)/test-chart-modify \
     $(DIST)/test-chart-create-from-scratch \
-    $(DIST)/test-chart-from-text \
-    $(DIST)/chart-serum-titers-check \
-    $(DIST)/chart-column-bases \
-    $(DIST)/chart-list-antigens-without-titers
+    $(DIST)/test-chart-from-text
 
 SOURCES = chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc randomizer.cc \
     rjson-import.cc \
