@@ -83,20 +83,19 @@ void write_csv(std::string aFilename, std::shared_ptr<acmacs::chart::Antigens> a
 
 void write_text(std::string aFilename, std::string_view aFieldSeparator, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::chart::Layout> layout)
 {
-    using namespace std::string_literals;
     std::string result;
     const auto number_of_dimensions = layout->number_of_dimensions();
     for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-        result += "AG"s + aFieldSeparator + encode_name(antigen->full_name(), aFieldSeparator);
+        result += string::concat("AG", aFieldSeparator, encode_name(antigen->full_name(), aFieldSeparator));
         for (size_t dim = 0; dim < number_of_dimensions; ++dim)
-            result += aFieldSeparator + acmacs::to_string(layout->coordinate(ag_no, dim));
+            result += string::concat(aFieldSeparator, acmacs::to_string(layout->coordinate(ag_no, dim)));
         result += '\n';
     }
     const auto number_of_antigens = antigens->size();
     for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
-        result += "SR"s + aFieldSeparator + encode_name(serum->full_name(), aFieldSeparator);
+        result += string::concat("SR", aFieldSeparator, encode_name(serum->full_name(), aFieldSeparator));
         for (size_t dim = 0; dim < number_of_dimensions; ++dim)
-            result += aFieldSeparator + acmacs::to_string(layout->coordinate(sr_no + number_of_antigens, dim));
+            result += string::concat(aFieldSeparator, acmacs::to_string(layout->coordinate(sr_no + number_of_antigens, dim)));
         result += '\n';
     }
     acmacs::file::write(aFilename, result);
