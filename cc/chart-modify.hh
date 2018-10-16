@@ -113,8 +113,8 @@ namespace acmacs::chart
         std::string lab(Compute /*aCompute*/ = Compute::No) const override { return lab_; }
         std::string rbc_species(Compute /*aCompute*/ = Compute::No) const override { return rbc_species_; }
         std::string date(Compute /*aCompute*/ = Compute::No) const override { return date_; }
-        size_t number_of_sources() const override { return sources_removed_ ? 0 : main_->number_of_sources(); }
-        InfoP source(size_t /*aSourceNo*/) const override { return nullptr; }
+        size_t number_of_sources() const override { return sources_.size(); }
+        InfoP source(size_t aSourceNo) const override { return sources_.at(aSourceNo); }
 
         void name(std::string value) { name_ = value; computed_name_ = value; }
         void virus(std::string value) { virus_ = value; }
@@ -124,11 +124,9 @@ namespace acmacs::chart
         void lab(std::string value) { lab_ = value; }
         void rbc_species(std::string value) { rbc_species_ = value; }
         void date(std::string value) { date_ = value; }
-        void remove_sources() { sources_removed_ = true; }
+        void remove_sources() { sources_.clear(); }
 
       protected:
-        InfoP main_;
-        bool sources_removed_ = false;
         std::string name_;
         std::string computed_name_;
         std::string virus_;
@@ -138,7 +136,8 @@ namespace acmacs::chart
         std::string lab_;
         std::string rbc_species_;
         std::string date_;
-
+        std::vector<InfoP> sources_;
+        
     }; // class InfoModify
 
 // ----------------------------------------------------------------------

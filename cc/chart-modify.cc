@@ -378,8 +378,7 @@ ChartNew::ChartNew(size_t number_of_antigens, size_t number_of_sera)
 // ----------------------------------------------------------------------
 
 InfoModify::InfoModify(InfoP main)
-    : main_(main),
-      name_{main->name(Compute::No)},
+    : name_{main->name(Compute::No)},
       computed_name_{main->name(Compute::Yes)},
       virus_{main->virus(Compute::Yes)},
       virus_type_{main->virus_type(Compute::Yes)},
@@ -387,8 +386,12 @@ InfoModify::InfoModify(InfoP main)
       assay_{main->assay(Compute::Yes)},
       lab_{main->lab(Compute::Yes)},
       rbc_species_{main->rbc_species(Compute::Yes)},
-      date_{main->date(Compute::Yes)}
+      date_{main->date(Compute::Yes)},
+      sources_(main->number_of_sources())
 {
+    for (size_t source_no = 0; source_no < sources_.size(); ++source_no)
+        sources_[source_no] = main->source(source_no);
+
 } // InfoModify::InfoModify
 
 // ----------------------------------------------------------------------
