@@ -113,7 +113,7 @@ namespace acmacs::chart
         std::string lab(Compute /*aCompute*/ = Compute::No) const override { return lab_; }
         std::string rbc_species(Compute /*aCompute*/ = Compute::No) const override { return rbc_species_; }
         std::string date(Compute /*aCompute*/ = Compute::No) const override { return date_; }
-        size_t number_of_sources() const override { return 0; }
+        size_t number_of_sources() const override { return sources_removed_ ? 0 : main_->number_of_sources(); }
         InfoP source(size_t /*aSourceNo*/) const override { return nullptr; }
 
         void name(std::string value) { name_ = value; computed_name_ = value; }
@@ -124,9 +124,11 @@ namespace acmacs::chart
         void lab(std::string value) { lab_ = value; }
         void rbc_species(std::string value) { rbc_species_ = value; }
         void date(std::string value) { date_ = value; }
-          // void remove_sources();
+        void remove_sources() { sources_removed_ = true; }
 
-     protected:
+      protected:
+        InfoP main_;
+        bool sources_removed_ = false;
         std::string name_;
         std::string computed_name_;
         std::string virus_;

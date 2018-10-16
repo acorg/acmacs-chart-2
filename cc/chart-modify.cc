@@ -270,8 +270,7 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
 void ChartModify::remove_layers()
 {
     titers_modify()->remove_layers();
-    std::cerr << "WARNING: remove_layers() not implemented" << DEBUG_LINE_FUNC << '\n';
-      // info_modify()->remove_sources();
+    info_modify()->remove_sources();
 
 } // ChartModify::remove_layers
 
@@ -379,7 +378,8 @@ ChartNew::ChartNew(size_t number_of_antigens, size_t number_of_sera)
 // ----------------------------------------------------------------------
 
 InfoModify::InfoModify(InfoP main)
-    : name_{main->name(Compute::No)},
+    : main_(main),
+      name_{main->name(Compute::No)},
       computed_name_{main->name(Compute::Yes)},
       virus_{main->virus(Compute::Yes)},
       virus_type_{main->virus_type(Compute::Yes)},
