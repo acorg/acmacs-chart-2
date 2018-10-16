@@ -726,10 +726,13 @@ DrawingOrder Acd1PlotSpec::drawing_order() const
 
 Color Acd1PlotSpec::error_line_positive_color() const
 {
-    if (const auto& color = data_.get("error_line_positive", "color"); !color.is_null())
-        return Color(static_cast<std::string_view>(color));
-    else
-        return "red";
+    if (const auto& color = data_.get("error_line_positive", "color"); !color.is_null()) {
+        if (color.is_string())
+            return Color(static_cast<std::string_view>(color));
+        if (color.is_number())
+            return Color(static_cast<size_t>(color));
+    }
+    return "red";
 
 } // Acd1PlotSpec::error_line_positive_color
 
@@ -737,10 +740,13 @@ Color Acd1PlotSpec::error_line_positive_color() const
 
 Color Acd1PlotSpec::error_line_negative_color() const
 {
-    if (const auto& color = data_.get("error_line_negative", "color"); !color.is_null())
-        return Color(static_cast<std::string_view>(color));
-    else
-        return "blue";
+    if (const auto& color = data_.get("error_line_negative", "color"); !color.is_null()) {
+        if (color.is_string())
+            return Color(static_cast<std::string_view>(color));
+        if (color.is_number())
+            return Color(static_cast<size_t>(color));
+    }
+    return "blue";
 
 } // Acd1PlotSpec::error_line_negative_color
 
