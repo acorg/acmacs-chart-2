@@ -231,7 +231,7 @@ std::optional<size_t> AceAntigens::find_by_full_name(std::string aFullName) cons
 {
     if (mAntigenNameIndex.empty())
         make_name_index();
-    const std::string_view name{virus_name::name(aFullName)};
+    const auto name = virus_name::name(aFullName);
     if (const auto found = mAntigenNameIndex.find(name); found != mAntigenNameIndex.end()) {
         for (auto index: found->second) {
             if (AceAntigen(data_[index]).full_name() == aFullName)
@@ -258,9 +258,7 @@ std::optional<size_t> AceAntigens::find_by_full_name(std::string aFullName) cons
 
 void AceAntigens::make_name_index() const
 {
-    rjson::for_each(data_, [this](const rjson::value& val, size_t index) {
-        mAntigenNameIndex[static_cast<std::string>(val["N"])].push_back(index);
-    });
+    rjson::for_each(data_, [this](const rjson::value& val, size_t index) { mAntigenNameIndex[val["N"]].push_back(index); });
 
 } // AceAntigens::make_name_index
 
