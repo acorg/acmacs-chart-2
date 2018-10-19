@@ -493,7 +493,12 @@ TitersModify::TitersModify(TitersP main)
                 rjson::for_each(source_layer, [&target](const rjson::value& source_row, size_t ag_no) {
                     using target_t = std::remove_reference_t<decltype(target[ag_no])>;
                     using value_type = typename target_t::value_type;
-                    rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::object::value_type& kv) -> value_type { return {std::stoul(kv.first), kv.second}; });
+                    if (source_row.is_object())
+                        rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::object::value_type& kv) -> value_type { return {std::stoul(kv.first), kv.second}; });
+                    else if (source_row.is_array())
+                        rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::value& titer, size_t serum_no) -> value_type { return {serum_no, titer}; });
+                    else
+                        throw invalid_data{string::concat("invalid layer ", ag_no, " type: ", source_row.actual_type())};
                 });
                   // sort entries by serum no
                 for (auto& row : target)
