@@ -46,6 +46,19 @@ std::string acmacs::chart::Chart::make_name(std::optional<size_t> aProjectionNo)
 
 // ----------------------------------------------------------------------
 
+std::string acmacs::chart::Chart::description() const
+{
+    auto n = string::concat(info()->make_name(), " Ag:", number_of_antigens(), " Sr:", number_of_sera());
+    if (auto prjs = projections(); !prjs->empty()) {
+        auto prj = (*prjs)[0];
+        n += string::concat(" >=", prj->minimum_column_basis(), " ", prj->stress());
+    }
+    return n;
+
+} // acmacs::chart::Chart::description
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Chart::computed_column_bases(acmacs::chart::MinimumColumnBasis aMinimumColumnBasis, use_cache a_use_cache) const
 {
     if (a_use_cache == use_cache::yes) {

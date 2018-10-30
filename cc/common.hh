@@ -17,7 +17,11 @@ namespace acmacs::chart
 
         CommonAntigensSera(const Chart& primary, const Chart& secondary, match_level_t match_level);
         CommonAntigensSera(const Chart& primary); // for procrustes between projections of the same chart
+        CommonAntigensSera(const CommonAntigensSera&) = delete;
+        CommonAntigensSera(CommonAntigensSera&&);
         ~CommonAntigensSera();
+        CommonAntigensSera& operator=(const CommonAntigensSera&) = delete;
+        CommonAntigensSera& operator=(CommonAntigensSera&&);
 
         void report() const;
         operator bool() const;
@@ -38,6 +42,8 @@ namespace acmacs::chart
 
         enum class subset { all, antigens, sera };
         std::vector<common_t> points(subset a_subset) const;
+
+        static match_level_t match_level(std::string_view source);
 
      private:
         class Impl;

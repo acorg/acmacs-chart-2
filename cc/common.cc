@@ -1,3 +1,4 @@
+#include "acmacs-base/string.hh"
 #include "acmacs-chart-2/common.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -395,6 +396,9 @@ acmacs::chart::CommonAntigensSera::CommonAntigensSera(const Chart& primary)
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::CommonAntigensSera::CommonAntigensSera(CommonAntigensSera&&) = default;
+acmacs::chart::CommonAntigensSera& acmacs::chart::CommonAntigensSera::operator=(CommonAntigensSera&&) = default;
+
 // must be here to allow std::unique_ptr<Impl> with incomplete Impl in .hh
 acmacs::chart::CommonAntigensSera::~CommonAntigensSera()
 {
@@ -487,6 +491,33 @@ std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAn
     return result;
 
 } // CommonAntigensSera::points
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::CommonAntigensSera::match_level_t acmacs::chart::CommonAntigensSera::match_level(std::string_view source)
+{
+    auto match_level{match_level_t::automatic};
+    if (!source.empty()) {
+        switch (source[0]) {
+            case 's':
+                match_level = match_level_t::strict;
+                break;
+            case 'r':
+                match_level = match_level_t::relaxed;
+                break;
+            case 'i':
+                match_level = match_level_t::ignored;
+                break;
+            case 'a':
+                match_level = match_level_t::automatic;
+                break;
+            default:
+                throw std::runtime_error(string::concat("unrecognized match_level: ", source));
+        }
+    }
+    return match_level;
+
+} // acmacs::chart::CommonAntigensSera::match_level
 
 // ----------------------------------------------------------------------
 /// Local Variables:

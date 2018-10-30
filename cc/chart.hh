@@ -566,6 +566,7 @@ namespace acmacs::chart
 
         std::string make_info() const;
         std::string make_name(std::optional<size_t> aProjectionNo = {}) const;
+        std::string description() const;
 
         PointStyle default_style(size_t aPointNo) const { auto ags = antigens(); return default_style(aPointNo < ags->size() ? ((*ags)[aPointNo]->reference() ? PointType::ReferenceAntigen : PointType::TestAntigen) : PointType::Serum); }
         std::vector<acmacs::PointStyle> default_all_styles() const;

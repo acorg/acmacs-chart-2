@@ -46,7 +46,7 @@ namespace acmacs::chart
 
         virtual double column_basis(size_t aSerumNo) const = 0;
         virtual size_t size() const = 0;
-        
+
     }; // class ColumnBases
 
 // ----------------------------------------------------------------------
@@ -84,7 +84,7 @@ namespace acmacs
             return "<none>";
     }
 
-    inline std::string to_string(const acmacs::chart::MinimumColumnBasis& aMinimumColumnBasis)
+    inline std::string to_string(acmacs::chart::MinimumColumnBasis aMinimumColumnBasis)
     {
         return static_cast<std::string>(aMinimumColumnBasis);
     }

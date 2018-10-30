@@ -28,26 +28,7 @@ int main(int argc, char* const argv[])
         }
         else {
             const auto report = do_report_time(args["--time"]);
-            auto match_level{acmacs::chart::CommonAntigensSera::match_level_t::automatic};
-            if (const std::string match_level_s = args["--match"].str(); !match_level_s.empty()) {
-                switch (match_level_s[0]) {
-                    case 's':
-                        match_level = acmacs::chart::CommonAntigensSera::match_level_t::strict;
-                        break;
-                    case 'r':
-                        match_level = acmacs::chart::CommonAntigensSera::match_level_t::relaxed;
-                        break;
-                    case 'i':
-                        match_level = acmacs::chart::CommonAntigensSera::match_level_t::ignored;
-                        break;
-                    case 'a':
-                        match_level = acmacs::chart::CommonAntigensSera::match_level_t::automatic;
-                        break;
-                    default:
-                        std::cerr << "Unrecognized --match argument, automatic assumed" << '\n';
-                        break;
-                }
-            }
+            const auto match_level = acmacs::chart::CommonAntigensSera::match_level(args["--match"]);
             if (std::string(args[0]) == args[1]) {
                 auto chart1 = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
                 acmacs::chart::CommonAntigensSera common(*chart1);

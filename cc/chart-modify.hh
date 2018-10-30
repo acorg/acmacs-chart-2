@@ -71,6 +71,8 @@ namespace acmacs::chart
         AntigenModifyP insert_antigen(size_t before);
         SerumModifyP insert_serum(size_t before);
 
+        void merge(const Chart& merge_in);
+
      protected:
         explicit ChartModify(size_t number_of_antigens, size_t number_of_sera);
 
@@ -125,6 +127,7 @@ namespace acmacs::chart
         void rbc_species(std::string value) { rbc_species_ = value; }
         void date(std::string value) { date_ = value; }
         void remove_sources() { sources_.clear(); }
+        void add_source(InfoP source) { sources_.push_back(source); }
 
       protected:
         std::string name_;
@@ -137,7 +140,7 @@ namespace acmacs::chart
         std::string rbc_species_;
         std::string date_;
         std::vector<InfoP> sources_;
-        
+
     }; // class InfoModify
 
 // ----------------------------------------------------------------------
