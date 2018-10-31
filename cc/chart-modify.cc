@@ -699,15 +699,16 @@ void TitersModify::remove_layers()
 
 // ----------------------------------------------------------------------
 
-void TitersModify::create_layers(size_t number_of_layers)
+void TitersModify::create_layers(size_t number_of_layers, size_t number_of_antigens)
 {
-    modifiable_check();
-
     if (number_of_layers < 2)
         throw invalid_data{string::concat("invalid number of layers to create: ", number_of_layers)};
     if (!layers_.empty())
         throw invalid_data{"cannot create layers: already present"};
     layers_.resize(number_of_layers);
+    for (auto& layer : layers_)
+        layer.resize(number_of_antigens);
+    layer_titer_modified_ = true;
 
 } // TitersModify::create_layers
 
@@ -732,8 +733,8 @@ void TitersModify::set_titer(sparse_t& titers, size_t aAntigenNo, size_t aSerumN
 
 void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const std::string& aTiter)
 {
-    modifiable_check();
     set_titer(layers_.at(aLayerNo), aAntigenNo, aSerumNo, aTiter);
+    layer_titer_modified_ = true;
 
 } // TitersModify::titer
 

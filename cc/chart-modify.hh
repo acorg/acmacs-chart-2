@@ -306,7 +306,7 @@ namespace acmacs::chart
         void insert_serum(size_t before);
 
         void remove_layers();
-        void create_layers(size_t number_of_layers);
+        void create_layers(size_t number_of_layers, size_t number_of_antigens);
         void titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const std::string& aTiter);
 
      private:
@@ -321,6 +321,7 @@ namespace acmacs::chart
         size_t number_of_sera_;
         titers_t titers_;
         layers_t layers_;
+        bool layer_titer_modified_ = false; // force titer recalculation
 
         static Titer find_titer_for_serum(const sparse_row_t& aRow, size_t aSerumNo);
         static Titer titer_in_sparse_t(const sparse_t& aSparse, size_t aAntigenNo, size_t aSerumNo);
