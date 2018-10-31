@@ -170,15 +170,11 @@ void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers>
     const size_t number_of_antigens = aTiters->number_of_antigens();
     const size_t number_of_sera = aTiters->number_of_sera();
 
-    auto fill_d = [number_of_antigens, number_of_sera](rjson::value& aLayer, std::function<acmacs::chart::Titer (size_t, size_t)> aGetTiter) {
-        for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
-            auto& row = aLayer.append(rjson::object{});
-            for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
-                const auto titer = aGetTiter(ag_no, sr_no);
-                if (!titer.is_dont_care())
-                    row[sr_no] = titer;
-            }
-        }
+    auto fill_d = [number_of_antigens](rjson::value& aLayer, auto first, auto last) {
+        for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no)
+            aLayer.append(rjson::object{});
+        for (; first != last; ++first)
+            aLayer[first->antigen][first->serum] = first->titer;
     };
 
       // --------------------------------------------------
@@ -213,7 +209,7 @@ void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers>
             }
         }
         else {
-            fill_d(aTarget["d"] = rjson::array{}, [aTiters](size_t ag_no, size_t sr_no) { return aTiters->titer(ag_no, sr_no); });
+            fill_d(aTarget["d"] = rjson::array{}, aTiters->begin(), aTiters->end());
         }
     }
       // ti_titers.report();
@@ -235,7 +231,7 @@ void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers>
         if (const size_t number_of_layers = aTiters->number_of_layers(); number_of_layers) {
             auto& layers = aTarget["L"] = rjson::array{};
             for (size_t layer_no = 0; layer_no < number_of_layers; ++layer_no) {
-                fill_d(layers.append(rjson::array{}), [aTiters, layer_no](size_t ag_no, size_t sr_no) { return aTiters->titer_of_layer(layer_no, ag_no, sr_no); });
+                fill_d(layers.append(rjson::array{}), aTiters->begin(layer_no), aTiters->end(layer_no));
             }
         }
     }
