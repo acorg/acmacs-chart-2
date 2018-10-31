@@ -98,6 +98,10 @@ namespace acmacs::chart
         BLineage& operator=(Lineage lineage) { mLineage = lineage; return *this; }
         BLineage& operator=(const BLineage&) = default;
         BLineage& operator=(std::string lineage) { mLineage = from(lineage); return *this; }
+        bool operator==(BLineage lineage) const { return mLineage == lineage.mLineage; }
+        bool operator!=(BLineage lineage) const { return !operator==(lineage); }
+        bool operator==(Lineage lineage) const { return mLineage == lineage; }
+        bool operator!=(Lineage lineage) const { return !operator==(lineage); }
 
         operator std::string() const
             {
@@ -156,7 +160,6 @@ namespace acmacs::chart
         using detail::string_list_data::string_list_data;
 
         bool distinct() const { return exist("DISTINCT"); }
-        void add(const std::string& val) { if (!exist(val)) push_back(val); }
         void remove(const std::string& val) { if (auto found = std::find(begin(), end(), val); found != end()) erase(found); }
 
     }; // class Annotations
@@ -165,8 +168,6 @@ namespace acmacs::chart
     {
      public:
         using detail::string_list_data::string_list_data;
-
-        void add(const std::string& val) { if (!exist(val)) push_back(val); }
 
     }; // class Clades
 

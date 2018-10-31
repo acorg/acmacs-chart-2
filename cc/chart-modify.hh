@@ -174,6 +174,9 @@ namespace acmacs::chart
         void continent(const std::string& value) { continent_ = value; }
         void set_continent();
 
+        void replace_with(AntigenP main);
+        void update_with(AntigenP main);
+
      private:
         Name name_;
         Date date_;
@@ -215,6 +218,9 @@ namespace acmacs::chart
         void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
         void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
         void set_continent() {}
+
+        void replace_with(SerumP main);
+        void update_with(SerumP main);
 
      private:
         Name name_;

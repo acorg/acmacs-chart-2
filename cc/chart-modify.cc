@@ -447,6 +447,46 @@ AntigenModify::AntigenModify(AntigenP main)
 
 // ----------------------------------------------------------------------
 
+void AntigenModify::replace_with(AntigenP main)
+{
+    name_ = main->name();
+    date_ = main->date();
+    passage_ = main->passage();
+    lineage_ = main->lineage();
+    reassortant_ = main->reassortant();
+    annotations_ = main->annotations();
+    lab_ids_ = main->lab_ids();
+    clades_ = main->clades();
+    reference_ = main->reference();
+
+} // AntigenModify::replace_with
+
+// ----------------------------------------------------------------------
+
+void AntigenModify::update_with(AntigenP main)
+{
+    if (date_.empty()) {
+        date_ = main->date();
+    }
+    else if (!main->date().empty() && date_ != main->date()) {
+        std::cerr << "WARNING: merged antigen dates " << date_ << " vs. " << main->date() << '\n';
+    }
+
+    if (lineage_ == BLineage::Unknown) {
+        lineage_ = main->lineage();
+    }
+    else if (main->lineage() != BLineage::Unknown && lineage_ != main->lineage()) {
+        std::cerr << "WARNING: merged antigen lineages " << lineage_ << " vs. " << main->lineage() << '\n';
+    }
+    lab_ids_.merge_in(main->lab_ids());
+    clades_.merge_in(main->clades());
+
+    reference_ |= main->reference();
+
+} // AntigenModify::update_with
+
+// ----------------------------------------------------------------------
+
 void AntigenModify::set_continent()
 {
     if (continent().empty()) {
@@ -479,6 +519,41 @@ SerumModify::SerumModify(SerumP main)
     homologous_antigens_{main->homologous_antigens()}
 {
 } // SerumModify::SerumModify
+
+// ----------------------------------------------------------------------
+
+void SerumModify::replace_with(SerumP main)
+{
+    name_ = main->name();
+    passage_ = main->passage();
+    lineage_ = main->lineage();
+    reassortant_ = main->reassortant();
+    annotations_ = main->annotations();
+    serum_id_ = main->serum_id();
+    serum_species_ = main->serum_species();
+    // homologous_antigens_ = main->homologous_antigens();
+
+} // SerumModify::replace_with
+
+// ----------------------------------------------------------------------
+
+void SerumModify::update_with(SerumP main)
+{
+    if (lineage_ == BLineage::Unknown) {
+        lineage_ = main->lineage();
+    }
+    else if (main->lineage() != BLineage::Unknown && lineage_ != main->lineage()) {
+        std::cerr << "WARNING: merged serum lineages " << lineage_ << " vs. " << main->lineage() << '\n';
+    }
+
+    if (serum_species_.empty()) {
+        serum_species_ = main->serum_species();
+    }
+    else if (!main->serum_species().empty() && serum_species_ != main->serum_species()) {
+        std::cerr << "WARNING: merged serum serum_speciess " << serum_species_ << " vs. " << main->serum_species() << '\n';
+    }
+
+} // SerumModify::update_with
 
 // ----------------------------------------------------------------------
 
