@@ -78,7 +78,7 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
     merge_antigens_sera(*result->sera_modify(), *chart1.sera(), report.sera_primary_target);
     merge_antigens_sera(*result->sera_modify(), *chart2.sera(), report.sera_secondary_target);
 
-      // titers
+    // titers
     auto copy_titer = [](auto first, auto last, const auto& antigen_target, const auto& serum_target, auto assign) {
         for (; first != last; ++first) {
             if (auto ag_no = antigen_target.find(first->antigen), sr_no = serum_target.find(first->serum); ag_no != antigen_target.end() && sr_no != serum_target.end())
@@ -90,32 +90,25 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
     auto titers1 = chart1.titers(), titers2 = chart2.titers();
     auto layers1 = titers1->number_of_layers(), layers2 = titers2->number_of_layers();
     titers->create_layers((layers1 ? layers1 : 1) + (layers2 ? layers2 : 1), result_antigens->size());
-    size_t target_layer_no = 0;
-    if (layers1) {
-        for (size_t source_layer_no = 0; source_layer_no < layers1; ++source_layer_no, ++target_layer_no) {
-            copy_titer(titers1->begin(source_layer_no), titers1->end(source_layer_no), report.antigens_primary_target, report.sera_primary_target,
-                       [&titers,target_layer_no](size_t ag_no, size_t sr_no, std::string titer) { titers->titer(ag_no, sr_no, target_layer_no, titer); });
-        }
-    }
-    else {
-        copy_titer(titers1->begin(), titers1->end(), report.antigens_primary_target, report.sera_primary_target,
-                       [&titers,target_layer_no](size_t ag_no, size_t sr_no, std::string titer) { titers->titer(ag_no, sr_no, target_layer_no, titer); });
-        ++target_layer_no;
-    }
-    if (layers2) {
-        for (size_t source_layer_no = 0; source_layer_no < layers2; ++source_layer_no, ++target_layer_no) {
-            copy_titer(titers2->begin(source_layer_no), titers2->end(source_layer_no), report.antigens_secondary_target, report.sera_secondary_target,
-                       [&titers,target_layer_no](size_t ag_no, size_t sr_no, std::string titer) { titers->titer(ag_no, sr_no, target_layer_no, titer); });
-        }
-    }
-    else {
-        copy_titer(titers2->begin(), titers2->end(), report.antigens_secondary_target, report.sera_secondary_target,
-                       [&titers,target_layer_no](size_t ag_no, size_t sr_no, std::string titer) { titers->titer(ag_no, sr_no, target_layer_no, titer); });
-        ++target_layer_no;
-    }
 
-      // projections
-      // plot spec
+    size_t target_layer_no = 0;
+    auto copy_layers = [&target_layer_no,&copy_titer,&titers](size_t source_layers, const auto& source_titers, const MergeReport::index_mapping_t& antigen_target, const MergeReport::index_mapping_t& serum_target) {
+        auto assign = [&titers, target_layer_no](size_t ag_no, size_t sr_no, std::string titer) { titers->titer(ag_no, sr_no, target_layer_no, titer); };
+        if (source_layers) {
+            for (size_t source_layer_no = 0; source_layer_no < source_layers; ++source_layer_no, ++target_layer_no)
+                copy_titer(source_titers.begin(source_layer_no), source_titers.end(source_layer_no), antigen_target, serum_target, assign);
+        }
+        else {
+            copy_titer(source_titers.begin(), source_titers.end(), antigen_target, serum_target, assign);
+            ++target_layer_no;
+        }
+    };
+
+    copy_layers(layers1, *titers1, report.antigens_primary_target, report.sera_primary_target);
+    copy_layers(layers2, *titers2, report.antigens_secondary_target, report.sera_secondary_target);
+
+    // projections
+    // plot spec
 
     return {std::move(result), std::move(report)};
 
