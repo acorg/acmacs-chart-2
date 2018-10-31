@@ -101,6 +101,8 @@ class CommonAntigensSera::Impl
         ChartData(const acmacs::chart::Chart& primary);
         void report(std::ostream& stream, const char* prefix, const char* ignored_key) const;
         std::vector<CommonAntigensSera::common_t> common() const;
+        std::optional<size_t> primary_by_secondary(size_t secondary_no) const;
+        std::optional<size_t> secondary_by_primary(size_t primary_no) const;
 
         std::vector<AgSrEntry> primary_;
         std::vector<AgSrEntry> secondary_;
@@ -353,7 +355,7 @@ template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry
 
 // ----------------------------------------------------------------------
 
-template <typename AgSrEntry> std::vector<CommonAntigensSera::common_t> CommonAntigensSera::Impl::ChartData<AgSrEntry>::common() const
+template <typename AgSrEntry> inline std::vector<CommonAntigensSera::common_t> CommonAntigensSera::Impl::ChartData<AgSrEntry>::common() const
 {
     std::vector<CommonAntigensSera::common_t> result;
     for (const auto& m: match_) {
@@ -363,6 +365,28 @@ template <typename AgSrEntry> std::vector<CommonAntigensSera::common_t> CommonAn
     return result;
 
 } // CommonAntigensSera::Impl::ChartData<AgSrEntry>::common
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrEntry> inline std::optional<size_t> CommonAntigensSera::Impl::ChartData<AgSrEntry>::primary_by_secondary(size_t secondary_no) const
+{
+    if (const auto found = std::find_if(match_.begin(), match_.end(), [secondary_no](const auto& match) { return match.use && match.secondary_index == secondary_no; }); found != match_.end())
+        return found->primary_index;
+    else
+        return {};
+
+} // CommonAntigensSera::Impl::ChartData<AgSrEntry>::primary_by_secondary
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrEntry> inline std::optional<size_t> CommonAntigensSera::Impl::ChartData<AgSrEntry>::secondary_by_primary(size_t primary_no) const
+{
+    if (const auto found = std::find_if(match_.begin(), match_.end(), [primary_no](const auto& match) { return match.use && match.primary_index == primary_no; }); found != match_.end())
+        return found->secondary_index;
+    else
+        return {};
+
+} // CommonAntigensSera::Impl::ChartData<AgSrEntry>::secondary_by_primary
 
 // ----------------------------------------------------------------------
 
@@ -491,6 +515,38 @@ std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAn
     return result;
 
 } // CommonAntigensSera::points
+
+// ----------------------------------------------------------------------
+
+std::optional<size_t> acmacs::chart::CommonAntigensSera::antigen_primary_by_secondary(size_t secondary_no) const
+{
+    return impl_->antigens_.primary_by_secondary(secondary_no);
+
+} // acmacs::chart::CommonAntigensSera::antigen_primary_by_secondary
+
+// ----------------------------------------------------------------------
+
+std::optional<size_t> acmacs::chart::CommonAntigensSera::antigen_secondary_by_primary(size_t primary_no) const
+{
+    return impl_->antigens_.secondary_by_primary(primary_no);
+
+} // acmacs::chart::CommonAntigensSera::antigen_secondary_by_primary
+
+// ----------------------------------------------------------------------
+
+std::optional<size_t> acmacs::chart::CommonAntigensSera::serum_primary_by_secondary(size_t secondary_no) const
+{
+    return impl_->sera_.primary_by_secondary(secondary_no);
+
+} // acmacs::chart::CommonAntigensSera::serum_primary_by_secondary
+
+// ----------------------------------------------------------------------
+
+std::optional<size_t> acmacs::chart::CommonAntigensSera::serum_secondary_by_primary(size_t primary_no) const
+{
+    return impl_->sera_.secondary_by_primary(primary_no);
+
+} // acmacs::chart::CommonAntigensSera::serum_secondary_by_primary
 
 // ----------------------------------------------------------------------
 

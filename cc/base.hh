@@ -107,6 +107,7 @@ namespace acmacs::chart
             void push_back(std::string&& val) { if (!val.empty()) T_list_data<std::string>::push_back(std::move(val)); }
             bool exist(const std::string& val) const { return std::find(begin(), end(), val) != end(); }
             void add(const std::string& val) { if (!exist(val)) push_back(val); }
+            void remove(const std::string& val) { if (auto found = std::find(begin(), end(), val); found != end()) erase(found); }
 
             void merge_in(const string_list_data& another)
                 {

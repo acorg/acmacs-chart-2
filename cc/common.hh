@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <vector>
 #include <iostream>
 
@@ -39,6 +40,12 @@ namespace acmacs::chart
         std::vector<common_t> sera() const; // returns serum indexes (NOT point indexes)!
         std::vector<common_t> sera_as_point_indexes() const;
         std::vector<common_t> points() const;
+
+          // common antigen/serum mapping
+        std::optional<size_t> antigen_primary_by_secondary(size_t secondary_no) const;
+        std::optional<size_t> antigen_secondary_by_primary(size_t primary_no) const;
+        std::optional<size_t> serum_primary_by_secondary(size_t secondary_no) const;
+        std::optional<size_t> serum_secondary_by_primary(size_t primary_no) const;
 
         enum class subset { all, antigens, sera };
         std::vector<common_t> points(subset a_subset) const;

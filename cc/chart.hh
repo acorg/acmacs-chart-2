@@ -160,7 +160,6 @@ namespace acmacs::chart
         using detail::string_list_data::string_list_data;
 
         bool distinct() const { return exist("DISTINCT"); }
-        void remove(const std::string& val) { if (auto found = std::find(begin(), end(), val); found != end()) erase(found); }
 
     }; // class Annotations
 
@@ -276,6 +275,7 @@ namespace acmacs::chart
 
         bool is_egg() const { return !reassortant().empty() || passage().is_egg(); }
         bool is_cell() const { return !is_egg(); }
+        bool distinct() const { return annotations().distinct(); }
 
     }; // class Antigen
 
