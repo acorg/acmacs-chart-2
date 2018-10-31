@@ -1,5 +1,5 @@
 #include <random>
-#include <typeinfo>
+#include <functional>
 
 #include "acmacs-base/omp.hh"
 #include "acmacs-base/range.hh"
@@ -393,6 +393,41 @@ InfoModify::InfoModify(InfoP main)
         sources_[source_no] = main->source(source_no);
 
 } // InfoModify::InfoModify
+
+// ----------------------------------------------------------------------
+
+using info_mem_func_t = std::string (acmacs::chart::Info::*)(acmacs::chart::Info::Compute) const;
+
+static inline std::string info_modify_make_field(acmacs::chart::Info::Compute aCompute, const acmacs::chart::InfoModify& info, const std::string& field, info_mem_func_t mem_func)
+{
+    if (!field.empty() || aCompute == acmacs::chart::Info::Compute::No)
+        return field;
+
+    std::set<std::string> composition;
+    std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(info.number_of_sources()), std::inserter(composition, composition.begin()),
+                   [&info,&mem_func](size_t index) { return std::invoke(mem_func, *info.source(index), acmacs::chart::Info::Compute::No); });
+    return string::join("+", composition);
+}
+
+std::string InfoModify::virus(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_, &Info::virus); }
+std::string InfoModify::virus_type(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_type_, &Info::virus_type); }
+std::string InfoModify::subset(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, subset_, &Info::subset); }
+std::string InfoModify::assay(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, assay_, &Info::assay); }
+std::string InfoModify::lab(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, lab_, &Info::lab); }
+std::string InfoModify::rbc_species(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, rbc_species_, &Info::rbc_species); }
+
+// ----------------------------------------------------------------------
+
+std::string InfoModify::date(Compute aCompute) const
+{
+    if (!date_.empty() || aCompute == acmacs::chart::Info::Compute::No)
+        return date_;
+    std::vector<std::string> composition{number_of_sources()};
+    std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(number_of_sources()), composition.begin(), [this](size_t index) { return source(index)->date(); });
+    std::sort(std::begin(composition), std::end(composition));
+    return string::join("-", {composition.front(), composition.back()});
+
+} // InfoModify::date
 
 // ----------------------------------------------------------------------
 

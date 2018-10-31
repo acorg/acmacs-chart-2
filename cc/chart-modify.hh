@@ -108,13 +108,13 @@ namespace acmacs::chart
         explicit InfoModify(InfoP main);
 
         std::string name(Compute aCompute = Compute::No) const override { return aCompute == Compute::No ? name_ : computed_name_; }
-        std::string virus(Compute /*aCompute*/ = Compute::No) const override { return virus_; }
-        std::string virus_type(Compute /*aCompute*/ = Compute::Yes) const override { return virus_type_; }
-        std::string subset(Compute /*aCompute*/ = Compute::No) const override { return subset_; }
-        std::string assay(Compute /*aCompute*/ = Compute::No) const override { return assay_; }
-        std::string lab(Compute /*aCompute*/ = Compute::No) const override { return lab_; }
-        std::string rbc_species(Compute /*aCompute*/ = Compute::No) const override { return rbc_species_; }
-        std::string date(Compute /*aCompute*/ = Compute::No) const override { return date_; }
+        std::string virus(Compute aCompute = Compute::No) const override;
+        std::string virus_type(Compute aCompute = Compute::Yes) const override;
+        std::string subset(Compute aCompute = Compute::No) const override;
+        std::string assay(Compute aCompute = Compute::No) const override;
+        std::string lab(Compute aCompute = Compute::No) const override;
+        std::string rbc_species(Compute aCompute = Compute::No) const override;
+        std::string date(Compute aCompute = Compute::No) const override;
         size_t number_of_sources() const override { return sources_.size(); }
         InfoP source(size_t aSourceNo) const override { return sources_.at(aSourceNo); }
 
@@ -127,7 +127,7 @@ namespace acmacs::chart
         void rbc_species(std::string value) { rbc_species_ = value; }
         void date(std::string value) { date_ = value; }
         void remove_sources() { sources_.clear(); }
-        void add_source(InfoP source) { sources_.push_back(source); }
+        void add_source(InfoP source) { sources_.push_back(std::make_shared<InfoModify>(source)); }
 
       protected:
         std::string name_;
