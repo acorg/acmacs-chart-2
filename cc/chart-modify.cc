@@ -699,6 +699,46 @@ void TitersModify::remove_layers()
 
 // ----------------------------------------------------------------------
 
+void TitersModify::create_layers(size_t number_of_layers)
+{
+    modifiable_check();
+
+    if (number_of_layers < 2)
+        throw invalid_data{string::concat("invalid number of layers to create: ", number_of_layers)};
+    if (!layers_.empty())
+        throw invalid_data{"cannot create layers: already present"};
+    layers_.resize(number_of_layers);
+
+} // TitersModify::create_layers
+
+// ----------------------------------------------------------------------
+
+void TitersModify::set_titer(sparse_t& titers, size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter)
+{
+    auto& row = titers[aAntigenNo];
+    if (row.empty()) {
+        row.emplace_back(aSerumNo, aTiter);
+    }
+    else {
+        if (auto found = std::lower_bound(row.begin(), row.end(), aSerumNo, [](const auto& e1, size_t sr_no) { return e1.first < sr_no; }); found != row.end() && found->first == aSerumNo)
+            found->second = aTiter;
+        else
+            row.emplace(found, aSerumNo, aTiter);
+    }
+
+} // TitersModify::set_titer
+
+// ----------------------------------------------------------------------
+
+void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const std::string& aTiter)
+{
+    modifiable_check();
+    set_titer(layers_.at(aLayerNo), aAntigenNo, aSerumNo, aTiter);
+
+} // TitersModify::titer
+
+// ----------------------------------------------------------------------
+
 size_t TitersModify::number_of_antigens() const
 {
     auto num_ags = [this](const auto& titers) -> size_t {
@@ -732,27 +772,7 @@ size_t TitersModify::number_of_non_dont_cares() const
 void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter)
 {
     modifiable_check();
-
-    auto set_titer = [aAntigenNo,aSerumNo,&aTiter,this](auto& titers) {
-        using T = std::decay_t<decltype(titers)>;
-        if constexpr (std::is_same_v<T, dense_t>) {
-            titers[aAntigenNo * this->number_of_sera_ + aSerumNo] = aTiter;
-        }
-        else {
-            auto& row = titers[aAntigenNo];
-            if (row.empty()) {
-                row.emplace_back(aSerumNo, aTiter);
-            }
-            else {
-                if (auto found = std::lower_bound(row.begin(), row.end(), aSerumNo, [](const auto& e1, size_t sr_no) { return e1.first < sr_no; }); found != row.end() && found->first == aSerumNo)
-                    found->second = aTiter;
-                else
-                    row.emplace(found, aSerumNo, aTiter);
-            }
-        }
-    };
-
-    return std::visit(set_titer, titers_);
+    std::visit([aAntigenNo,aSerumNo,&aTiter,this](auto& titers) { this->set_titer(titers, aAntigenNo, aSerumNo, aTiter); }, titers_);
 
 } // TitersModify::titer
 

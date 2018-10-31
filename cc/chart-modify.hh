@@ -300,11 +300,14 @@ namespace acmacs::chart
         void multiply_by_for_antigen(size_t aAntigenNo, double multiply_by);
         void multiply_by_for_serum(size_t aSerumNo, double multiply_by);
 
-        void remove_layers();
         void remove_antigens(const ReverseSortedIndexes& indexes);
         void remove_sera(const ReverseSortedIndexes& indexes);
         void insert_antigen(size_t before);
         void insert_serum(size_t before);
+
+        void remove_layers();
+        void create_layers(size_t number_of_layers);
+        void titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const std::string& aTiter);
 
      private:
         using dense_t = std::vector<Titer>;
@@ -319,9 +322,11 @@ namespace acmacs::chart
         titers_t titers_;
         layers_t layers_;
 
-
         static Titer find_titer_for_serum(const sparse_row_t& aRow, size_t aSerumNo);
         static Titer titer_in_sparse_t(const sparse_t& aSparse, size_t aAntigenNo, size_t aSerumNo);
+
+        void set_titer(dense_t& titers, size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter) { titers[aAntigenNo * number_of_sera_ + aSerumNo] = aTiter; }
+        void set_titer(sparse_t& titers, size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter);
 
     }; // class TitersModify
 
