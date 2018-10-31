@@ -27,6 +27,21 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
     for (size_t ag_no = 0; ag_no < antigens1->size(); ++ag_no)
         antigens->at(ag_no).replace_with(antigens1->at(ag_no));
 
+    auto antigens2 = chart2.antigens();
+    const auto common_antigens = report.common.antigens();
+    auto find_common_antigen = [&common_antigens](size_t ag_no2) -> std::optional<size_t> {
+        if (const auto found = std::find_if(common_antigens.begin(), common_antigens.end(), [ag_no2](const auto& entry) { return entry.secondary == ag_no2; }); found != common_antigens.end())
+            return found->primary;
+        else
+            return {};
+    };
+    for (size_t ag_no = antigens1->size(), ag_no2 = 0; ag_no2 < antigens2->size(); ++ag_no2) {
+        if (auto ag_no1 = find_common_antigen(ag_no2); ag_no1)
+            antigens->at(*ag_no1).update_with(antigens2->at(ag_no2));
+        else
+            antigens->at(ag_no++).replace_with(antigens2->at(ag_no2));
+    }
+
     auto sera = result->sera_modify();
     auto sera1 = chart1.sera();
     for (size_t sr_no = 0; sr_no < sera1->size(); ++sr_no)
