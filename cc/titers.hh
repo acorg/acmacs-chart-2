@@ -150,6 +150,8 @@ namespace acmacs::chart
 
         virtual TiterIterator begin() const;
         virtual TiterIterator end() const;
+        virtual TiterIterator begin(size_t aLayerNo) const;
+        virtual TiterIterator end(size_t aLayerNo) const;
 
         PointIndexList having_titers_with(size_t point_no) const;
           // returns list of points having less than threshold numeric titers

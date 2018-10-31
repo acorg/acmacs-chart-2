@@ -278,27 +278,29 @@ namespace                       // to make class static in the module
     class TiterIteratorImplementation : public acmacs::chart::TiterIterator::Implementation
     {
      public:
-        TiterIteratorImplementation(const acmacs::chart::Titers& titers)
-            : acmacs::chart::TiterIterator::Implementation(titers.titer(0, 0), 0, 0), titers_{titers}
+        using titer_getter_t = std::function<std::string (size_t, size_t)>;
+
+          // begin
+        TiterIteratorImplementation(titer_getter_t titer_getter, size_t number_of_antigens, size_t number_of_sera)
+            : acmacs::chart::TiterIterator::Implementation(titer_getter(0, 0), 0, 0), titer_getter_{titer_getter}, number_of_antigens_{number_of_antigens}, number_of_sera_{number_of_sera}
             {
                 if (data_.titer.is_dont_care())
                     operator++();
             }
 
-        TiterIteratorImplementation(const acmacs::chart::Titers& titers, size_t number_of_antigens)
-            : acmacs::chart::TiterIterator::Implementation({}, number_of_antigens, 0), titers_{titers} {}
+          // end
+        TiterIteratorImplementation(size_t number_of_antigens)
+            : acmacs::chart::TiterIterator::Implementation({}, number_of_antigens, 0), titer_getter_{[](size_t, size_t) -> std::string { return ""; }}, number_of_antigens_{number_of_antigens}, number_of_sera_{0} {}
 
         void operator++() override
             {
-                const auto num_antigens = titers_.number_of_antigens();
-                const auto num_sera = titers_.number_of_sera();
-                while (data_.antigen < num_antigens) {
-                    if (++data_.serum >= num_sera) {
+                while (data_.antigen < number_of_antigens_) {
+                    if (++data_.serum >= number_of_sera_) {
                         ++data_.antigen;
                         data_.serum = 0;
                     }
-                    if (data_.antigen < num_antigens) {
-                        data_.titer = titers_.titer(data_.antigen, data_.serum);
+                    if (data_.antigen < number_of_antigens_) {
+                        data_.titer = titer_getter_(data_.antigen, data_.serum);
                         if (!data_.titer.is_dont_care())
                             break;
                     }
@@ -308,7 +310,8 @@ namespace                       // to make class static in the module
             }
 
      private:
-        const acmacs::chart::Titers& titers_;
+        titer_getter_t titer_getter_;
+        size_t number_of_antigens_, number_of_sera_;
 
     }; // class TiterIteratorImplementation
 }
@@ -317,7 +320,7 @@ namespace                       // to make class static in the module
 
 acmacs::chart::TiterIterator acmacs::chart::Titers::begin() const
 {
-    return {new TiterIteratorImplementation(*this)};
+    return {new TiterIteratorImplementation([this](size_t ag, size_t sr) -> std::string { return titer(ag, sr); }, number_of_antigens(), number_of_sera())};
 
 } // acmacs::chart::Titers::begin
 
@@ -325,7 +328,23 @@ acmacs::chart::TiterIterator acmacs::chart::Titers::begin() const
 
 acmacs::chart::TiterIterator acmacs::chart::Titers::end() const
 {
-    return {new TiterIteratorImplementation(*this, number_of_antigens())};
+    return {new TiterIteratorImplementation(number_of_antigens())};
+
+} // acmacs::chart::Titers::end
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::TiterIterator acmacs::chart::Titers::begin(size_t aLayerNo) const
+{
+    return {new TiterIteratorImplementation([this,aLayerNo](size_t ag, size_t sr) -> std::string { return titer_of_layer(aLayerNo, ag, sr); }, number_of_antigens(), number_of_sera())};
+
+} // acmacs::chart::Titers::begin
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::TiterIterator acmacs::chart::Titers::end(size_t /*aLayerNo*/) const
+{
+    return {new TiterIteratorImplementation(number_of_antigens())};
 
 } // acmacs::chart::Titers::end
 
