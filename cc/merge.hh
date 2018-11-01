@@ -12,7 +12,9 @@ namespace acmacs::chart
 {
     struct MergeSettings
     {
-        acmacs::chart::CommonAntigensSera::match_level_t match_level = acmacs::chart::CommonAntigensSera::match_level_t::automatic;
+        MergeSettings() = default;
+        MergeSettings(CommonAntigensSera::match_level_t a_match_level) : match_level{a_match_level} {}
+        CommonAntigensSera::match_level_t match_level = CommonAntigensSera::match_level_t::automatic;
         bool remove_distinct = true;
     };
     
