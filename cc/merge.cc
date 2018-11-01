@@ -12,7 +12,7 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
 {
       // antigens
     {
-        const bool remove_distinct = settings.remove_distinct && primary.info()->lab() == "CDC";
+        const bool remove_distinct = settings.remove_distinct && primary.info()->lab(Info::Compute::Yes) == "CDC";
         auto src1 = primary.antigens();
         for (size_t no1 = 0; no1 < src1->size(); ++no1) {
             if (!remove_distinct || !src1->at(no1)->distinct())
