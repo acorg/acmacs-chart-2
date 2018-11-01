@@ -7,12 +7,12 @@ static void merge_info(acmacs::chart::ChartModify& target, const acmacs::chart::
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secondary, CommonAntigensSera::match_level_t a_match_level)
-    : match_level{a_match_level}, common(primary, secondary, a_match_level)
+acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secondary, const MergeSettings& settings)
+    : match_level{settings.match_level}, common(primary, secondary, settings.match_level)
 {
       // antigens
     {
-        const bool remove_distinct = primary.info()->lab() == "CDC";
+        const bool remove_distinct = settings.remove_distinct && primary.info()->lab() == "CDC";
         auto src1 = primary.antigens();
         for (size_t no1 = 0; no1 < src1->size(); ++no1) {
             if (!remove_distinct || !src1->at(no1)->distinct())
@@ -52,8 +52,7 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
 
 // ----------------------------------------------------------------------
 
-std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart::merge(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2,
-                                                                                        acmacs::chart::CommonAntigensSera::match_level_t match_level)
+std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart::merge(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, const MergeSettings& settings)
 {
     auto merge_antigens_sera = [](auto& target, const auto& source, const MergeReport::index_mapping_t& to_target) {
         for (size_t no = 0; no < source.size(); ++no) {
@@ -68,7 +67,7 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
 
     // --------------------------------------------------
 
-    MergeReport report(chart1, chart2, match_level);
+    MergeReport report(chart1, chart2, settings);
 
     ChartModifyP result = std::make_shared<ChartNew>(report.target_antigens, report.target_sera);
     merge_info(*result, chart1, chart2);
@@ -86,7 +85,8 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
     titers->create_layers((layers1 ? layers1 : 1) + (layers2 ? layers2 : 1), result_antigens->size());
 
     size_t target_layer_no = 0;
-    auto copy_layers = [&target_layer_no, &titers](size_t source_layers, const auto& source_titers, const MergeReport::index_mapping_t& antigen_target, const MergeReport::index_mapping_t& serum_target) {
+    auto copy_layers = [&target_layer_no, &titers](size_t source_layers, const auto& source_titers, const MergeReport::index_mapping_t& antigen_target,
+                                                   const MergeReport::index_mapping_t& serum_target) {
         auto assign = [&titers, &target_layer_no](size_t ag_no, size_t sr_no, std::string titer) { titers->titer(ag_no, sr_no, target_layer_no, titer); };
         auto copy_titer = [&assign, &antigen_target, &serum_target](auto first, auto last) {
             for (; first != last; ++first) {

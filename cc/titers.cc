@@ -350,6 +350,19 @@ acmacs::chart::TiterIterator acmacs::chart::Titers::end(size_t /*aLayerNo*/) con
 
 // ----------------------------------------------------------------------
 
+std::pair<acmacs::chart::PointIndexList, acmacs::chart::PointIndexList> acmacs::chart::Titers::antigens_sera_of_layer(size_t aLayerNo) const
+{
+    acmacs::chart::PointIndexList antigens, sera;
+    for (auto titer_it = begin(aLayerNo); titer_it != end(aLayerNo); ++titer_it) {
+        antigens.insert(titer_it->antigen);
+        sera.insert(titer_it->serum);
+    }
+    return {antigens, sera};
+
+} // acmacs::chart::Titers::antigens_sera_of_layer
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::PointIndexList acmacs::chart::Titers::having_titers_with(size_t point_no) const
 {
     const auto num_antigens = number_of_antigens();

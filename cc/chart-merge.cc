@@ -18,7 +18,7 @@ int main(int argc, char* const argv[])
         argc_argv args(argc, argv,
                        {
                            {"-o", "", "output chart"},
-                           {"--match", "auto", "match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""},
+                                     // {"--match", "auto", "match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""},
                            {"--time", false, "test speed"},
                            {"--verbose", false},
                            {"-h", false},
@@ -31,7 +31,7 @@ int main(int argc, char* const argv[])
         }
         else {
             const auto report = do_report_time(args["--time"]);
-            const auto match_level = acmacs::chart::CommonAntigensSera::match_level(args["--match"]);
+              // const auto match_level = acmacs::chart::CommonAntigensSera::match_level(args["--match"]);
             auto read = [report](std::string_view filename) { return acmacs::chart::import_from_file(filename, acmacs::chart::Verify::None, report); };
             auto chart1 = read(args[0]);
             auto chart2 = read(args[1]);

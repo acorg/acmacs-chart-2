@@ -10,6 +10,12 @@
 
 namespace acmacs::chart
 {
+    struct MergeSettings
+    {
+        acmacs::chart::CommonAntigensSera::match_level_t match_level = acmacs::chart::CommonAntigensSera::match_level_t::automatic;
+        bool remove_distinct = true;
+    };
+    
     struct MergeReport
     {
         struct target_index_common_t
@@ -23,7 +29,7 @@ namespace acmacs::chart
 
         using index_mapping_t = std::map<size_t, target_index_common_t>; // primary/secondary index -> (target index, if common)
 
-        MergeReport(const Chart& primary, const Chart& secondary, CommonAntigensSera::match_level_t a_match_level);
+        MergeReport(const Chart& primary, const Chart& secondary, const MergeSettings& settings);
 
         CommonAntigensSera::match_level_t match_level;
         CommonAntigensSera common;
@@ -33,7 +39,7 @@ namespace acmacs::chart
 
     inline std::ostream& operator<<(std::ostream& out, const MergeReport::target_index_common_t& entry) { return out << '[' << entry.index << (entry.common ? ",common" : "") << ']'; }
 
-    std::pair<ChartModifyP, MergeReport> merge(const Chart& chart1, const Chart& chart2, acmacs::chart::CommonAntigensSera::match_level_t match_level = acmacs::chart::CommonAntigensSera::match_level_t::automatic);
+    std::pair<ChartModifyP, MergeReport> merge(const Chart& chart1, const Chart& chart2, const MergeSettings& settings = {});
 }
 
 // ----------------------------------------------------------------------
