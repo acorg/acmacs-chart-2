@@ -1,33 +1,10 @@
 #include <algorithm>
-#include <cmath>
 
 #include "acmacs-base/debug.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/chart.hh"
-
-// ----------------------------------------------------------------------
-
-double acmacs::chart::Titer::logged() const
-{
-    constexpr auto log_titer = [](std::string source) -> double { return std::log2(std::stod(source) / 10.0); };
-
-    switch (type()) {
-      case Invalid:
-          throw invalid_titer(*this);
-      case Regular:
-          return log_titer(*this);
-      case DontCare:
-          throw invalid_titer(*this);
-      case LessThan:
-      case MoreThan:
-      case Dodgy:
-          return log_titer(substr(1));
-    }
-    throw invalid_titer(*this); // for gcc 7.2
-
-} // acmacs::chart::Titer::logged
 
 // ----------------------------------------------------------------------
 

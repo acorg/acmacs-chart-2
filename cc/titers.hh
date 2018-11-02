@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <cmath>
 
 #include "acmacs-base/rjson-forward.hh"
 #include "acmacs-chart-2/base.hh"
@@ -18,10 +19,11 @@ namespace acmacs::chart
     class Titer : public detail::string_data
     {
      public:
+        enum Type { Invalid, Regular, DontCare, LessThan, MoreThan, Dodgy };
+
         using detail::string_data::string_data;
         Titer() : detail::string_data::string_data("*") {}
-
-        enum Type { Invalid, Regular, DontCare, LessThan, MoreThan, Dodgy };
+        Titer(char typ, size_t value) : detail::string_data::string_data(typ + std::to_string(value)) {}
 
         Type type() const
         {
@@ -66,9 +68,28 @@ namespace acmacs::chart
 
     }; // class Titer
 
-    // inline std::ostream& operator<<(std::ostream& s, const Titer& aTiter) { return s << aTiter; }
+      // inline std::ostream& operator<<(std::ostream& s, const Titer& aTiter) { return s << aTiter; }
 
-// ----------------------------------------------------------------------
+    inline double Titer::logged() const
+    {
+        constexpr auto log_titer = [](std::string source) -> double { return std::log2(std::stod(source) / 10.0); };
+
+        switch (type()) {
+            case Regular:
+                return log_titer(*this);
+            case LessThan:
+            case MoreThan:
+            case Dodgy:
+                return log_titer(substr(1));
+            case DontCare:
+            case Invalid:
+                throw invalid_titer(*this);
+        }
+        throw invalid_titer(*this); // for gcc 7.2
+
+    }
+
+      // ----------------------------------------------------------------------
 
     class Titers;
 
@@ -112,6 +133,8 @@ namespace acmacs::chart
         std::unique_ptr<Implementation> data_;
 
     }; // class TiterIterator
+
+    inline std::ostream& operator<<(std::ostream& s, const TiterIterator::Data& data) { return s << data.antigen << ':' << data.serum << ':' << data.titer; }
 
 // ----------------------------------------------------------------------
 

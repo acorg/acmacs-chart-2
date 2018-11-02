@@ -1,10 +1,12 @@
 #include <random>
 #include <functional>
+#include <limits>
 
 #include "acmacs-base/omp.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/virus-name.hh"
+#include "acmacs-base/statistics.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/randomizer.hh"
@@ -558,7 +560,7 @@ void SerumModify::update_with(SerumP main)
 // ----------------------------------------------------------------------
 
 TitersModify::TitersModify(size_t number_of_antigens, size_t number_of_sera)
-    : number_of_sera_{number_of_sera}, titers_{dense_t{number_of_antigens * number_of_sera, Titer{}}}
+    : number_of_sera_{number_of_sera}, titers_{dense_t(number_of_antigens * number_of_sera)}
 {
 } // TitersModify::TitersModify
 
@@ -768,25 +770,117 @@ void TitersModify::set_from_layers(ChartModify& chart)
 // e.g. >5120 to 10240.
 void TitersModify::set_titers_from_layers(more_than_thresholded mtt)
 {
-      // ~/ac/acmacs/acmacs/core/antigenic_table.py:266
-      // ~/ac/acmacs/backend/antigenic-table.hh:892
+      // core/antigenic_table.py:266
+      // backend/antigenic-table.hh:892
 
     constexpr double standard_deviation_threshold = 1.0; // lispmds: average-multiples-unless-sd-gt-1-ignore-thresholded-unless-only-entries-then-min-threshold
+    const auto number_of_antigens = layers_[0].size();
     std::vector<TiterIterator::Data> titers;
-    for (auto ag_no : acmacs::range(layers_[0].size())) {
+    for (auto ag_no : acmacs::range(number_of_antigens)) {
         for (auto sr_no : acmacs::range(number_of_sera_)) {
             if (auto titer = titer_from_layers(ag_no, sr_no, mtt, standard_deviation_threshold); !titer.is_dont_care())
                 titers.emplace_back(std::move(titer), ag_no, sr_no);
         }
     }
 
+    if (titers.size() < (number_of_antigens * number_of_sera_ / 2))
+        titers_ = sparse_t(number_of_antigens);
+    else
+        titers_ = dense_t(number_of_antigens * number_of_sera_);
+    // std::cerr << "DEBUG: titers: " << titers.size() << " ag:" << number_of_antigens << " sr: " << number_of_sera_ << DEBUG_LINE_FUNC << '\n';
+    for (const auto& data : titers)
+        std::visit([&data,this](auto& target) { this->set_titer(target, data.antigen, data.serum, data.titer); }, titers_);
+
 } // TitersModify::set_titers_from_layers
 
 // ----------------------------------------------------------------------
 
+  // lispmds algorithm 2014-12-06 (from mds/src/mds/mds/hi-table.lisp)
+  // lispmds does not support > at all, it is added to acmacs
+  // 1. If there are > and < titers, result is *
+  // 2. If there are just *, result is *
+  // 3. If there are just thresholded titers, result is min (<) or max (>) of them
+  // 4. Convert > and < titers to their next values, i.e. <40 to 20, >10240 to 20480, etc.
+  // 5. Compute SD, if SD > 1, result is *
+  // 6. If there are no < nor >, result is mean.
+  // 7. if max(<) of thresholded is more than max on non-thresholded (e.g. <40 20), then find minimum of thresholded which is more than max on non-thresholded, it is the result with <
+  // 8. if min(>) of thresholded is less than min on non-thresholded (e.g. >1280 2560), then find maximum of thresholded which is less than min on non-thresholded, it is the result with >
+  // 9. otherwise result is next of of max/min non-thresholded with </> (e.g. <20 40 --> <80, <20 80 --> <160) "min-more-than >= min-regular", "max-less-than <= max-regular"
+
 Titer TitersModify::titer_from_layers(size_t ag_no, size_t sr_no, more_than_thresholded mtt, double standard_deviation_threshold) const
 {
-    return {};
+    // backend/antigenic-table.hh:1087
+    std::vector<Titer> titers;
+    constexpr auto max_limit = std::numeric_limits<decltype(std::declval<Titer>().value())>::max();
+    size_t min_less_than = max_limit, min_more_than = max_limit, min_regular = max_limit;
+    size_t max_less_than = 0, max_more_than = 0, max_regular = 0;
+    for (auto layer_no : acmacs::range(layers_.size())) {
+        if (auto titer = titer_in_sparse_t(layers_[layer_no], ag_no, sr_no); !titer.is_dont_care()) {
+            const auto val = titer.value();
+            switch (titer.type()) {
+                case Titer::Regular:
+                    min_regular = std::min(min_regular, val);
+                    max_regular = std::max(max_regular, val);
+                    break;
+                case Titer::LessThan:
+                    min_less_than = std::min(min_less_than, val);
+                    max_less_than = std::max(max_less_than, val);
+                    break;
+                case Titer::MoreThan:
+                    min_more_than = std::min(min_more_than, val);
+                    max_more_than = std::max(max_more_than, val);
+                    break;
+                case Titer::Dodgy:
+                case Titer::Invalid:
+                case Titer::DontCare:
+                    break;
+            }
+            titers.emplace_back(std::move(titer));
+        }
+    }
+
+    if (titers.empty() || (max_less_than != 0 && min_more_than != 0)) // 2. just dontcare or 1. both thresholded
+        return {};
+    if (min_regular == max_limit) { // 3. just thresholded
+        if (min_less_than != max_limit)
+            return Titer('<', min_less_than);
+        if (mtt == more_than_thresholded::adjust_to_next)
+            return Titer('>', max_more_than);
+        return {};
+    }
+
+    // compute SD
+    std::vector<double> adjusted_log(titers.size());
+    std::transform(titers.begin(), titers.end(), adjusted_log.begin(), [](const auto& titer) -> double { return titer.logged_with_thresholded(); }); // 4.
+    const auto sd_mean = acmacs::statistics::standard_deviation(adjusted_log.begin(), adjusted_log.end());
+    if (sd_mean.sd() > standard_deviation_threshold)
+        return {};                                        // 5. if SD > 1, result is *
+    if (max_less_than == 0 && min_more_than == max_limit) // 6. just regular
+        return Titer::from_logged(sd_mean.mean());
+    if (max_less_than) { // 7.
+        if (max_less_than > max_regular) {
+            auto result = max_less_than;
+            for (const auto& titer : titers) {
+                if (titer.is_less_than())
+                    if (const auto tval = titer.value(); tval < result && tval > max_regular)
+                        result = tval;
+            }
+            return Titer('<', result);
+        }
+        else
+            return Titer('<', max_regular * 2);
+    }
+    if (min_more_than < min_regular) { // 8.
+        auto result = min_more_than;
+        for (const auto& titer : titers) {
+            if (titer.is_more_than())
+                if (const auto tval = titer.value(); tval > result && tval < min_regular)
+                    result = tval;
+        }
+        return Titer('>', result);
+    }
+    else
+        return Titer('>', min_regular / 2);
 
 } // TitersModify::titer_from_layers
 
