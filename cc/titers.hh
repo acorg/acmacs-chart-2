@@ -77,6 +77,9 @@ namespace acmacs::chart
      public:
         struct Data
         {
+            Data() = default;
+            Data(const Titer& a_titer, size_t ag_no, size_t sr_no) : titer{a_titer}, antigen{ag_no}, serum{sr_no} {}
+            Data(Titer&& a_titer, size_t ag_no, size_t sr_no) : titer{std::move(a_titer)}, antigen{ag_no}, serum{sr_no} {}
             constexpr operator const Titer& () const { return titer; }
             constexpr bool operator==(const Data& rhs) const { return antigen == rhs.antigen && serum == rhs.serum; }
             Titer titer;
@@ -116,6 +119,7 @@ namespace acmacs::chart
     class PointIndexList;
     class AvidityAdjusts;
     struct StressParameters;
+    class ChartModify;
 
     class Titers
     {
@@ -154,6 +158,7 @@ namespace acmacs::chart
         virtual TiterIterator end(size_t aLayerNo) const;
         std::pair<PointIndexList, PointIndexList> antigens_sera_of_layer(size_t aLayerNo) const;
         bool has_morethan_in_layers() const;
+        virtual void set_from_layers(ChartModify&);
 
         PointIndexList having_titers_with(size_t point_no) const;
           // returns list of points having less than threshold numeric titers

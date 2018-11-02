@@ -740,6 +740,58 @@ void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, co
 
 // ----------------------------------------------------------------------
 
+void TitersModify::set_from_layers(ChartModify& chart)
+{
+    // merge titers from layers
+    // ~/ac/acmacs/acmacs/core/chart.py:1281
+
+    if (number_of_layers() < 2)
+        throw std::runtime_error("table has no layers");
+
+    if (has_morethan_in_layers()) {
+        std::cerr << "DEBUG: has_morethan_in_layers" << DEBUG_LINE_FUNC << '\n';
+        set_titers_from_layers(more_than_thresholded::adjust_to_next);
+        // column_adjusts = table_for_column_adjusts.compute_column_bases("none")
+    }
+    set_titers_from_layers(more_than_thresholded::to_dont_care);
+    // if column_adjusts:
+    //     self.table.set_column_bases(column_adjusts)
+    //     module_logger.info('Chart.set_titers_from_layers forced columns adjusts: {}'.format(str(column_adjusts)))
+
+} // TitersModify::set_from_layers
+
+// ----------------------------------------------------------------------
+
+// if there are more-than thresholded titers and more_than_thresholded
+// is 'dont-care', ignore them, if more_than_thresholded is
+// 'adjust-to-next', those titers are converted to the next value,
+// e.g. >5120 to 10240.
+void TitersModify::set_titers_from_layers(more_than_thresholded mtt)
+{
+      // ~/ac/acmacs/acmacs/core/antigenic_table.py:266
+      // ~/ac/acmacs/backend/antigenic-table.hh:892
+
+    constexpr double standard_deviation_threshold = 1.0; // lispmds: average-multiples-unless-sd-gt-1-ignore-thresholded-unless-only-entries-then-min-threshold
+    std::vector<TiterIterator::Data> titers;
+    for (auto ag_no : acmacs::range(layers_[0].size())) {
+        for (auto sr_no : acmacs::range(number_of_sera_)) {
+            if (auto titer = titer_from_layers(ag_no, sr_no, mtt, standard_deviation_threshold); !titer.is_dont_care())
+                titers.emplace_back(std::move(titer), ag_no, sr_no);
+        }
+    }
+
+} // TitersModify::set_titers_from_layers
+
+// ----------------------------------------------------------------------
+
+Titer TitersModify::titer_from_layers(size_t ag_no, size_t sr_no, more_than_thresholded mtt, double standard_deviation_threshold) const
+{
+    return {};
+
+} // TitersModify::titer_from_layers
+
+// ----------------------------------------------------------------------
+
 size_t TitersModify::number_of_antigens() const
 {
     auto num_ags = [this](const auto& titers) -> size_t {

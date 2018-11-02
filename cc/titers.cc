@@ -377,6 +377,14 @@ bool acmacs::chart::Titers::has_morethan_in_layers() const
 
 // ----------------------------------------------------------------------
 
+void acmacs::chart::Titers::set_from_layers(acmacs::chart::ChartModify&)
+{
+    throw std::runtime_error("Titers::set_from_layers() called, only available for TitersModify");
+
+} // acmacs::chart::Titers::set_from_layers
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::PointIndexList acmacs::chart::Titers::having_titers_with(size_t point_no) const
 {
     const auto num_antigens = number_of_antigens();

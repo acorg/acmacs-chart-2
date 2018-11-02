@@ -308,6 +308,7 @@ namespace acmacs::chart
         void remove_layers();
         void create_layers(size_t number_of_layers, size_t number_of_antigens);
         void titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const std::string& aTiter);
+        void set_from_layers(ChartModify& chart) override;
 
      private:
         using dense_t = std::vector<Titer>;
@@ -328,6 +329,10 @@ namespace acmacs::chart
 
         void set_titer(dense_t& titers, size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter) { titers[aAntigenNo * number_of_sera_ + aSerumNo] = aTiter; }
         void set_titer(sparse_t& titers, size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter);
+
+        enum class more_than_thresholded {adjust_to_next, to_dont_care};
+        void set_titers_from_layers(more_than_thresholded mtt);
+        Titer titer_from_layers(size_t ag_no, size_t sr_no, more_than_thresholded mtt, double standard_deviation_threshold) const;
 
     }; // class TitersModify
 
