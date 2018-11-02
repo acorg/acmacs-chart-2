@@ -363,6 +363,20 @@ std::pair<acmacs::chart::PointIndexList, acmacs::chart::PointIndexList> acmacs::
 
 // ----------------------------------------------------------------------
 
+bool acmacs::chart::Titers::has_morethan_in_layers() const
+{
+    for (size_t layer_no = 0; layer_no < number_of_layers(); ++layer_no) {
+        for (auto titer_it = begin(layer_no); titer_it != end(layer_no); ++titer_it) {
+            if (titer_it->titer.is_more_than())
+                return true;
+        }
+    }
+    return false;
+
+} // acmacs::chart::Titers::has_morethan_in_layers
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::PointIndexList acmacs::chart::Titers::having_titers_with(size_t point_no) const
 {
     const auto num_antigens = number_of_antigens();
