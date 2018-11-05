@@ -271,6 +271,7 @@ namespace acmacs::chart
         std::string name_abbreviated() const;
         std::string name_without_subtype() const;
         std::string location_abbreviated() const;
+        std::string abbreviated_location_year() const;
         std::string passage_type() const { return passage().passage_type(); }
 
         bool is_egg() const { return !reassortant().empty() || passage().is_egg(); }
@@ -322,6 +323,7 @@ namespace acmacs::chart
         std::string name_abbreviated() const;
         std::string name_without_subtype() const;
         std::string location_abbreviated() const;
+        std::string abbreviated_location_year() const;
 
         bool is_egg() const { return !reassortant().empty() || passage().is_egg(); }
         bool is_cell() const { return !is_egg(); }
@@ -588,6 +590,8 @@ namespace acmacs::chart
             }
 
         template <typename Float> Stress<Float> make_stress(size_t aProjectionNo) const { return make_stress<Float>(*projection(aProjectionNo)); }
+
+        void show_table(std::ostream& output, std::optional<size_t> layer_no = {}) const;
 
      private:
         mutable bool mHomologousFound = false;

@@ -1,4 +1,5 @@
 #include <regex>
+#include <algorithm>
 
 #include "acmacs-base/string.hh"
 #include "acmacs-base/virus-name.hh"
@@ -374,6 +375,43 @@ std::vector<acmacs::PointStyle> acmacs::chart::Chart::default_all_styles() const
 
 // ----------------------------------------------------------------------
 
+void acmacs::chart::Chart::show_table(std::ostream& output, std::optional<size_t> layer_no) const
+{
+    auto sr_label = [](size_t sr_no) -> char { return static_cast<char>('A' + sr_no); };
+
+    auto ags = antigens();
+    auto srs = sera();
+    int max_ag_name = 0;
+    for (auto ag : *ags)
+        max_ag_name = std::max(max_ag_name, static_cast<int>(ag->full_name().size()));
+
+    output << std::setw(max_ag_name) << std::right << "Serum full names are under the table\n";
+    output << std::setw(max_ag_name) << ' ';
+    for (auto sr_no : acmacs::range(srs->size()))
+        output << std::setw(7) << std::right << sr_label(sr_no);
+    output << '\n';
+
+    output << std::setw(max_ag_name + 2) << ' ';
+    for (auto sr : *srs)
+        output << std::setw(7) << std::right << sr->abbreviated_location_year();
+    output << '\n';
+
+    auto tt = titers();
+    for (auto [ag_no, ag] : acmacs::enumerate(*ags)) {
+        output << std::setw(max_ag_name + 2) << std::left << ag->full_name();
+        for (auto sr_no : acmacs::range(srs->size()))
+            output << std::setw(7) << std::right << tt->titer(ag_no, sr_no);
+        output << '\n';
+    }
+    output << '\n';
+
+    for (auto [sr_no, sr] : acmacs::enumerate(*srs))
+        output << sr_label(sr_no) << std::setw(7) << std::right << sr->abbreviated_location_year() << "  " << sr->full_name() << '\n';
+
+} // acmacs::chart::Chart::show_table
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::BLineage::Lineage acmacs::chart::BLineage::from(std::string aSource)
 {
     if (!aSource.empty()) {
@@ -582,6 +620,28 @@ std::string acmacs::chart::Antigen::location_abbreviated() const
 
 // ----------------------------------------------------------------------
 
+static inline std::string abbreviated_location_year(std::string aName)
+{
+    try {
+        std::string virus_type, host, location, isolation, year, passage, extra;
+        virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
+        return string::join("/", {get_locdb().abbreviation(location), year.substr(2, 2)});
+    }
+    catch (virus_name::Unrecognized&) {
+        return aName;
+    }
+}
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::Antigen::abbreviated_location_year() const
+{
+    return ::abbreviated_location_year(name());
+
+} // acmacs::chart::Antigen::abbreviated_location_year
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Serum::name_abbreviated() const
 {
     return ::name_abbreviated(name());
@@ -603,6 +663,14 @@ std::string acmacs::chart::Serum::location_abbreviated() const
     return get_locdb().abbreviation(virus_name::location(name()));
 
 } // acmacs::chart::Serum::location_abbreviated
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::Serum::abbreviated_location_year() const
+{
+    return ::abbreviated_location_year(name());
+
+} // acmacs::chart::Serum::abbreviated_location_year
 
 // ----------------------------------------------------------------------
 
