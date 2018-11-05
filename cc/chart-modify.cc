@@ -787,11 +787,11 @@ void TitersModify::set_titers_from_layers(more_than_thresholded mtt)
 
     constexpr double standard_deviation_threshold = 1.0; // lispmds: average-multiples-unless-sd-gt-1-ignore-thresholded-unless-only-entries-then-min-threshold
     const auto number_of_antigens = layers_[0].size();
-    std::vector<TiterIterator::Data> titers;
+    std::vector<titer_merge_data> titers;
     for (auto ag_no : acmacs::range(number_of_antigens)) {
         for (auto sr_no : acmacs::range(number_of_sera_)) {
-            if (auto titer = titer_from_layers(ag_no, sr_no, mtt, standard_deviation_threshold); !titer.is_dont_care())
-                titers.emplace_back(std::move(titer), ag_no, sr_no);
+            if (auto [titer, titer_merge_report] = titer_from_layers(ag_no, sr_no, mtt, standard_deviation_threshold); !titer.is_dont_care())
+                titers.emplace_back(std::move(titer), ag_no, sr_no, titer_merge_report);
         }
     }
 
@@ -819,7 +819,7 @@ void TitersModify::set_titers_from_layers(more_than_thresholded mtt)
   // 8. if min(>) of thresholded is less than min on non-thresholded (e.g. >1280 2560), then find maximum of thresholded which is less than min on non-thresholded, it is the result with >
   // 9. otherwise result is next of of max/min non-thresholded with </> (e.g. <20 40 --> <80, <20 80 --> <160) "min-more-than >= min-regular", "max-less-than <= max-regular"
 
-Titer TitersModify::titer_from_layers(size_t ag_no, size_t sr_no, more_than_thresholded mtt, double standard_deviation_threshold) const
+std::pair<Titer, TitersModify::titer_merge> TitersModify::titer_from_layers(size_t ag_no, size_t sr_no, more_than_thresholded mtt, double standard_deviation_threshold) const
 {
     // backend/antigenic-table.hh:1087
     std::vector<Titer> titers;
@@ -851,14 +851,16 @@ Titer TitersModify::titer_from_layers(size_t ag_no, size_t sr_no, more_than_thre
         }
     }
 
-    if (titers.empty() || (max_less_than != 0 && min_more_than != 0)) // 2. just dontcare or 1. both thresholded
-        return {};
-    if (min_regular == max_limit) { // 3. just thresholded
+    if (titers.empty()) // 2. just dontcare
+        return {{}, titer_merge::all_dontcare};
+    if (max_less_than != 0 && min_more_than != 0) // 1. both thresholded
+        return {{}, titer_merge::less_and_more_than};
+    if (min_regular == max_limit) { // 3. no regular, just thresholded
         if (min_less_than != max_limit)
-            return Titer('<', min_less_than);
+            return {Titer('<', min_less_than), titer_merge::less_than_only};
         if (mtt == more_than_thresholded::adjust_to_next)
-            return Titer('>', max_more_than);
-        return {};
+            return {Titer('>', max_more_than), titer_merge::more_than_only_adjust_to_next};
+        return {{}, titer_merge::more_than_only_to_dontcare};
     }
 
     // compute SD
@@ -866,9 +868,9 @@ Titer TitersModify::titer_from_layers(size_t ag_no, size_t sr_no, more_than_thre
     std::transform(titers.begin(), titers.end(), adjusted_log.begin(), [](const auto& titer) -> double { return titer.logged_with_thresholded(); }); // 4.
     const auto sd_mean = acmacs::statistics::standard_deviation(adjusted_log.begin(), adjusted_log.end());
     if (sd_mean.sd() > standard_deviation_threshold)
-        return {};                                        // 5. if SD > 1, result is *
+        return {{}, titer_merge::sd_too_big}; // 5. if SD > 1, result is *
     if (max_less_than == 0 && min_more_than == max_limit) // 6. just regular
-        return Titer::from_logged(sd_mean.mean());
+        return {Titer::from_logged(sd_mean.mean()), titer_merge::regular_only};
     if (max_less_than) { // 7.
         if (max_less_than > max_regular) {
             auto result = max_less_than;
@@ -877,10 +879,10 @@ Titer TitersModify::titer_from_layers(size_t ag_no, size_t sr_no, more_than_thre
                     if (const auto tval = titer.value(); tval < result && tval > max_regular)
                         result = tval;
             }
-            return Titer('<', result);
+            return {Titer('<', result), titer_merge::max_less_than_bigger_than_max_regular};
         }
         else
-            return Titer('<', max_regular * 2);
+            return {Titer('<', max_regular * 2), titer_merge::less_than_and_regular};
     }
     if (min_more_than < min_regular) { // 8.
         auto result = min_more_than;
@@ -889,10 +891,10 @@ Titer TitersModify::titer_from_layers(size_t ag_no, size_t sr_no, more_than_thre
                 if (const auto tval = titer.value(); tval > result && tval < min_regular)
                     result = tval;
         }
-        return Titer('>', result);
+        return {Titer('>', result), titer_merge::min_more_than_less_than_min_regular};
     }
     else
-        return Titer('>', min_regular / 2);
+        return {Titer('>', min_regular / 2), titer_merge::more_than_and_regular};
 
 } // TitersModify::titer_from_layers
 

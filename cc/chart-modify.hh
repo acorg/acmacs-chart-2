@@ -332,8 +332,30 @@ namespace acmacs::chart
         void set_titer(sparse_t& titers, size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter);
 
         enum class more_than_thresholded {adjust_to_next, to_dont_care};
+        enum class titer_merge {
+            all_dontcare,
+            less_and_more_than,
+            less_than_only,
+            more_than_only_adjust_to_next,
+            more_than_only_to_dontcare,
+            sd_too_big,
+            regular_only,
+            max_less_than_bigger_than_max_regular,
+            less_than_and_regular,
+            min_more_than_less_than_min_regular,
+            more_than_and_regular
+        };
+
+        struct titer_merge_data
+        {
+            titer_merge_data(Titer&& a_titer, size_t ag_no, size_t sr_no, titer_merge a_report) : titer{std::move(a_titer)}, antigen{ag_no}, serum{sr_no}, report{a_report} {}
+            Titer titer;
+            size_t antigen, serum;
+            titer_merge report;
+        };
+
         void set_titers_from_layers(more_than_thresholded mtt);
-        Titer titer_from_layers(size_t ag_no, size_t sr_no, more_than_thresholded mtt, double standard_deviation_threshold) const;
+        std::pair<Titer, titer_merge> titer_from_layers(size_t ag_no, size_t sr_no, more_than_thresholded mtt, double standard_deviation_threshold) const;
 
     }; // class TitersModify
 
