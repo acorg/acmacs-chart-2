@@ -40,8 +40,6 @@ namespace acmacs::chart
         index_mapping_t antigens_primary_target, antigens_secondary_target, sera_primary_target, sera_secondary_target;
         size_t target_antigens = 0, target_sera = 0;
         std::unique_ptr<TitersModify::titer_merge_report> titer_report;
-
-        void show_table(std::ostream& output, const ChartModify& chart) const;
     };
 
     inline std::ostream& operator<<(std::ostream& out, const MergeReport::target_index_common_t& entry) { return out << '[' << entry.index << (entry.common ? ",common" : "") << ']'; }

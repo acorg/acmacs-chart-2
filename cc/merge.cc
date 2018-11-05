@@ -143,20 +143,12 @@ void merge_info(acmacs::chart::ChartModify& target, const acmacs::chart::Chart& 
 void acmacs::chart::MergeReport::titer_merge_report(std::string_view filename, const ChartModify& chart, const char* progname) const
 {
     acmacs::file::ofstream output(filename);
-    *output << "Acmacs merge table and diagnositics (in Derek's style).\nCreated by " << progname << " on " << current_date_time() << "\n\n";
-    show_table(output, chart);
+    *output << "Acmacs merge table and diagnositics (in Derek's style).\nCreated by " << progname << " on " << current_date_time() << "\n\n"
+            << std::string(70, '-') << '\n' << chart.description() << '\n';
+    chart.show_table(output);
     *output << "\n\n";
 
 } // acmacs::chart::MergeReport::titer_merge_report
-
-// ----------------------------------------------------------------------
-
-void acmacs::chart::MergeReport::show_table(std::ostream& output, const ChartModify& chart) const
-{
-    output << std::string(70, '-') << '\n' << chart.description() << '\n';
-
-
-} // acmacs::chart::MergeReport::show_table
 
 // ----------------------------------------------------------------------
 
