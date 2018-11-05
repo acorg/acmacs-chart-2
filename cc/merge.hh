@@ -34,6 +34,8 @@ namespace acmacs::chart
         MergeReport(const Chart& primary, const Chart& secondary, const MergeSettings& settings);
 
         void titer_merge_report(std::string_view filename, const ChartModify& chart, const char* progname) const;
+        void titer_merge_report(std::ostream& output, const ChartModify& chart) const;
+        void titer_merge_diagnostics(std::ostream& output, const ChartModify& chart, const PointIndexList& antigens, const PointIndexList& sera, int max_field_size) const;
 
         CommonAntigensSera::match_level_t match_level;
         CommonAntigensSera common;

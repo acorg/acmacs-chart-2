@@ -142,68 +142,86 @@ void merge_info(acmacs::chart::ChartModify& target, const acmacs::chart::Chart& 
 
 void acmacs::chart::MergeReport::titer_merge_report(std::string_view filename, const ChartModify& chart, const char* progname) const
 {
-    const auto hr = std::string(100, '-') + '\n';
-    auto sr_label = [](size_t sr_no) -> char { return static_cast<char>('A' + sr_no); };
-    auto ags = chart.antigens();
-    auto srs = chart.sera();
-    auto tt = chart.titers();
-
     acmacs::file::ofstream output(filename);
-    *output << "Acmacs merge table and diagnositics (in Derek's style).\nCreated by " << progname << " on " << current_date_time() << "\n\n" << hr << chart.description() << '\n';
-    chart.show_table(output);
-    *output << "\n\n";
-
-    *output << hr << "                                   DIAGNOSTICS\n         (common titers, and how they merged, and the individual tables)\n" << hr;
-    const auto max_field = static_cast<int>(std::max(chart.antigens()->max_full_name(), chart.info()->max_source_name()));
-
-    *output << std::setw(max_field) << ' ';
-    for (auto sr_ind : acmacs::range(srs->size()))
-        *output << std::setw(7) << std::right << sr_label(sr_ind);
-    *output << '\n' << std::setw(max_field + 2) << ' ';
-    for (auto serum : *srs)
-        *output << std::setw(7) << std::right << serum->abbreviated_location_year();
-    *output << '\n';
-    for (auto [ag_no, antigen] : acmacs::enumerate(*ags)) {
-        *output << antigen->full_name() << '\n';
-        for (auto layer_no : acmacs::range(tt->number_of_layers())) {
-            *output << std::setw(max_field + 2) << std::left << chart.info()->source(layer_no)->name_non_empty();
-            for (auto sr_no : acmacs::range(srs->size())) {
-                auto titer = tt->titer_of_layer(layer_no, ag_no, sr_no);
-                if (titer == "*")
-                    titer.clear();
-                *output << std::setw(7) << std::right << titer;
-            }
-            *output << '\n';
-        }
-        *output << std::setw(max_field + 2) << std::left << "Merge";
-        for (auto sr_no : acmacs::range(srs->size()))
-            *output << std::setw(7) << std::right << tt->titer(ag_no, sr_no);
-        *output << '\n';
-
-        *output << std::setw(max_field + 2) << std::left << "Report (see below)";
-        for (auto sr_no : acmacs::range(srs->size())) {
-            *output << std::setw(7) << std::right;
-            if (const auto found = std::find_if(titer_report->begin(), titer_report->end(), [ag_no=ag_no,sr_no](const auto& entry) { return entry.antigen == ag_no && entry.serum == sr_no; }); found != titer_report->end())
-                *output << TitersModify::titer_merge_report_brief(found->report);
-            else
-                *output << ' ';
-        }
-        *output << "\n\n";
-    }
-    *output << TitersModify::titer_merge_report_description() << '\n';
-
-    for (auto layer_no : acmacs::range(chart.titers()->number_of_layers())) {
-        *output << hr << chart.info()->source(layer_no)->name_non_empty() << '\n';
-        chart.show_table(output, layer_no);
-        *output << "\n\n";
-    }
-
-    *output << hr << "    Table merge subset showing only rows and columns that have merged values\n        (same as first diagnostic output, but subsetted for changes only)\n" << hr;
+    *output << "Acmacs merge table and diagnositics (in Derek's style).\nCreated by " << progname << " on " << current_date_time() << "\n\n";
+    titer_merge_report(output, chart);
 
 } // acmacs::chart::MergeReport::titer_merge_report
 
 // ----------------------------------------------------------------------
 
+void acmacs::chart::MergeReport::titer_merge_report(std::ostream& output, const ChartModify& chart) const
+{
+    const auto max_field = static_cast<int>(std::max(chart.antigens()->max_full_name(), chart.info()->max_source_name()));
+    const auto hr = std::string(100, '-') + '\n';
+
+    output << hr << chart.description() << '\n';
+    chart.show_table(output);
+    output << "\n\n";
+
+    output << hr << "                                   DIAGNOSTICS\n         (common titers, and how they merged, and the individual tables)\n" << hr;
+    titer_merge_diagnostics(output, chart, filled_with_indexes(chart.antigens()->size()), filled_with_indexes(chart.sera()->size()), max_field);
+
+    for (auto layer_no : acmacs::range(chart.titers()->number_of_layers())) {
+        output << hr << chart.info()->source(layer_no)->name_non_empty() << '\n';
+        chart.show_table(output, layer_no);
+        output << "\n\n";
+    }
+
+    output << hr << "    Table merge subset showing only rows and columns that have merged values\n        (same as first diagnostic output, but subsetted for changes only)\n" << hr;
+    const auto [antigens, sera] = chart.titers()->antigens_sera_in_multiple_layers();
+    titer_merge_diagnostics(output, chart, antigens, sera, max_field);
+
+} // acmacs::chart::MergeReport::titer_merge_report
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::MergeReport::titer_merge_diagnostics(std::ostream& output, const ChartModify& chart, const PointIndexList& antigens, const PointIndexList& sera, int max_field_size) const
+{
+    auto sr_label = [](size_t sr_no) -> char { return static_cast<char>('A' + sr_no); };
+    auto ags = chart.antigens();
+    auto srs = chart.sera();
+    auto tt = chart.titers();
+
+    output << std::setw(max_field_size) << ' ';
+    for (auto sr_no : sera)
+        output << std::setw(7) << std::right << sr_label(sr_no);
+    output << '\n' << std::setw(max_field_size + 2) << ' ';
+    for (auto sr_no : sera)
+        output << std::setw(7) << std::right << srs->at(sr_no)->abbreviated_location_year();
+    output << '\n';
+
+    for (auto ag_no : antigens) {
+        auto antigen = ags->at(ag_no);
+        output << antigen->full_name() << '\n';
+        for (auto layer_no : acmacs::range(tt->number_of_layers())) {
+            output << std::setw(max_field_size + 2) << std::left << chart.info()->source(layer_no)->name_non_empty();
+            for (auto sr_no : sera) {
+                auto titer = tt->titer_of_layer(layer_no, ag_no, sr_no);
+                if (titer == "*")
+                    titer.clear();
+                output << std::setw(7) << std::right << titer;
+            }
+            output << '\n';
+        }
+        output << std::setw(max_field_size + 2) << std::left << "Merge";
+        for (auto sr_no : sera)
+            output << std::setw(7) << std::right << tt->titer(ag_no, sr_no);
+        output << '\n';
+
+        output << std::setw(max_field_size + 2) << std::left << "Report (see below)";
+        for (auto sr_no : sera) {
+            output << std::setw(7) << std::right;
+            if (const auto found = std::find_if(titer_report->begin(), titer_report->end(), [ag_no=ag_no,sr_no](const auto& entry) { return entry.antigen == ag_no && entry.serum == sr_no; }); found != titer_report->end())
+                output << TitersModify::titer_merge_report_brief(found->report);
+            else
+                output << ' ';
+        }
+        output << "\n\n";
+    }
+    output << TitersModify::titer_merge_report_description() << '\n';
+
+} // acmacs::chart::MergeReport::titer_merge_diagnostics
 
 // ----------------------------------------------------------------------
 /// Local Variables:

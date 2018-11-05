@@ -340,6 +340,30 @@ std::pair<acmacs::chart::PointIndexList, acmacs::chart::PointIndexList> acmacs::
 
 // ----------------------------------------------------------------------
 
+std::pair<acmacs::chart::PointIndexList, acmacs::chart::PointIndexList> acmacs::chart::Titers::antigens_sera_in_multiple_layers() const
+{
+    std::map<size_t, size_t> antigen_to_num_layers, serum_to_num_layers;
+    for (size_t layer_no = 0; layer_no < number_of_layers(); ++layer_no) {
+        for (auto titer_it = begin(layer_no); titer_it != end(layer_no); ++titer_it) {
+            ++antigen_to_num_layers[titer_it->antigen];
+            ++serum_to_num_layers[titer_it->serum];
+        }
+    }
+    acmacs::chart::PointIndexList antigens, sera;
+    for (const auto& ag : antigen_to_num_layers) {
+        if (ag.second > 1)
+            antigens.insert(ag.first);
+    }
+    for (const auto& sr : serum_to_num_layers) {
+        if (sr.second > 1)
+            sera.insert(sr.first);
+    }
+    return {antigens, sera};
+
+} // acmacs::chart::Titers::antigens_sera_in_multiple_layers
+
+// ----------------------------------------------------------------------
+
 bool acmacs::chart::Titers::has_morethan_in_layers() const
 {
     for (size_t layer_no = 0; layer_no < number_of_layers(); ++layer_no) {

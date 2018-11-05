@@ -180,6 +180,7 @@ namespace acmacs::chart
         virtual TiterIterator begin(size_t aLayerNo) const;
         virtual TiterIterator end(size_t aLayerNo) const;
         std::pair<PointIndexList, PointIndexList> antigens_sera_of_layer(size_t aLayerNo) const;
+        std::pair<PointIndexList, PointIndexList> antigens_sera_in_multiple_layers() const;
         bool has_morethan_in_layers() const;
 
         PointIndexList having_titers_with(size_t point_no) const;
