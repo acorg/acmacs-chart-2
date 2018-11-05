@@ -48,11 +48,16 @@ std::string acmacs::chart::Chart::make_name(std::optional<size_t> aProjectionNo)
 
 std::string acmacs::chart::Chart::description() const
 {
-    auto n = string::concat(info()->make_name(), " Ag:", number_of_antigens(), " Sr:", number_of_sera());
+    auto n = info()->make_name();
     if (auto prjs = projections(); !prjs->empty()) {
         auto prj = (*prjs)[0];
         n += string::concat(" >=", prj->minimum_column_basis(), " ", prj->stress());
     }
+    if (info()->virus_type() == "B")
+        n += string::concat(' ', lineage());
+    n += string::concat(" Ag:", number_of_antigens(), " Sr:", number_of_sera());
+    if (const auto layers = titers()->number_of_layers(); layers > 1)
+        n += string::concat(" (", layers, " source tables)");
     return n;
 
 } // acmacs::chart::Chart::description
