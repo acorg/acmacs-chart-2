@@ -142,17 +142,23 @@ void merge_info(acmacs::chart::ChartModify& target, const acmacs::chart::Chart& 
 
 void acmacs::chart::MergeReport::titer_merge_report(std::string_view filename, const ChartModify& chart, const char* progname) const
 {
+    const auto hr = std::string(100, '-') + '\n';
+
     acmacs::file::ofstream output(filename);
     *output << "Acmacs merge table and diagnositics (in Derek's style).\nCreated by " << progname << " on " << current_date_time() << "\n\n"
-            << std::string(100, '-') << '\n' << chart.description() << '\n';
+            << hr << chart.description() << '\n';
     chart.show_table(output);
     *output << "\n\n";
 
+    *output << hr << "                                   DIAGNOSTICS\n         (common titers, and how they merged, and the individual tables)\n" << hr;
+
     for (auto layer_no : acmacs::range(chart.titers()->number_of_layers())) {
-        *output << std::string(100, '-') << '\n' << chart.info()->source(layer_no)->name_non_empty() << '\n';
+        *output << hr << chart.info()->source(layer_no)->name_non_empty() << '\n';
         chart.show_table(output, layer_no);
         *output << "\n\n";
     }
+
+    *output << hr << "    Table merge subset showing only rows and columns that have merged values\n        (same as first diagnostic output, but subsetted for changes only)\n" << hr;
 
 } // acmacs::chart::MergeReport::titer_merge_report
 
