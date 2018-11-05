@@ -144,9 +144,15 @@ void acmacs::chart::MergeReport::titer_merge_report(std::string_view filename, c
 {
     acmacs::file::ofstream output(filename);
     *output << "Acmacs merge table and diagnositics (in Derek's style).\nCreated by " << progname << " on " << current_date_time() << "\n\n"
-            << std::string(70, '-') << '\n' << chart.description() << '\n';
+            << std::string(100, '-') << '\n' << chart.description() << '\n';
     chart.show_table(output);
     *output << "\n\n";
+
+    for (auto layer_no : acmacs::range(chart.titers()->number_of_layers())) {
+        *output << std::string(100, '-') << '\n' << chart.info()->source(layer_no)->name_non_empty() << '\n';
+        chart.show_table(output, layer_no);
+        *output << "\n\n";
+    }
 
 } // acmacs::chart::MergeReport::titer_merge_report
 
