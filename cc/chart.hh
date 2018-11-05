@@ -54,7 +54,8 @@ namespace acmacs::chart
         virtual std::string date(Compute aCompute = Compute::No) const = 0;
         virtual size_t number_of_sources() const = 0;
         virtual std::shared_ptr<Info> source(size_t aSourceNo) const = 0;
-
+        size_t max_source_name() const;
+        
     }; // class Info
 
 // ----------------------------------------------------------------------
@@ -375,7 +376,8 @@ namespace acmacs::chart
 
         virtual std::optional<size_t> find_by_full_name(std::string aFullName) const;
         virtual Indexes find_by_name(std::string aName) const;
-
+        size_t max_full_name() const;
+        
      private:
         Indexes make_indexes(std::function<bool (const Antigen& ag)> test) const
             {
@@ -424,6 +426,7 @@ namespace acmacs::chart
 
         virtual std::optional<size_t> find_by_full_name(std::string aFullName) const;
         virtual Indexes find_by_name(std::string aName) const;
+        size_t max_full_name() const;
 
         void set_homologous(const Antigens& aAntigens);
 

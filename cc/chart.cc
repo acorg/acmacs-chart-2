@@ -391,9 +391,7 @@ void acmacs::chart::Chart::show_table(std::ostream& output, std::optional<size_t
         serum_indexes = filled_with_indexes(srs->size());
     }
 
-    int max_ag_name = 0;
-    for (auto ag_no : antigen_indexes)
-        max_ag_name = std::max(max_ag_name, static_cast<int>(ags->at(ag_no)->full_name().size()));
+    const auto max_ag_name = static_cast<int>(ags->max_full_name());
 
     output << std::setw(max_ag_name + 6) << std::right << ' ' << "Serum full names are under the table\n";
     output << std::setw(max_ag_name) << ' ';
@@ -463,6 +461,19 @@ std::string acmacs::chart::Info::make_name() const
     return n;
 
 } // acmacs::chart::Info::make_name
+
+// ----------------------------------------------------------------------
+
+size_t acmacs::chart::Info::max_source_name() const
+{
+    if (number_of_sources() < 2)
+        return 0;
+    size_t msn = 0;
+    for (auto s_no : acmacs::range(number_of_sources()))
+        msn = std::max(msn, source(s_no)->name().size());
+    return msn;
+
+} // acmacs::chart::Info::max_source_name
 
 // ----------------------------------------------------------------------
 
@@ -770,6 +781,17 @@ void acmacs::chart::Antigens::filter_continent(Indexes& aIndexes, std::string aC
 
 // ----------------------------------------------------------------------
 
+size_t acmacs::chart::Antigens::max_full_name() const
+{
+    size_t max_name = 0;
+    for (auto ag : *this)
+        max_name = std::max(max_name, ag->full_name().size());
+    return max_name;
+
+} // acmacs::chart::Antigens::max_full_name
+
+// ----------------------------------------------------------------------
+
 void acmacs::chart::Sera::set_homologous(const Antigens& aAntigens)
 {
     std::map<std::string, std::vector<size_t>> antigen_name_index;
@@ -849,6 +871,17 @@ void acmacs::chart::Sera::filter_continent(Indexes& aIndexes, std::string aConti
     remove(aIndexes, [aContinent](const auto& entry) { return not_in_continent(entry.name(), aContinent); });
 
 } // acmacs::chart::Sera::filter_continent
+
+// ----------------------------------------------------------------------
+
+size_t acmacs::chart::Sera::max_full_name() const
+{
+    size_t max_name = 0;
+    for (auto sr : *this)
+        max_name = std::max(max_name, sr->full_name().size());
+    return max_name;
+
+} // acmacs::chart::Sera::max_full_name
 
 // ----------------------------------------------------------------------
 
