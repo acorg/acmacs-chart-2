@@ -17,7 +17,7 @@ namespace acmacs::chart
         CommonAntigensSera::match_level_t match_level = CommonAntigensSera::match_level_t::automatic;
         bool remove_distinct = true;
     };
-    
+
     struct MergeReport
     {
         struct target_index_common_t
@@ -37,6 +37,7 @@ namespace acmacs::chart
         CommonAntigensSera common;
         index_mapping_t antigens_primary_target, antigens_secondary_target, sera_primary_target, sera_secondary_target;
         size_t target_antigens = 0, target_sera = 0;
+        std::unique_ptr<TitersModify::titer_merge_report> titer_merge_report;
     };
 
     inline std::ostream& operator<<(std::ostream& out, const MergeReport::target_index_common_t& entry) { return out << '[' << entry.index << (entry.common ? ",common" : "") << ']'; }

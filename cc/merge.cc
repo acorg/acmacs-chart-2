@@ -105,7 +105,7 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
     };
     copy_layers(layers1, *titers1, report.antigens_primary_target, report.sera_primary_target);
     copy_layers(layers2, *titers2, report.antigens_secondary_target, report.sera_secondary_target);
-    titers->set_from_layers(*result);
+    report.titer_merge_report = titers->set_from_layers(*result);
 
     // projections
     // plot spec

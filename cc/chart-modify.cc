@@ -751,7 +751,7 @@ void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, co
 
 // ----------------------------------------------------------------------
 
-void TitersModify::set_from_layers(ChartModify& chart)
+std::unique_ptr<TitersModify::titer_merge_report> TitersModify::set_from_layers(ChartModify& chart)
 {
     // merge titers from layers
     // ~/ac/acmacs/acmacs/core/chart.py:1281
@@ -766,11 +766,12 @@ void TitersModify::set_from_layers(ChartModify& chart)
         set_titers_from_layers(more_than_thresholded::adjust_to_next);
         column_bases = computed_column_bases(no_column_bases);
     }
-    set_titers_from_layers(more_than_thresholded::to_dont_care);
+    auto titer_merge_report = set_titers_from_layers(more_than_thresholded::to_dont_care);
     if (column_bases) {
         chart.forced_column_bases_modify(*column_bases);
         std::cout << "INFO: forced column bases: " << *chart.forced_column_bases(no_column_bases) << '\n';
     }
+    return titer_merge_report;
 
 } // TitersModify::set_from_layers
 
@@ -780,28 +781,30 @@ void TitersModify::set_from_layers(ChartModify& chart)
 // is 'dont-care', ignore them, if more_than_thresholded is
 // 'adjust-to-next', those titers are converted to the next value,
 // e.g. >5120 to 10240.
-void TitersModify::set_titers_from_layers(more_than_thresholded mtt)
+std::unique_ptr<TitersModify::titer_merge_report> TitersModify::set_titers_from_layers(more_than_thresholded mtt)
 {
       // core/antigenic_table.py:266
       // backend/antigenic-table.hh:892
 
     constexpr double standard_deviation_threshold = 1.0; // lispmds: average-multiples-unless-sd-gt-1-ignore-thresholded-unless-only-entries-then-min-threshold
     const auto number_of_antigens = layers_[0].size();
-    std::vector<titer_merge_data> titers;
+    auto titers = std::make_unique<std::vector<titer_merge_data>>();
     for (auto ag_no : acmacs::range(number_of_antigens)) {
         for (auto sr_no : acmacs::range(number_of_sera_)) {
             if (auto [titer, titer_merge_report] = titer_from_layers(ag_no, sr_no, mtt, standard_deviation_threshold); !titer.is_dont_care())
-                titers.emplace_back(std::move(titer), ag_no, sr_no, titer_merge_report);
+                titers->emplace_back(std::move(titer), ag_no, sr_no, titer_merge_report);
         }
     }
 
-    if (titers.size() < (number_of_antigens * number_of_sera_ / 2))
+    if (titers->size() < (number_of_antigens * number_of_sera_ / 2))
         titers_ = sparse_t(number_of_antigens);
     else
         titers_ = dense_t(number_of_antigens * number_of_sera_);
     // std::cerr << "DEBUG: titers: " << titers.size() << " ag:" << number_of_antigens << " sr: " << number_of_sera_ << DEBUG_LINE_FUNC << '\n';
-    for (const auto& data : titers)
+    for (const auto& data : *titers)
         std::visit([&data,this](auto& target) { this->set_titer(target, data.antigen, data.serum, data.titer); }, titers_);
+
+    return titers;
 
 } // TitersModify::set_titers_from_layers
 

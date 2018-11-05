@@ -1,6 +1,7 @@
 #pragma once
 
 #include <variant>
+#include <memory>
 
 #include "acmacs-chart-2/chart.hh"
 #include "acmacs-chart-2/procrustes.hh"
@@ -281,6 +282,30 @@ namespace acmacs::chart
     class TitersModify : public Titers
     {
      public:
+        enum class titer_merge {
+            all_dontcare,
+            less_and_more_than,
+            less_than_only,
+            more_than_only_adjust_to_next,
+            more_than_only_to_dontcare,
+            sd_too_big,
+            regular_only,
+            max_less_than_bigger_than_max_regular,
+            less_than_and_regular,
+            min_more_than_less_than_min_regular,
+            more_than_and_regular
+        };
+
+        struct titer_merge_data
+        {
+            titer_merge_data(Titer&& a_titer, size_t ag_no, size_t sr_no, titer_merge a_report) : titer{std::move(a_titer)}, antigen{ag_no}, serum{sr_no}, report{a_report} {}
+            Titer titer;
+            size_t antigen, serum;
+            titer_merge report;
+        };
+
+        using titer_merge_report = std::vector<titer_merge_data>;
+
         explicit TitersModify(size_t number_of_antigens, size_t number_of_sera);
         explicit TitersModify(TitersP main);
 
@@ -309,7 +334,7 @@ namespace acmacs::chart
         void remove_layers();
         void create_layers(size_t number_of_layers, size_t number_of_antigens);
         void titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const std::string& aTiter);
-        void set_from_layers(ChartModify& chart) override;
+        std::unique_ptr<titer_merge_report> set_from_layers(ChartModify& chart);
 
      private:
         using dense_t = std::vector<Titer>;
@@ -332,29 +357,8 @@ namespace acmacs::chart
         void set_titer(sparse_t& titers, size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter);
 
         enum class more_than_thresholded {adjust_to_next, to_dont_care};
-        enum class titer_merge {
-            all_dontcare,
-            less_and_more_than,
-            less_than_only,
-            more_than_only_adjust_to_next,
-            more_than_only_to_dontcare,
-            sd_too_big,
-            regular_only,
-            max_less_than_bigger_than_max_regular,
-            less_than_and_regular,
-            min_more_than_less_than_min_regular,
-            more_than_and_regular
-        };
 
-        struct titer_merge_data
-        {
-            titer_merge_data(Titer&& a_titer, size_t ag_no, size_t sr_no, titer_merge a_report) : titer{std::move(a_titer)}, antigen{ag_no}, serum{sr_no}, report{a_report} {}
-            Titer titer;
-            size_t antigen, serum;
-            titer_merge report;
-        };
-
-        void set_titers_from_layers(more_than_thresholded mtt);
+        std::unique_ptr<titer_merge_report> set_titers_from_layers(more_than_thresholded mtt);
         std::pair<Titer, titer_merge> titer_from_layers(size_t ag_no, size_t sr_no, more_than_thresholded mtt, double standard_deviation_threshold) const;
 
     }; // class TitersModify
