@@ -1,4 +1,6 @@
 #include "acmacs-base/stream.hh"
+#include "acmacs-base/read-file.hh"
+#include "acmacs-base/date.hh"
 #include "acmacs-chart-2/merge.hh"
 
 // ----------------------------------------------------------------------
@@ -105,7 +107,7 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
     };
     copy_layers(layers1, *titers1, report.antigens_primary_target, report.sera_primary_target);
     copy_layers(layers2, *titers2, report.antigens_secondary_target, report.sera_secondary_target);
-    report.titer_merge_report = titers->set_from_layers(*result);
+    report.titer_report = titers->set_from_layers(*result);
 
     // projections
     // plot spec
@@ -137,6 +139,27 @@ void merge_info(acmacs::chart::ChartModify& target, const acmacs::chart::Chart& 
 } // merge_info
 
 // ----------------------------------------------------------------------
+
+void acmacs::chart::MergeReport::titer_merge_report(std::string_view filename, const ChartModify& chart, const char* progname) const
+{
+    acmacs::file::ofstream output(filename);
+    *output << "Acmacs merge table and diagnositics (in Derek's style).\nCreated by " << progname << " on " << current_date_time() << "\n\n";
+    show_table(output, chart);
+    *output << "\n\n";
+
+} // acmacs::chart::MergeReport::titer_merge_report
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::MergeReport::show_table(std::ostream& output, const ChartModify& chart) const
+{
+    output << std::string(70, '-') << '\n' << chart.description() << '\n';
+
+
+} // acmacs::chart::MergeReport::show_table
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:

@@ -19,6 +19,7 @@ int main(int argc, char* const argv[])
                        {
                            {"-o", "", "output chart"},
                                      // {"--match", "auto", "match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""},
+                           {"--report", "", "titer merge report"},
                            {"--time", false, "test speed"},
                            {"--verbose", false},
                            {"-h", false},
@@ -48,6 +49,8 @@ int main(int argc, char* const argv[])
             }
             if (args["-o"])
                 acmacs::chart::export_factory(*result, args["-o"], fs::path(args.program()).filename(), report);
+            if (args["--report"])
+                merge_report.titer_merge_report(args["--report"], *result, args.program());
         }
     }
     catch (std::exception& err) {
