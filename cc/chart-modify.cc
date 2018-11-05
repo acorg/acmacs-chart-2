@@ -791,8 +791,8 @@ std::unique_ptr<TitersModify::titer_merge_report> TitersModify::set_titers_from_
     auto titers = std::make_unique<std::vector<titer_merge_data>>();
     for (auto ag_no : acmacs::range(number_of_antigens)) {
         for (auto sr_no : acmacs::range(number_of_sera_)) {
-            if (auto [titer, titer_merge_report] = titer_from_layers(ag_no, sr_no, mtt, standard_deviation_threshold); !titer.is_dont_care())
-                titers->emplace_back(std::move(titer), ag_no, sr_no, titer_merge_report);
+            auto [titer, titer_merge_report] = titer_from_layers(ag_no, sr_no, mtt, standard_deviation_threshold);
+            titers->emplace_back(std::move(titer), ag_no, sr_no, titer_merge_report);
         }
     }
 
@@ -801,8 +801,10 @@ std::unique_ptr<TitersModify::titer_merge_report> TitersModify::set_titers_from_
     else
         titers_ = dense_t(number_of_antigens * number_of_sera_);
     // std::cerr << "DEBUG: titers: " << titers.size() << " ag:" << number_of_antigens << " sr: " << number_of_sera_ << DEBUG_LINE_FUNC << '\n';
-    for (const auto& data : *titers)
-        std::visit([&data,this](auto& target) { this->set_titer(target, data.antigen, data.serum, data.titer); }, titers_);
+    for (const auto& data : *titers) {
+        if (!data.titer.is_dont_care())
+            std::visit([&data,this](auto& target) { this->set_titer(target, data.antigen, data.serum, data.titer); }, titers_);
+    }
 
     return titers;
 
@@ -856,22 +858,24 @@ std::pair<Titer, TitersModify::titer_merge> TitersModify::titer_from_layers(size
 
     if (titers.empty()) // 2. just dontcare
         return {{}, titer_merge::all_dontcare};
-    if (max_less_than != 0 && min_more_than != 0) // 1. both thresholded
+    if (max_less_than != 0 && min_more_than != max_limit) // 1. both thresholded
         return {{}, titer_merge::less_and_more_than};
     if (min_regular == max_limit) { // 3. no regular, just thresholded
+        // std::cerr << "DEBUG: no regular " << titers << DEBUG_LINE_FUNC << '\n';
         if (min_less_than != max_limit)
             return {Titer('<', min_less_than), titer_merge::less_than_only};
         if (mtt == more_than_thresholded::adjust_to_next)
             return {Titer('>', max_more_than), titer_merge::more_than_only_adjust_to_next};
-        return {{}, titer_merge::more_than_only_to_dontcare};
+        else
+            return {{}, titer_merge::more_than_only_to_dontcare};
     }
 
-    // compute SD
+      // compute SD
     std::vector<double> adjusted_log(titers.size());
     std::transform(titers.begin(), titers.end(), adjusted_log.begin(), [](const auto& titer) -> double { return titer.logged_with_thresholded(); }); // 4.
     const auto sd_mean = acmacs::statistics::standard_deviation(adjusted_log.begin(), adjusted_log.end());
     if (sd_mean.sd() > standard_deviation_threshold)
-        return {{}, titer_merge::sd_too_big}; // 5. if SD > 1, result is *
+        return {Titer{}, titer_merge::sd_too_big}; // 5. if SD > 1, result is *
     if (max_less_than == 0 && min_more_than == max_limit) // 6. just regular
         return {Titer::from_logged(sd_mean.mean()), titer_merge::regular_only};
     if (max_less_than) { // 7.
