@@ -58,6 +58,7 @@ namespace acmacs::chart
         SeraModifyP sera_modify();
         TitersModifyP titers_modify();
         ColumnBasesModifyP forced_column_bases_modify(MinimumColumnBasis aMinimumColumnBasis);
+        ColumnBasesModifyP forced_column_bases_modify(const ColumnBases& source);
         ProjectionsModifyP projections_modify();
         ProjectionModifyP projection_modify(size_t aProjectionNo);
         PlotSpecModifyP plot_spec_modify();
@@ -342,6 +343,7 @@ namespace acmacs::chart
     {
      public:
         explicit ColumnBasesModify(ColumnBasesP aMain) : ColumnBasesData{*aMain} {}
+        explicit ColumnBasesModify(const ColumnBases& aSource) : ColumnBasesData{aSource} {}
 
     }; // class ColumnBasesModify
 

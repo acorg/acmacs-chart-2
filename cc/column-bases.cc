@@ -1,4 +1,5 @@
 #include "acmacs-base/range.hh"
+#include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/column-bases.hh"
 
 // ----------------------------------------------------------------------

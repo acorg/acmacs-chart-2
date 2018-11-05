@@ -159,6 +159,15 @@ ColumnBasesModifyP ChartModify::forced_column_bases_modify(MinimumColumnBasis aM
 
 // ----------------------------------------------------------------------
 
+ColumnBasesModifyP ChartModify::forced_column_bases_modify(const ColumnBases& source)
+{
+    forced_column_bases_ = std::make_shared<ColumnBasesModify>(source);
+    return forced_column_bases_;
+
+} // ChartModify::forced_column_bases_modify
+
+// ----------------------------------------------------------------------
+
 const rjson::value& ChartModify::extension_field(std::string field_name) const
 {
     return main_->extension_field(field_name);
@@ -750,15 +759,18 @@ void TitersModify::set_from_layers(ChartModify& chart)
     if (number_of_layers() < 2)
         throw std::runtime_error("table has no layers");
 
+    std::shared_ptr<ColumnBases> column_bases;
+    MinimumColumnBasis no_column_bases{};
     if (has_morethan_in_layers()) {
-        std::cerr << "DEBUG: has_morethan_in_layers" << DEBUG_LINE_FUNC << '\n';
+          // std::cerr << "DEBUG: has_morethan_in_layers" << DEBUG_LINE_FUNC << '\n';
         set_titers_from_layers(more_than_thresholded::adjust_to_next);
-        // column_adjusts = table_for_column_adjusts.compute_column_bases("none")
+        column_bases = computed_column_bases(no_column_bases);
     }
     set_titers_from_layers(more_than_thresholded::to_dont_care);
-    // if column_adjusts:
-    //     self.table.set_column_bases(column_adjusts)
-    //     module_logger.info('Chart.set_titers_from_layers forced columns adjusts: {}'.format(str(column_adjusts)))
+    if (column_bases) {
+        chart.forced_column_bases_modify(*column_bases);
+        std::cout << "INFO: forced column bases: " << *chart.forced_column_bases(no_column_bases) << '\n';
+    }
 
 } // TitersModify::set_from_layers
 
