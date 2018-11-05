@@ -381,32 +381,41 @@ void acmacs::chart::Chart::show_table(std::ostream& output, std::optional<size_t
 
     auto ags = antigens();
     auto srs = sera();
-    int max_ag_name = 0;
-    for (auto ag : *ags)
-        max_ag_name = std::max(max_ag_name, static_cast<int>(ag->full_name().size()));
+    auto tt = titers();
+    PointIndexList antigen_indexes, serum_indexes;
+    if (layer_no) {
+        std::tie(antigen_indexes, serum_indexes) = tt->antigens_sera_of_layer(*layer_no);
+    }
+    else {
+        antigen_indexes = filled_with_indexes(ags->size());
+        serum_indexes = filled_with_indexes(srs->size());
+    }
 
-    output << std::setw(max_ag_name) << std::right << "Serum full names are under the table\n";
+    int max_ag_name = 0;
+    for (auto ag_no : antigen_indexes)
+        max_ag_name = std::max(max_ag_name, static_cast<int>(ags->at(ag_no)->full_name().size()));
+
+    output << std::setw(max_ag_name + 6) << std::right << ' ' << "Serum full names are under the table\n";
     output << std::setw(max_ag_name) << ' ';
-    for (auto sr_no : acmacs::range(srs->size()))
-        output << std::setw(7) << std::right << sr_label(sr_no);
+    for (auto sr_ind : acmacs::range(serum_indexes.size()))
+        output << std::setw(7) << std::right << sr_label(sr_ind);
     output << '\n';
 
     output << std::setw(max_ag_name + 2) << ' ';
-    for (auto sr : *srs)
-        output << std::setw(7) << std::right << sr->abbreviated_location_year();
+    for (auto sr_no : serum_indexes)
+        output << std::setw(7) << std::right << srs->at(sr_no)->abbreviated_location_year();
     output << '\n';
 
-    auto tt = titers();
-    for (auto [ag_no, ag] : acmacs::enumerate(*ags)) {
-        output << std::setw(max_ag_name + 2) << std::left << ag->full_name();
-        for (auto sr_no : acmacs::range(srs->size()))
+    for (auto ag_no : antigen_indexes) {
+        output << std::setw(max_ag_name + 2) << std::left << ags->at(ag_no)->full_name();
+        for (auto sr_no : serum_indexes)
             output << std::setw(7) << std::right << tt->titer(ag_no, sr_no);
         output << '\n';
     }
     output << '\n';
 
-    for (auto [sr_no, sr] : acmacs::enumerate(*srs))
-        output << sr_label(sr_no) << std::setw(7) << std::right << sr->abbreviated_location_year() << "  " << sr->full_name() << '\n';
+    for (auto [sr_ind, sr_no] : acmacs::enumerate(serum_indexes))
+        output << sr_label(sr_ind) << std::setw(7) << std::right << srs->at(sr_no)->abbreviated_location_year() << "  " << srs->at(sr_no)->full_name() << '\n';
 
 } // acmacs::chart::Chart::show_table
 
