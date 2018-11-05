@@ -336,6 +336,10 @@ namespace acmacs::chart
         void titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const std::string& aTiter);
         std::unique_ptr<titer_merge_report> set_from_layers(ChartModify& chart);
 
+        static std::string titer_merge_report_brief(titer_merge data);
+        static std::string titer_merge_report_long(titer_merge data);
+        static std::string titer_merge_report_description();
+
      private:
         using dense_t = std::vector<Titer>;
         using sparse_entry_t = std::pair<size_t, Titer>; // serum no, titer

@@ -903,6 +903,84 @@ std::pair<Titer, TitersModify::titer_merge> TitersModify::titer_from_layers(size
 
 // ----------------------------------------------------------------------
 
+std::string TitersModify::titer_merge_report_brief(titer_merge data)
+{
+    switch (data) {
+        case titer_merge::all_dontcare:
+            return "*";
+        case titer_merge::less_and_more_than:
+            return "<>";
+        case titer_merge::less_than_only:
+            return "<";
+        case titer_merge::more_than_only_adjust_to_next:
+            return ">+1";
+        case titer_merge::more_than_only_to_dontcare:
+            return ">*";
+        case titer_merge::sd_too_big:
+            return "sd>";
+        case titer_merge::regular_only:
+            return "+";
+        case titer_merge::max_less_than_bigger_than_max_regular:
+            return "<<+";
+        case titer_merge::less_than_and_regular:
+            return "<+";
+        case titer_merge::min_more_than_less_than_min_regular:
+            return ">>+";
+        case titer_merge::more_than_and_regular:
+            return ">+";
+    }
+    return "???";
+
+} // TitersModify::titer_merge_report_brief
+
+// ----------------------------------------------------------------------
+
+std::string TitersModify::titer_merge_report_long(titer_merge data)
+{
+    switch (data) {
+        case titer_merge::all_dontcare:
+            return "all source titers are dont-care";
+        case titer_merge::less_and_more_than:
+            return "both less-than and more-than present";
+        case titer_merge::less_than_only:
+            return "less-than only";
+        case titer_merge::more_than_only_adjust_to_next:
+            return "more-than only, adjust to next";
+        case titer_merge::more_than_only_to_dontcare:
+            return "more-than only, convert to dont-care";
+        case titer_merge::sd_too_big:
+            return "standard deviation is too big";
+        case titer_merge::regular_only:
+            return "regular only";
+        case titer_merge::max_less_than_bigger_than_max_regular:
+            return "max of less than is bigger than max of regulars";
+        case titer_merge::less_than_and_regular:
+            return "less than and regular";
+        case titer_merge::min_more_than_less_than_min_regular:
+            return "min of more-than is less than min of regular";
+        case titer_merge::more_than_and_regular:
+            return "more than and regular";
+    }
+    return "(internal error)";
+
+} // TitersModify::titer_merge_report_long
+
+// ----------------------------------------------------------------------
+
+std::string TitersModify::titer_merge_report_description()
+{
+    std::string result;
+    for (auto tm : {titer_merge::all_dontcare, titer_merge::less_and_more_than, titer_merge::less_than_only, titer_merge::more_than_only_adjust_to_next, titer_merge::more_than_only_to_dontcare, titer_merge::sd_too_big, titer_merge::regular_only, titer_merge::max_less_than_bigger_than_max_regular, titer_merge::less_than_and_regular, titer_merge::min_more_than_less_than_min_regular, titer_merge::more_than_and_regular}) {
+        auto brief = titer_merge_report_brief(tm);
+        brief += std::string(3 - brief.size(), ' ');
+        result += brief + "  " + titer_merge_report_long(tm) + '\n';
+    }
+    return result;
+
+} // TitersModify::titer_merge_report_description
+
+// ----------------------------------------------------------------------
+
 size_t TitersModify::number_of_antigens() const
 {
     auto num_ags = [this](const auto& titers) -> size_t {
