@@ -1,4 +1,5 @@
-#include "acmacs-base/layout.hh"
+#include <memory>
+
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/sigmoid.hh"
@@ -30,18 +31,41 @@ template <typename T> constexpr inline aint_t cint(T src) { return static_cast<a
 
 // ----------------------------------------------------------------------
 
-static void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
-static void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
-static void alglib_pca(const acmacs::chart::Stress<double>& stress, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
+struct OptimiserCallbackData
+{
+    OptimiserCallbackData(const acmacs::chart::Stress<double>& a_stress) : stress{a_stress}, intermediate_layouts{nullptr} {}
+    OptimiserCallbackData(const acmacs::chart::Stress<double>& a_stress, acmacs::chart::IntermediateLayouts& a_intermediate_layouts) : stress{a_stress}, intermediate_layouts{&a_intermediate_layouts} {}
+    const acmacs::chart::Stress<double>& stress;
+    acmacs::chart::IntermediateLayouts* intermediate_layouts = nullptr;
+};
+
+
+namespace acmacs::chart
+{
+    static acmacs::chart::optimization_status optimize(acmacs::chart::optimization_method optimization_method, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
+}
+
+static void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
+static void alglib_cg_optimize(acmacs::chart::optimization_status& status, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
+static void alglib_pca(OptimiserCallbackData& callback_data, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
 
 // ----------------------------------------------------------------------
 
 acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::ProjectionModify& projection, acmacs::chart::optimization_options options)
 {
     auto layout = projection.layout_modified();
-    auto stress = stress_factory<double>(projection, options.mult);
-    const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
-    return status;
+    OptimiserCallbackData callback_data(stress_factory<double>(projection, options.mult));
+    return optimize(options.method, callback_data, layout->data(), layout->data() + layout->size(), options.precision);
+
+} // acmacs::chart::optimize
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::optimization_status acmacs::chart::optimize(ProjectionModify& projection, IntermediateLayouts& intermediate_layouts, optimization_options options)
+{
+    auto layout = projection.layout_modified();
+    OptimiserCallbackData callback_data(stress_factory<double>(projection, options.mult), intermediate_layouts);
+    return optimize(options.method, callback_data, layout->data(), layout->data() + layout->size(), options.precision);
 
 } // acmacs::chart::optimize
 
@@ -122,24 +146,33 @@ std::ostream& acmacs::chart::operator<<(std::ostream& out, const acmacs::chart::
 
 acmacs::chart::optimization_status acmacs::chart::optimize(optimization_method optimization_method, const Stress<double>& stress, double* arg_first, double* arg_last, optimization_precision precision)
 {
-    optimization_status status(optimization_method);
-    status.initial_stress = stress.value(arg_first);
+    OptimiserCallbackData callback_data(stress);
+    return optimize(optimization_method, callback_data, arg_first, arg_last, precision);
+
+} // acmacs::chart::optimize
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::optimization_method optimization_method, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision)
+{
+    acmacs::chart::optimization_status status(optimization_method);
+    status.initial_stress = callback_data.stress.value(arg_first);
     const auto start = std::chrono::high_resolution_clock::now();
     try {
         switch (optimization_method) {
-            case optimization_method::alglib_lbfgs_pca:
-                alglib_lbfgs_optimize(status, stress, arg_first, arg_last, precision);
+            case acmacs::chart::optimization_method::alglib_lbfgs_pca:
+                alglib_lbfgs_optimize(status, callback_data, arg_first, arg_last, precision);
                 break;
-            case optimization_method::alglib_cg_pca:
-                alglib_cg_optimize(status, stress, arg_first, arg_last, precision);
+            case acmacs::chart::optimization_method::alglib_cg_pca:
+                alglib_cg_optimize(status, callback_data, arg_first, arg_last, precision);
                 break;
         }
     }
     catch (alglib::ap_error& err) {
-        throw optimization_error("alglib error: " + err.msg);
+        throw acmacs::chart::optimization_error("alglib error: " + err.msg);
     }
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
-    status.final_stress = stress.value(arg_first);
+    status.final_stress = callback_data.stress.value(arg_first);
     return status;
 
 } // acmacs::chart::optimize
@@ -170,6 +203,7 @@ acmacs::chart::ErrorLines acmacs::chart::error_lines(const acmacs::chart::Projec
 // ----------------------------------------------------------------------
 
 static void alglib_lbfgs_optimize_grad(const alglib::real_1d_array& x, double& func, alglib::real_1d_array& grad, void* ptr);
+static void alglib_lbfgs_optimize_step(const alglib::real_1d_array& x, double func, void* ptr); // callback at each iteration
 
 static const char* alglib_lbfgs_optimize_errors[] = {
     "(-1) incorrect parameters were specified", // -1
@@ -210,7 +244,7 @@ inline std::pair<double, double> eps(acmacs::chart::optimization_precision preci
     return {1e-10, 0.0};
 }
 
-void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision)
+void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision)
 {
     using namespace alglib;
 
@@ -221,7 +255,7 @@ void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acm
 
 
       // alglib does not like NaN coordinates of disconnected points, set them to 0
-    stress.set_coordinates_of_disconnected(arg_first, 0.0, stress.number_of_dimensions());
+    callback_data.stress.set_coordinates_of_disconnected(arg_first, 0.0, callback_data.stress.number_of_dimensions());
 
     real_1d_array x;
     x.attach_to_ptr(arg_last - arg_first, arg_first);
@@ -230,12 +264,12 @@ void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acm
     minlbfgscreate(1, x, state);
     minlbfgssetcond(state, epsg, epsf, epsx, max_iterations);
     minlbfgssetstpmax(state, stpmax);
-    minlbfgsoptimize(state, &alglib_lbfgs_optimize_grad, nullptr, const_cast<void*>(reinterpret_cast<const void*>(&stress)));
+    minlbfgsoptimize(state, &alglib_lbfgs_optimize_grad, callback_data.intermediate_layouts ? &alglib_lbfgs_optimize_step : nullptr, reinterpret_cast<void*>(&callback_data));
     minlbfgsreport rep;
     minlbfgsresultsbuf(state, x, rep);
 
       // return back NaN for disconnected points
-    stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), stress.number_of_dimensions());
+    callback_data.stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), callback_data.stress.number_of_dimensions());
 
     if (rep.terminationtype < 0) {
         const char* msg = alglib_lbfgs_optimize_errors[std::abs(rep.terminationtype) <= 8 ? (std::abs(rep.terminationtype) - 1) : 8];
@@ -254,8 +288,8 @@ void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, const acm
 
 void alglib_lbfgs_optimize_grad(const alglib::real_1d_array& x, double& func, alglib::real_1d_array& grad, void* ptr)
 {
-    auto* stress = reinterpret_cast<const acmacs::chart::Stress<double>*>(ptr);
-    func = stress->value_gradient(x.getcontent(), x.getcontent() + x.length(), grad.getcontent());
+    auto* callback_data = reinterpret_cast<OptimiserCallbackData*>(ptr);
+    func = callback_data->stress.value_gradient(x.getcontent(), x.getcontent() + x.length(), grad.getcontent());
       //std::cout << "grad " << ++called << ' ' << func << '\n';
 
       // terminate optimization (need to pass state in ptr)
@@ -265,7 +299,16 @@ void alglib_lbfgs_optimize_grad(const alglib::real_1d_array& x, double& func, al
 
 // ----------------------------------------------------------------------
 
-void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs::chart::Stress<double>& stress, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision)
+void alglib_lbfgs_optimize_step(const alglib::real_1d_array& x, double func, void* ptr) // callback at each iteration
+{
+    auto* callback_data = reinterpret_cast<OptimiserCallbackData*>(ptr);
+    callback_data->intermediate_layouts->emplace_back(callback_data->stress.number_of_dimensions(), x.getcontent(), x.length(), func);
+
+} // alglib_lbfgs_optimize_step
+
+// ----------------------------------------------------------------------
+
+void alglib_cg_optimize(acmacs::chart::optimization_status& status, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision)
 {
     using namespace alglib;
 
@@ -274,7 +317,7 @@ void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs
     const ae_int_t max_iterations = 0;
 
       // alglib does not like NaN coordinates of disconnected points, set them to 0
-    stress.set_coordinates_of_disconnected(arg_first, 0.0, stress.number_of_dimensions());
+    callback_data.stress.set_coordinates_of_disconnected(arg_first, 0.0, callback_data.stress.number_of_dimensions());
 
     real_1d_array x;
     x.attach_to_ptr(arg_last - arg_first, arg_first);
@@ -282,12 +325,12 @@ void alglib_cg_optimize(acmacs::chart::optimization_status& status, const acmacs
     mincgstate state;
     mincgcreate(x, state);
     mincgsetcond(state, epsg, epsf, epsx, max_iterations);
-    mincgoptimize(state, &alglib_lbfgs_optimize_grad, nullptr, const_cast<void*>(reinterpret_cast<const void*>(&stress)));
+    mincgoptimize(state, &alglib_lbfgs_optimize_grad, callback_data.intermediate_layouts ? &alglib_lbfgs_optimize_step : nullptr, reinterpret_cast<void*>(&callback_data));
     mincgreport rep;
     mincgresultsbuf(state, x, rep);
 
       // return back NaN for disconnected points
-    stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), stress.number_of_dimensions());
+    callback_data.stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), callback_data.stress.number_of_dimensions());
 
     if (rep.terminationtype < 0) {
         const char* msg = alglib_lbfgs_optimize_errors[std::abs(rep.terminationtype) <= 8 ? (std::abs(rep.terminationtype) - 1) : 8];
@@ -307,12 +350,13 @@ acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(optimi
 {
     // std::cerr << "dimension_annealing " << std::pair(arg_first, arg_last) << '\n';
     DimensionAnnelingStatus status;
+    OptimiserCallbackData callback_data(stress);
     const auto start = std::chrono::high_resolution_clock::now();
 
     switch (optimization_method) {
       case optimization_method::alglib_lbfgs_pca:
       case optimization_method::alglib_cg_pca:
-          alglib_pca(stress, source_number_of_dimensions, target_number_of_dimensions, arg_first, arg_last);
+          alglib_pca(callback_data, source_number_of_dimensions, target_number_of_dimensions, arg_first, arg_last);
           break;
     }
 
@@ -323,14 +367,14 @@ acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(optimi
 
 // ----------------------------------------------------------------------
 
-void alglib_pca(const acmacs::chart::Stress<double>& stress, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
+void alglib_pca(OptimiserCallbackData& callback_data, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
 {
     const double eps{0};
     const aint_t maxits{0};
     const aint_t number_of_points = (arg_last - arg_first) / cint(source_number_of_dimensions);
 
       // alglib does not like NaN coordinates of disconnected points, set them to 0
-    stress.set_coordinates_of_disconnected(arg_first, 0.0, source_number_of_dimensions);
+    callback_data.stress.set_coordinates_of_disconnected(arg_first, 0.0, source_number_of_dimensions);
 
     alglib::real_2d_array x;
     x.attach_to_ptr(number_of_points, cint(source_number_of_dimensions), arg_first);
@@ -357,12 +401,9 @@ void alglib_pca(const acmacs::chart::Stress<double>& stress, size_t source_numbe
 
       // return back NaN for disconnected points
       // number of dimensions changed!
-    stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), target_number_of_dimensions);
+    callback_data.stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), target_number_of_dimensions);
 
 } // alglib_pca
-
-// ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:

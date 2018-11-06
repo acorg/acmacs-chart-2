@@ -5,6 +5,7 @@
 #include <string>
 #include <chrono>
 
+#include "acmacs-base/layout.hh"
 #include "acmacs-chart-2/optimize-options.hh"
 
 // ----------------------------------------------------------------------
@@ -39,10 +40,21 @@ namespace acmacs::chart
         std::chrono::microseconds time;
     };
 
+    struct IntermediateLayout
+    {
+        IntermediateLayout(size_t number_of_dimensions, const double* first, long layout_size, double a_stress) : layout(number_of_dimensions, first, first + layout_size), stress{a_stress} {}
+        const acmacs::Layout layout;
+        const double stress;
+    };
+
+    using IntermediateLayouts = std::vector<IntermediateLayout>;
+
 // ----------------------------------------------------------------------
 
       // optimizes existing projection without dimension annealing
     optimization_status optimize(ProjectionModify& projection, optimization_options options = optimization_options{});
+      // optimizes existing projection without dimension annealing and saves intermediate layouts
+    optimization_status optimize(ProjectionModify& projection, IntermediateLayouts& intermediate_layouts, optimization_options options = optimization_options{});
       // optimizes existing projection with dimension annealing
     optimization_status optimize(ProjectionModify& projection, const dimension_schedule& schedule, optimization_options options = optimization_options{});
       // creates new projection and optimizes it with or without dimension annealing
