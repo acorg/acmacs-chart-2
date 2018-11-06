@@ -1414,6 +1414,16 @@ optimization_status ProjectionModify::relax(optimization_options options)
 
 // ----------------------------------------------------------------------
 
+optimization_status ProjectionModify::relax(optimization_options options, IntermediateLayouts& intermediate_layouts)
+{
+    const auto status = optimize(*this, intermediate_layouts, options);
+    stress_ = status.final_stress;
+    return status;
+
+} // ProjectionModify::relax
+
+// ----------------------------------------------------------------------
+
 ProcrustesData ProjectionModify::orient_to(const Projection& master)
 {
     acmacs::chart::CommonAntigensSera common(master.chart(), chart(), CommonAntigensSera::match_level_t::automatic);

@@ -413,6 +413,7 @@ namespace acmacs::chart
         virtual void set_layout(const acmacs::LayoutInterface& layout);
         virtual void comment(std::string comment) { modify(); comment_ = comment; }
         virtual optimization_status relax(optimization_options options);
+        virtual optimization_status relax(optimization_options options, IntermediateLayouts& intermediate_layouts);
         virtual std::shared_ptr<ProjectionModifyNew> clone(ChartModify& chart) const;
         ProcrustesData orient_to(const Projection& master);
 

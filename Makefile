@@ -23,6 +23,7 @@ TARGETS = \
     $(DIST)/chart-relax \
     $(DIST)/chart-relax-existing \
     $(DIST)/chart-relax-disconnected \
+    $(DIST)/chart-relax-save-intermediate-layouts \
     $(DIST)/chart-error-lines \
     $(DIST)/chart-common \
     $(DIST)/chart-procrustes \

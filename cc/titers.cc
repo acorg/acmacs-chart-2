@@ -3,6 +3,7 @@
 #include "acmacs-base/debug.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
+#include "acmacs-base/stream.hh"
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -349,6 +350,7 @@ std::pair<acmacs::chart::PointIndexList, acmacs::chart::PointIndexList> acmacs::
             ++serum_to_num_layers[titer_it->serum];
         }
     }
+    std::cerr << "DEBUG: " << antigen_to_num_layers << DEBUG_LINE_FUNC << '\n';
     acmacs::chart::PointIndexList antigens, sera;
     for (const auto& ag : antigen_to_num_layers) {
         if (ag.second > 1)

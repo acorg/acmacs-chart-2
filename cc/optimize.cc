@@ -54,7 +54,8 @@ static void alglib_pca(OptimiserCallbackData& callback_data, size_t source_numbe
 acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::ProjectionModify& projection, acmacs::chart::optimization_options options)
 {
     auto layout = projection.layout_modified();
-    OptimiserCallbackData callback_data(stress_factory<double>(projection, options.mult));
+    auto stress = stress_factory<double>(projection, options.mult);
+    OptimiserCallbackData callback_data(stress);
     return optimize(options.method, callback_data, layout->data(), layout->data() + layout->size(), options.precision);
 
 } // acmacs::chart::optimize
@@ -64,7 +65,8 @@ acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::Projec
 acmacs::chart::optimization_status acmacs::chart::optimize(ProjectionModify& projection, IntermediateLayouts& intermediate_layouts, optimization_options options)
 {
     auto layout = projection.layout_modified();
-    OptimiserCallbackData callback_data(stress_factory<double>(projection, options.mult), intermediate_layouts);
+    auto stress = stress_factory<double>(projection, options.mult);
+    OptimiserCallbackData callback_data(stress, intermediate_layouts);
     return optimize(options.method, callback_data, layout->data(), layout->data() + layout->size(), options.precision);
 
 } // acmacs::chart::optimize
