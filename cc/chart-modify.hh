@@ -414,6 +414,7 @@ namespace acmacs::chart
         std::shared_ptr<acmacs::Layout> randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> randomizer); // randomize just some point coordinates
         virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
         virtual void set_layout(const acmacs::LayoutInterface& layout);
+        virtual void set_stress(double stress) { stress_ = stress; }
         virtual void comment(std::string comment) { modify(); comment_ = comment; }
         virtual optimization_status relax(optimization_options options);
         virtual optimization_status relax(optimization_options options, IntermediateLayouts& intermediate_layouts);
