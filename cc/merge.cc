@@ -115,8 +115,24 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
     copy_layers(layers2, *titers2, report.antigens_secondary_target, report.sera_secondary_target);
     report.titer_report = titers->set_from_layers(*result);
 
+      // plot spec
+    auto plot_spec1 = chart1.plot_spec();
+    auto plot_spec2 = chart2.plot_spec();
+    auto result_plot_spec = result->plot_spec_modify();
+    for (size_t ag_no = 0; ag_no < chart1.number_of_antigens(); ++ag_no)
+        result_plot_spec->modify(ag_no, plot_spec1->style(ag_no));
+    for (size_t sr_no = 0; sr_no < chart1.number_of_sera(); ++sr_no)
+        result_plot_spec->modify_serum(sr_no, plot_spec1->style(sr_no + chart1.number_of_antigens()));
+    for (size_t ag_no = 0; ag_no < chart2.number_of_antigens(); ++ag_no) {
+        if (auto found = report.antigens_secondary_target.find(ag_no); found != report.antigens_secondary_target.end() && !found->second.common)
+            result_plot_spec->modify(found->second.index, plot_spec2->style(ag_no));
+    }
+    for (size_t sr_no = 0; sr_no < chart2.number_of_sera(); ++sr_no) {
+        if (auto found = report.sera_secondary_target.find(sr_no); found != report.sera_secondary_target.end() && !found->second.common)
+            result_plot_spec->modify_serum(found->second.index, plot_spec2->style(sr_no + chart2.number_of_antigens()));
+    }
+
     // projections
-    // plot spec
 
     return {std::move(result), std::move(report)};
 
