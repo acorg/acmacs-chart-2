@@ -2,6 +2,7 @@
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/rjson.hh"
+#include "acmacs-base/read-file.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/randomizer.hh"
@@ -44,6 +45,17 @@ int main(int argc, char* const argv[])
             const auto status = projection->relax(acmacs::chart::optimization_options(method, precision, args["--md"]), intermediate_layouts);
             std::cout << "INFO: " << status << '\n';
             std::cout << "INFO: intermediate_layouts: " << intermediate_layouts.size() << '\n';
+            rjson::value rj_intermediate_layouts = rjson::array{};
+            std::for_each(intermediate_layouts.begin(), intermediate_layouts.end(), [&rj_intermediate_layouts](const auto& entry) {
+                rjson::value layout = rjson::array{};
+                for (size_t p_no = 0; p_no < entry.layout.number_of_points(); ++p_no) {
+                    const auto p_coord = entry.layout[p_no];
+                    layout.append(rjson::array(p_coord.begin(), p_coord.end()));
+                }
+                rj_intermediate_layouts.append(rjson::object{{"layout", layout}, {"stress", entry.stress}});
+            });
+            const rjson::value output_data = rjson::object{{"intermediate_layouts", rj_intermediate_layouts}};
+            acmacs::file::write(args[1], rjson::pretty(output_data));
         }
     }
     catch (std::exception& err) {
