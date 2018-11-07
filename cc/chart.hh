@@ -55,7 +55,7 @@ namespace acmacs::chart
         virtual size_t number_of_sources() const = 0;
         virtual std::shared_ptr<Info> source(size_t aSourceNo) const = 0;
         size_t max_source_name() const;
-        
+
     }; // class Info
 
 // ----------------------------------------------------------------------
@@ -268,6 +268,7 @@ namespace acmacs::chart
         std::string abbreviated_name() const { return ::string::join(" ", {name_abbreviated(), reassortant(), ::string::join(" ", annotations())}); }
         std::string abbreviated_name_with_passage_type() const { return ::string::join("-", {name_abbreviated(), reassortant(), ::string::join(" ", annotations()), passage_type()}); }
         std::string abbreviated_location_with_passage_type() const { return ::string::join(" ", {location_abbreviated(), passage_type()}); }
+        std::string designation() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations()), passage()}); }
 
         std::string name_abbreviated() const;
         std::string name_without_subtype() const;
@@ -320,6 +321,7 @@ namespace acmacs::chart
         std::string full_name_with_fields() const;
         std::string abbreviated_name() const { return ::string::join(" ", {name_abbreviated(), reassortant(), ::string::join(" ", annotations())}); }
         std::string abbreviated_name_with_serum_id() const { return ::string::join(" ", {name_abbreviated(), reassortant(), serum_id(), ::string::join(" ", annotations())}); }
+        std::string designation() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations()), serum_id()}); }
 
         std::string name_abbreviated() const;
         std::string name_without_subtype() const;
@@ -342,6 +344,8 @@ namespace acmacs::chart
     }
 
 // ----------------------------------------------------------------------
+
+    using duplicates_t = std::vector<std::vector<size_t>>;
 
     class Antigens
     {
@@ -377,7 +381,9 @@ namespace acmacs::chart
         virtual std::optional<size_t> find_by_full_name(std::string aFullName) const;
         virtual Indexes find_by_name(std::string aName) const;
         size_t max_full_name() const;
-        
+
+        duplicates_t find_duplicates() const;
+
      private:
         Indexes make_indexes(std::function<bool (const Antigen& ag)> test) const
             {
@@ -429,6 +435,8 @@ namespace acmacs::chart
         size_t max_full_name() const;
 
         void set_homologous(const Antigens& aAntigens);
+
+        duplicates_t find_duplicates() const;
 
      private:
         void remove(Indexes& aIndexes, std::function<bool (const Serum&)> aFilter) const

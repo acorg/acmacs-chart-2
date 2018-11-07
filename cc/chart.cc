@@ -765,6 +765,32 @@ acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string aName) 
 
 // ----------------------------------------------------------------------
 
+template <typename AgSr> acmacs::chart::duplicates_t find_duplicates(const AgSr& ag_sr)
+{
+    std::map<std::string, std::vector<size_t>> designations_to_indexes;
+    for (size_t index = 0; index < ag_sr.size(); ++index) {
+        auto [pos, inserted] = designations_to_indexes.insert({ag_sr[index]->designation(), {}});
+        pos->second.push_back(index);
+    }
+
+    acmacs::chart::duplicates_t result;
+    for (auto [designation, indexes] : designations_to_indexes) {
+        if (indexes.size() > 1)
+            result.push_back(indexes);
+    }
+    return result;
+}
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::duplicates_t acmacs::chart::Antigens::find_duplicates() const
+{
+    return ::find_duplicates(*this);
+
+} // acmacs::chart::Antigens::find_duplicates
+
+// ----------------------------------------------------------------------
+
 void acmacs::chart::Antigens::filter_country(Indexes& aIndexes, std::string aCountry) const
 {
     remove(aIndexes, [aCountry](const auto& entry) { return not_in_country(entry.name(), aCountry); });
@@ -855,6 +881,14 @@ acmacs::chart::Indexes acmacs::chart::Sera::find_by_name(std::string aName) cons
     return indexes;
 
 } // acmacs::chart::Sera::find_by_name
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::duplicates_t acmacs::chart::Sera::find_duplicates() const
+{
+    return ::find_duplicates(*this);
+
+} // acmacs::chart::Sera::find_duplicates
 
 // ----------------------------------------------------------------------
 
