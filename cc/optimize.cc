@@ -266,7 +266,8 @@ void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, Optimiser
     minlbfgscreate(1, x, state);
     minlbfgssetcond(state, epsg, epsf, epsx, max_iterations);
     minlbfgssetstpmax(state, stpmax);
-    minlbfgsoptimize(state, &alglib_lbfgs_optimize_grad, callback_data.intermediate_layouts ? &alglib_lbfgs_optimize_step : nullptr, reinterpret_cast<void*>(&callback_data));
+    minlbfgssetxrep(state, callback_data.intermediate_layouts != nullptr);
+    minlbfgsoptimize(state, &alglib_lbfgs_optimize_grad, &alglib_lbfgs_optimize_step, reinterpret_cast<void*>(&callback_data));
     minlbfgsreport rep;
     minlbfgsresultsbuf(state, x, rep);
 
@@ -327,7 +328,8 @@ void alglib_cg_optimize(acmacs::chart::optimization_status& status, OptimiserCal
     mincgstate state;
     mincgcreate(x, state);
     mincgsetcond(state, epsg, epsf, epsx, max_iterations);
-    mincgoptimize(state, &alglib_lbfgs_optimize_grad, callback_data.intermediate_layouts ? &alglib_lbfgs_optimize_step : nullptr, reinterpret_cast<void*>(&callback_data));
+    mincgsetxrep(state, callback_data.intermediate_layouts != nullptr);
+    mincgoptimize(state, &alglib_lbfgs_optimize_grad, &alglib_lbfgs_optimize_step, reinterpret_cast<void*>(&callback_data));
     mincgreport rep;
     mincgresultsbuf(state, x, rep);
 
