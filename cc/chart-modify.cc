@@ -1355,6 +1355,29 @@ void ProjectionModify::insert_serum(size_t before, size_t number_of_antigens)
 
 // ----------------------------------------------------------------------
 
+std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(ProjectionModify::randomizer rnd, double diameter_multiplier)
+{
+    std::shared_ptr<LayoutRandomizer> rnd_v;
+    switch (rnd) {
+      case randomizer::plain_with_table_max_distance:
+          rnd_v = acmacs::chart::randomizer_plain_with_table_max_distance(*this);
+          break;
+      case randomizer::plain_with_current_layout_area:
+          rnd_v = acmacs::chart::randomizer_plain_with_current_layout_area(*this, diameter_multiplier);
+          break;
+      case randomizer::plain_from_sample_optimization:
+      {
+          auto stress = acmacs::chart::stress_factory<double>(*this, multiply_antigen_titer_until_column_adjust::yes);
+          rnd_v = acmacs::chart::randomizer_plain_from_sample_optimization(*this, stress, diameter_multiplier);
+      }
+          break;
+    }
+    return randomize_layout(rnd_v);
+    
+} // ProjectionModify::randomize_layout
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer)
 {
     modify();

@@ -384,6 +384,8 @@ namespace acmacs::chart
     class ProjectionModify : public Projection
     {
      public:
+        enum class randomizer { plain_with_table_max_distance, plain_with_current_layout_area, plain_from_sample_optimization };
+
         explicit ProjectionModify(const Chart& chart) : Projection(chart) {}
         explicit ProjectionModify(const ProjectionModify& aSource) : Projection(aSource.chart())
             {
@@ -408,6 +410,7 @@ namespace acmacs::chart
         std::shared_ptr<acmacs::Layout> layout_modified() { modify(); return layout_; }
         std::shared_ptr<acmacs::Layout> layout_modified() const { return layout_; }
         std::shared_ptr<acmacs::Layout> randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer);
+        std::shared_ptr<acmacs::Layout> randomize_layout(randomizer rnd, double diameter_multiplier);
         std::shared_ptr<acmacs::Layout> randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> randomizer); // randomize just some point coordinates
         virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
         virtual void set_layout(const acmacs::LayoutInterface& layout);

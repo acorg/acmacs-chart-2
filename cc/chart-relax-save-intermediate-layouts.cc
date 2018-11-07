@@ -40,7 +40,7 @@ int main(int argc, char* const argv[])
                 disconnected.extend(chart.titers()->having_too_few_numeric_titers());
 
             auto projection = chart.projections_modify()->new_from_scratch(args["-d"], static_cast<std::string_view>(args["-m"]));
-            projection->randomize_layout(acmacs::chart::randomizer_plain_with_table_max_distance(*projection));
+            projection->randomize_layout(acmacs::chart::ProjectionModify::randomizer::plain_from_sample_optimization, 2.0);
             acmacs::chart::IntermediateLayouts intermediate_layouts;
             const auto status = projection->relax(acmacs::chart::optimization_options(method, precision, args["--md"]), intermediate_layouts);
             std::cout << "INFO: " << status << '\n';
