@@ -69,15 +69,21 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
 
     // --------------------------------------------------
 
+    if (!chart1.antigens()->find_duplicates().empty() || !chart1.sera()->find_duplicates().empty() || !chart2.antigens()->find_duplicates().empty() || !chart2.sera()->find_duplicates().empty())
+        throw merge_error{"charts to merge have duplicates among antigens or sera"};
+
     MergeReport report(chart1, chart2, settings);
 
     ChartModifyP result = std::make_shared<ChartNew>(report.target_antigens, report.target_sera);
     merge_info(*result, chart1, chart2);
     auto result_antigens = result->antigens_modify();
+    auto result_sera = result->sera_modify();
     merge_antigens_sera(*result_antigens, *chart1.antigens(), report.antigens_primary_target);
     merge_antigens_sera(*result_antigens, *chart2.antigens(), report.antigens_secondary_target);
-    merge_antigens_sera(*result->sera_modify(), *chart1.sera(), report.sera_primary_target);
-    merge_antigens_sera(*result->sera_modify(), *chart2.sera(), report.sera_secondary_target);
+    merge_antigens_sera(*result_sera, *chart1.sera(), report.sera_primary_target);
+    merge_antigens_sera(*result_sera, *chart2.sera(), report.sera_secondary_target);
+    if (!result_antigens->find_duplicates().empty() || !result_sera->find_duplicates().empty())
+        throw merge_error{"merge has duplicates among antigens or sera"};
 
     // titers
 
