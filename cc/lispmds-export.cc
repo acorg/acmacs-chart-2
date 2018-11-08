@@ -175,7 +175,12 @@ std::string batch_runs(const acmacs::chart::Chart& aChart, const acmacs::chart::
         if (projection_no > 1)
             result.append("\n                ");
         result.append("((" + coordinates(layout, layout->number_of_points(), layout->number_of_dimensions(), 18, disconnected) + col_and_row_adjusts(aChart, projection, 18, disconnected) + ')');
-        result.append("\n                 " + acmacs::to_string(projection->stress()) + " MULTIPLE-END-CONDITIONS NIL)");
+        std::string stress_s;
+        if (auto stress = projection->stress(); !std::isnan(stress) && stress >= 0)
+            stress_s = acmacs::to_string(stress);
+        else
+            stress_s = "0";
+        result.append("\n                 " + stress_s + " MULTIPLE-END-CONDITIONS NIL)");
     }
     result.append(1, ')');
     return result;
