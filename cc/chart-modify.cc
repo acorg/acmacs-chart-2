@@ -278,6 +278,53 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
 
 // ----------------------------------------------------------------------
 
+void ChartModify::relax_incremetal(size_t source_projection_no, size_t number_of_optimizations, acmacs::chart::optimization_options options, bool report_stresses,
+                                   const PointIndexList& disconnect_points)
+{
+    auto source_projection = projection_modify(source_projection_no);
+    const auto num_dim = source_projection->number_of_dimensions();
+    const auto minimum_column_basis = source_projection->minimum_column_basis();
+    auto stress = acmacs::chart::stress_factory<double>(*this, num_dim, minimum_column_basis, options.mult, false);
+    stress.set_disconnected(disconnect_points);
+    auto rnd = randomizer_plain_from_sample_optimization(*this, stress, num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
+
+    auto make_points_with_nan_coordinates = [&source_projection, &disconnect_points]() -> PointIndexList {
+        PointIndexList result;
+        auto source_layout = source_projection->layout();
+        for (size_t p_no = 0; p_no < source_layout->number_of_points(); ++p_no) {
+            if (!source_layout->point_has_coordinates(p_no) && !disconnect_points.contains(p_no))
+                result.insert(p_no);
+        }
+        return result;
+    };
+    const auto points_with_nan_coordinates = make_points_with_nan_coordinates();
+    std::cout << "INFO: about to randomize coordinates of " << points_with_nan_coordinates.size() << " points\n";
+
+    std::vector<std::shared_ptr<ProjectionModifyNew>> projections(number_of_optimizations);
+    std::transform(projections.begin(), projections.end(), projections.begin(), [&disconnect_points, &source_projection, pp = projections_modify()](const auto&) {
+        auto projection = pp->new_by_cloning(*source_projection);
+        if (!disconnect_points.empty())
+            projection->set_disconnected(disconnect_points);
+        return projection;
+    });
+
+#pragma omp parallel for default(shared) firstprivate(stress) schedule(static, 4)
+    for (size_t p_no = 0; p_no < projections.size(); ++p_no) {
+        auto projection = projections[p_no];
+        projection->randomize_layout(points_with_nan_coordinates, rnd);
+        auto layout = projection->layout_modified();
+        stress.change_number_of_dimensions(num_dim);
+        const auto status = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
+        if (!std::isnan(status.final_stress))
+            projection->stress_ = status.final_stress;
+        if (report_stresses)
+            std::cout << std::setw(3) << p_no << ' ' << std::fixed << std::setprecision(4) << *projection->stress_ << '\n';
+    }
+
+} // ChartModify::relax_incremetal
+
+// ----------------------------------------------------------------------
+
 void ChartModify::remove_layers()
 {
     titers_modify()->remove_layers();
