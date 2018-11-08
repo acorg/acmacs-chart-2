@@ -513,6 +513,7 @@ namespace acmacs::chart
         size_t number_of_dimensions() const override { return number_of_dimensions_modified(); }
         MinimumColumnBasis minimum_column_basis() const override { return minimum_column_basis_; }
         ColumnBasesP forced_column_bases() const override { return forced_column_bases_modified(); }
+        using ProjectionModify::transformation;
         acmacs::Transformation transformation() const override { return transformation_modified(); }
         bool dodgy_titer_is_regular() const override { return dodgy_titer_is_regular_; }
         double stress_diff_to_stop() const override { return stress_diff_to_stop_; }

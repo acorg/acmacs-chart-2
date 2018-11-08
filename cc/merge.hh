@@ -20,7 +20,7 @@ namespace acmacs::chart
         MergeSettings(CommonAntigensSera::match_level_t a_match_level, projection_merge_t a_projection_merge = projection_merge_t::none) : match_level{a_match_level}, projection_merge{a_projection_merge} {}
         MergeSettings(projection_merge_t a_projection_merge) : projection_merge{a_projection_merge} {}
         CommonAntigensSera::match_level_t match_level = CommonAntigensSera::match_level_t::automatic;
-        bool remove_distinct = true;
+        bool remove_distinct = false;
         projection_merge_t projection_merge = projection_merge_t::none;
     };
 

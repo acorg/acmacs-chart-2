@@ -175,12 +175,37 @@ void merge_plot_spec(acmacs::chart::ChartModifyP result, const acmacs::chart::Ch
 
 void merge_projections_incremental(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report)
 {
+      // copy best projection of chart1, set coords of non-common points of chart2 to NaN
+    std::cout << "INFO: incremental merge\n";
+    auto projection1 = chart1.projection(0);
+    if (!projection1->avidity_adjusts().empty())
+        throw acmacs::chart::merge_error{"chart1 projection has avidity_adjusts"};
+    auto result_projection = result->projections_modify()->new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
+    auto layout1 = projection1->layout();
+    auto result_layout = result_projection->layout_modified();
+    for (size_t ag_no = 0; ag_no < chart1.number_of_antigens(); ++ag_no)
+        result_layout->set(ag_no, layout1->get(ag_no));
+    for (size_t sr_no = 0; sr_no < chart1.number_of_sera(); ++sr_no)
+        result_layout->set(sr_no + result->number_of_antigens(), layout1->get(sr_no + chart1.number_of_antigens()));
+    result_projection->transformation(projection1->transformation());
+    if (const auto disconnected1 = projection1->disconnected(); !disconnected1.empty()) {
+        acmacs::chart::PointIndexList result_disconnected;
+        for (auto dis1 : disconnected1) {
+            if (dis1 < chart1.number_of_antigens())
+                result_disconnected.insert(dis1);
+            else
+                result_disconnected.insert(dis1 - chart1.number_of_antigens() + result->number_of_antigens());
+        }
+        result_projection->set_disconnected(result_disconnected);
+    }
 }
 
 // ----------------------------------------------------------------------
 
 void merge_projections_overlay(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report)
 {
+    std::cout << "INFO: overlay merge\n";
+    std::cerr << "WARNING: overlay merge not implemented" << '\n';
 }
 
 // ----------------------------------------------------------------------

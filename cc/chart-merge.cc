@@ -19,6 +19,8 @@ int main(int argc, char* const argv[])
                        {
                            {"-o", "", "output chart"},
                                      // {"--match", "auto", "match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""},
+                           {"--incremental", false, "projection merge: incremental"},
+                           {"--overlay", false, "projection merge: overlay"},
                            {"--report", "", "titer merge report"},
                            {"--time", false, "test speed"},
                            {"--verbose", false},
@@ -32,11 +34,16 @@ int main(int argc, char* const argv[])
         }
         else {
             const auto report = do_report_time(args["--time"]);
+            acmacs::chart::MergeSettings settings;
+            if (args["--incremental"])
+                settings.projection_merge = acmacs::chart::projection_merge_t::incremental;
+            else if (args["--overlay"])
+                settings.projection_merge = acmacs::chart::projection_merge_t::overlay;
               // const auto match_level = acmacs::chart::CommonAntigensSera::match_level(args["--match"]);
             auto read = [report](std::string_view filename) { return acmacs::chart::import_from_file(filename, acmacs::chart::Verify::None, report); };
             auto chart1 = read(args[0]);
             auto chart2 = read(args[1]);
-            auto [result, merge_report] = acmacs::chart::merge(*chart1, *chart2);
+            auto [result, merge_report] = acmacs::chart::merge(*chart1, *chart2, settings);
             std::cout << chart1->description() << '\n' << chart2->description() << "\n\n";
             merge_report.common.report();
             std::cout << "----------\n\n";
