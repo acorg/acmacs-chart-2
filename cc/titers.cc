@@ -162,8 +162,10 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Titers::computed_colu
     std::for_each(begin(), end(), [&cb](const auto& titer_data) { cb->update(titer_data.serum, titer_data.titer.logged_for_column_bases()); });
 
     // for (const auto& t : *this)
-    //     std::cerr << "DEBUG: " << t.antigen << ' ' << t.serum << ' ' << t.titer << '\n';
-    // std::cerr << "DEBUG: computed_column_bases_new: " << *cb << '\n';
+    //     if (t.serum == 30)
+    //         std::cerr << "DEBUG: " << t.antigen << ' ' << t.serum << ' ' << t.titer << '\n';
+    // std::cerr << "DEBUG: computed_column_bases_new: " << cb->column_basis(30) << '\n';
+
     return std::move(cb);
 
 } // acmacs::chart::Titers::computed_column_bases

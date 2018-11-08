@@ -20,6 +20,8 @@ namespace acmacs::chart
         MinimumColumnBasis& operator=(double value) { value_ = value; return *this; }
         MinimumColumnBasis& operator=(const MinimumColumnBasis&) = default;
         MinimumColumnBasis& operator=(std::string value) { from(value); return *this; }
+        bool operator==(const MinimumColumnBasis& rhs) const { return float_equal(value_, rhs.value_); }
+        bool operator!=(const MinimumColumnBasis& rhs) const { return !operator==(rhs); }
 
         constexpr bool is_none() const { return float_zero(value_); }
 
