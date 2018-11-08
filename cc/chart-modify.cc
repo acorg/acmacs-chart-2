@@ -433,6 +433,8 @@ std::string InfoModify::date(Compute aCompute) const
 {
     if (!date_.empty() || aCompute == acmacs::chart::Info::Compute::No)
         return date_;
+    if (number_of_sources() == 0)
+        return {};
     std::vector<std::string> composition{number_of_sources()};
     std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(number_of_sources()), composition.begin(), [this](size_t index) { return source(index)->date(); });
     std::sort(std::begin(composition), std::end(composition));
@@ -1373,7 +1375,7 @@ std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(ProjectionMod
           break;
     }
     return randomize_layout(rnd_v);
-    
+
 } // ProjectionModify::randomize_layout
 
 // ----------------------------------------------------------------------
