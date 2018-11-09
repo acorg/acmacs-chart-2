@@ -212,10 +212,12 @@ void merge_projections_overlay(acmacs::chart::ChartModifyP result, const acmacs:
     if (projection1->minimum_column_basis() != projection2->minimum_column_basis())
         throw acmacs::chart::merge_error{"projections have different minimum column bases"};
 
-      // re-orinet layout2 to layout1 using procrustes
+    // re-orinet layout2 to layout1 using procrustes
     const auto procrustes_data = procrustes(*projection1, *projection2, report.common.points(acmacs::chart::CommonAntigensSera::subset::all), acmacs::chart::procrustes_scaling_t::no);
     auto layout1 = projection1->transformed_layout();
-    auto layout2 = projection2->layout()->transform(procrustes_data.transformation.transformation());
+    const auto transformation2 = procrustes_data.transformation.transformation();
+    std::cout << "INFO: transformation for the secondary layout: " << transformation2 << '\n';
+    auto layout2 = projection2->layout()->transform(transformation2);
 
     auto result_projection = result->projections_modify()->new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
     auto result_layout = result_projection->layout_modified();
@@ -230,11 +232,22 @@ void merge_projections_overlay(acmacs::chart::ChartModifyP result, const acmacs:
                 result_layout->set(found->second.index, coord2);
         }
     }
+    for (size_t sr_no = 0; sr_no < chart2.number_of_sera(); ++sr_no) {
+        if (auto found = report.sera_secondary_target.find(sr_no); found != report.sera_secondary_target.end()) {
+            auto coord2 = layout2->get(sr_no + chart2.number_of_antigens());
+            if (found->second.common)
+                result_layout->set(found->second.index + result->number_of_antigens(), coord2.mean_with(result_layout->get(found->second.index + result->number_of_antigens())));
+            else
+                result_layout->set(found->second.index + result->number_of_antigens(), coord2);
+        }
+    }
 
-    if (const auto result_disconnected =
-            map_disconnected(projection1->disconnected(), chart1.number_of_antigens(), result->number_of_antigens(), report.antigens_primary_target, report.sera_primary_target);
-        !result_disconnected.empty()) {
-          // result_projection->set_disconnected(result_disconnected);
+    if (auto result_disconnected1 =
+            map_disconnected(projection1->disconnected(), chart1.number_of_antigens(), result->number_of_antigens(), report.antigens_primary_target, report.sera_primary_target),
+        result_disconnected2 = map_disconnected(projection2->disconnected(), chart2.number_of_antigens(), result->number_of_antigens(), report.antigens_secondary_target, report.sera_secondary_target);
+        !result_disconnected1.empty() || !result_disconnected2.empty()) {
+        result_disconnected1.extend(result_disconnected2);
+        result_projection->set_disconnected(result_disconnected1);
     }
 }
 
