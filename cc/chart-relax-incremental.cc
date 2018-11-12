@@ -22,6 +22,7 @@ int main(int argc, char* const argv[])
                 {"--md", 2.0, "randomization diameter multiplier"},
                 {"--keep-projections", 0, "number of projections to keep, 0 - keep all"},
                 {"--no-disconnect-having-few-titers", false, "do not disconnect points having too few numeric titers"},
+                {"--threads", 0, "number of threads to use for optimization (omp): 0 - autodetect, 1 - sequential"},
                 {"--time", false, "report time of loading chart"},
                 {"--verbose", false},
                 {"-h", false},
@@ -44,7 +45,9 @@ int main(int argc, char* const argv[])
                 disconnected.extend(chart.titers()->having_too_few_numeric_titers());
 
             const size_t source_projection_no = 0;
-            chart.relax_incremetal(source_projection_no, number_of_attempts, acmacs::chart::optimization_options(method, precision, args["--md"]), args["--verbose"] || args["-v"], disconnected);
+            acmacs::chart::optimization_options options(method, precision, args["--md"]);
+            options.num_threads = args["--threads"];
+            chart.relax_incremetal(source_projection_no, number_of_attempts, options, args["--verbose"] || args["-v"], disconnected);
             auto projections = chart.projections_modify();
             if (const size_t keep_projections = args["--keep-projections"]; keep_projections > 0 && projections->size() > keep_projections)
                 projections->keep_just(keep_projections);

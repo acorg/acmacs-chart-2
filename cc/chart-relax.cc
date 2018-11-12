@@ -29,6 +29,7 @@ int main(int argc, char* const argv[])
                 {"--no-disconnect-having-few-titers", false, "do not disconnect points having too few numeric titers"},
                 {"--disconnect-antigens", "", "comma separated list of antigen/point indexes (0-based) to disconnect for the new projections"},
                 {"--disconnect-sera", "", "comma separated list of serum indexes (0-based) to disconnect for the new projections"},
+                {"--threads", 0, "number of threads to use for optimization (omp): 0 - autodetect, 1 - sequential"},
                 {"--time", false, "report time of loading chart"},
                 {"--verbose", false},
                 {"-h", false},
@@ -50,7 +51,9 @@ int main(int argc, char* const argv[])
             if (!args["--no-disconnect-having-few-titers"])
                 disconnected.extend(chart.titers()->having_too_few_numeric_titers());
 
-            chart.relax(number_of_attempts, args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]), args["--verbose"] || args["-v"], disconnected);
+            acmacs::chart::optimization_options options(method, precision, args["--md"]);
+            options.num_threads = args["--threads"];
+            chart.relax(number_of_attempts, args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], options, args["--verbose"] || args["-v"], disconnected);
             // for (size_t attempt = 0; attempt < number_of_attempts; ++attempt) {
             //     auto [status, projection] = chart.relax(args["-m"].str(), args["-d"], !args["--no-dimension-annealing"], acmacs::chart::optimization_options(method, precision, args["--md"]), disconnected);
             //     std::cout << (attempt + 1) << ' ' << status << '\n';
