@@ -250,7 +250,8 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
         return projection;
     });
 
-#pragma omp parallel for default(shared) firstprivate(stress) schedule(static, 4)
+    const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
+#pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, 4)
     for (size_t p_no = 0; p_no < projections.size(); ++p_no) {
         auto projection = projections[p_no];
         projection->randomize_layout(rnd);
@@ -308,7 +309,8 @@ void ChartModify::relax_incremetal(size_t source_projection_no, size_t number_of
         return projection;
     });
 
-#pragma omp parallel for default(shared) firstprivate(stress) schedule(static, 4)
+    const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
+#pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, 4)
     for (size_t p_no = 0; p_no < projections.size(); ++p_no) {
         auto projection = projections[p_no];
         projection->randomize_layout(points_with_nan_coordinates, rnd);
@@ -325,10 +327,12 @@ void ChartModify::relax_incremetal(size_t source_projection_no, size_t number_of
     projections_modify()->sort();
 
     if (options.precision == optimization_precision::fine) {
-        const size_t top_projections = std::min(5UL, projections.size());
-#pragma omp parallel for default(shared) firstprivate(stress) schedule(static, 4)
-        for (size_t p_no = 0; p_no < top_projections; ++p_no) {
-            projections_modify()->at(p_no)->relax(options);
+        const size_t top_projections = std::min(5UL, number_of_optimizations);
+        std::vector<ProjectionModify*> projections_for_fine_optimization(top_projections);
+        std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(top_projections), projections_for_fine_optimization.begin(), [this](size_t p_no) { return projections_modify()->at(p_no).get(); });
+#pragma omp parallel for default(shared) schedule(static, 1) num_threads(num_threads)
+        for (size_t p_no = 0; p_no < projections_for_fine_optimization.size(); ++p_no) {
+            projections_for_fine_optimization[p_no]->relax(options);
         }
         projections_modify()->sort();
     }

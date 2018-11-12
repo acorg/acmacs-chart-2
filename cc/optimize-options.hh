@@ -25,7 +25,8 @@ namespace acmacs::chart
         optimization_precision precision = optimization_precision::fine;
         multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes;
         double randomization_diameter_multiplier = 2.0; // for layout randomizations
-
+        int num_threads = 0;                            // 0 - omp_get_max_threads()
+        
     }; // struct optimization_options
 
     struct dimension_schedule
