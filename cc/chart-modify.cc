@@ -279,7 +279,7 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
 // ----------------------------------------------------------------------
 
 void ChartModify::relax_incremetal(size_t source_projection_no, size_t number_of_optimizations, acmacs::chart::optimization_options options, bool report_stresses,
-                                   const PointIndexList& disconnect_points)
+                                   const PointIndexList& disconnect_points, bool remove_source_projection)
 {
     auto source_projection = projection_modify(source_projection_no);
     const auto num_dim = source_projection->number_of_dimensions();
@@ -313,12 +313,24 @@ void ChartModify::relax_incremetal(size_t source_projection_no, size_t number_of
         auto projection = projections[p_no];
         projection->randomize_layout(points_with_nan_coordinates, rnd);
         auto layout = projection->layout_modified();
-        stress.change_number_of_dimensions(num_dim);
         const auto status = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
         if (!std::isnan(status.final_stress))
             projection->stress_ = status.final_stress;
         if (report_stresses)
             std::cout << std::setw(3) << p_no << ' ' << std::fixed << std::setprecision(4) << *projection->stress_ << '\n';
+    }
+
+    if (remove_source_projection)
+        projections_modify()->remove(source_projection_no);
+    projections_modify()->sort();
+
+    if (options.precision == optimization_precision::fine) {
+        const size_t top_projections = std::min(5UL, projections.size());
+#pragma omp parallel for default(shared) firstprivate(stress) schedule(static, 4)
+        for (size_t p_no = 0; p_no < top_projections; ++p_no) {
+            projections_modify()->at(p_no)->relax(options);
+        }
+        projections_modify()->sort();
     }
 
 } // ChartModify::relax_incremetal

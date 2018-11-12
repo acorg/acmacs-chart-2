@@ -46,8 +46,6 @@ int main(int argc, char* const argv[])
             const size_t source_projection_no = 0;
             chart.relax_incremetal(source_projection_no, number_of_attempts, acmacs::chart::optimization_options(method, precision, args["--md"]), args["--verbose"] || args["-v"], disconnected);
             auto projections = chart.projections_modify();
-            projections->remove(source_projection_no);
-            projections->sort();
             if (const size_t keep_projections = args["--keep-projections"]; keep_projections > 0 && projections->size() > keep_projections)
                 projections->keep_just(keep_projections);
             std::cout << chart.make_info() << '\n';
