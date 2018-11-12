@@ -179,7 +179,7 @@ void merge_plot_spec(acmacs::chart::ChartModifyP result, const acmacs::chart::Ch
 void merge_projections_incremental(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& /*chart2*/, acmacs::chart::MergeReport& report)
 {
     // copy best projection of chart1, set coords of non-common points of chart2 to NaN
-    std::cout << "INFO: incremental merge\n";
+    // std::cout << "INFO: incremental merge\n";
     auto projection1 = chart1.projection(0);
     if (!projection1->avidity_adjusts().empty())
         throw acmacs::chart::merge_error{"chart1 projection has avidity_adjusts"};
@@ -200,7 +200,7 @@ void merge_projections_incremental(acmacs::chart::ChartModifyP result, const acm
 
 void merge_projections_overlay(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report)
 {
-    std::cout << "INFO: overlay merge\n";
+      // std::cout << "INFO: overlay merge\n";
     auto projection1 = chart1.projection(0);
     if (!projection1->avidity_adjusts().empty())
         throw acmacs::chart::merge_error{"chart1 projection has avidity_adjusts"};

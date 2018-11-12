@@ -299,7 +299,7 @@ void ChartModify::relax_incremetal(size_t source_projection_no, size_t number_of
         return result;
     };
     const auto points_with_nan_coordinates = make_points_with_nan_coordinates();
-    std::cout << "INFO: about to randomize coordinates of " << points_with_nan_coordinates.size() << " points\n";
+      // std::cout << "INFO: about to randomize coordinates of " << points_with_nan_coordinates.size() << " points\n";
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(number_of_optimizations);
     std::transform(projections.begin(), projections.end(), projections.begin(), [&disconnect_points, &source_projection, pp = projections_modify()](const auto&) {
