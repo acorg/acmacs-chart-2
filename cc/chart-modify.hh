@@ -66,7 +66,7 @@ namespace acmacs::chart
 
         std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {});
         void relax(size_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, bool report_stresses, const PointIndexList& disconnect_points = {});
-        void relax_incremetal(size_t source_projection_no, size_t number_of_optimizations, acmacs::chart::optimization_options options, bool report_stresses, const PointIndexList& disconnect_points = {}, bool remove_source_projection = true);
+        void relax_incremetal(size_t source_projection_no, size_t number_of_optimizations, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {}, bool remove_source_projection = true);
 
         void remove_layers();
         void remove_antigens(const ReverseSortedIndexes& indexes);

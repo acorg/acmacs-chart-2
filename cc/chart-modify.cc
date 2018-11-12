@@ -279,8 +279,8 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
 
 // ----------------------------------------------------------------------
 
-void ChartModify::relax_incremetal(size_t source_projection_no, size_t number_of_optimizations, acmacs::chart::optimization_options options, bool report_stresses,
-                                   const PointIndexList& disconnect_points, bool remove_source_projection)
+void ChartModify::relax_incremetal(size_t source_projection_no, size_t number_of_optimizations, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points,
+                                   bool remove_source_projection)
 {
     auto source_projection = projection_modify(source_projection_no);
     const auto num_dim = source_projection->number_of_dimensions();
@@ -318,8 +318,6 @@ void ChartModify::relax_incremetal(size_t source_projection_no, size_t number_of
         const auto status = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
         if (!std::isnan(status.final_stress))
             projection->stress_ = status.final_stress;
-        if (report_stresses)
-            std::cout << std::setw(3) << p_no << ' ' << std::fixed << std::setprecision(4) << *projection->stress_ << '\n';
     }
 
     if (remove_source_projection)
