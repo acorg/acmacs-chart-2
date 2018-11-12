@@ -13,6 +13,7 @@ TARGETS = \
     $(DIST)/chart-plot-spec \
     $(DIST)/chart-layout \
     $(DIST)/chart-convert \
+    $(DIST)/chart-txt-to-ace \
     $(DIST)/chart-modify-projection \
     $(DIST)/chart-modify-plot-spec \
     $(DIST)/chart-titer-merging-report \
