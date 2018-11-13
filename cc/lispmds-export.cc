@@ -60,7 +60,7 @@ std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, st
                                   :BASIS-VECTOR-X-COORD-SCALE 1 :BASIS-VECTOR-Y-COORD-SCALE 1
 )");
         const auto transformation = projection->transformation();
-        result.append(string::concat("                                  :CANVAS-BASIS-VECTOR-0 (", transformation.a(), ' ', transformation.c(), ") :CANVAS-BASIS-VECTOR-1 (", transformation.b(), ' ', transformation.d(), "))\n"));
+        result.append(string::concat_precise("                                  :CANVAS-BASIS-VECTOR-0 (", transformation.a(), ' ', transformation.c(), ") :CANVAS-BASIS-VECTOR-1 (", transformation.b(), ' ', transformation.d(), "))\n"));
     }
     result.append(reference_antigens(aChart.antigens(), disconnected));
     result.append(plot_spec(aChart, disconnected));
