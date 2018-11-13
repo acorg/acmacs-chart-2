@@ -47,7 +47,8 @@ TARGETS = \
     $(DIST)/test-chart-modify \
     $(DIST)/test-chart-create-from-scratch \
     $(DIST)/test-chart-from-text \
-    $(DIST)/test-chart-merge
+    $(DIST)/test-chart-merge \
+    $(DIST)/test-get-titers
 
 SOURCES = \
     chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc randomizer.cc \
