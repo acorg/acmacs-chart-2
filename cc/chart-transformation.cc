@@ -30,7 +30,14 @@ int main(int argc, char* const argv[])
             // const int precision = args["--precision"];
             auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
             auto projection = chart->projection(args["--projection"]);
-            std::cout << std::setprecision(args["--precision"]) << projection->transformation().as_vector() << '\n';
+            const auto tr = projection->transformation();
+            const int precision = args["--precision"];
+            std::cout << std::setprecision(precision) << std::right << std::fixed;
+            for (size_t row = 0; row < tr.number_of_dimensions; ++row) {
+                for (size_t column = 0; column < tr.number_of_dimensions; ++column)
+                    std::cout << std::setw(precision + 4) << tr._x(row, column);
+                std::cout << '\n';
+            }
         }
     }
     catch (std::exception& err) {

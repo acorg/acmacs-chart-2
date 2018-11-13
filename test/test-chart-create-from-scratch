@@ -1,4 +1,5 @@
 #! /bin/bash
+set -e
 
 # TDIR=$(mktemp -d)
 TESTDIR=$(dirname $0)
