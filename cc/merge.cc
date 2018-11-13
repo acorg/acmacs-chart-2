@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/date.hh"
@@ -319,7 +321,7 @@ void acmacs::chart::MergeReport::titer_merge_report(std::string_view filename, c
 
 void acmacs::chart::MergeReport::titer_merge_report(std::ostream& output, const ChartModify& chart) const
 {
-    const auto max_field = static_cast<int>(std::max(chart.antigens()->max_full_name(), chart.info()->max_source_name()));
+    const auto max_field = std::max(static_cast<int>(std::max(chart.antigens()->max_full_name(), chart.info()->max_source_name())), 20);
     const auto hr = std::string(100, '-') + '\n';
 
     output << hr << chart.description() << '\n';
@@ -338,6 +340,16 @@ void acmacs::chart::MergeReport::titer_merge_report(std::ostream& output, const 
     output << hr << "    Table merge subset showing only rows and columns that have merged values\n        (same as first diagnostic output, but subsetted for changes only)\n" << hr;
     const auto [antigens, sera] = chart.titers()->antigens_sera_in_multiple_layers();
     titer_merge_diagnostics(output, chart, antigens, sera, max_field);
+
+} // acmacs::chart::MergeReport::titer_merge_report
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::MergeReport::titer_merge_report(const ChartModify& chart) const
+{
+    std::ostringstream output;
+    titer_merge_report(output, chart);
+    return output.str();
 
 } // acmacs::chart::MergeReport::titer_merge_report
 
