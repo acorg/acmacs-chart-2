@@ -27,12 +27,21 @@ int main(int argc, char* const argv[])
                 auto chart = acmacs::chart::import_from_file(args[file_no], acmacs::chart::Verify::None, report);
                 auto titers = chart->titers();
                 const auto num_antigens = chart->number_of_antigens(), num_sera = chart->number_of_sera();
+
                 size_t sum = 0;
-                for (size_t ag_no = 0; ag_no < num_antigens; ++ag_no)
+                for (size_t ag_no = 0; ag_no < num_antigens; ++ag_no) {
                     for (size_t sr_no = 0; sr_no < num_sera; ++sr_no)
                         if (auto tt = titers->titer(ag_no, sr_no); !tt.is_dont_care())
                             sum += tt.value();
-                std::cout << "INFO: sum " << sum << '\n';
+                }
+                std::cout << "INFO: sum: " << sum << "  titers: " << num_antigens * num_sera << '\n';
+
+                std::string catenated;
+                for (size_t ag_no = 0; ag_no < num_antigens; ++ag_no) {
+                    for (size_t sr_no = 0; sr_no < num_sera; ++sr_no)
+                        catenated += titers->titer(ag_no, sr_no);
+                }
+                std::cout << "INFO: catenated: " << catenated.size() << '\n';
             }
         }
     }
