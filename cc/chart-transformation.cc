@@ -2,6 +2,7 @@
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/string.hh"
+#include "acmacs-base/stream.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
@@ -26,11 +27,10 @@ int main(int argc, char* const argv[])
         }
         else {
             const auto report = do_report_time(args["--time"]);
-            const int precision = args["--precision"];
+            // const int precision = args["--precision"];
             auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
             auto projection = chart->projection(args["--projection"]);
-            const auto transformation = projection->transformation();
-            std::cout << std::setprecision(precision) << transformation.a << ' ' << transformation.b << ' ' << transformation.c << ' ' << transformation.d << '\n';
+            std::cout << std::setprecision(args["--precision"]) << projection->transformation().as_vector() << '\n';
         }
     }
     catch (std::exception& err) {

@@ -279,8 +279,10 @@ void export_projections(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Pr
         if (const auto minimum_column_basis = projection->minimum_column_basis(); !minimum_column_basis.is_none())
             target["m"] = static_cast<std::string>(minimum_column_basis);
         export_forced_column_bases(target, projection->forced_column_bases());
-        if (const auto transformation = projection->transformation(); transformation != acmacs::Transformation{})
-            target["t"] = rjson::array{transformation.a, transformation.b, transformation.c, transformation.d};
+        if (const auto transformation = projection->transformation(); transformation != acmacs::Transformation{}) {
+            const auto vec = transformation.as_vector();
+            target["t"] = rjson::array(vec.begin(), vec.end());
+        }
         rjson::set_field_if_not_default(target, "d", projection->dodgy_titer_is_regular(), false);
         rjson::set_field_if_not_default(target, "e", projection->stress_diff_to_stop(), 0.0);
         if (const auto unmovable = projection->unmovable(); ! unmovable.empty())

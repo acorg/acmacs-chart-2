@@ -585,32 +585,32 @@ acmacs::Transformation LispmdsProjection::transformation() const
         if (const auto& coord_tr = mData[":CANVAS-COORD-TRANSFORMATIONS"]; !coord_tr.empty()) {
             try {
                 if (const auto& v0 = coord_tr[":CANVAS-BASIS-VECTOR-0"]; !v0.empty()) {
-                    result.a = std::get<acmacs::lispmds::number>(v0[0]);
-                    result.c = std::get<acmacs::lispmds::number>(v0[1]);
+                    result.a() = std::get<acmacs::lispmds::number>(v0[0]);
+                    result.c() = std::get<acmacs::lispmds::number>(v0[1]);
                 }
             }
             catch (std::exception&) {
             }
             try {
                 if (const auto& v1 = coord_tr[":CANVAS-BASIS-VECTOR-1"]; !v1.empty()) {
-                    result.b = std::get<acmacs::lispmds::number>(v1[0]);
-                    result.d = std::get<acmacs::lispmds::number>(v1[1]);
+                    result.b() = std::get<acmacs::lispmds::number>(v1[0]);
+                    result.d() = std::get<acmacs::lispmds::number>(v1[1]);
                 }
             }
             catch (std::exception&) {
             }
             try {
                 if (static_cast<double>(std::get<acmacs::lispmds::number>(coord_tr[":CANVAS-X-COORD-SCALE"])) < 0) {
-                    result.a = - result.a;
-                    result.c = - result.c;
+                    result.a() = - result.a();
+                    result.c() = - result.c();
                 }
             }
             catch (std::exception&) {
             }
             try {
                 if (static_cast<double>(std::get<acmacs::lispmds::number>(coord_tr[":CANVAS-Y-COORD-SCALE"])) < 0) {
-                    result.b = - result.b;
-                    result.d = - result.d;
+                    result.b() = - result.b();
+                    result.d() = - result.d();
                 }
             }
             catch (std::exception&) {
