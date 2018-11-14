@@ -638,7 +638,7 @@ ColumnBasesP Acd1Projection::forced_column_bases() const
 
 acmacs::Transformation Acd1Projection::transformation() const
 {
-    acmacs::Transformation result;
+    acmacs::Transformation result(number_of_dimensions());
     if (const auto& array = data()["transformation"]; !array.empty()) {
         result.set(array[0][0], array[0][1], array[1][0], array[1][1]);
     }

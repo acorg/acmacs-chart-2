@@ -294,9 +294,13 @@ ColumnBasesP AceProjection::forced_column_bases() const
 
 acmacs::Transformation AceProjection::transformation() const
 {
-    acmacs::Transformation result;
+    acmacs::Transformation result(number_of_dimensions());
     if (const auto& array = data()["t"]; !array.empty()) {
-        result.set(array[0], array[1], array[2], array[3]);
+        if (array.size() != (number_of_dimensions() * number_of_dimensions()))
+            std::cerr << "WARNING: transformation stored in ace file (" << array << ") does not correspond to the number of dimensions in the projection (" << number_of_dimensions() << ")\n";
+        std::vector<double> tr;
+        rjson::copy(array, tr);
+        result.set(tr.begin(), tr.size());
     }
     return result;
 
