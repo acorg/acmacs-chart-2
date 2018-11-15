@@ -127,23 +127,25 @@ acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all_prepare()
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all()
-{
-    auto result = test_all_prepare();
-    for (size_t entry_no = 0; entry_no < result.size(); ++entry_no) {
-        test_point(result[entry_no]);
-    }
-    return result;
+// acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all()
+// {
+//     auto result = test_all_prepare();
+//     for (size_t entry_no = 0; entry_no < result.size(); ++entry_no) {
+//         test_point(result[entry_no]);
+//     }
+//     return result;
 
-} // acmacs::chart::GridTest::test_all
+// } // acmacs::chart::GridTest::test_all
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all_parallel()
+acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all_parallel(int threads)
 {
     auto result = test_all_prepare();
 
-#pragma omp parallel for default(none) shared(result) num_threads(omp_get_max_threads()) schedule(static, 4)
+    const int num_threads = threads <= 0 ? omp_get_max_threads() : threads;
+    const int slot_size = chart_.number_of_antigens() < 1000 ? 4 : 1;
+#pragma omp parallel for default(none) shared(result) num_threads(num_threads) schedule(static, slot_size)
     for (size_t entry_no = 0; entry_no < result.size(); ++entry_no) {
         test_point(result[entry_no]);
     }

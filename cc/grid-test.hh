@@ -48,8 +48,8 @@ namespace acmacs::chart
         std::string point_name(size_t point_no) const;
         Result test_point(size_t point_no);
         void test_point(Result& result);
-        Results test_all();          // single thread version
-        Results test_all_parallel(); // omp version
+        Results test_all() { return test_all_parallel(1); }          // single thread version
+        Results test_all_parallel(int threads = 0); // omp version
         Projection make_new_projection_and_relax(const Results& results, bool verbose);
 
       private:

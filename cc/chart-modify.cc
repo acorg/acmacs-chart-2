@@ -251,7 +251,8 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
     });
 
     const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
-#pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, 4)
+    const int slot_size = number_of_antigens() < 1000 ? 4 : 1;
+#pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, slot_size)
     for (size_t p_no = 0; p_no < projections.size(); ++p_no) {
         auto projection = projections[p_no];
         projection->randomize_layout(rnd);
@@ -310,7 +311,8 @@ void ChartModify::relax_incremetal(size_t source_projection_no, size_t number_of
     });
 
     const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
-#pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, 4)
+    const int slot_size = number_of_antigens() < 1000 ? 4 : 1;
+#pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, slot_size)
     for (size_t p_no = 0; p_no < projections.size(); ++p_no) {
         auto projection = projections[p_no];
         projection->randomize_layout(points_with_nan_coordinates, rnd);
