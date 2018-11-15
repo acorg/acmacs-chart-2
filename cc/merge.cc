@@ -97,8 +97,8 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
     merge_antigens_sera(*result_antigens, *chart2.antigens(), report.antigens_secondary_target);
     merge_antigens_sera(*result_sera, *chart1.sera(), report.sera_primary_target);
     merge_antigens_sera(*result_sera, *chart2.sera(), report.sera_secondary_target);
-    if (!result_antigens->find_duplicates().empty() || !result_sera->find_duplicates().empty())
-        throw merge_error{"merge has duplicates among antigens or sera"};
+    if (const auto rda = result_antigens->find_duplicates(), rds =result_sera->find_duplicates(); !rda.empty() || !rds.empty())
+        throw merge_error{::string::concat("Merge ", result->description(), " has duplicates among antigens or sera: ", to_string(rda), ' ' , to_string(rds))};
 
     merge_titers(result, chart1, chart2, report);
     merge_plot_spec(result, chart1, chart2, report);
