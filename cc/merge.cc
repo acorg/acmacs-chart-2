@@ -80,8 +80,12 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
 {
     // --------------------------------------------------
 
-    if (!chart1.antigens()->find_duplicates().empty() || !chart1.sera()->find_duplicates().empty() || !chart2.antigens()->find_duplicates().empty() || !chart2.sera()->find_duplicates().empty())
-        throw merge_error{"charts to merge have duplicates among antigens or sera"};
+    if (const auto dup1a = chart1.antigens()->find_duplicates(), dup1s = chart1.sera()->find_duplicates(); !dup1a.empty() || !dup1s.empty()) {
+        throw merge_error{::string::concat(chart1.description(), " has duplicates among antigens or sera: ", to_string(dup1a), ' ', to_string(dup1s))};
+    }
+    if (const auto dup2a = chart2.antigens()->find_duplicates(), dup2s = chart2.sera()->find_duplicates(); !dup2a.empty() || !dup2s.empty()) {
+        throw merge_error{::string::concat(chart2.description(), " has duplicates among antigens or sera: ", to_string(dup2a), ' ', to_string(dup2s))};
+    }
 
     MergeReport report(chart1, chart2, settings);
 

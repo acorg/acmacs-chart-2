@@ -775,8 +775,9 @@ template <typename AgSr> acmacs::chart::duplicates_t find_duplicates(const AgSr&
 
     acmacs::chart::duplicates_t result;
     for (auto [designation, indexes] : designations_to_indexes) {
-        if (indexes.size() > 1)
+        if (indexes.size() > 1 && designation.find(" DISTINCT") == std::string::npos) {
             result.push_back(indexes);
+        }
     }
     return result;
 }

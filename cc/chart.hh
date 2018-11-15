@@ -636,6 +636,22 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+namespace acmacs
+{
+    inline std::string to_string(const acmacs::chart::duplicates_t& dups)
+    {
+        if (dups.empty())
+            return {};
+        std::string result{"DUPS:["};
+        for (const auto& entry : dups)
+            result += to_string(entry) + ", ";
+        result.replace(result.size() - 2, 2, "]");
+        return result;
+    }
+}
+
+// ----------------------------------------------------------------------
+
 #ifndef __clang__
 
 template <> struct std::iterator_traits<acmacs::chart::Antigens::iterator>
