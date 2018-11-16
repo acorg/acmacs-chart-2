@@ -16,8 +16,9 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
-                {"--projection", 0},
+                {"--projection", 0, "-1 to relax all"},
                 {"--rough", false},
+                {"--sort", false, "sort projections"},
                 {"--method", "cg", "method: lbfgs, cg"},
                 {"--md", 1.0, "max distance multiplier"},
                 {"--time", false, "report time of loading chart"},
@@ -35,12 +36,22 @@ int main(int argc, char* const argv[])
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
             const auto precision = args["--rough"] ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
             const acmacs::chart::optimization_method method{acmacs::chart::optimization_method_from_string(args["--method"])};
+            const int projection_no = args["--projection"];
+            auto relax = [&chart,method,precision](size_t proj_no) {
+                auto projection = chart.projection_modify(proj_no);
+                const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
+                std::cout << status << '\n';
+            };
+            if (projection_no >= 0) {
+                relax(static_cast<size_t>(projection_no));
+            }
+            else {
+                for (size_t p_no = 0; p_no < chart.number_of_projections(); ++p_no)
+                    relax(p_no);
+            }
 
-            auto projection = chart.projection_modify(args["--projection"]);
-            const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
-            std::cout << status << '\n';
-
-              // chart.projections_modify()->sort();
+            if (args["--sort"])
+                chart.projections_modify()->sort();
             std::cout << chart.make_info() << '\n';
             if (args.number_of_arguments() > 1)
                 acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);
