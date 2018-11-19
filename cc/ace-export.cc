@@ -62,7 +62,7 @@ std::string acmacs::chart::export_ace(const Chart& aChart, std::string aProgramN
 {
     const auto ace = export_ace_to_rjson(aChart, aProgramName);
     if (aIndent)
-        return rjson::pretty(ace, aIndent);
+        return rjson::pretty(ace, rjson::emacs_indent::yes, rjson::PrettyHandler(aIndent));
     else
         return rjson::to_string(ace);
 
