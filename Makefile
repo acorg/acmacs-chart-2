@@ -30,6 +30,7 @@ TARGETS = \
     $(DIST)/chart-common \
     $(DIST)/chart-procrustes \
     $(DIST)/chart-reorient \
+    $(DIST)/chart-reorient-projections \
     $(DIST)/chart-degradation-resolver \
     $(DIST)/chart-html \
     $(DIST)/chart-serum-circles \
