@@ -103,6 +103,7 @@ namespace acmacs::chart
             Data(Titer&& a_titer, size_t ag_no, size_t sr_no) : titer{std::move(a_titer)}, antigen{ag_no}, serum{sr_no} {}
             constexpr operator const Titer& () const { return titer; }
             constexpr bool operator==(const Data& rhs) const { return antigen == rhs.antigen && serum == rhs.serum; }
+            constexpr bool operator!=(const Data& rhs) const { return !operator==(rhs); }
             Titer titer;
             size_t antigen, serum;
         };
@@ -114,6 +115,7 @@ namespace acmacs::chart
             Implementation(const Titer& titer, size_t antigen, size_t serum) : data_{titer, antigen, serum} {}
             virtual ~Implementation() = default;
             constexpr bool operator==(const Implementation& rhs) const { return data_ == rhs.data_; }
+            constexpr bool operator!=(const Implementation& rhs) const { return !operator==(rhs); }
             constexpr const Data& operator*() const { return data_; }
             constexpr const Data* ptr() const { return &data_; }
             virtual void operator++() = 0;

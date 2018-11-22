@@ -35,6 +35,7 @@ TARGETS = \
     $(DIST)/chart-html \
     $(DIST)/chart-serum-circles \
     $(DIST)/chart-update \
+    $(DIST)/chart-join \
     $(DIST)/chart-remove-antigens-sera \
     $(DIST)/chart-remove-antigens-by-full-name \
     $(DIST)/chart-keep-antigens-sera \

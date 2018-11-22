@@ -44,7 +44,7 @@ namespace acmacs::chart
       public:
         virtual ~ColumnBases() = default;
         ColumnBases() = default;
-        // ColumnBases(const ColumnBases&) = delete;
+        ColumnBases(const ColumnBases&) = default;
 
         virtual double column_basis(size_t aSerumNo) const = 0;
         virtual size_t size() const = 0;

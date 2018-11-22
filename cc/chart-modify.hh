@@ -394,6 +394,7 @@ namespace acmacs::chart
                     layout_ = std::make_shared<acmacs::Layout>(*aSource.layout_modified());
                     transformation_ = aSource.transformation_modified();
                 }
+                comment_ = aSource.comment_;
             }
 
         std::string comment() const override { return comment_; }
