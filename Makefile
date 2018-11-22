@@ -29,6 +29,7 @@ TARGETS = \
     $(DIST)/chart-error-lines \
     $(DIST)/chart-common \
     $(DIST)/chart-procrustes \
+    $(DIST)/chart-reorient \
     $(DIST)/chart-degradation-resolver \
     $(DIST)/chart-html \
     $(DIST)/chart-serum-circles \
