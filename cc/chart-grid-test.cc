@@ -6,6 +6,7 @@
 #include "acmacs-chart-2/grid-test.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
+#include "acmacs-chart-2/procrustes.hh"
 
 // ----------------------------------------------------------------------
 
@@ -39,6 +40,7 @@ int main(int argc, char* const argv[])
 
             // std::cout << test.initial_report() << '\n';
             if (to_test == "all") {
+                std::vector<size_t> projections_to_reorient;
                 size_t projection_no_to_test = projection_no;
                 for (auto attempt = 1; attempt < 10; ++attempt) {
                     acmacs::chart::GridTest test(chart, projection_no_to_test, args["--step"]);
@@ -54,11 +56,20 @@ int main(int argc, char* const argv[])
                         break;
                     auto projection = test.make_new_projection_and_relax(results, true);
                     projection->comment("grid-test-" + acmacs::to_string(attempt));
+                    projection_no_to_test = projection->projection_no();
+                    projections_to_reorient.push_back(projection_no_to_test);
                     if (std::all_of(results.begin(), results.end(), [](const auto& result) { return result.diagnosis != acmacs::chart::GridTest::Result::trapped; }))
                         break;
-                    projection_no_to_test = projection->projection_no();
                 }
                 if (args.number_of_arguments() > 1) {
+                    if (!projections_to_reorient.empty()) {
+                        acmacs::chart::CommonAntigensSera common(chart);
+                        auto master_projection = chart.projection(projection_no);
+                        for (auto projection_to_reorient : projections_to_reorient) {
+                            const auto procrustes_data = acmacs::chart::procrustes(*master_projection, *chart.projection(projection_to_reorient), common.points(), acmacs::chart::procrustes_scaling_t::no);
+                            chart.projection_modify(projection_to_reorient)->transformation(procrustes_data.transformation);
+                        }
+                    }
                     chart.projections_modify()->sort();
                     acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);
                 }

@@ -38,7 +38,7 @@ int main(int argc, char* const argv[])
             acmacs::chart::CommonAntigensSera common(to_reorient);
             for (auto projection_no : acmacs::filled_with_indexes(to_reorient.number_of_projections())) {
                 if (projection_no != master_projection_no) {
-                    auto procrustes_data = acmacs::chart::procrustes(*master_projection, *to_reorient.projection(projection_no), common.points(), acmacs::chart::procrustes_scaling_t::no);
+                    const auto procrustes_data = acmacs::chart::procrustes(*master_projection, *to_reorient.projection(projection_no), common.points(), acmacs::chart::procrustes_scaling_t::no);
                     to_reorient.projection_modify(projection_no)->transformation(procrustes_data.transformation);
                     std::cout << "projection: " << projection_no << '\n';
                     std::cout << "transformation: " << acmacs::to_string(procrustes_data.transformation) << '\n';
