@@ -394,7 +394,6 @@ namespace acmacs::chart
                     layout_ = std::make_shared<acmacs::Layout>(*aSource.layout_modified());
                     transformation_ = aSource.transformation_modified();
                 }
-                comment_ = aSource.comment_;
             }
 
         std::string comment() const override { return comment_; }
@@ -507,6 +506,7 @@ namespace acmacs::chart
             {
                 set_layout(*aSource.layout());
                 set_forced_column_bases(aSource.forced_column_bases());
+                comment(aSource.comment());
             }
 
         std::shared_ptr<Layout> layout() const override { return layout_modified(); }
