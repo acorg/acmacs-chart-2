@@ -29,6 +29,9 @@ namespace acmacs::chart
         size_t common_antigens() const;
         size_t common_sera() const;
 
+        void antigens_only();   // remove sera from common lists
+        void sera_only();   // remove antigens from common lists
+
         struct common_t
         {
             common_t(size_t p, size_t s) : primary(p), secondary(s) {}

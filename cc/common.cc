@@ -103,6 +103,7 @@ class CommonAntigensSera::Impl
         std::vector<CommonAntigensSera::common_t> common() const;
         std::optional<size_t> primary_by_secondary(size_t secondary_no) const;
         std::optional<size_t> secondary_by_primary(size_t primary_no) const;
+        void clear() { number_of_common_ = 0; match_.clear(); }
 
         std::vector<AgSrEntry> primary_;
         std::vector<AgSrEntry> secondary_;
@@ -446,6 +447,22 @@ acmacs::chart::CommonAntigensSera::operator bool() const
     return impl_->antigens_.number_of_common_ > 0 || impl_->sera_.number_of_common_ > 0;
 
 } // bool
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::CommonAntigensSera::antigens_only()   // remove sera from common lists
+{
+    impl_->sera_.clear();
+
+} // acmacs::chart::CommonAntigensSera::antigens_only
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::CommonAntigensSera::sera_only()   // remove antigens from common lists
+{
+    impl_->antigens_.clear();
+
+} // acmacs::chart::CommonAntigensSera::sera_only
 
 // ----------------------------------------------------------------------
 

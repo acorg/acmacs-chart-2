@@ -14,6 +14,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv, {
                 {"--match", "auto", "match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""},
+                {"--subset", "all", "subset: \"all\", \"antigens\", \"sera\""},
                 {"--scaling", false, "use scaling"},
                 {"-p", 0, "primary projection no"},
                 {"-r", 0, "secondary projection no"},
@@ -33,6 +34,12 @@ int main(int argc, char* const argv[])
             auto chart1 = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
             auto chart2 = (args.number_of_arguments() > 1 && std::string(args[0]) != args[1]) ? acmacs::chart::import_from_file(args[1], acmacs::chart::Verify::None, report) : chart1;
             acmacs::chart::CommonAntigensSera common(*chart1, *chart2, match_level);
+            if (args["--subset"] == "antigens")
+                common.antigens_only();
+            else if (args["--subset"] == "sera")
+                common.sera_only();
+            else if (args["--subset"] != "all")
+                std::cerr << "WARNING: unrecognized --subset argument, \"all\" assumed\n";
             if (common) {
                 auto procrustes_data = acmacs::chart::procrustes(*chart1->projection(args["-p"]), *chart2->projection(args["-r"]), common.points(), args["--scaling"] ? acmacs::chart::procrustes_scaling_t::yes : acmacs::chart::procrustes_scaling_t::no);
                 std::cout << "common antigens: " << common.common_antigens() << " sera: " << common.common_sera() << '\n';
