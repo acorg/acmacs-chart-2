@@ -13,6 +13,7 @@ namespace acmacs::chart
         using difference_type = detail::index_list_data::difference_type;
         using detail::index_list_data::index_list_data;
         using detail::index_list_data::operator==;
+        using detail::index_list_data::operator[];
         using detail::index_list_data::data;
         using detail::index_list_data::empty;
         using detail::index_list_data::size;
