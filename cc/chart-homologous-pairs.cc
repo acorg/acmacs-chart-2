@@ -14,6 +14,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv,
                        {
+                           {"--mode", "strict", "homologous mode: strict, relaxed_strict, relaxed, all (see chart.hh)"},
                            {"--time", false, "report time of loading chart"},
                            {"--verbose", false},
                            {"-h", false},
@@ -26,10 +27,21 @@ int main(int argc, char* const argv[])
         }
         else {
             const auto report = do_report_time(args["--time"]);
+
+            acmacs::chart::find_homologous options{acmacs::chart::find_homologous::strict};
+            if (args["--mode"] == "relaxed_strict")
+                options = acmacs::chart::find_homologous::relaxed_strict;
+            else if (args["--mode"] == "relaxed")
+                options = acmacs::chart::find_homologous::relaxed;
+            else if (args["--mode"] == "all")
+                options = acmacs::chart::find_homologous::all;
+            else if (args["--mode"] != "strict")
+                std::cerr << "WARNING: unecognized --mode argument, strict assumed\n";
+
             auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
             auto antigens = chart->antigens();
             auto sera = chart->sera();
-            chart->set_homologous(acmacs::chart::find_homologous::strict, sera);
+            chart->set_homologous(options, sera);
             const auto ag_num_digits = static_cast<int>(std::log10(antigens->size())) + 1;
             const auto sr_num_digits = static_cast<int>(std::log10(antigens->size())) + 1;
 

@@ -88,7 +88,7 @@ void report(const argc_argv& args)
         throw std::runtime_error("chart has no projections");
     if (chart->number_of_projections() <= projection_no)
         throw std::runtime_error("invalid projection number");
-    chart->set_homologous(acmacs::chart::find_homologous::for_serum_circles);
+    chart->set_homologous(acmacs::chart::find_homologous::all);
     auto result = collect(*chart, projection_no);
 
     if (std::string json_filename(args["--json"]); json_filename.empty())

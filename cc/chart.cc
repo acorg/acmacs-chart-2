@@ -828,7 +828,7 @@ bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annota
     std::vector<std::string_view> serum_fixed(serum.size());
     auto serum_fixed_end = serum_fixed.begin();
     for (const auto& anno : serum) {
-        if (static_cast<std::string_view>(anno).substr(0, 5) != "CONC ")
+        if (static_cast<std::string_view>(anno).substr(0, 5) != "CONC " && anno != "PREBLEED")
             *serum_fixed_end++ = anno;
     }
     serum_fixed.erase(serum_fixed_end, serum_fixed.end());
@@ -840,42 +840,104 @@ bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annota
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Sera::set_homologous(find_homologous options, const Antigens& aAntigens)
+acmacs::chart::Sera::homologous_canditates_t acmacs::chart::Sera::find_homologous_canditates(const Antigens& aAntigens) const
 {
+    const auto match_passage = [](Passage antigen_passage, Passage serum_passage, const Serum& serum) -> bool {
+        if (serum_passage.empty()) // NIID has passage type data in serum_id
+            return antigen_passage.is_egg() == (serum.serum_id().find("EGG") != std::string::npos);
+        else
+            return antigen_passage.is_egg() == serum_passage.is_egg();
+    };
+
     std::map<std::string, std::vector<size_t>> antigen_name_index;
-    for (auto [ag_no, antigen]: acmacs::enumerate(aAntigens))
+    for (auto [ag_no, antigen] : acmacs::enumerate(aAntigens))
         antigen_name_index.emplace(antigen->name(), std::vector<size_t>{}).first->second.push_back(ag_no);
 
-      // std::cerr << "DEBUG: set_homologous " << size() << '\n';
-    for (auto serum: *this) {
-        if (serum->homologous_antigens().empty()) {
-            std::vector<size_t> homologous;
-            std::cerr << "DEBUG: " << serum->full_name_with_fields() << '\n';
-            if (auto ags = antigen_name_index.find(serum->name()); ags != antigen_name_index.end()) {
-                for (auto ag_no: ags->second) {
-                    auto antigen = aAntigens[ag_no];
-                    std::cerr << "DEBUG:   " << ag_no << ' ' << antigen->full_name_with_fields() << '\n';
-                    if (antigen->reassortant() == serum->reassortant() && Annotations::match_antigen_serum(antigen->annotations(), serum->annotations())) {
-                        if (!serum->passage().empty()) {
-                            if (options == find_homologous::strict ? (antigen->passage() == serum->passage()) : (antigen->passage().is_egg() == serum->passage().is_egg())) {
-                                homologous.push_back(ag_no);
-                                  // std::cerr << "       " << antigen->full_name() << '\n';
-                            }
+    acmacs::chart::Sera::homologous_canditates_t result(size());
+    for (auto [sr_no, serum] : acmacs::enumerate(*this)) {
+        if (auto ags = antigen_name_index.find(serum->name()); ags != antigen_name_index.end()) {
+            for (auto ag_no : ags->second) {
+                auto antigen = aAntigens[ag_no];
+                if (antigen->reassortant() == serum->reassortant() && Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()) &&
+                    match_passage(antigen->passage(), serum->passage(), *serum)) {
+                    result[sr_no].insert(ag_no);
+                }
+            }
+        }
+    }
+
+    return result;
+
+} // acmacs::chart::Sera::find_homologous_canditates
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Sera::set_homologous(find_homologous options, const Antigens& aAntigens)
+{
+    const auto match_passage_strict = [](Passage antigen_passage, Passage serum_passage, const Serum& serum) -> bool {
+        if (serum_passage.empty()) // NIID has passage type data in serum_id
+            return antigen_passage.is_egg() == (serum.serum_id().find("EGG") != std::string::npos);
+        else
+            return antigen_passage == serum_passage;
+    };
+
+    const auto match_passage_relaxed = [](Passage antigen_passage, Passage serum_passage, const Serum& serum) -> bool {
+        if (serum_passage.empty()) // NIID has passage type data in serum_id
+            return antigen_passage.is_egg() == (serum.serum_id().find("EGG") != std::string::npos);
+        else
+            return antigen_passage.is_egg() == serum_passage.is_egg();
+    };
+
+    const auto homologous_canditates = find_homologous_canditates(aAntigens);
+
+    if (options == find_homologous::all) {
+        for (auto [sr_no, serum] : acmacs::enumerate(*this))
+            serum->set_homologous(homologous_canditates[sr_no]);
+    }
+    else {
+        std::vector<std::optional<size_t>> homologous(size()); // for each serum
+        for (auto [sr_no, serum] : acmacs::enumerate(*this)) {
+            const auto& canditates = homologous_canditates[sr_no];
+            for (auto canditate : canditates) {
+                if (match_passage_strict(aAntigens[canditate]->passage(), serum->passage(), *serum)) {
+                    homologous[sr_no] = canditate;
+                    break;
+                }
+            }
+        }
+
+        if (options != find_homologous::strict) {
+            for (auto [sr_no, serum] : acmacs::enumerate(*this)) {
+                if (!homologous[sr_no]) {
+                    const auto& canditates = homologous_canditates[sr_no];
+                    for (auto canditate : canditates) {
+                        const auto occupied = std::any_of(homologous.begin(), homologous.end(), [canditate](std::optional<size_t> ag_no) -> bool { return ag_no && *ag_no == canditate; });
+                        if (!occupied && match_passage_relaxed(aAntigens[canditate]->passage(), serum->passage(), *serum)) {
+                            homologous[sr_no] = canditate;
+                            break;
                         }
-                        else {      // niid has passage type data in serum_id
-                            const bool egg = serum->serum_id().find("EGG") != std::string::npos;
-                            if (antigen->passage().is_egg() == egg) {
-                                homologous.push_back(ag_no);
-                                  // std::cerr << "       " << antigen->full_name() << '\n';
+                    }
+                }
+            }
+
+            if (options != find_homologous::relaxed_strict) {
+                for (auto [sr_no, serum] : acmacs::enumerate(*this)) {
+                    if (!homologous[sr_no]) {
+                        const auto& canditates = homologous_canditates[sr_no];
+                        for (auto canditate : canditates) {
+                            if (match_passage_relaxed(aAntigens[canditate]->passage(), serum->passage(), *serum)) {
+                                homologous[sr_no] = canditate;
+                                break;
                             }
                         }
                     }
                 }
-                  // std::cerr << "DEBUG: " << serum->full_name() << ' ' << serum->passage() << ' ' << homologous << ' ' << ags->second.size() << '\n';
             }
-              // std::cerr << "DEBUG: " << serum->full_name() << ' ' << serum->passage() << ' ' << homologous << '\n';
-            serum->set_homologous(homologous);
         }
+
+        for (auto [sr_no, serum] : acmacs::enumerate(*this))
+            if (const auto homol = homologous[sr_no]; homol)
+                serum->set_homologous({*homol});
     }
 
 } // acmacs::chart::Sera::set_homologous

@@ -26,7 +26,12 @@ namespace acmacs::chart
     class chart_is_read_only : public std::runtime_error { public: chart_is_read_only(std::string msg) : std::runtime_error("chart_is_read_only: " + msg) {} };
     class serum_coverage_error : public std::runtime_error { public: serum_coverage_error(std::string msg) : std::runtime_error("serum_coverage: " + msg) {} };
 
-    enum class find_homologous { strict, for_serum_circles };
+    enum class find_homologous {
+        strict,         // passage must match
+        relaxed_strict, // if serum has no homologous antigen, relax passage matching for it but use only not previous matched with other sera antigens
+        relaxed,        // if serum has no homologous antigen, relax passage matching for it and use any antigen
+        all             // find all possible antigens with relaxed passage matching, use for serum circles
+    };
 
     class Chart;
 
@@ -449,6 +454,10 @@ namespace acmacs::chart
                 aIndexes.erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
             }
 
+        using homologous_canditate_t = Indexes; // indexes of antigens
+        using homologous_canditates_t = std::vector<homologous_canditate_t>; // for each serum
+        homologous_canditates_t find_homologous_canditates(const Antigens& aAntigens) const;
+        
     }; // class Sera
 
 // ----------------------------------------------------------------------
