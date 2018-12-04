@@ -51,7 +51,8 @@ TARGETS = \
     $(DIST)/test-chart-create-from-scratch \
     $(DIST)/test-chart-from-text \
     $(DIST)/test-chart-merge \
-    $(DIST)/test-get-titers
+    $(DIST)/test-get-titers \
+    $(DIST)/chart-homologous-pairs
 
 SOURCES = \
     chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc randomizer.cc \

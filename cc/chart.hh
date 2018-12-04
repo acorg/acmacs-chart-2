@@ -26,6 +26,8 @@ namespace acmacs::chart
     class chart_is_read_only : public std::runtime_error { public: chart_is_read_only(std::string msg) : std::runtime_error("chart_is_read_only: " + msg) {} };
     class serum_coverage_error : public std::runtime_error { public: serum_coverage_error(std::string msg) : std::runtime_error("serum_coverage: " + msg) {} };
 
+    enum class find_homologous { strict, for_serum_circles };
+
     class Chart;
 
 // ----------------------------------------------------------------------
@@ -161,6 +163,9 @@ namespace acmacs::chart
         using detail::string_list_data::string_list_data;
 
         bool distinct() const { return exist("DISTINCT"); }
+
+          // returns if annotations of antigen and serum matches (e.g. ignores CONC for serum), used for homologous pairs finding
+        static bool match_antigen_serum(const Annotations& antigen, const Annotations& serum);
 
     }; // class Annotations
 
@@ -434,7 +439,7 @@ namespace acmacs::chart
         virtual Indexes find_by_name(std::string aName) const;
         size_t max_full_name() const;
 
-        void set_homologous(const Antigens& aAntigens);
+        void set_homologous(find_homologous options, const Antigens& aAntigens);
 
         duplicates_t find_duplicates() const;
 
@@ -592,8 +597,7 @@ namespace acmacs::chart
           // aOutside4Fold: indices of antigens with titers against aSerumNo outside 4fold distance from homologous titer
         void serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const;
 
-        enum class find_homologous_for_big_chart { no, yes };
-        void set_homologous(find_homologous_for_big_chart force, std::shared_ptr<Sera> aSera = nullptr) const;
+        void set_homologous(find_homologous options, std::shared_ptr<Sera> aSera = nullptr) const;
 
         template <typename Float> Stress<Float> make_stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const
             {
@@ -605,7 +609,6 @@ namespace acmacs::chart
         void show_table(std::ostream& output, std::optional<size_t> layer_no = {}) const;
 
      private:
-        mutable bool mHomologousFound = false;
         mutable std::map<MinimumColumnBasis, std::shared_ptr<ColumnBases>> computed_column_bases_; // cache, computing might be slow for big charts
 
     }; // class Chart

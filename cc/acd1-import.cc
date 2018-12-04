@@ -295,9 +295,7 @@ AntigensP Acd1Chart::antigens() const
 
 SeraP Acd1Chart::sera() const
 {
-    auto sera = std::make_shared<Acd1Sera>(data_.get("table", "sera"));
-    set_homologous(find_homologous_for_big_chart::no, sera);
-    return std::move(sera);
+    return std::make_shared<Acd1Sera>(data_.get("table", "sera"));
 
 } // Acd1Chart::sera
 

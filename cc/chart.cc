@@ -319,15 +319,11 @@ void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, In
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Chart::set_homologous(find_homologous_for_big_chart force, SeraP aSera) const
+void acmacs::chart::Chart::set_homologous(find_homologous options, SeraP aSera) const
 {
-    if (!mHomologousFound && (force == find_homologous_for_big_chart::yes || (!is_merge() && number_of_antigens() < 200))) {
-        // Timeit ti("set homologous for sera: ");
-        if (!aSera)
-            aSera = sera();
-        aSera->set_homologous(*antigens());
-        mHomologousFound = true;
-    }
+    if (!aSera)
+        aSera = sera();
+    aSera->set_homologous(options, *antigens());
 
 } // acmacs::chart::Chart::set_homologous
 
@@ -819,7 +815,32 @@ size_t acmacs::chart::Antigens::max_full_name() const
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Sera::set_homologous(const Antigens& aAntigens)
+bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annotations& antigen, const acmacs::chart::Annotations& serum)
+{
+    std::vector<std::string_view> antigen_fixed(antigen.size());
+    auto antigen_fixed_end = antigen_fixed.begin();
+    for (const auto& anno : antigen) {
+        *antigen_fixed_end++ = anno;
+    }
+    antigen_fixed.erase(antigen_fixed_end, antigen_fixed.end());
+    std::sort(antigen_fixed.begin(), antigen_fixed.end());
+
+    std::vector<std::string_view> serum_fixed(serum.size());
+    auto serum_fixed_end = serum_fixed.begin();
+    for (const auto& anno : serum) {
+        if (static_cast<std::string_view>(anno).substr(0, 5) != "CONC ")
+            *serum_fixed_end++ = anno;
+    }
+    serum_fixed.erase(serum_fixed_end, serum_fixed.end());
+    std::sort(serum_fixed.begin(), serum_fixed.end());
+
+    return antigen_fixed == serum_fixed;
+
+} // acmacs::chart::Annotations::match_antigen_serum
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Sera::set_homologous(find_homologous options, const Antigens& aAntigens)
 {
     std::map<std::string, std::vector<size_t>> antigen_name_index;
     for (auto [ag_no, antigen]: acmacs::enumerate(aAntigens))
@@ -829,13 +850,14 @@ void acmacs::chart::Sera::set_homologous(const Antigens& aAntigens)
     for (auto serum: *this) {
         if (serum->homologous_antigens().empty()) {
             std::vector<size_t> homologous;
-              // std::cerr << "DEBUG: " << serum->full_name() << ' ' << serum->passage() << '\n';
+            std::cerr << "DEBUG: " << serum->full_name_with_fields() << '\n';
             if (auto ags = antigen_name_index.find(serum->name()); ags != antigen_name_index.end()) {
                 for (auto ag_no: ags->second) {
                     auto antigen = aAntigens[ag_no];
-                    if (antigen->reassortant() == serum->reassortant()) {
+                    std::cerr << "DEBUG:   " << ag_no << ' ' << antigen->full_name_with_fields() << '\n';
+                    if (antigen->reassortant() == serum->reassortant() && Annotations::match_antigen_serum(antigen->annotations(), serum->annotations())) {
                         if (!serum->passage().empty()) {
-                            if (antigen->passage().is_egg() == serum->passage().is_egg()) {
+                            if (options == find_homologous::strict ? (antigen->passage() == serum->passage()) : (antigen->passage().is_egg() == serum->passage().is_egg())) {
                                 homologous.push_back(ag_no);
                                   // std::cerr << "       " << antigen->full_name() << '\n';
                             }
