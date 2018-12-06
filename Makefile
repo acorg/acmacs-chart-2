@@ -1,9 +1,4 @@
 # -*- Makefile -*-
-# Eugene Skepner 2017
-# ----------------------------------------------------------------------
-
-MAKEFLAGS = -w
-
 # ----------------------------------------------------------------------
 
 TARGETS = \
@@ -70,33 +65,27 @@ ifeq ($(CXX_TYPE),gcc)
 ALGLIB_CXXFLAGS += -Wno-maybe-uninitialized
 endif
 
-# ----------------------------------------------------------------------
+all: lib-and-programs
 
-include $(ACMACSD_ROOT)/share/makefiles/Makefile.g++
-include $(ACMACSD_ROOT)/share/makefiles/Makefile.dist-build.vars
+include $(ACMACSD_ROOT)/share/Makefile.config
+
+lib-and-programs: $(TARGETS)
+.PHONY: lib-and-programs
+
+# ----------------------------------------------------------------------
 
 ACMACS_CHART_LIB_MAJOR = 2
 ACMACS_CHART_LIB_MINOR = 0
 ACMACS_CHART_LIB = $(DIST)/$(call shared_lib_name,libacmacschart,$(ACMACS_CHART_LIB_MAJOR),$(ACMACS_CHART_LIB_MINOR))
 
-CXXFLAGS += -Icc $(PKG_INCLUDES)
-# ifneq ($(wildcard $(AD_INCLUDE)/acmacs-base/pch.$(shell uname).pch),)
-#   CXXFLAGS += -include $(AD_INCLUDE)/acmacs-base/pch.$(shell uname).hh -verify-pch
-# endif
-# CXX := gtime $(CXX)
-
 LDLIBS = \
-	$(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
-	$(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
-	$$(pkg-config --libs liblzma) -lbz2 $(CXX_LIB)
-
-PKG_INCLUDES = $(shell pkg-config --cflags liblzma)
+  $(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
+  $(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
+  $(XZ_LIBS) $(BZ2_LIBS) $(CXX_LIBS)
 
 # ----------------------------------------------------------------------
 
-all: check-acmacsd-root $(TARGETS)
-
-install: check-acmacsd-root install-headers $(TARGETS)
+install: install-headers $(TARGETS)
 	$(call install_lib,$(ACMACS_CHART_LIB))
 	ln -sf $(abspath dist)/chart-* $(AD_BIN)
 	ln -sf $(abspath bin)/chart-* $(AD_BIN)
@@ -106,23 +95,17 @@ test: install
 
 # ----------------------------------------------------------------------
 
--include $(BUILD)/*.d
-include $(ACMACSD_ROOT)/share/makefiles/Makefile.dist-build.rules
-include $(ACMACSD_ROOT)/share/makefiles/Makefile.rtags
-
-# ----------------------------------------------------------------------
-
 $(ACMACS_CHART_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SOURCES)) $(patsubst %.cpp,$(BUILD)/%.o,$(ALGLIB_SOURCES)) | $(DIST) $(LOCATION_DB_LIB)
-	@printf "%-16s %s\n" "SHARED" $@
-	@$(call make_shared,libacmacschart,$(ACMACS_CHART_LIB_MAJOR),$(ACMACS_CHART_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	printf "%-16s %s\n" "SHARED" $@
+	$(call make_shared,libacmacschart,$(ACMACS_CHART_LIB_MAJOR),$(ACMACS_CHART_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 $(DIST)/%: $(BUILD)/%.o | $(ACMACS_CHART_LIB)
-	@printf "%-16s %s\n" "LINK" $@
-	@$(CXX) $(LDFLAGS) -o $@ $^ $(ACMACS_CHART_LIB) $(LDLIBS) $(AD_RPATH)
+	printf "%-16s %s\n" "LINK" $@
+	$(CXX) $(LDFLAGS) -o $@ $^ $(ACMACS_CHART_LIB) $(LDLIBS) $(AD_RPATH)
 
 $(BUILD)/%.o: cc/$(ALGLIB)/%.cpp | $(BUILD) install-headers
-	@echo $(CXX_NAME) $(ALGLIB_CXXFLAGS) $<
-	@$(CXX) $(ALGLIB_CXXFLAGS) -c -o $@ $(abspath $<)
+	echo $(CXX_NAME) $(ALGLIB_CXXFLAGS) $<
+	$(CXX) $(ALGLIB_CXXFLAGS) -c -o $@ $(abspath $<)
 
 # ======================================================================
 ### Local Variables:
