@@ -369,6 +369,12 @@ template <typename AgSrEntry> inline std::vector<CommonAntigensSera::common_t> C
 
 // ----------------------------------------------------------------------
 
+#pragma GCC diagnostic push
+#if __GNUC__ == 8
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+// g++-8.2 issues strange warning about return {} statement in two template functions below
+#endif
+
 template <typename AgSrEntry> inline std::optional<size_t> CommonAntigensSera::Impl::ChartData<AgSrEntry>::primary_by_secondary(size_t secondary_no) const
 {
     if (const auto found = std::find_if(match_.begin(), match_.end(), [secondary_no](const auto& match) { return match.use && match.secondary_index == secondary_no; }); found != match_.end())
@@ -388,6 +394,8 @@ template <typename AgSrEntry> inline std::optional<size_t> CommonAntigensSera::I
         return {};
 
 } // CommonAntigensSera::Impl::ChartData<AgSrEntry>::secondary_by_primary
+
+#pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------
 
