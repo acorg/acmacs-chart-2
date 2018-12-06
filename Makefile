@@ -61,16 +61,13 @@ ALGLIB = alglib-3.13.0
 ALGLIB_SOURCES = optimization.cpp ap.cpp alglibinternal.cpp linalg.cpp alglibmisc.cpp \
     dataanalysis.cpp statistics.cpp specialfunctions.cpp solvers.cpp
 ALGLIB_CXXFLAGS = -DAE_COMPILE_MINLBFGS -DAE_COMPILE_PCA -DAE_COMPILE_MINCG -g -MMD -O3 -mfpmath=sse -mtune=intel -fPIC -std=c++11 -Icc -Wall
-ifeq ($(CXX_TYPE),gcc)
+ifeq ($(CXX_TYPE),GCC8)
 ALGLIB_CXXFLAGS += -Wno-maybe-uninitialized
 endif
 
-all: lib-and-programs
+all: install
 
 include $(ACMACSD_ROOT)/share/Makefile.config
-
-lib-and-programs: $(TARGETS)
-.PHONY: lib-and-programs
 
 # ----------------------------------------------------------------------
 
@@ -87,8 +84,8 @@ LDLIBS = \
 
 install: install-headers $(TARGETS)
 	$(call install_lib,$(ACMACS_CHART_LIB))
-	ln -sf $(abspath dist)/chart-* $(AD_BIN)
-	ln -sf $(abspath bin)/chart-* $(AD_BIN)
+	$(call symbolic_link_wildcard,$(DIST)/chart-*,$(AD_BIN))
+	$(call symbolic_link_wildcard,$(abspath bin)/chart-*,$(AD_BIN))
 
 test: install
 	test/test
@@ -96,15 +93,15 @@ test: install
 # ----------------------------------------------------------------------
 
 $(ACMACS_CHART_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SOURCES)) $(patsubst %.cpp,$(BUILD)/%.o,$(ALGLIB_SOURCES)) | $(DIST) $(LOCATION_DB_LIB)
-	printf "%-16s %s\n" "SHARED" $@
-	$(call make_shared,libacmacschart,$(ACMACS_CHART_LIB_MAJOR),$(ACMACS_CHART_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	$(call echo_shared_lib,$@)
+	$(call make_shared_lib,libacmacschart,$(ACMACS_CHART_LIB_MAJOR),$(ACMACS_CHART_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 $(DIST)/%: $(BUILD)/%.o | $(ACMACS_CHART_LIB)
-	printf "%-16s %s\n" "LINK" $@
+	$(call echo_link_exe,$@)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(ACMACS_CHART_LIB) $(LDLIBS) $(AD_RPATH)
 
 $(BUILD)/%.o: cc/$(ALGLIB)/%.cpp | $(BUILD) install-headers
-	echo $(CXX_NAME) $(ALGLIB_CXXFLAGS) $<
+	$(call echo_compile,$<)
 	$(CXX) $(ALGLIB_CXXFLAGS) -c -o $@ $(abspath $<)
 
 # ======================================================================
