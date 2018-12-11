@@ -29,7 +29,7 @@ int main(int argc, char* const argv[])
         }
         else {
             const bool name_only = args["--name-only"];
-            auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report_time::No);
+            auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report_time::no);
             auto antigens = chart->antigens();
             auto sera = chart->sera();
             auto titers = chart->titers();

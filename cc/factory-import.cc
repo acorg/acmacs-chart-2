@@ -42,7 +42,7 @@ acmacs::chart::ChartP acmacs::chart::import_from_file(std::string aFilename, Ver
 {
     Timeit ti("reading chart from " + aFilename + ": ", aReport);
     try {
-        return import_from_decompressed_data(acmacs::file::read(aFilename), aVerify, report_time::No);
+        return import_from_decompressed_data(acmacs::file::read(aFilename), aVerify, report_time::no);
     }
     catch (acmacs::file::not_found&) {
         throw import_error{"[acmacs::chart::import_from_file]: file not found: " + aFilename};

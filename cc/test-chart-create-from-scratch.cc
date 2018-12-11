@@ -26,8 +26,8 @@ int main(int argc, char* const argv[])
             acmacs::chart::ChartNew chart(num_antigens, num_sera);
             if (!chart.make_name().empty())
                 throw std::runtime_error("invalid new chart name");
-            const auto exported = acmacs::chart::export_factory(chart, acmacs::chart::export_format::ace, args.program(), report_time::No);
-            auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report_time::No);
+            const auto exported = acmacs::chart::export_factory(chart, acmacs::chart::export_format::ace, args.program(), report_time::no);
+            auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report_time::no);
             // std::cout << exported << '\n';
 
             if (imported->number_of_antigens() != num_antigens)

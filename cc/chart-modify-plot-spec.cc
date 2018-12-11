@@ -43,7 +43,7 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
+            auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, do_report_time(args["--time"]));
             std::cout << chart->make_info() << '\n';
 
             std::vector<size_t> points;
@@ -77,7 +77,7 @@ int main(int argc, char* const argv[])
                     plot_spec->outline(point_no, Color(static_cast<std::string_view>(args["--outline"])));
             }
 
-            acmacs::chart::export_factory(chart_modify, args[1], fs::path(args.program()).filename(), args["--time"] ? report_time::Yes : report_time::No);
+            acmacs::chart::export_factory(chart_modify, args[1], fs::path(args.program()).filename(), do_report_time(args["--time"]));
         }
     }
     catch (std::exception& err) {

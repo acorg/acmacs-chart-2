@@ -81,7 +81,7 @@ int main(int argc, char* const argv[])
             if (args["--flip-ns"])
                 projection->flip_north_south();
 
-            acmacs::chart::export_factory(chart_modify, args[1], fs::path(args.program()).filename(), args["--time"] ? report_time::Yes : report_time::No);
+            acmacs::chart::export_factory(chart_modify, args[1], fs::path(args.program()).filename(), do_report_time(args["--time"]));
         }
     }
     catch (std::exception& err) {

@@ -26,7 +26,7 @@ int main(int argc, char* const argv[])
             exit_code = 1;
         }
         else {
-            acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[1], acmacs::chart::Verify::None, report_time::No)};
+            acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[1], acmacs::chart::Verify::None, report_time::no)};
             auto antigens = chart.antigens();
             acmacs::ReverseSortedIndexes antigens_to_remove{acmacs::Indexes{}};
             acmacs::file::ifstream input(args[0]);
@@ -47,7 +47,7 @@ int main(int argc, char* const argv[])
             if (!antigens_to_remove.empty()) {
                 std::cout << "INFO: antigens_to_remove: " << antigens_to_remove.size() << ' ' << antigens_to_remove << '\n';
                 chart.remove_antigens(antigens_to_remove);
-                acmacs::chart::export_factory(chart, args[2], fs::path(args.program()).filename(), report_time::No);
+                acmacs::chart::export_factory(chart, args[2], fs::path(args.program()).filename(), report_time::no);
             }
             else {
                 std::cerr << "ERROR: nothing to remove!\n";

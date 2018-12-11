@@ -29,19 +29,19 @@ void acmacs::chart::export_factory(const Chart& aChart, std::string aFilename, s
     std::string data;
     if (fs::path(aFilename).extension() == ".ace") {
         force_compression = acmacs::file::ForceCompression::Yes;
-        data = export_factory(aChart, export_format::ace, aProgramName, report_time::No);
+        data = export_factory(aChart, export_format::ace, aProgramName, report_time::no);
     }
     else if (fs::path(aFilename).extension() == ".save") {
         force_compression = acmacs::file::ForceCompression::No;
-        data = export_factory(aChart, export_format::save, aProgramName, report_time::No);
+        data = export_factory(aChart, export_format::save, aProgramName, report_time::no);
     }
     else if (aFilename.size() > 8 && aFilename.substr(aFilename.size() - 8) == ".save.xz") {
         force_compression = acmacs::file::ForceCompression::Yes;
-        data = export_factory(aChart, export_format::save, aProgramName, report_time::No);
+        data = export_factory(aChart, export_format::save, aProgramName, report_time::no);
     }
     else if (aFilename.size() > 8 && aFilename.substr(aFilename.size() - 8) == ".save.gz") {
         force_compression = acmacs::file::ForceCompression::Yes;
-        data = export_factory(aChart, export_format::save, aProgramName, report_time::No);
+        data = export_factory(aChart, export_format::save, aProgramName, report_time::no);
     }
     else
         throw import_error{"[acmacs::chart::export_factory]: cannot infer export format from extension of " + aFilename};
