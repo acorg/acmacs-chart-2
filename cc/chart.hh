@@ -332,6 +332,7 @@ namespace acmacs::chart
         std::string abbreviated_name() const { return ::string::join(" ", {name_abbreviated(), reassortant(), ::string::join(" ", annotations())}); }
         std::string abbreviated_name_with_serum_id() const { return ::string::join(" ", {name_abbreviated(), reassortant(), serum_id(), ::string::join(" ", annotations())}); }
         std::string designation() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations()), serum_id()}); }
+        std::string designation_without_serum_id() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations())}); }
 
         std::string name_abbreviated() const;
         std::string name_without_subtype() const;
