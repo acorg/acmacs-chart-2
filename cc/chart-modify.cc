@@ -466,29 +466,27 @@ InfoModify::InfoModify(InfoP main)
 
 // ----------------------------------------------------------------------
 
-using info_mem_func_t = std::string (acmacs::chart::Info::*)(acmacs::chart::Info::Compute) const;
-
-static inline std::string info_modify_make_field(acmacs::chart::Info::Compute aCompute, const acmacs::chart::InfoModify& info, const std::string& field, info_mem_func_t mem_func)
+template <typename F> static inline std::string info_modify_make_field(acmacs::chart::Info::Compute aCompute, const acmacs::chart::InfoModify& info, const std::string& field, F func)
 {
     if (!field.empty() || aCompute == acmacs::chart::Info::Compute::No)
         return field;
 
     std::set<std::string> composition;
     std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(info.number_of_sources()), std::inserter(composition, composition.begin()),
-                   [&info,&mem_func](size_t index) { return std::invoke(mem_func, *info.source(index), acmacs::chart::Info::Compute::No); });
+                   [&info,&func](size_t index) { return std::invoke(func, *info.source(index), acmacs::chart::Info::Compute::No); });
     return string::join("+", composition);
 }
 
-std::string InfoModify::virus(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_, &Info::virus); }
-std::string InfoModify::virus_type(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_type_, &Info::virus_type); }
+Virus       InfoModify::virus(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_, &Info::virus); }
+VirusType   InfoModify::virus_type(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_type_, &Info::virus_type); }
 std::string InfoModify::subset(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, subset_, &Info::subset); }
-std::string InfoModify::assay(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, assay_, &Info::assay); }
-std::string InfoModify::lab(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, lab_, &Info::lab); }
-std::string InfoModify::rbc_species(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, rbc_species_, &Info::rbc_species); }
+Assay       InfoModify::assay(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, assay_, &Info::assay); }
+Lab         InfoModify::lab(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, lab_, &Info::lab); }
+RbcSpecies  InfoModify::rbc_species(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, rbc_species_, &Info::rbc_species); }
 
 // ----------------------------------------------------------------------
 
-std::string InfoModify::date(Compute aCompute) const
+TableDate InfoModify::date(Compute aCompute) const
 {
     if (!date_.empty() || aCompute == acmacs::chart::Info::Compute::No)
         return date_;

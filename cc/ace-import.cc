@@ -194,7 +194,7 @@ std::string AceInfo::make_field(const char* aField, const char* aSeparator, Comp
 
 // ----------------------------------------------------------------------
 
-std::string AceInfo::date(Compute aCompute) const
+TableDate AceInfo::date(Compute aCompute) const
 {
     std::string result{data_["D"].get_or_default("")};
     if (result.empty() && aCompute == Compute::Yes) {

@@ -11,7 +11,7 @@ namespace acmacs::chart
     class LispmdsChart : public Chart
     {
       public:
-        inline LispmdsChart(acmacs::lispmds::value&& aSrc) : mData{std::move(aSrc)} {}
+        LispmdsChart(acmacs::lispmds::value&& aSrc) : mData{std::move(aSrc)} {}
 
         InfoP info() const override;
         AntigensP antigens() const override;
@@ -20,7 +20,7 @@ namespace acmacs::chart
         ColumnBasesP forced_column_bases(MinimumColumnBasis aMinimumColumnBasis) const override;
         ProjectionsP projections() const override;
         PlotSpecP plot_spec() const override;
-        inline bool is_merge() const override { return false; }
+        bool is_merge() const override { return false; }
 
         size_t number_of_antigens() const override;
         size_t number_of_sera() const override;
@@ -54,18 +54,18 @@ namespace acmacs::chart
     class LispmdsInfo : public Info
     {
       public:
-        inline LispmdsInfo(const acmacs::lispmds::value& aData) : mData{aData} {}
+        LispmdsInfo(const acmacs::lispmds::value& aData) : mData{aData} {}
 
         std::string name(Compute aCompute = Compute::No) const override;
-        inline std::string virus(Compute = Compute::No) const override { return {}; }
-        inline std::string virus_type(Compute = Compute::No) const override { return {}; }
-        inline std::string subset(Compute = Compute::No) const override { return {}; }
-        inline std::string assay(Compute = Compute::No) const override { return {}; }
-        inline std::string lab(Compute = Compute::No) const override { return {}; }
-        inline std::string rbc_species(Compute = Compute::No) const override { return{}; }
-        inline std::string date(Compute = Compute::No) const override { return {}; }
-        inline size_t number_of_sources() const override { return 0; }
-        inline InfoP source(size_t) const override { return nullptr; }
+        Virus       virus(Compute = Compute::No) const override { return {}; }
+        VirusType   virus_type(Compute = Compute::No) const override { return {}; }
+        std::string subset(Compute = Compute::No) const override { return {}; }
+        Assay       assay(Compute = Compute::No) const override { return {}; }
+        Lab         lab(Compute = Compute::No) const override { return {}; }
+        RbcSpecies  rbc_species(Compute = Compute::No) const override { return{}; }
+        TableDate   date(Compute = Compute::No) const override { return {}; }
+        size_t number_of_sources() const override { return 0; }
+        InfoP source(size_t) const override { return nullptr; }
 
      private:
         const acmacs::lispmds::value& mData;
@@ -77,15 +77,15 @@ namespace acmacs::chart
     class LispmdsAntigen : public Antigen
     {
       public:
-        inline LispmdsAntigen(const acmacs::lispmds::value& aData, size_t aIndex) : mData{aData}, mIndex{aIndex} {}
+        LispmdsAntigen(const acmacs::lispmds::value& aData, size_t aIndex) : mData{aData}, mIndex{aIndex} {}
 
         Name name() const override;
-        inline Date date() const override { return {}; }
+        Date date() const override { return {}; }
         Passage passage() const override;
-        inline BLineage lineage() const override { return {}; }
+        BLineage lineage() const override { return {}; }
         Reassortant reassortant() const override;
-        inline LabIds lab_ids() const override { return {}; }
-        inline Clades clades() const override { return {}; }
+        LabIds lab_ids() const override { return {}; }
+        Clades clades() const override { return {}; }
         Annotations annotations() const override;
         bool reference() const override;
 
@@ -100,16 +100,16 @@ namespace acmacs::chart
     class LispmdsSerum : public Serum
     {
       public:
-        inline LispmdsSerum(const acmacs::lispmds::value& aData, size_t aIndex) : mData{aData}, mIndex{aIndex} {}
+        LispmdsSerum(const acmacs::lispmds::value& aData, size_t aIndex) : mData{aData}, mIndex{aIndex} {}
 
         Name name() const override;
-        inline Passage passage() const override { return {}; }
-        inline BLineage lineage() const override { return {}; }
+        Passage passage() const override { return {}; }
+        BLineage lineage() const override { return {}; }
         Reassortant reassortant() const override;
         Annotations annotations() const override;
         SerumId serum_id() const override;
-        inline SerumSpecies serum_species() const override { return {}; }
-        inline PointIndexList homologous_antigens() const override { return {}; }
+        SerumSpecies serum_species() const override { return {}; }
+        PointIndexList homologous_antigens() const override { return {}; }
 
      private:
         const acmacs::lispmds::value& mData;
@@ -122,7 +122,7 @@ namespace acmacs::chart
     class LispmdsAntigens : public Antigens
     {
      public:
-        inline LispmdsAntigens(const acmacs::lispmds::value& aData) : mData{aData} {}
+        LispmdsAntigens(const acmacs::lispmds::value& aData) : mData{aData} {}
 
         size_t size() const override;
         AntigenP operator[](size_t aIndex) const override;
@@ -137,7 +137,7 @@ namespace acmacs::chart
     class LispmdsSera : public Sera
     {
       public:
-        inline LispmdsSera(const acmacs::lispmds::value& aData) : mData{aData} {}
+        LispmdsSera(const acmacs::lispmds::value& aData) : mData{aData} {}
 
         size_t size() const override;
         SerumP operator[](size_t aIndex) const override;
@@ -152,12 +152,12 @@ namespace acmacs::chart
     class LispmdsTiters : public Titers
     {
       public:
-        inline LispmdsTiters(const acmacs::lispmds::value& aData) : mData{aData} {}
+        LispmdsTiters(const acmacs::lispmds::value& aData) : mData{aData} {}
 
         Titer titer(size_t aAntigenNo, size_t aSerumNo) const override;
-        inline Titer titer_of_layer(size_t, size_t, size_t) const override { throw data_not_available("lispmds importer does not support layers"); }
-        inline std::vector<Titer> titers_for_layers(size_t /*aAntigenNo*/, size_t /*aSerumNo*/) const override { throw data_not_available("lispmds importer does not support layers"); }
-        inline size_t number_of_layers() const override { return 0; }
+        Titer titer_of_layer(size_t, size_t, size_t) const override { throw data_not_available("lispmds importer does not support layers"); }
+        std::vector<Titer> titers_for_layers(size_t /*aAntigenNo*/, size_t /*aSerumNo*/) const override { throw data_not_available("lispmds importer does not support layers"); }
+        size_t number_of_layers() const override { return 0; }
         size_t number_of_antigens() const override;
         size_t number_of_sera() const override;
         size_t number_of_non_dont_cares() const override;
@@ -172,10 +172,10 @@ namespace acmacs::chart
     class LispmdsColumnBases : public ColumnBases
     {
       public:
-        inline LispmdsColumnBases(const std::vector<double>& aData) : mData{aData} {}
+        LispmdsColumnBases(const std::vector<double>& aData) : mData{aData} {}
 
-        inline double column_basis(size_t aSerumNo) const override { return mData.at(aSerumNo); }
-        inline size_t size() const override { return mData.size(); }
+        double column_basis(size_t aSerumNo) const override { return mData.at(aSerumNo); }
+        size_t size() const override { return mData.size(); }
 
      private:
         std::vector<double> mData;
@@ -187,23 +187,23 @@ namespace acmacs::chart
     class LispmdsProjection : public Projection
     {
       public:
-        inline LispmdsProjection(const Chart& chart, const acmacs::lispmds::value& aData, size_t aIndex, size_t aNumberOfAntigens, size_t aNumberOfSera)
+        LispmdsProjection(const Chart& chart, const acmacs::lispmds::value& aData, size_t aIndex, size_t aNumberOfAntigens, size_t aNumberOfSera)
             : Projection(chart), mData{aData}, mNumberOfAntigens{aNumberOfAntigens}, mNumberOfSera{aNumberOfSera} { set_projection_no(aIndex); check(); }
 
         void check() const;
         std::optional<double> stored_stress() const override;
         std::shared_ptr<Layout> layout() const override;
-        inline std::string comment() const override { return {}; }
-        inline size_t number_of_points() const override { return mNumberOfAntigens + mNumberOfSera; }
+        std::string comment() const override { return {}; }
+        size_t number_of_points() const override { return mNumberOfAntigens + mNumberOfSera; }
         size_t number_of_dimensions() const override;
         MinimumColumnBasis minimum_column_basis() const override;
         ColumnBasesP forced_column_bases() const override;
         acmacs::Transformation transformation() const override;
-        inline bool dodgy_titer_is_regular() const override { return false; }
-        inline double stress_diff_to_stop() const override { return 0.0; }
+        bool dodgy_titer_is_regular() const override { return false; }
+        double stress_diff_to_stop() const override { return 0.0; }
         PointIndexList unmovable() const override;
         PointIndexList disconnected() const override;
-        inline PointIndexList unmovable_in_the_last_dimension() const override { return {}; }
+        PointIndexList unmovable_in_the_last_dimension() const override { return {}; }
         AvidityAdjusts avidity_adjusts() const override;
 
      private:
@@ -218,7 +218,7 @@ namespace acmacs::chart
     class LispmdsProjections : public Projections
     {
       public:
-        inline LispmdsProjections(const Chart& chart, const acmacs::lispmds::value& aData) : Projections(chart), mData{aData}, projections_(size(), nullptr) {}
+        LispmdsProjections(const Chart& chart, const acmacs::lispmds::value& aData) : Projections(chart), mData{aData}, projections_(size(), nullptr) {}
 
         bool empty() const override;
         size_t size() const override;
@@ -235,7 +235,7 @@ namespace acmacs::chart
     class LispmdsPlotSpec : public PlotSpec
     {
       public:
-        inline LispmdsPlotSpec(const acmacs::lispmds::value& aData) : mData{aData} {}
+        LispmdsPlotSpec(const acmacs::lispmds::value& aData) : mData{aData} {}
 
         bool empty() const override;
         DrawingOrder drawing_order() const override;

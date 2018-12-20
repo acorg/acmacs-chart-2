@@ -382,7 +382,7 @@ std::string Acd1Info::make_field(const char* aField, const char* aSeparator, Com
 
 // ----------------------------------------------------------------------
 
-std::string Acd1Info::date(Compute aCompute) const
+TableDate Acd1Info::date(Compute aCompute) const
 {
     std::string result = data_["date"].get_or_default("");
     if (result.empty() && aCompute == Compute::Yes) {

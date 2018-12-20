@@ -59,13 +59,13 @@ namespace acmacs::chart
         Acd1Info(const rjson::value& aData) : data_{aData} {}
 
         std::string name(Compute aCompute = Compute::No) const override;
-        std::string virus(Compute aCompute = Compute::No) const override { return make_field("virus", "+", aCompute); }
-        std::string virus_type(Compute aCompute = Compute::Yes) const override { return make_field("virus_type", "+", aCompute); }
+        Virus       virus(Compute aCompute = Compute::No) const override { return make_field("virus", "+", aCompute); }
+        VirusType   virus_type(Compute aCompute = Compute::Yes) const override { return make_field("virus_type", "+", aCompute); }
         std::string subset(Compute aCompute = Compute::No) const override { return make_field("virus_subset", "+", aCompute); }
-        std::string assay(Compute aCompute = Compute::No) const override { return make_field("assay", "+", aCompute); }
-        std::string lab(Compute aCompute = Compute::No) const override { return make_field("lab", "+", aCompute); }
-        std::string rbc_species(Compute aCompute = Compute::No) const override { return make_field("rbc_species", "+", aCompute); }
-        std::string date(Compute aCompute = Compute::No) const override;
+        Assay       assay(Compute aCompute = Compute::No) const override { return make_field("assay", "+", aCompute); }
+        Lab         lab(Compute aCompute = Compute::No) const override { return make_field("lab", "+", aCompute); }
+        RbcSpecies  rbc_species(Compute aCompute = Compute::No) const override { return make_field("rbc_species", "+", aCompute); }
+        TableDate   date(Compute aCompute = Compute::No) const override;
         size_t number_of_sources() const override { return data_["sources"].size(); }
         InfoP source(size_t aSourceNo) const override { return std::make_shared<Acd1Info>(data_["sources"][aSourceNo]); }
 

@@ -111,13 +111,13 @@ namespace acmacs::chart
         explicit InfoModify(InfoP main);
 
         std::string name(Compute aCompute = Compute::No) const override { return aCompute == Compute::No ? name_ : computed_name_; }
-        std::string virus(Compute aCompute = Compute::No) const override;
-        std::string virus_type(Compute aCompute = Compute::Yes) const override;
+        Virus       virus(Compute aCompute = Compute::No) const override;
+        VirusType   virus_type(Compute aCompute = Compute::Yes) const override;
         std::string subset(Compute aCompute = Compute::No) const override;
-        std::string assay(Compute aCompute = Compute::No) const override;
-        std::string lab(Compute aCompute = Compute::No) const override;
-        std::string rbc_species(Compute aCompute = Compute::No) const override;
-        std::string date(Compute aCompute = Compute::No) const override;
+        Assay       assay(Compute aCompute = Compute::No) const override;
+        Lab         lab(Compute aCompute = Compute::No) const override;
+        RbcSpecies  rbc_species(Compute aCompute = Compute::No) const override;
+        TableDate   date(Compute aCompute = Compute::No) const override;
         size_t number_of_sources() const override { return sources_.size(); }
         InfoP source(size_t aSourceNo) const override { return sources_.at(aSourceNo); }
 
