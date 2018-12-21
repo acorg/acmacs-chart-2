@@ -67,7 +67,7 @@ namespace acmacs::chart
             constexpr auto rend() { return mData.rend(); }
             constexpr const auto& front() const { return mData.front(); }
 
-            bool operator==(const T_list_data<T>& other) const
+            constexpr bool operator==(const T_list_data<T>& other) const noexcept
                 {
                     if (size() != other.size())
                         return false;
@@ -77,7 +77,18 @@ namespace acmacs::chart
                     }
                     return true;
                 }
-            bool operator!=(const T_list_data<T>& other) const { return ! operator==(other); }
+            constexpr bool operator!=(const T_list_data<T>& other) const noexcept { return ! operator==(other); }
+            constexpr bool operator<(const T_list_data<T>& other) const noexcept
+                {
+                    const auto sz = std::min(size(), other.size());
+                    for (size_t i = 0; i < sz; ++i) {
+                        if (!(operator[](i) == other[i]))
+                            return operator[](i) < other[i];
+                    }
+                    if (size() < other.size())
+                        return true;
+                    return false;
+                }
 
             constexpr void push_back(const T& val) { mData.push_back(val); }
             constexpr void push_back(T&& val) { mData.push_back(std::forward<T>(val)); }
