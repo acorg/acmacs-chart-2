@@ -25,22 +25,22 @@ std::string acmacs::chart::export_factory(const Chart& aChart, acmacs::chart::ex
 void acmacs::chart::export_factory(const Chart& aChart, std::string aFilename, std::string aProgramName, report_time aReport)
 {
     Timeit ti("writing chart to " + aFilename + ": ", aReport);
-    auto force_compression = acmacs::file::ForceCompression::No;
+    auto force_compression = acmacs::file::force_compression::no;
     std::string data;
     if (fs::path(aFilename).extension() == ".ace") {
-        force_compression = acmacs::file::ForceCompression::Yes;
+        force_compression = acmacs::file::force_compression::yes;
         data = export_factory(aChart, export_format::ace, aProgramName, report_time::no);
     }
     else if (fs::path(aFilename).extension() == ".save") {
-        force_compression = acmacs::file::ForceCompression::No;
+        force_compression = acmacs::file::force_compression::no;
         data = export_factory(aChart, export_format::save, aProgramName, report_time::no);
     }
     else if (aFilename.size() > 8 && aFilename.substr(aFilename.size() - 8) == ".save.xz") {
-        force_compression = acmacs::file::ForceCompression::Yes;
+        force_compression = acmacs::file::force_compression::yes;
         data = export_factory(aChart, export_format::save, aProgramName, report_time::no);
     }
     else if (aFilename.size() > 8 && aFilename.substr(aFilename.size() - 8) == ".save.gz") {
-        force_compression = acmacs::file::ForceCompression::Yes;
+        force_compression = acmacs::file::force_compression::yes;
         data = export_factory(aChart, export_format::save, aProgramName, report_time::no);
     }
     else

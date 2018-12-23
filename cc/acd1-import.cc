@@ -393,7 +393,7 @@ TableDate Acd1Info::date(Compute aCompute) const
             result = string::join("-", {composition.front(), composition.back()});
         }
     }
-    return result;
+    return std::move(result);
 
 } // Acd1Info::date
 

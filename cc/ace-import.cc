@@ -205,7 +205,7 @@ TableDate AceInfo::date(Compute aCompute) const
             result = string::join("-", {composition.front(), composition.back()});
         }
     }
-    return result;
+    return std::move(result);
 
 } // AceInfo::date
 

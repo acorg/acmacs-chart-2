@@ -288,7 +288,7 @@ void test_remove_antigens(acmacs::chart::ChartP chart, const acmacs::Indexes& in
     }
     catch (std::exception& err) {
         // const std::string prefix = fs::exists("/r/ramdisk-id") ? "/r/" : "/tmp/";
-        // acmacs::file::write(prefix + "a.ace", exported, acmacs::file::ForceCompression::Yes);
+        // acmacs::file::write(prefix + "a.ace", exported, acmacs::file::force_compression::yes);
         throw std::runtime_error(std::string("test_remove_antigens: ") + err.what() + "\n  indexes:" + acmacs::to_string(indexes));
     }
 
@@ -326,7 +326,7 @@ void test_remove_sera(acmacs::chart::ChartP chart, const acmacs::Indexes& indexe
     }
     catch (std::exception& err) {
         // const std::string prefix = fs::exists("/r/ramdisk-id") ? "/r/" : "/tmp/";
-        // acmacs::file::write(prefix + "a.ace", exported, acmacs::file::ForceCompression::Yes);
+        // acmacs::file::write(prefix + "a.ace", exported, acmacs::file::force_compression::yes);
         throw std::runtime_error(std::string("test_remove_sera: ") + err.what() + "\n  indexes:" + acmacs::to_string(indexes));
     }
 
@@ -386,7 +386,7 @@ void test_insert_antigen(acmacs::chart::ChartP chart, size_t before, const argc_
     }
     catch (std::exception& err) {
         // const std::string prefix = fs::exists("/r/ramdisk-id") ? "/r/" : "/tmp/";
-        // acmacs::file::write(prefix + "a.ace", exported, acmacs::file::ForceCompression::Yes);
+        // acmacs::file::write(prefix + "a.ace", exported, acmacs::file::force_compression::yes);
         throw std::runtime_error(std::string("test_insert_antigen: ") + err.what() + "\n  before:" + acmacs::to_string(before));
     }
 
@@ -445,7 +445,7 @@ void test_insert_serum(acmacs::chart::ChartP chart, size_t before, const argc_ar
     }
     catch (std::exception& err) {
         // const std::string prefix = fs::exists("/r/ramdisk-id") ? "/r/" : "/tmp/";
-        // acmacs::file::write(prefix + "a.ace", exported, acmacs::file::ForceCompression::Yes);
+        // acmacs::file::write(prefix + "a.ace", exported, acmacs::file::force_compression::yes);
         throw std::runtime_error(std::string("test_insert_serum: ") + err.what() + "\n  before:" + acmacs::to_string(before));
     }
 
@@ -523,8 +523,8 @@ void test_insert_remove_antigen(acmacs::chart::ChartP chart, size_t before, cons
     const auto modified_exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     if (source_exported != modified_exported) {
         const std::string prefix = fs::exists("/r/ramdisk-id") ? "/r/" : "/tmp/";
-        acmacs::file::write(prefix + "source.ace", source_exported, acmacs::file::ForceCompression::No);
-        acmacs::file::write(prefix + "modified.ace", modified_exported, acmacs::file::ForceCompression::No);
+        acmacs::file::write(prefix + "source.ace", source_exported, acmacs::file::force_compression::no);
+        acmacs::file::write(prefix + "modified.ace", modified_exported, acmacs::file::force_compression::no);
         throw std::runtime_error("test_insert_remove_antigen: exported chart difference, opendiff " + prefix + "source.ace " + prefix + "modified.ace\n  before:" + acmacs::to_string(before));
     }
 
@@ -542,8 +542,8 @@ void test_insert_remove_serum(acmacs::chart::ChartP chart, size_t before, const 
     const auto modified_exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     if (source_exported != modified_exported) {
         const std::string prefix = /* fs::exists("/r/ramdisk-id") ? "/r/" : */ "/tmp/";
-        acmacs::file::write(prefix + "source.ace", source_exported, acmacs::file::ForceCompression::No);
-        acmacs::file::write(prefix + "modified.ace", modified_exported, acmacs::file::ForceCompression::No);
+        acmacs::file::write(prefix + "source.ace", source_exported, acmacs::file::force_compression::no);
+        acmacs::file::write(prefix + "modified.ace", modified_exported, acmacs::file::force_compression::no);
         throw std::runtime_error("test_insert_remove_serum (before: " + std::to_string(before) + "): exported chart difference, (no ediff!) opendiff " + prefix + "source.ace " + prefix + "modified.ace\n  before:" + acmacs::to_string(before));
     }
 
