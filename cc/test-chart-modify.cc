@@ -114,9 +114,12 @@ void test_chart_modify_no_changes(acmacs::chart::ChartP chart, const argc_argv& 
         }
         else {
             acmacs::file::temp plain_file{".ace"}, modified_file{".ace"};
-            write(plain_file, plain.data(), plain.size());
-            write(modified_file, modified.data(), modified.size());
-            std::system(("/usr/bin/diff -B -b --ignore-matching-lines='\"?created\"' " + static_cast<std::string>(plain_file) + " " + static_cast<std::string>(modified_file)).data());
+            if (write(plain_file, plain.data(), plain.size()) < 0)
+                throw std::runtime_error("write plain_file failed!");
+            if (write(modified_file, modified.data(), modified.size()) < 0)
+                throw std::runtime_error("write modified_file failed!");
+            if (std::system(("/usr/bin/diff -B -b --ignore-matching-lines='\"?created\"' " + static_cast<std::string>(plain_file) + " " + static_cast<std::string>(modified_file)).data()))
+                throw std::runtime_error("diff failed!");
         }
         throw std::runtime_error("different!");
     }
