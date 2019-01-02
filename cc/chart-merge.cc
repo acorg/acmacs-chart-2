@@ -24,7 +24,7 @@ struct Options : public argv
     option<bool> duplicates_distinct{*this, "duplicates-distinct", desc{"make duplicates distinct"}};
     option<str>  report_titers{*this, "report", desc{"titer merge report"}};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
-    
+
     argument<str_array> source_charts{*this, arg_name{"source-chart"}, mandatory};
 };
 
