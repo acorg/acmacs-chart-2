@@ -241,9 +241,15 @@ namespace acmacs::chart
 
     template <typename Base, typename Modify, typename ModifyBase> class AntigensSeraModify : public Base
     {
-     public:
-        explicit AntigensSeraModify(size_t number_of) : data_(number_of, nullptr) { std::transform(data_.begin(), data_.end(), data_.begin(), [](const auto&) { return std::make_shared<Modify>(); }); }
-        explicit AntigensSeraModify(std::shared_ptr<Base> main) : data_(main->size(), nullptr) { std::transform(main->begin(), main->end(), data_.begin(), [](auto ag_sr) { return std::make_shared<Modify>(ag_sr); }); }
+      public:
+        explicit AntigensSeraModify(size_t number_of) : data_(number_of, nullptr)
+        {
+            std::transform(data_.begin(), data_.end(), data_.begin(), [](const auto&) { return std::make_shared<Modify>(); });
+        }
+        explicit AntigensSeraModify(std::shared_ptr<Base> main) : data_(main->size(), nullptr)
+        {
+            std::transform(main->begin(), main->end(), data_.begin(), [](auto ag_sr) { return std::make_shared<Modify>(ag_sr); });
+        }
 
         size_t size() const override { return data_.size(); }
         std::shared_ptr<ModifyBase> operator[](size_t aIndex) const override { return data_.at(aIndex); }
@@ -251,34 +257,46 @@ namespace acmacs::chart
         std::shared_ptr<Modify> ptr_at(size_t aIndex) { return data_.at(aIndex); }
 
         void remove(const ReverseSortedIndexes& indexes)
-            {
-                for (auto index : indexes) {
-                    if (index >= data_.size())
-                        throw invalid_data{"invalid index to remove: " + to_string(index) + ", valid values in [0.." + to_string(data_.size()) + ')'};
-                    data_.erase(data_.begin() + static_cast<Indexes::difference_type>(index));
-                }
+        {
+            for (auto index : indexes) {
+                if (index >= data_.size())
+                    throw invalid_data{"invalid index to remove: " + to_string(index) + ", valid values in [0.." + to_string(data_.size()) + ')'};
+                data_.erase(data_.begin() + static_cast<Indexes::difference_type>(index));
             }
+        }
 
         std::shared_ptr<Modify> insert(size_t before)
-            {
-                if (before > data_.size())
-                    throw invalid_data{"invalid index to insert before: " + to_string(before) + ", valid values in [0.." + to_string(data_.size()) + ']'};
-                return *data_.emplace(data_.begin() + static_cast<Indexes::difference_type>(before), new Modify);
-            }
+        {
+            if (before > data_.size())
+                throw invalid_data{"invalid index to insert before: " + to_string(before) + ", valid values in [0.." + to_string(data_.size()) + ']'};
+            return *data_.emplace(data_.begin() + static_cast<Indexes::difference_type>(before), new Modify);
+        }
 
         void set_continent()
-            {
-                for (auto& entry : data_)
-                    entry->set_continent();
-            }
+        {
+            for (auto& entry : data_)
+                entry->set_continent();
+        }
 
-     private:
+        void duplicates_distinct(const duplicates_t& dups)
+        {
+            for (const auto& entry : dups) {
+                for (auto ip = entry.begin() + 1; ip != entry.end(); ++ip)
+                    at(*ip).add_annotation("DISTINCT");
+            }
+        }
+
+      private:
         std::vector<std::shared_ptr<Modify>> data_;
     };
 
 // ----------------------------------------------------------------------
 
-    class titers_cannot_be_modified : public std::runtime_error { public: titers_cannot_be_modified() : std::runtime_error("titers cannot be modified (table has layers?)") {} };
+    class titers_cannot_be_modified : public std::runtime_error
+    {
+      public:
+        titers_cannot_be_modified() : std::runtime_error("titers cannot be modified (table has layers?)") {}
+    };
 
     class TitersModify : public Titers
     {

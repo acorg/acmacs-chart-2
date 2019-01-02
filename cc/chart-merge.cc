@@ -6,6 +6,7 @@
 #include "acmacs-base/filesystem.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
+#include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/merge.hh"
 #include "acmacs-chart-2/common.hh"
 
@@ -20,6 +21,7 @@ struct Options : public argv
     option<str>  output_chart{*this, 'o', "output", dflt{""}, desc{"output chart"}};
     option<str>  match{*this, "match", dflt{"auto"}, desc{"match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""}};
     option<str>  merge_type{*this, 'm', "merge-type", dflt{"simple"}, desc{"merge type: \"incremental\", \"overlay\", \"simple\""}};
+    option<bool> duplicates_distinct{*this, "duplicates-distinct", desc{"make duplicates distinct"}};
     option<str>  report_titers{*this, "report", desc{"titer merge report"}};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
     
@@ -39,18 +41,27 @@ int main(int argc, const char* const argv[])
             settings.projection_merge = acmacs::chart::projection_merge_t::overlay;
         else if (opt.merge_type != "simple")
             throw std::runtime_error(string::concat("unrecognized --merge-type value: ", opt.merge_type.get()));
+        if (opt.source_charts->size() < 2)
+            throw std::runtime_error("too few source charts specified");
         settings.match_level = acmacs::chart::CommonAntigensSera::match_level(opt.match);
-        const auto read = [report](std::string_view filename) { return acmacs::chart::import_from_file(filename, acmacs::chart::Verify::None, report); };
+        const auto read = [report,duplicates_distinct=*opt.duplicates_distinct](std::string_view filename) {
+            acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(filename, acmacs::chart::Verify::None, report)};
+            if (duplicates_distinct) {
+                chart.antigens_modify()->duplicates_distinct(chart.antigens()->find_duplicates());
+                chart.sera_modify()->duplicates_distinct(chart.sera()->find_duplicates());
+            }
+            return chart;
+        };
         auto chart1 = read((*opt.source_charts)[0]);
         auto chart2 = read((*opt.source_charts)[1]);
-        auto [result, merge_report] = acmacs::chart::merge(*chart1, *chart2, settings);
-        std::cout << chart1->description() << '\n' << chart2->description() << "\n\n";
+        auto [result, merge_report] = acmacs::chart::merge(chart1, chart2, settings);
+        std::cout << chart1.description() << '\n' << chart2.description() << "\n\n";
         merge_report.common.report();
         std::cout << "----------\n\n";
         for (size_t c_no = 2; c_no < opt.source_charts->size(); ++c_no) {
             auto chart3 = read((*opt.source_charts)[c_no]);
-            std::cout << result->description() << '\n' << chart3->description() << "\n\n";
-            std::tie(result, merge_report) = acmacs::chart::merge(*result, *chart3);
+            std::cout << result->description() << '\n' << chart3.description() << "\n\n";
+            std::tie(result, merge_report) = acmacs::chart::merge(*result, chart3);
             merge_report.common.report();
             std::cout << "----------\n\n";
         }
