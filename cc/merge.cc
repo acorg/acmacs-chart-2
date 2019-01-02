@@ -313,7 +313,7 @@ void merge_info(acmacs::chart::ChartModify& target, const acmacs::chart::Chart& 
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::MergeReport::titer_merge_report(std::string_view filename, const ChartModify& chart, const char* progname) const
+void acmacs::chart::MergeReport::titer_merge_report(std::string_view filename, const ChartModify& chart, std::string_view progname) const
 {
     acmacs::file::ofstream output(filename);
     *output << "Acmacs merge table and diagnositics (in Derek's style).\nCreated by " << progname << " on " << current_date_time() << "\n\n";
