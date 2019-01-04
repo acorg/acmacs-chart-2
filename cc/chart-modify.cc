@@ -1308,7 +1308,8 @@ void ProjectionModify::clone_from(const Projection& aSource)
     transformation_ = aSource.transformation();
     transformed_layout_.reset();
     set_forced_column_bases(aSource.forced_column_bases());
-
+    comment_ = aSource.comment();
+    
 } // ProjectionModify::clone_from
 
 // ----------------------------------------------------------------------
