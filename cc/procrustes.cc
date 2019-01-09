@@ -102,6 +102,8 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
         for (aint_t row = 0; row < number_of_dimensions; ++row)
             for (aint_t col = 0; col < number_of_dimensions; ++col)
                 result.transformation(row, col) = source(row, col);
+        if (!result.transformation.valid())
+            std::cerr << "WARNING: invalid transformation\n";
     };
 
     alglib::real_2d_array transformation;
