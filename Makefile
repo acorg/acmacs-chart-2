@@ -21,6 +21,8 @@ TARGETS = \
     $(DIST)/chart-relax-disconnected \
     $(DIST)/chart-relax-incremental \
     $(DIST)/chart-relax-save-intermediate-layouts \
+    $(DIST)/chart-grid-test \
+    $(DIST)/chart-relax-grid \
     $(DIST)/chart-error-lines \
     $(DIST)/chart-common \
     $(DIST)/chart-procrustes \
@@ -35,7 +37,6 @@ TARGETS = \
     $(DIST)/chart-remove-antigens-by-full-name \
     $(DIST)/chart-keep-antigens-sera \
     $(DIST)/chart-keep-antigens-titrated-against-sera \
-    $(DIST)/chart-grid-test \
     $(DIST)/chart-serum-titers-check \
     $(DIST)/chart-column-bases \
     $(DIST)/chart-list-antigens-without-titers \
