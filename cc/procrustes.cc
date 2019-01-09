@@ -73,6 +73,29 @@ static alglib::real_2d_array multiply_both_transposed(const alglib::real_2d_arra
 static alglib::real_2d_array transpose(const alglib::real_2d_array& matrix);
 static void singular_value_decomposition(const alglib::real_2d_array& matrix, alglib::real_2d_array& u, alglib::real_2d_array& vt);
 
+inline bool has_nan(const alglib::real_2d_array& data)
+{
+    for (int row = 0; row < data.rows(); ++row)
+        for (int col = 0; col < data.cols(); ++col)
+            if (std::isnan(data(row, col)))
+                return true;
+    return false;
+}
+
+// inline bool has_nan(const alglib::real_2d_array& data)
+// {
+//     bool has_nan = false;
+//     for (int row = 0; row < data.rows(); ++row) {
+//         for (int col = 0; col < data.cols(); ++col) {
+//             const auto val = data(row, col);
+//             has_nan |= std::isnan(val);
+//             std::cout << ' ' << val;
+//         }
+//         std::cout << '\n';
+//     }
+//     return has_nan;
+// }
+
 // ----------------------------------------------------------------------
 
 // Code for this function was extracted from Procrustes3-for-lisp.c from lispmds
@@ -103,7 +126,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
             for (aint_t col = 0; col < number_of_dimensions; ++col)
                 result.transformation(row, col) = source(row, col);
         if (!result.transformation.valid())
-            std::cerr << "WARNING: invalid transformation\n";
+            std::cerr << "WARNING: procrustes: invalid transformation\n";
     };
 
     alglib::real_2d_array transformation;
@@ -112,7 +135,13 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
         auto m4 = transpose(multiply_left_transposed(multiply(j, y), multiply(j, x)));
         alglib::real_2d_array u, vt;
         singular_value_decomposition(m4, u, vt);
+        if (has_nan(u))
+            std::cerr << "WARNING: procrustes: invalid u after svd (no scaling)\n";
+        if (has_nan(vt))
+            std::cerr << "WARNING: procrustes: invalid vt after svd (no scaling)\n";
         transformation = multiply_both_transposed(vt, u);
+        if (has_nan(transformation))
+            std::cerr << "WARNING: procrustes: invalid transformation after svd (no scaling)\n";
     }
     else {
         const MatrixJProcrustesScaling j(common.size());
@@ -121,6 +150,8 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
         alglib::real_2d_array u, vt;
         singular_value_decomposition(m2, u, vt);
         transformation = multiply_both_transposed(vt, u);
+        if (has_nan(transformation))
+            std::cerr << "WARNING: procrustes: invalid transformation after svd (with scaling)\n";
         // std::cerr << "transformation0: " << transformation.tostring(8) << '\n';
 
         // calculate optimal scale parameter
