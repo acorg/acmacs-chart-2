@@ -21,6 +21,7 @@ struct Options : public argv
     option<size_t> number_of_optimizations{*this, 'n', dflt{1UL}, desc{"number of optimizations"}};
     option<size_t> number_of_dimensions{*this, 'd', dflt{2UL}, desc{"number of dimensions"}};
     option<str>    minimum_column_basis{*this, 'm', dflt{"none"}, desc{"minimum column basis"}};
+    option<str>    reorient{*this, "reorient", dflt{""}, desc{"chart to re-orient resulting projections to"}};
     option<double> grid_step{*this, "step", dflt{0.1}};
     option<str>    method{*this, "method", dflt{"cg"}, desc{"method: lbfgs, cg"}};
     option<double> max_distance_multiplier{*this, "md", dflt{2.0}, desc{"randomization diameter multiplier"}};
@@ -57,9 +58,9 @@ int main(int argc, char* const argv[])
         chart.projection_modify(0)->relax(acmacs::chart::optimization_options(method, acmacs::chart::optimization_precision::fine));
 
         // grid test
-        // std::vector<size_t> projections_to_reorient;
+        size_t grid_projections = 0;
         size_t projection_no_to_test = 0;
-        for (auto attempt = 1; attempt < 10; ++attempt) {
+        for (auto attempt = 1; attempt < 20; ++attempt) {
             acmacs::chart::GridTest test(chart, projection_no_to_test, opt.grid_step);
             const auto results = test.test_all_parallel(opt.threads);
             std::cout << results.report() << '\n';
@@ -70,24 +71,28 @@ int main(int argc, char* const argv[])
                 }
             }
             auto projection = test.make_new_projection_and_relax(results, true);
+            ++grid_projections;
             projection->comment("grid-test-" + acmacs::to_string(attempt));
             projection_no_to_test = projection->projection_no();
             // projections_to_reorient.push_back(projection_no_to_test);
             if (std::all_of(results.begin(), results.end(), [](const auto& result) { return result.diagnosis != acmacs::chart::GridTest::Result::trapped; }))
                 break;
         }
-        // if (opt.output_chart.has_value() && !projections_to_reorient.empty()) {
-        //     acmacs::chart::CommonAntigensSera common(chart);
-        //     auto master_projection = chart.projection(0);
-        //     for (auto projection_to_reorient : projections_to_reorient) {
-        //         const auto procrustes_data = acmacs::chart::procrustes(*master_projection, *chart.projection(projection_to_reorient), common.points(), acmacs::chart::procrustes_scaling_t::no);
-        //         chart.projection_modify(projection_to_reorient)->transformation(procrustes_data.transformation);
-        //     }
-        // }
-        chart.projections_modify()->sort();
 
-        if (const size_t keep_projections = opt.keep_projections; keep_projections > 0 && projections->size() > keep_projections)
-            projections->keep_just(keep_projections);
+        chart.projections_modify()->sort();
+        if (const size_t keep_projections = opt.keep_projections; keep_projections > 0 && projections->size() > (keep_projections + grid_projections))
+            projections->keep_just(keep_projections + grid_projections);
+
+        if (opt.output_chart.has_value() && !opt.reorient->empty()) {
+            auto master = acmacs::chart::import_from_file(opt.reorient, acmacs::chart::Verify::None, report);
+            acmacs::chart::CommonAntigensSera common(*master, chart, acmacs::chart::CommonAntigensSera::match_level_t::automatic);
+            auto master_projection = master->projection(0);
+            for (auto projection_to_reorient : acmacs::filled_with_indexes(chart.number_of_projections())) {
+                const auto procrustes_data = acmacs::chart::procrustes(*master_projection, *chart.projection(projection_to_reorient), common.points(), acmacs::chart::procrustes_scaling_t::no);
+                chart.projection_modify(projection_to_reorient)->transformation(procrustes_data.transformation);
+            }
+        }
+
         std::cout << chart.make_info() << '\n';
         if (opt.output_chart.has_value())
             acmacs::chart::export_factory(chart, opt.output_chart, fs::path(opt.program_name()).filename(), report);
