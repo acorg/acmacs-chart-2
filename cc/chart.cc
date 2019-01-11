@@ -745,13 +745,11 @@ acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string aName) 
 
     Indexes indexes = find(aName);
     if (indexes.empty() && aName.size() > 2) {
-        // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix
-        if (aName[0] == 'A' && aName[1] == '/') {
-            if (const auto first_name = (*begin())->name(); first_name.size() > 2 && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos)
+        if (const auto first_name = (*begin())->name(); first_name.size() > 2) {
+        // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix (for A and B)
+            if ((aName[0] == 'A' && aName[1] == '/' && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos) || (aName[0] == 'B' && aName[1] == '/'))
                 indexes = find(first_name.substr(0, first_name.find('/')) + aName.substr(1));
-        }
-        else if (aName[1] != '/' && aName[1] != '(') {
-            if (const auto first_name = (*begin())->name(); first_name.size() > 2 && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos)
+            else if (aName[1] != '/' && aName[1] != '(')
                 indexes = find(first_name.substr(0, first_name.find('/') + 1) + aName);
         }
     }
