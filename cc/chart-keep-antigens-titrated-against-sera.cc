@@ -14,14 +14,16 @@ int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {
-                {"-s", "", "comma separated list of serum indexes (zero based)"},
-                {"--time", false, "report time of loading chart"},
-                {"--verbose", false},
-                {"-h", false},
-                {"--help", false},
-                {"-v", false},
-                        });
+        argc_argv args(argc, argv,
+                       {
+                           {"-s", "", "comma separated list of serum indexes (zero based)"},
+                           {"--time", false, "report time of loading chart"},
+                           {"--dry-run", false, "report antigens, do not produce output"},
+                           {"--verbose", false},
+                           {"-h", false},
+                           {"--help", false},
+                           {"-v", false},
+                       });
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 2 || args["-s"].str().empty()) {
             std::cerr << "Usage: " << args.program() << " [options] <chart-file> <output-chart-file>\n" << args.usage_options() << '\n';
             exit_code = 1;
@@ -29,7 +31,7 @@ int main(int argc, char* const argv[])
         else {
             const std::string sera(args["-s"]);
             acmacs::chart::PointIndexList sera_titrated_against{sera.empty() ? acmacs::Indexes{} : acmacs::string::split_into_uint(sera, ",")};
-              // acmacs::ReverseSortedIndexes antigens_to_remove;
+            // acmacs::ReverseSortedIndexes antigens_to_remove;
             const auto report = do_report_time(args["--time"]);
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
             auto titers = chart.titers();
@@ -41,9 +43,11 @@ int main(int argc, char* const argv[])
             acmacs::ReverseSortedIndexes antigens_to_remove(chart.number_of_antigens());
             antigens_to_remove.remove(antigens_to_keep);
             std::cout << "INFO: antigens_to_remove: " << antigens_to_remove.size() << ' ' << antigens_to_remove << '\n';
-            if (!antigens_to_remove.empty())
-                chart.remove_antigens(antigens_to_remove);
-            acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);
+            if (!args["--dry-run"]) {
+                if (!antigens_to_remove.empty())
+                    chart.remove_antigens(antigens_to_remove);
+                acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);
+            }
         }
     }
     catch (std::exception& err) {
