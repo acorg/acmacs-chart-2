@@ -40,14 +40,18 @@ std::shared_ptr<acmacs::chart::LayoutRandomizer> acmacs::chart::randomizer_borde
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::chart::LayoutRandomizer> randomizer_plain_from_sample_optimization_internal(acmacs::chart::ProjectionModifyNew&& projection, const acmacs::chart::Stress<double>& stress, double diameter_multiplier)
+std::shared_ptr<acmacs::chart::LayoutRandomizer> randomizer_plain_from_sample_optimization_internal(acmacs::chart::ProjectionModifyNew&& projection, const acmacs::chart::Stress<double>& stress,
+                                                                                                    double diameter_multiplier)
 {
     auto rnd = randomizer_plain_with_table_max_distance(projection);
     projection.randomize_layout(rnd);
-    acmacs::chart::optimize(acmacs::chart::optimization_method::alglib_cg_pca, stress, projection.layout_modified()->data(), projection.layout_modified()->size(), acmacs::chart::optimization_precision::very_rough);
-    auto sq = [](double v) { return v*v; };
+    acmacs::chart::optimize(acmacs::chart::optimization_method::alglib_cg_pca, stress, projection.layout_modified()->data(), projection.layout_modified()->size(),
+                            acmacs::chart::optimization_precision::very_rough);
+    auto sq = [](double v) { return v * v; };
     const auto mm = projection.layout_modified()->minmax();
     const auto diameter = std::sqrt(std::accumulate(mm.begin(), mm.end(), 0.0, [&sq](double sum, const auto& p) { return sum + sq(p.second - p.first); }));
+    if (std::isnan(diameter) || float_zero(diameter))
+        std::cerr << "WARNING: randomizer_plain_from_sample_optimization_internal: diameter is " << diameter << '\n';
     rnd->diameter(diameter * diameter_multiplier);
     return std::move(rnd);
 

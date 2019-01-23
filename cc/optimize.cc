@@ -367,7 +367,7 @@ acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(optimi
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
     return status;
 
-} // acmacs::chart::pca
+} // acmacs::chart::dimension_annealing
 
 // ----------------------------------------------------------------------
 

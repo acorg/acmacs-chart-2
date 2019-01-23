@@ -53,6 +53,8 @@ int main(int argc, char* const argv[])
         auto disconnected{get_disconnected(opt.disconnect_antigens, opt.disconnect_sera, chart.number_of_antigens(), chart.number_of_sera())};
         if (!opt.no_disconnect_having_few_titers)
             disconnected.extend(chart.titers()->having_too_few_numeric_titers());
+        if (!disconnected.empty())
+            std::cerr << "INFO: " << disconnected.size() << " points disconnected: " << disconnected << '\n';
 
         acmacs::chart::optimization_options options(method, precision, opt.max_distance_multiplier);
         options.num_threads = opt.threads;
