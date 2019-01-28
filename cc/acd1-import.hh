@@ -130,7 +130,7 @@ namespace acmacs::chart
 
         size_t size() const override { return data_.size(); }
         AntigenP operator[](size_t aIndex) const override { return std::make_shared<Acd1Antigen>(data_[aIndex]); }
-        std::optional<size_t> find_by_full_name(std::string aFullName) const override;
+        std::optional<size_t> find_by_full_name(std::string_view aFullName) const override;
 
      private:
         const rjson::value& data_;

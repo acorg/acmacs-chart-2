@@ -225,7 +225,7 @@ BLineage AceSerum::lineage() const
 
 // ----------------------------------------------------------------------
 
-std::optional<size_t> AceAntigens::find_by_full_name(std::string aFullName) const
+std::optional<size_t> AceAntigens::find_by_full_name(std::string_view aFullName) const
 {
     if (mAntigenNameIndex.empty())
         make_name_index();
@@ -240,7 +240,7 @@ std::optional<size_t> AceAntigens::find_by_full_name(std::string aFullName) cons
 
 } // AceAntigens::find_by_full_name
 
-// std::optional<size_t> AceAntigens::find_by_full_name(std::string aFullName) const
+// std::optional<size_t> AceAntigens::find_by_full_name(std::string_view aFullName) const
 // {
 //     const std::string_view name{virus_name::name(aFullName)};
 //     for (auto iter = data_.begin(); iter != data_.end(); ++iter) {

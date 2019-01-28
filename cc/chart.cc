@@ -720,7 +720,7 @@ static inline bool not_in_continent(std::string aName, std::string aContinent)
 
 // ----------------------------------------------------------------------
 
-std::optional<size_t> acmacs::chart::Antigens::find_by_full_name(std::string aFullName) const
+std::optional<size_t> acmacs::chart::Antigens::find_by_full_name(std::string_view aFullName) const
 {
     const auto found = std::find_if(begin(), end(), [aFullName](auto antigen) -> bool { return antigen->full_name() == aFullName; });
     if (found == end())
@@ -732,9 +732,9 @@ std::optional<size_t> acmacs::chart::Antigens::find_by_full_name(std::string aFu
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string aName) const
+acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string_view aName) const
 {
-    auto find = [this](std::string name) -> Indexes {
+    auto find = [this](auto name) -> Indexes {
         Indexes indexes;
         for (auto iter = this->begin(); iter != this->end(); ++iter) {
             if ((*iter)->name() == name)
@@ -748,9 +748,9 @@ acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string aName) 
         if (const auto first_name = (*begin())->name(); first_name.size() > 2) {
         // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix (for A and B)
             if ((aName[0] == 'A' && aName[1] == '/' && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos) || (aName[0] == 'B' && aName[1] == '/'))
-                indexes = find(first_name.substr(0, first_name.find('/')) + aName.substr(1));
+                indexes = find(string::concat(first_name.substr(0, first_name.find('/')), aName.substr(1)));
             else if (aName[1] != '/' && aName[1] != '(')
-                indexes = find(first_name.substr(0, first_name.find('/') + 1) + aName);
+                indexes = find(string::concat(first_name.substr(0, first_name.find('/') + 1), aName));
         }
     }
     return indexes;
@@ -942,7 +942,7 @@ void acmacs::chart::Sera::set_homologous(find_homologous options, const Antigens
 
 // ----------------------------------------------------------------------
 
-std::optional<size_t> acmacs::chart::Sera::find_by_full_name(std::string aFullName) const
+std::optional<size_t> acmacs::chart::Sera::find_by_full_name(std::string_view aFullName) const
 {
     const auto found = std::find_if(begin(), end(), [aFullName](auto serum) -> bool { return serum->full_name() == aFullName; });
     if (found == end())
@@ -954,7 +954,7 @@ std::optional<size_t> acmacs::chart::Sera::find_by_full_name(std::string aFullNa
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Indexes acmacs::chart::Sera::find_by_name(std::string aName) const
+acmacs::chart::Indexes acmacs::chart::Sera::find_by_name(std::string_view aName) const
 {
     Indexes indexes;
     for (auto iter = begin(); iter != end(); ++iter) {

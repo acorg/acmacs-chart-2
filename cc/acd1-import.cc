@@ -564,7 +564,7 @@ SerumId Acd1Serum::serum_id() const
 
 // ----------------------------------------------------------------------
 
-std::optional<size_t> Acd1Antigens::find_by_full_name(std::string aFullName) const
+std::optional<size_t> Acd1Antigens::find_by_full_name(std::string_view aFullName) const
 {
     if (mAntigenNameIndex.empty())
         make_name_index();

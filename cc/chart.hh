@@ -514,8 +514,8 @@ namespace acmacs::chart
             remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); });
         }
 
-        virtual std::optional<size_t> find_by_full_name(std::string aFullName) const;
-        virtual Indexes find_by_name(std::string aName) const;
+        virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const;
+        virtual Indexes find_by_name(std::string_view aName) const;
         size_t max_full_name() const;
 
         duplicates_t find_duplicates() const;
@@ -578,8 +578,8 @@ namespace acmacs::chart
             remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_cell(); });
         }
 
-        virtual std::optional<size_t> find_by_full_name(std::string aFullName) const;
-        virtual Indexes find_by_name(std::string aName) const;
+        virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const;
+        virtual Indexes find_by_name(std::string_view aName) const;
         size_t max_full_name() const;
 
         void set_homologous(find_homologous options, const Antigens& aAntigens);
