@@ -187,7 +187,7 @@ std::string acmacs::chart::GridTest::Results::report() const
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::GridTest::Result::report() const
+std::string acmacs::chart::GridTest::Result::report(const Chart& chart) const
 {
     std::string diag;
     switch (diagnosis) {
@@ -207,7 +207,12 @@ std::string acmacs::chart::GridTest::Result::report() const
           diag = "hemi";
           break;
     }
-    return diag + ' ' + acmacs::to_string(point_no) + " diff:" + acmacs::to_string(contribution_diff, 4) + " dist:" + acmacs::to_string(distance, 4);
+    std::string name;
+    if (const auto num_ags = chart.number_of_antigens(); point_no < num_ags)
+        name = string::concat("[AG ", point_no, ' ', chart.antigens()->at(point_no)->full_name(), ']');
+    else
+        name = string::concat("[SR ", point_no - num_ags, ' ', chart.sera()->at(point_no - num_ags)->full_name(), ']');
+    return string::concat(diag, ' ', name, " diff:", acmacs::to_string(contribution_diff, 4), " dist:", acmacs::to_string(distance, 4));
 
 } // acmacs::chart::GridTest::Result::report
 

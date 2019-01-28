@@ -26,7 +26,7 @@ namespace acmacs::chart
             Result(size_t a_point_no, diagnosis_t a_diagnosis, const Coordinates& a_pos, double a_distance, double diff)
                 : point_no(a_point_no), diagnosis(a_diagnosis), pos(a_pos), distance(a_distance), contribution_diff(diff) {}
             operator bool() const { return diagnosis == trapped || diagnosis == hemisphering; }
-            std::string report() const;
+            std::string report(const Chart& chart) const;
             std::string diagnosis_str() const;
 
             size_t point_no;

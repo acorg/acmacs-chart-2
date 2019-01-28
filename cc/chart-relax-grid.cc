@@ -67,7 +67,7 @@ int main(int argc, char* const argv[])
             if (opt.verbose) {
                 for (const auto& entry : results) {
                     if (entry)
-                        std::cout << entry.report() << '\n';
+                        std::cout << entry.report(chart) << '\n';
                 }
             }
             auto projection = test.make_new_projection_and_relax(results, true);
