@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/string.hh"
@@ -18,40 +18,37 @@ static std::string html_escape(std::string source);
 
 // ----------------------------------------------------------------------
 
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<bool> all_fields{*this, "all-fields"};
+    option<bool> open{*this, "open"};
+    option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
+
+    argument<str> chart{*this, arg_name{"chart"}, mandatory};
+    argument<str> output{*this, arg_name{"output.html"}};
+};
+
 int main(int argc, char* const argv[])
 {
-    using namespace std::string_literals;
-
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {
-                {"--all-fields", false},
-                {"--open", false},
-                {"--verbose", false},
-                {"--time", false, "report time of loading chart"},
-                {"-h", false},
-                {"--help", false},
-                {"-v", false},
-        });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() < 1) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file> [<output.html>]\n" << args.usage_options() << '\n';
-            exit_code = 1;
-        }
-        else {
-            const auto report = do_report_time(args["--time"]);
-            acmacs::file::temp temp_file(".html");
-            const std::string output_filename = args.number_of_arguments() > 1 ? std::string{args[1]} : static_cast<std::string>(temp_file);
-            std::ofstream output{output_filename};
+        Options opt(argc, argv);
+        const auto report = do_report_time(opt.report_time);
+        acmacs::file::temp temp_file(".html");
+        const std::string output_filename = opt.output.has_value() ? static_cast<std::string>(opt.output) : static_cast<std::string>(temp_file);
+        std::ofstream output{output_filename};
 
-            auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
-            header(output, chart->make_name());
-            contents(output, *chart, args["--all-fields"]);
-            footer(output);
-            output.close();
+        auto chart = acmacs::chart::import_from_file(opt.chart, acmacs::chart::Verify::None, report);
+        header(output, chart->make_name());
+        contents(output, *chart, opt.all_fields);
+        footer(output);
+        output.close();
 
-            if (args["--open"] || args.number_of_arguments() < 2)
-                acmacs::open(output_filename);
-        }
+        if (opt.open || !opt.output.has_value())
+            acmacs::open(output_filename);
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';
@@ -185,9 +182,8 @@ void serum_rows(std::ostream& output, const acmacs::chart::Chart& chart, bool al
           // serum names
         output << "<tr>\n";
         make_skip(antigen_fields.skip_left() + 2);
-        for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-            output << "<td class=\"sr-name sr-" << sr_no << "\">" << html_escape(serum->name_abbreviated()) << "</td>";
-        }
+        for (auto [sr_no, serum] : acmacs::enumerate(*sera))
+            output << "<td class=\"sr-name sr-" << sr_no << " passage-" << serum->passage().passage_type() << "\">" << html_escape(serum->name_abbreviated()) << "</td>";
         make_skip(antigen_fields.skip_right());
         output << "</tr>\n";
 
@@ -199,7 +195,7 @@ void serum_rows(std::ostream& output, const acmacs::chart::Chart& chart, bool al
         if (field_present(serum_annotations)) {
             output << "<tr>";
             make_skip(antigen_fields.skip_left() + 2);
-            for (auto [sr_no, _] : acmacs::enumerate(*sera))
+            for (auto [sr_no, _] : acmacs::enumerate(*sera)) 
                 output << "<td class=\"sr-annotations " << ("sr-" + std::to_string(sr_no)) << "\">" << html_escape(serum_annotations[sr_no]) << "</td>";
             make_skip(antigen_fields.skip_right());
             output << "</tr>\n";
@@ -226,8 +222,8 @@ void serum_rows(std::ostream& output, const acmacs::chart::Chart& chart, bool al
                     fields.emplace_back(field.substr(0, 2));
                 name = string::join("/", fields);
             }
-            output << "<td class=\"sr-name sr-" << sr_no << "\"><div class=\"tooltip\">" << html_escape(name)
-                   << "<span class=\"tooltiptext\">" << html_escape(serum->full_name()) << "</span></div></td>";
+            output << "<td class=\"sr-name sr-" << sr_no << " passage-" << serum->passage().passage_type() << "\"><div class=\"tooltip\">" << html_escape(name)
+                   << "<span class=\"tooltiptext\">" << html_escape(serum->full_name_with_passage()) << "</span></div></td>";
         }
         make_skip(antigen_fields.skip_right());
         output << "</tr>\n";
