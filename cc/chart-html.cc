@@ -12,7 +12,7 @@
 #include "acmacs-chart-2/chart.hh"
 
 using group_t = std::vector<size_t>;
-using groups_t = std::vector<group_t>;
+using groups_t = std::vector<std::pair<std::string, group_t>>;
 
 static void contents(std::ostream& output, const acmacs::chart::Chart& chart, const groups_t& groups, bool all_fields);
 static void header(std::ostream& output, std::string table_name);
@@ -49,8 +49,10 @@ int main(int argc, char* const argv[])
         std::ofstream output{output_filename};
 
         groups_t groups;
-        groups.push_back(acmacs::filled_with_indexes(chart->number_of_antigens() - 5));
-        std::reverse(groups.front().begin(), groups.front().end());
+        for (size_t group_no = 0; group_no < opt.groups->size(); ++group_no) {
+            const std::string group_name = group_no < opt.group_names->size() ? static_cast<std::string>(opt.group_names->at(group_no)) : std::string{};
+            groups.emplace_back(group_name, acmacs::string::split_into_uint(opt.groups->at(group_no), ","));
+        }
 
         header(output, chart->make_name());
         contents(output, *chart, groups, opt.all_fields);
@@ -168,7 +170,7 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
     const auto make_group_sepeartor = [&]() {
         output << "<tr class=\"group-separator\"><td colspan=" << (antigen_fields.skip_left() + 2 + chart.number_of_sera() + antigen_fields.skip_right()) << ">A</td></tr>";
     };
-    
+
     std::vector<bool> antigens_written(antigens->size());
 
       // antigens and titers
@@ -176,9 +178,9 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
     for (const auto& group : groups) {
         if (!first_group)
             make_group_sepeartor();
-        auto group_size = group.size();
-        for (auto ag_no : group) {
-            make_antigen(ag_no, group_size, std::string{"G"});
+        auto group_size = group.second.size();
+        for (auto ag_no : group.second) {
+            make_antigen(ag_no, group_size, group.first);
             group_size = 0;
             antigens_written[ag_no] = true;
         }
@@ -311,7 +313,7 @@ table.td { border: 1px solid grey; }
 .titer-dodgy     { color: brown; }
 tr.even td { background-color: white; }
 tr.odd td { background-color: #F8F8F8; }
-td.group-name { padding: 0 0.1em 0 0.3em; font-weight: bold; vertical-align: top; }
+td.group-name { padding: 0.3em 0.1em 0 0.3em; font-weight: bold; vertical-align: top; }
 tr.group-separator td { min-height: 5em; border: 1px solid grey; color: transparent; }
 
 .tooltip {
