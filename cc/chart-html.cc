@@ -11,7 +11,10 @@
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
 
-static void contents(std::ostream& output, const acmacs::chart::Chart& chart, bool all_fields);
+using group_t = std::vector<size_t>;
+using groups_t = std::vector<group_t>;
+
+static void contents(std::ostream& output, const acmacs::chart::Chart& chart, const groups_t& groups, bool all_fields);
 static void header(std::ostream& output, std::string table_name);
 static void footer(std::ostream& output);
 static std::string html_escape(std::string source);
@@ -23,6 +26,8 @@ struct Options : public argv
 {
     Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
 
+    option<str_array> groups{*this, "group"};
+    option<str_array> group_names{*this, "group-name"};
     option<bool> all_fields{*this, "all-fields"};
     option<bool> open{*this, "open"};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
@@ -37,13 +42,18 @@ int main(int argc, char* const argv[])
     try {
         Options opt(argc, argv);
         const auto report = do_report_time(opt.report_time);
+        auto chart = acmacs::chart::import_from_file(opt.chart, acmacs::chart::Verify::None, report);
+
         acmacs::file::temp temp_file(".html");
         const std::string output_filename = opt.output.has_value() ? static_cast<std::string>(opt.output) : static_cast<std::string>(temp_file);
         std::ofstream output{output_filename};
 
-        auto chart = acmacs::chart::import_from_file(opt.chart, acmacs::chart::Verify::None, report);
+        groups_t groups;
+        groups.push_back(acmacs::filled_with_indexes(chart->number_of_antigens() - 5));
+        std::reverse(groups.front().begin(), groups.front().end());
+
         header(output, chart->make_name());
-        contents(output, *chart, opt.all_fields);
+        contents(output, *chart, groups, opt.all_fields);
         footer(output);
         output.close();
 
@@ -67,7 +77,7 @@ struct AntigenFields
     bool dates;
     bool lab_ids;
 
-    size_t skip_left() const { return size_t(annotations) + size_t(reassortants) + size_t(passages); }
+    size_t skip_left() const { return size_t(annotations) + size_t(reassortants) + size_t(passages) + 1; } // +1 for group name
     size_t skip_right() const { return size_t(dates) + size_t(lab_ids); }
 };
 
@@ -80,7 +90,7 @@ inline bool field_present(const std::vector<std::string>& src)
 
 // ----------------------------------------------------------------------
 
-void contents(std::ostream& output, const acmacs::chart::Chart& chart, bool all_fields)
+void contents(std::ostream& output, const acmacs::chart::Chart& chart, const groups_t& groups, bool all_fields)
 {
     output << "<h3>" << chart.make_name() << "</h3>\n";
     auto antigens = chart.antigens();
@@ -102,9 +112,13 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, bool all_
     serum_rows(output, chart, all_fields, antigen_fields);
 
     auto titers = chart.titers();
-      // antigens and titers
-    for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-        output << "<tr class=\"" << ((ag_no % 2) == 0 ? "even" : "odd") << ' ' << ("ag-" + std::to_string(ag_no)) << "\"><td class=\"ag-no\">" << (ag_no + 1) << "</td>";
+
+    const auto make_antigen = [&](size_t ag_no, size_t group_size, std::string group_name) {
+        auto antigen = antigens->at(ag_no);
+        output << "<tr class=\"" << ((ag_no % 2) == 0 ? "even" : "odd") << ' ' << ("ag-" + std::to_string(ag_no)) << "\">";
+        if (group_size)
+            output << "<td class=\"group-name\" rowspan=" << group_size << '>' << group_name << "</td>";
+        output << "<td class=\"ag-no\">" << (ag_no + 1) << "</td>";
         const auto passage_type = antigen->passage_type();
         if (all_fields) {
             output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << "\">" << html_escape(antigen->name()) << "</td>";
@@ -149,6 +163,35 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, bool all_
         if (antigen_fields.lab_ids)
             output << "<td class=\"ag-lab-id\">" << lab_ids[ag_no] << "</td>";
         output << "</tr>\n";
+    };
+
+    const auto make_group_sepeartor = [&]() {
+        output << "<tr class=\"group-separator\"><td colspan=" << (antigen_fields.skip_left() + 2 + chart.number_of_sera() + antigen_fields.skip_right()) << ">A</td></tr>";
+    };
+    
+    std::vector<bool> antigens_written(antigens->size());
+
+      // antigens and titers
+    bool first_group = true;
+    for (const auto& group : groups) {
+        if (!first_group)
+            make_group_sepeartor();
+        auto group_size = group.size();
+        for (auto ag_no : group) {
+            make_antigen(ag_no, group_size, std::string{"G"});
+            group_size = 0;
+            antigens_written[ag_no] = true;
+        }
+        first_group = false;
+    }
+    bool rest_antigens = false;
+    for (size_t ag_no = 0; ag_no < antigens_written.size(); ++ag_no) {
+        if (!antigens_written[ag_no]) {
+            if (!rest_antigens && !first_group)
+                make_group_sepeartor();
+            make_antigen(ag_no, 1, std::string{});
+            rest_antigens = true;
+        }
     }
 
     output << "</table>\n";
@@ -195,7 +238,7 @@ void serum_rows(std::ostream& output, const acmacs::chart::Chart& chart, bool al
         if (field_present(serum_annotations)) {
             output << "<tr>";
             make_skip(antigen_fields.skip_left() + 2);
-            for (auto [sr_no, _] : acmacs::enumerate(*sera)) 
+            for (auto [sr_no, _] : acmacs::enumerate(*sera))
                 output << "<td class=\"sr-annotations " << ("sr-" + std::to_string(sr_no)) << "\">" << html_escape(serum_annotations[sr_no]) << "</td>";
             make_skip(antigen_fields.skip_right());
             output << "</tr>\n";
@@ -268,6 +311,8 @@ table.td { border: 1px solid grey; }
 .titer-dodgy     { color: brown; }
 tr.even td { background-color: white; }
 tr.odd td { background-color: #F8F8F8; }
+td.group-name { padding: 0 0.1em 0 0.3em; font-weight: bold; vertical-align: top; }
+tr.group-separator td { min-height: 5em; border: 1px solid grey; color: transparent; }
 
 .tooltip {
     position: relative;
