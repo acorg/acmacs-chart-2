@@ -261,10 +261,14 @@ void serum_rows(std::ostream& output, const acmacs::chart::Chart& chart, bool al
         make_skip(antigen_fields.skip_left() + 2);
         for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
             std::string name = serum->name_abbreviated();
-            if (name.size() > 8) {
+            if (name.size() > 10) {
                 std::vector<std::string> fields;
-                for (auto field : acmacs::string::split(name, "/", acmacs::string::Split::RemoveEmpty))
-                    fields.emplace_back(field.substr(0, 2));
+                for (auto field : acmacs::string::split(name, "/", acmacs::string::Split::RemoveEmpty)) {
+                    if (field.size() > 3)
+                        fields.push_back(string::concat(field.substr(0, 3), "..."));
+                    else
+                        fields.emplace_back(field);
+                }
                 name = string::join("/", fields);
             }
             output << "<td class=\"sr-name sr-" << sr_no << " passage-" << serum->passage().passage_type() << "\"><div class=\"tooltip\">" << html_escape(name)
