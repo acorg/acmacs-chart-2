@@ -14,7 +14,7 @@
 using group_t = std::vector<size_t>;
 using groups_t = std::vector<std::pair<std::string, group_t>>;
 
-static void contents(std::ostream& output, const acmacs::chart::Chart& chart, const groups_t& groups, const group_t& sera_to_show, bool all_fields);
+static void contents(std::ostream& output, const acmacs::chart::Chart& chart, const groups_t& groups, const group_t& sera_to_show, bool all_fields, bool rest_group);
 static void header(std::ostream& output, std::string table_name);
 static void footer(std::ostream& output);
 static std::string html_escape(std::string source);
@@ -29,6 +29,7 @@ struct Options : public argv
     option<str_array> groups{*this, "group", desc{"comma separated indexes of antigens in the group"}};
     option<str_array> group_names{*this, "group-name"};
     option<str>       sera{*this, "sera", desc{"just show the specified sera (comma separated indexes) in the table"}};
+    option<bool>      no_rest_group{*this, "no-rest-group", desc{"do not show bottom group with antigens not found in any of the specified groups"}};
     option<bool> all_fields{*this, "all-fields"};
     option<bool> open{*this, "open"};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
@@ -62,7 +63,7 @@ int main(int argc, char* const argv[])
             acmacs::fill_with_indexes(sera_to_show, chart->number_of_sera());
 
         header(output, chart->make_name());
-        contents(output, *chart, groups, sera_to_show, opt.all_fields);
+        contents(output, *chart, groups, sera_to_show, opt.all_fields, !opt.no_rest_group);
         footer(output);
         output.close();
 
@@ -99,14 +100,14 @@ inline bool field_present(const std::vector<std::string>& src)
 
 // ----------------------------------------------------------------------
 
-void contents(std::ostream& output, const acmacs::chart::Chart& chart, const groups_t& groups, const group_t& sera_to_show, bool all_fields)
+void contents(std::ostream& output, const acmacs::chart::Chart& chart, const groups_t& groups, const group_t& sera_to_show, bool all_fields, bool rest_group)
 {
     output << "<h3>" << chart.make_name() << "</h3>\n";
     auto antigens = chart.antigens();
     auto sera = chart.sera();
 
     std::vector<std::string> annotations(antigens->size()), reassortants(antigens->size()), passages(antigens->size()), dates(antigens->size()), lab_ids(antigens->size());
-    for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
+    for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
         if (all_fields) {
             annotations[ag_no] = string::join(" ", antigen->annotations());
             reassortants[ag_no] = antigen->reassortant();
@@ -146,21 +147,33 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
             //         fields.emplace_back(field.substr(0, 2));
             //     name = string::join("/", fields);
             // }
-            output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << "\"><div class=\"tooltip\">" << html_escape(name)
-                   << "<span class=\"tooltiptext\">" << html_escape(antigen->full_name()) << "</span></div></td>";
+            output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << "\"><div class=\"tooltip\">" << html_escape(name) << "<span class=\"tooltiptext\">"
+                   << html_escape(antigen->full_name()) << "</span></div></td>";
         }
 
-          // titers
+        // titers
         for (auto sr_no : sera_to_show) {
             const auto titer = titers->titer(ag_no, sr_no);
             const char* titer_class = "regular";
             switch (titer.type()) {
-              case acmacs::chart::Titer::Invalid: titer_class = "titer-invalid"; break;
-              case acmacs::chart::Titer::Regular: titer_class = "titer-regular"; break;
-              case acmacs::chart::Titer::DontCare: titer_class = "titer-dont-care"; break;
-              case acmacs::chart::Titer::LessThan: titer_class = "titer-less-than"; break;
-              case acmacs::chart::Titer::MoreThan: titer_class = "titer-more-than"; break;
-              case acmacs::chart::Titer::Dodgy: titer_class = "titer-dodgy"; break;
+                case acmacs::chart::Titer::Invalid:
+                    titer_class = "titer-invalid";
+                    break;
+                case acmacs::chart::Titer::Regular:
+                    titer_class = "titer-regular";
+                    break;
+                case acmacs::chart::Titer::DontCare:
+                    titer_class = "titer-dont-care";
+                    break;
+                case acmacs::chart::Titer::LessThan:
+                    titer_class = "titer-less-than";
+                    break;
+                case acmacs::chart::Titer::MoreThan:
+                    titer_class = "titer-more-than";
+                    break;
+                case acmacs::chart::Titer::Dodgy:
+                    titer_class = "titer-dodgy";
+                    break;
             }
             const char* titer_pos_class = sr_no == sera_to_show.front() ? "titer-pos-left" : (sr_no == sera_to_show.back() ? "titer-pos-right" : "titer-pos-middle");
             const auto sr_no_class = "sr-" + std::to_string(sr_no);
@@ -180,7 +193,7 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
 
     std::vector<bool> antigens_written(antigens->size());
 
-      // antigens and titers
+    // antigens and titers
     bool first_group = true;
     for (const auto& group : groups) {
         if (!first_group)
@@ -193,25 +206,29 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
         }
         first_group = false;
     }
-    bool rest_antigens = false;
-    for (size_t ag_no = 0; ag_no < antigens_written.size(); ++ag_no) {
-        if (!antigens_written[ag_no]) {
-            if (!rest_antigens && !first_group)
-                make_group_sepeartor();
-            make_antigen(ag_no, 1, std::string{});
-            rest_antigens = true;
+    if (rest_group) {
+        bool rest_antigens = false;
+        for (size_t ag_no = 0; ag_no < antigens_written.size(); ++ag_no) {
+            if (!antigens_written[ag_no]) {
+                if (!rest_antigens && !first_group)
+                    make_group_sepeartor();
+                make_antigen(ag_no, 1, std::string{});
+                rest_antigens = true;
+            }
         }
     }
 
     output << "</table>\n";
 
-            // const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
-            // for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-            //     std::cout << "AG " << std::setw(num_digits) << ag_no << " " << string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant(), antigen->passage(), "[" + static_cast<std::string>(antigen->date()) + "]", string::join(" ", antigen->lab_ids())}) << (antigen->reference() ? " Ref" : "") << '\n';
-            // }
-            // for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
-            //     std::cout << "SR " << std::setw(num_digits) << sr_no << " " << string::join(" ", {serum->name(), string::join(" ", serum->annotations()), serum->reassortant(), serum->passage(), serum->serum_id(), serum->serum_species()}) << '\n';
-            // }
+    // const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
+    // for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
+    //     std::cout << "AG " << std::setw(num_digits) << ag_no << " " << string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant(), antigen->passage(), "["
+    //     + static_cast<std::string>(antigen->date()) + "]", string::join(" ", antigen->lab_ids())}) << (antigen->reference() ? " Ref" : "") << '\n';
+    // }
+    // for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
+    //     std::cout << "SR " << std::setw(num_digits) << sr_no << " " << string::join(" ", {serum->name(), string::join(" ", serum->annotations()), serum->reassortant(), serum->passage(),
+    //     serum->serum_id(), serum->serum_species()}) << '\n';
+    // }
 
 } // contents
 
