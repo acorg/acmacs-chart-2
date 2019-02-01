@@ -17,7 +17,7 @@ struct Options : public argv
 
     option<bool>   relax{*this, "relax", desc{"move trapped points and relax, test again, repeat while there are trapped points"}};
     option<size_t> projection{*this, "projection", dflt{0UL}, desc{"projection number to test"}};
-    option<double> step{*this, "stem", dflt{0.1}, desc{"grid step"}};
+    option<double> step{*this, "step", dflt{0.1}, desc{"grid step"}};
     option<str>    point_to_test{*this, "point", dflt{"all"}, desc{"point number of name to test, \"all\" to test all"}};
     option<int>    threads{*this, "threads", dflt{0}, desc{"number of threads to use for test (omp): 0 - autodetect, 1 - sequential"}};
     option<bool>   report_time{*this, "time", desc{"report time of loading chart"}};
