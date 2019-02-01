@@ -30,7 +30,9 @@ int main(int argc, char* const argv[])
                 {"-v", false},
         });
         if (args["-h"] || args["--help"] || args.number_of_arguments() < 1) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file> ...\n" << args.usage_options() << '\n';
+            std::cerr << "CDC H3 FRA tables in 2016-2018 have over-reacting sera with titers like 400, 800, etc.\n"
+                      << "There are (many) mistakes in excel sheets with missing or wrongly adding ending 0 in titers.\n\n"
+                      << "Usage: " << args.program() << " [options] <chart-file> ...\n" << args.usage_options() << '\n';
             exit_code = 1;
         }
         else {
