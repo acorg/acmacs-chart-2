@@ -42,6 +42,7 @@ TARGETS = \
     $(DIST)/chart-list-antigens-without-titers \
     $(DIST)/chart-remove-layers \
     $(DIST)/chart-merge \
+    $(DIST)/chart-export \
     $(DIST)/test-titer-iterator \
     $(DIST)/test-chart-modify \
     $(DIST)/test-chart-create-from-scratch \
