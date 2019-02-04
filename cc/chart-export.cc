@@ -15,6 +15,7 @@ struct Options : public argv
 
     option<bool>   names{*this, "names", desc{"output antigen and serum names"}};
     option<bool>   titers{*this, "titers", desc{"output titers"}};
+    option<bool>   logged_titers{*this, "logged-titers", desc{"output logged titers"}};
     option<bool>   map_distances{*this, "map-distances", desc{"output map distances"}};
     option<size_t> projection{*this, "projection", dflt{0UL}};
 
@@ -40,7 +41,14 @@ int main(int argc, char* const argv[])
             std::vector<std::vector<size_t>> values(titers->number_of_antigens(), std::vector<size_t>(titers->number_of_sera(), 0UL));
             for (const auto& titer : *titers)
                 values[titer.antigen][titer.serum] = titer.titer.value_with_thresholded();
-            json = to_json::object_append(json, "titers", to_json::array(values.begin(), values.end(), [](const auto& row) { return to_json::raw(to_json::array(row.begin(), row.end())); }));
+            json = to_json::object_append(json, "titers", to_json::raw(to_json::array(values.begin(), values.end(), [](const auto& row) { return to_json::raw(to_json::array(row.begin(), row.end())); })));
+        }
+        if (opt.logged_titers) {
+            auto titers = chart->titers();
+            std::vector<std::vector<double>> values(titers->number_of_antigens(), std::vector<double>(titers->number_of_sera(), -1));
+            for (const auto& titer : *titers)
+                values[titer.antigen][titer.serum] = titer.titer.logged_with_thresholded();
+            json = to_json::object_append(json, "logged_titers", to_json::raw(to_json::array(values.begin(), values.end(), [](const auto& row) { return to_json::raw(to_json::array(row.begin(), row.end())); })));
         }
         if (opt.map_distances) {
             auto layout = chart->projection(opt.projection)->layout();
@@ -48,8 +56,8 @@ int main(int argc, char* const argv[])
             std::vector<std::vector<double>> distances(number_of_antigens, std::vector<double>(number_of_sera, -1));
             for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no)
                 for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no)
-                    distances[ag_no][sr_no] = layout->distance(ag_no, sr_no + number_of_antigens);
-            json = to_json::object_append(json, "map_distances", to_json::array(distances.begin(), distances.end(), [](const auto& row) { return to_json::raw(to_json::array(row.begin(), row.end())); }));
+                    distances[ag_no][sr_no] = layout->distance(ag_no, sr_no + number_of_antigens, -1); // -1 for no distance
+            json = to_json::object_append(json, "map_distances", to_json::raw(to_json::array(distances.begin(), distances.end(), [](const auto& row) { return to_json::raw(to_json::array(row.begin(), row.end())); })));
         }
         acmacs::file::write(opt.output, json);
     }
