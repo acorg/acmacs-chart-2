@@ -38,6 +38,7 @@ int main(int argc, char* const argv[])
         else {
             const auto report = do_report_time(args["--time"]);
             for (size_t file_no = 0; file_no < args.number_of_arguments(); ++file_no) {
+                std::cerr << "DEBUG: " << args[file_no] << '\n';
                 auto chart = acmacs::chart::import_from_file(args[file_no], acmacs::chart::Verify::None, report);
                 auto sera = chart->sera();
                 auto titers = chart->titers();

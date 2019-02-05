@@ -15,7 +15,7 @@ namespace acmacs::chart
         bool is_egg() const { return acmacs::passage::is_egg(*this); }
         bool is_cell() const { return acmacs::passage::is_cell(*this); }
         std::string without_date() const { return acmacs::passage::without_date(*this); }
-        std::string passage_type() const { return is_egg() ? "egg" : "cell"; }
+        const char* passage_type() const { return is_egg() ? "egg" : "cell"; }
 
     }; // class Passage
 
