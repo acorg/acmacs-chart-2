@@ -17,6 +17,7 @@ struct Options : public argv
     option<bool>   titers{*this, "titers", desc{"output titers"}};
     option<bool>   logged_titers{*this, "logged-titers", desc{"output logged titers"}};
     option<bool>   map_distances{*this, "map-distances", desc{"output map distances"}};
+    option<bool>   column_bases{*this, "column-bases", desc{"output column bases"}};
     option<size_t> projection{*this, "projection", dflt{0UL}};
 
     argument<str>  chart{*this, arg_name{"chart"}, mandatory};
@@ -58,6 +59,16 @@ int main(int argc, char* const argv[])
                 for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no)
                     distances[ag_no][sr_no] = layout->distance(ag_no, sr_no + number_of_antigens, -1); // -1 for no distance
             json = to_json::object_append(json, "map_distances", to_json::raw(to_json::array(distances.begin(), distances.end(), [](const auto& row) { return to_json::raw(to_json::array(row.begin(), row.end())); })));
+        }
+        if (opt.column_bases) {
+            if (auto fcb = chart->projection(opt.projection)->forced_column_bases(); fcb) {
+                const auto fcb_data = fcb->data();
+                json = to_json::object_append(json, "column_bases", to_json::raw(to_json::array(fcb_data.begin(), fcb_data.end())));
+            }
+            else {
+                auto cb_data = chart->computed_column_bases(acmacs::chart::MinimumColumnBasis{})->data();
+                json = to_json::object_append(json, "column_bases", to_json::raw(to_json::array(cb_data.begin(), cb_data.end())));
+            }
         }
         acmacs::file::write(opt.output, json);
     }

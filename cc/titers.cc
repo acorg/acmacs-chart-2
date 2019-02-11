@@ -149,26 +149,20 @@ acmacs::chart::Titer acmacs::chart::Titer::multiplied_by(double value) const // 
 
 // ----------------------------------------------------------------------
 
-class ComputedColumnBases : public acmacs::chart::ColumnBases
+class ComputedColumnBases : public acmacs::chart::ColumnBasesData
 {
  public:
-    inline ComputedColumnBases(size_t aNumberOfSera, double aMinimumColumnBasis) : mData(aNumberOfSera, aMinimumColumnBasis) {}
+    ComputedColumnBases(size_t aNumberOfSera, double aMinimumColumnBasis) : ColumnBasesData(aNumberOfSera, aMinimumColumnBasis) {}
 
-    inline double column_basis(size_t aSerumNo) const override { return mData.at(aSerumNo); }
-    inline size_t size() const override { return mData.size(); }
-
-    inline void update(size_t aSerumNo, double aValue)
+    void update(size_t aSerumNo, double aValue)
         {
-            if (aValue > mData[aSerumNo])
-                mData[aSerumNo] = aValue;
+            if (aValue > column_basis(aSerumNo))
+                set(aSerumNo, aValue);
         }
-
- private:
-    std::vector<double> mData;
 
 }; // class ComputedColumnBases
 
-std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Titers::computed_column_bases(acmacs::chart::MinimumColumnBasis aMinimumColumnBasis) const
+std::shared_ptr<acmacs::chart::ColumnBasesData> acmacs::chart::Titers::computed_column_bases(acmacs::chart::MinimumColumnBasis aMinimumColumnBasis) const
 {
     // auto cb1 = std::make_shared<ComputedColumnBases>(number_of_sera, aMinimumColumnBasis);
     // for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no)

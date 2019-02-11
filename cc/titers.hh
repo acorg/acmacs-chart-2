@@ -171,7 +171,7 @@ namespace acmacs::chart
         virtual const rjson::value& rjson_list_dict() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
         virtual const rjson::value& rjson_layers() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
 
-        std::shared_ptr<ColumnBases> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
+        std::shared_ptr<ColumnBasesData> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
 
         TableDistances<double> table_distances(const ColumnBases& column_bases, const StressParameters& parameters);
         virtual void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters) const;

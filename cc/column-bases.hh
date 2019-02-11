@@ -49,6 +49,14 @@ namespace acmacs::chart
         virtual double column_basis(size_t aSerumNo) const = 0;
         virtual size_t size() const = 0;
 
+        virtual std::vector<double> data() const
+        {
+            std::vector<double> result(size());
+            for (size_t i = 0; i < size(); ++i)
+                result[i] = column_basis(i);
+            return result;
+        }
+
     }; // class ColumnBases
 
 // ----------------------------------------------------------------------
@@ -56,11 +64,12 @@ namespace acmacs::chart
     class ColumnBasesData : public ColumnBases
     {
       public:
-        ColumnBasesData(size_t number_of_sera) : data_(number_of_sera, 0) {}
+        ColumnBasesData(size_t number_of_sera, double aMinimumColumnBasis = 0.0) : data_(number_of_sera, aMinimumColumnBasis) {}
         ColumnBasesData(const ColumnBases& aSource) : data_(aSource.size()) { for (size_t serum_no = 0; serum_no < data_.size(); ++serum_no) data_[serum_no] = aSource.column_basis(serum_no); }
 
-        virtual double column_basis(size_t aSerumNo) const { return data_.at(aSerumNo); }
-        virtual size_t size() const { return data_.size(); }
+        double column_basis(size_t aSerumNo) const override { return data_.at(aSerumNo); }
+        size_t size() const override { return data_.size(); }
+        std::vector<double> data() const override { return data_; }
 
         void set(size_t aSerumNo, double column_basis) { data_.at(aSerumNo) = column_basis; }
         void remove(const ReverseSortedIndexes& indexes, ReverseSortedIndexes::difference_type base_index = 0) { acmacs::remove(indexes, data_, base_index); }
