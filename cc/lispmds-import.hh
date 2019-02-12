@@ -61,7 +61,7 @@ namespace acmacs::chart
         VirusType   virus_type(Compute = Compute::No) const override { return {}; }
         std::string subset(Compute = Compute::No) const override { return {}; }
         Assay       assay(Compute = Compute::No) const override { return {}; }
-        Lab         lab(Compute = Compute::No) const override { return {}; }
+        Lab         lab(Compute = Compute::No, FixLab = FixLab::yes) const override { return {}; }
         RbcSpecies  rbc_species(Compute = Compute::No) const override { return{}; }
         TableDate   date(Compute = Compute::No) const override { return {}; }
         size_t number_of_sources() const override { return 0; }

@@ -481,7 +481,7 @@ Virus       InfoModify::virus(Compute aCompute) const { return ::info_modify_mak
 VirusType   InfoModify::virus_type(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_type_, &Info::virus_type); }
 std::string InfoModify::subset(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, subset_, &Info::subset); }
 Assay       InfoModify::assay(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, assay_, &Info::assay); }
-Lab         InfoModify::lab(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, lab_, &Info::lab); }
+Lab         InfoModify::lab(Compute aCompute, FixLab fix) const { return ::info_modify_make_field(aCompute, *this, lab_, [fix](const auto& inf, auto compute) { return inf.lab(compute, fix); }); }
 RbcSpecies  InfoModify::rbc_species(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, rbc_species_, &Info::rbc_species); }
 
 // ----------------------------------------------------------------------

@@ -473,6 +473,20 @@ size_t acmacs::chart::Info::max_source_name() const
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::Lab acmacs::chart::Info::fix_lab_name(Lab source, FixLab fix) const
+{
+    if (fix == FixLab::yes) {
+        if (const auto pos = source.find("NIMR"); pos != std::string::npos)
+            source = string::concat(source.substr(0, pos), "Crick", source.substr(pos + 4));
+        if (const auto pos = source.find("MELB"); pos != std::string::npos)
+            source = string::concat(source.substr(0, pos), "VIDRL", source.substr(pos + 4));
+    }
+    return source;
+
+} // acmacs::chart::Info::fix_lab_name
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Projection::make_info() const
 {
     auto lt = layout();

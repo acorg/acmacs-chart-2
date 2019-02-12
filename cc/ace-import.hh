@@ -54,7 +54,7 @@ namespace acmacs::chart
         VirusType   virus_type(Compute aCompute = Compute::Yes) const override { return make_field("V", "+", aCompute); }
         std::string subset(Compute aCompute = Compute::No) const override { return make_field("s", "+", aCompute); }
         Assay       assay(Compute aCompute = Compute::No) const override { return make_field("A", "+", aCompute); }
-        Lab         lab(Compute aCompute = Compute::No) const override { return make_field("l", "+", aCompute); }
+        Lab         lab(Compute aCompute = Compute::No, FixLab fix = FixLab::yes) const override { return fix_lab_name(make_field("l", "+", aCompute), fix); }
         RbcSpecies  rbc_species(Compute aCompute = Compute::No) const override { return make_field("r", "+", aCompute); }
         TableDate   date(Compute aCompute = Compute::No) const override;
         size_t number_of_sources() const override { return data_["S"].size(); }
