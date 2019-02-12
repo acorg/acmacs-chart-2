@@ -91,7 +91,7 @@ struct AntigenFields
     size_t skip_right() const { return size_t(dates) + size_t(lab_ids); }
 };
 
-static void serum_rows(std::ostream& output, const acmacs::chart::Chart& chart, const group_t& sera_to_show, bool all_fields, const AntigenFields& antigen_fields);
+static void serum_rows(std::ostream& output, const acmacs::chart::Chart& chart, const group_t& sera_to_show, bool all_fields, const AntigenFields& antigen_fields, const acmacs::chart::PointIndexList& having_too_few_numeric_titers);
 
 inline bool field_present(const std::vector<std::string>& src)
 {
@@ -105,6 +105,7 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
     output << "<h3>" << chart.make_name() << "</h3>\n";
     auto antigens = chart.antigens();
     auto sera = chart.sera();
+    const auto indexes_having_too_few_numeric_titers = chart.titers()->having_too_few_numeric_titers();
 
     std::vector<std::string> annotations(antigens->size()), reassortants(antigens->size()), passages(antigens->size()), dates(antigens->size()), lab_ids(antigens->size());
     for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
@@ -119,7 +120,7 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
     const AntigenFields antigen_fields{field_present(annotations), field_present(reassortants), field_present(passages), field_present(dates), field_present(lab_ids)};
 
     output << "<table>\n";
-    serum_rows(output, chart, sera_to_show, all_fields, antigen_fields);
+    serum_rows(output, chart, sera_to_show, all_fields, antigen_fields, indexes_having_too_few_numeric_titers);
 
     auto titers = chart.titers();
 
@@ -130,8 +131,9 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
             output << "<td class=\"group-name\" rowspan=" << group_size << '>' << group_name << "</td>";
         output << "<td class=\"ag-no\">" << (ag_no + 1) << "</td>";
         const auto passage_type = antigen->passage_type();
+        const char* has_too_few_numeric_titers_class = indexes_having_too_few_numeric_titers.contains(ag_no) ? " too-few-numeric-titers" : "";
         if (all_fields) {
-            output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << "\">" << html_escape(antigen->name()) << "</td>";
+            output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << has_too_few_numeric_titers_class << "\">" << html_escape(antigen->name()) << "</td>";
             if (antigen_fields.annotations)
                 output << "<td class=\"auto ag-annotations\">" << html_escape(annotations[ag_no]) << "</td>";
             if (antigen_fields.reassortants)
@@ -147,7 +149,8 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
             //         fields.emplace_back(field.substr(0, 2));
             //     name = string::join("/", fields);
             // }
-            output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << "\"><div class=\"tooltip\">" << html_escape(name) << "<span class=\"tooltiptext\">"
+            output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << has_too_few_numeric_titers_class
+                   << "\"><div class=\"tooltip\">" << html_escape(name) << "<span class=\"tooltiptext\">"
                    << html_escape(antigen->full_name()) << "</span></div></td>";
         }
 
@@ -234,9 +237,10 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
 
 // ----------------------------------------------------------------------
 
-void serum_rows(std::ostream& output, const acmacs::chart::Chart& chart, const group_t& sera_to_show, bool all_fields, const AntigenFields& antigen_fields)
+void serum_rows(std::ostream& output, const acmacs::chart::Chart& chart, const group_t& sera_to_show, bool all_fields, const AntigenFields& antigen_fields, const acmacs::chart::PointIndexList& having_too_few_numeric_titers)
 {
     auto sera = chart.sera();
+    const auto number_of_antigens = chart.number_of_antigens();
     auto make_skip = [&output] (size_t count) { output << "<td colspan=\"" + std::to_string(count) + "\"></td>"; };
 
       // serum no
@@ -253,7 +257,9 @@ void serum_rows(std::ostream& output, const acmacs::chart::Chart& chart, const g
         make_skip(antigen_fields.skip_left() + 2);
         for (auto sr_no : sera_to_show) {
             auto serum = sera->at(sr_no);
-            output << "<td class=\"sr-name sr-" << sr_no << " passage-" << serum->passage().passage_type() << "\">" << html_escape(serum->name_abbreviated()) << "</td>";
+            const char* has_too_few_numeric_titers_class = having_too_few_numeric_titers.contains(sr_no + number_of_antigens) ? " too-few-numeric-titers" : "";
+            output << "<td class=\"sr-name sr-" << sr_no << " passage-" << serum->passage().passage_type() << has_too_few_numeric_titers_class
+                   << "\">" << html_escape(serum->name_abbreviated()) << "</td>";
         }
         make_skip(antigen_fields.skip_right());
         output << "</tr>\n";
@@ -300,7 +306,9 @@ void serum_rows(std::ostream& output, const acmacs::chart::Chart& chart, const g
                 }
                 name = string::join("/", fields);
             }
-            output << "<td class=\"sr-name sr-" << sr_no << " passage-" << serum->passage().passage_type() << "\"><div class=\"tooltip\">" << html_escape(name)
+            const char* has_too_few_numeric_titers_class = having_too_few_numeric_titers.contains(sr_no + number_of_antigens) ? " too-few-numeric-titers" : "";
+            output << "<td class=\"sr-name sr-" << sr_no << " passage-" << serum->passage().passage_type() << has_too_few_numeric_titers_class
+                   << "\"><div class=\"tooltip\">" << html_escape(name)
                    << "<span class=\"tooltiptext\">" << html_escape(serum->full_name_with_passage()) << "</span></div></td>";
         }
         make_skip(antigen_fields.skip_right());
@@ -330,6 +338,8 @@ table.td { border: 1px solid grey; }
 .ag-name .tooltip .tooltiptext { top: -2em; left: 0; }
 .passage-egg { color: #606000; }
 .passage-cell { color: #000060; }
+.passage-egg.too-few-numeric-titers { color: #E0E0C0; }
+.passage-cell.too-few-numeric-titers { color: #C0C0E0; }
 .ag-annotations { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.8em; }
 .ag-reassortant { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.8em; }
 .ag-passage { text-align: left; padding: 0 0.5em; white-space: nowrap; font-size: 0.8em; }
@@ -344,8 +354,8 @@ table.td { border: 1px solid grey; }
 .titer-less-than { color: green; }
 .titer-more-than { color: blue; }
 .titer-dodgy     { color: brown; }
-tr.even td { background-color: white; }
-tr.odd td { background-color: #F8F8F8; }
+/* tr.even td { background-color: white; } */
+/* tr.odd td { background-color: #F8F8F8; } */
 td.group-name { padding: 0.3em 0.1em 0 0.3em; font-weight: bold; vertical-align: top; }
 tr.group-separator td { min-height: 5em; border: 1px solid grey; color: transparent; }
 
