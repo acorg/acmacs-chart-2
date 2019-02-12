@@ -357,7 +357,7 @@ table.td { border: 1px solid grey; }
 /* tr.even td { background-color: white; } */
 /* tr.odd td { background-color: #F8F8F8; } */
 td.group-name { padding: 0.3em 0.1em 0 0.3em; font-weight: bold; vertical-align: top; }
-tr.group-separator td { min-height: 5em; border: 1px solid grey; color: transparent; }
+tr.group-separator td { height: 1em; border: 1px solid grey; color: transparent; }
 
 .tooltip {
     position: relative;
