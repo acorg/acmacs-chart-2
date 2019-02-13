@@ -26,6 +26,7 @@ struct Options : public argv
     option<str>    method{*this, "method", dflt{"cg"}, desc{"method: lbfgs, cg"}};
     option<double> max_distance_multiplier{*this, "md", dflt{2.0}, desc{"randomization diameter multiplier"}};
     option<size_t> keep_projections{*this, "keep-projections", dflt{0UL}, desc{"number of projections to keep, 0 - keep all"}};
+    option<bool>   keep_original_projections{*this, "keep-original-projections"};
     option<bool>   no_disconnect_having_few_titers{*this, "no-disconnect-having-few-titers"};
     option<int>    threads{*this, "threads", dflt{0}, desc{"number of threads to use for optimization (omp): 0 - autodetect, 1 - sequential"}};
     option<bool>   report_time{*this, "time", desc{"report time of loading chart"}};
@@ -44,6 +45,8 @@ int main(int argc, char* const argv[])
 
         const Timeit ti("performing " + std::to_string(opt.number_of_optimizations) + " optimizations: ", report);
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source_chart, acmacs::chart::Verify::None, report)};
+        if (!opt.keep_original_projections)
+            chart.projections_modify()->remove_all();
         const auto method{acmacs::chart::optimization_method_from_string(opt.method)};
         acmacs::chart::PointIndexList disconnected;
         if (!opt.no_disconnect_having_few_titers)
