@@ -13,6 +13,7 @@ TARGETS = \
     $(DIST)/chart-modify-plot-spec \
     $(DIST)/chart-titer-merging-report \
     $(DIST)/chart-titer-merging-from-layers \
+    $(DIST)/chart-titer-merging-for-serum \
     $(DIST)/chart-stress \
     $(DIST)/chart-transformation \
     $(DIST)/chart-relax-test \

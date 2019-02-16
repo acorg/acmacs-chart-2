@@ -168,7 +168,7 @@ class SerumCircleRadiusCalculationError : public std::runtime_error { public: us
 double acmacs::chart::Chart::serum_circle_radius_empirical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool aVerbose) const
 {
     if (aVerbose)
-        std::cerr << "DEBUG: serum_circle_radius_empirical for [sr:" << aSerumNo << ' ' << serum(aSerumNo)->full_name() << "] [ag:" << aAntigenNo << ' ' << antigen(aAntigenNo)->full_name() << ']' << std::endl;
+        std::cerr << ">>> serum_circle_radius_empirical for [sr:" << aSerumNo << ' ' << serum(aSerumNo)->full_name() << "] [ag:" << aAntigenNo << ' ' << antigen(aAntigenNo)->full_name() << ']' << std::endl;
     try {
         auto tts = titers();
         if (const auto homologous_titer = tts->titer(aAntigenNo, aSerumNo); !homologous_titer.is_regular())
@@ -196,8 +196,10 @@ double acmacs::chart::Chart::serum_circle_radius_empirical(size_t aAntigenNo, si
         const double protection_boundary_titer = titers_and_distances[aAntigenNo].final_similarity - 2.0;
         if (protection_boundary_titer < 1.0)
             throw SerumCircleRadiusCalculationError("titer is too low, protects everything");
-        // if (aVerbose) std::cerr << "DEBUG: titers_and_distances: " << titers_and_distances << std::endl;
-        if (aVerbose) std::cerr << "DEBUG: serum_circle_radius_empirical protection_boundary_titer: " << protection_boundary_titer << std::endl;
+        if (aVerbose) {
+            std::cerr << ">>> titers_and_distances: " << titers_and_distances << '\n';
+            std::cerr << ">>> serum_circle_radius_empirical protection_boundary_titer: " << protection_boundary_titer << '\n';
+        }
 
           // sort antigen indices by antigen distance from serum, closest first
         auto antigens_by_distances_sorting = [&titers_and_distances](size_t a, size_t b) -> bool {
