@@ -14,6 +14,7 @@
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/optimize.hh"
+#include "acmacs-chart-2/blobs.hh"
 
 // ----------------------------------------------------------------------
 
@@ -335,7 +336,7 @@ namespace acmacs::chart
 
       protected:
         Lab fix_lab_name(Lab source, FixLab fix) const;
-        
+
     }; // class Info
 
     // ----------------------------------------------------------------------
@@ -644,6 +645,9 @@ namespace acmacs::chart
 
         template <typename Float> double calculate_stress(multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const;
         template <typename Float> std::vector<Float> calculate_gradient(multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const;
+
+        Blobs blobs(double stress_diff, size_t number_of_drections = 36, double stress_diff_precision = 1e-5) const;
+        Blobs blobs(double stress_diff, const PointIndexList& points, size_t number_of_drections = 36, double stress_diff_precision = 1e-5) const;
 
         Chart& chart() { return const_cast<Chart&>(chart_); }
         const Chart& chart() const { return chart_; }

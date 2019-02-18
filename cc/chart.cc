@@ -527,6 +527,26 @@ double acmacs::chart::Projection::stress(acmacs::chart::RecalculateStress recalc
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::Blobs acmacs::chart::Projection::blobs(double stress_diff, size_t number_of_drections, double stress_diff_precision) const
+{
+    Blobs blobs(stress_diff, number_of_drections, stress_diff_precision);
+    blobs.calculate(*layout(), stress_factory<double>(*this, multiply_antigen_titer_until_column_adjust::yes));
+    return blobs;
+
+} // acmacs::chart::Projection::blobs
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Blobs acmacs::chart::Projection::blobs(double stress_diff, const PointIndexList& points, size_t number_of_drections, double stress_diff_precision) const
+{
+    Blobs blobs(stress_diff, number_of_drections, stress_diff_precision);
+    blobs.calculate(*layout(), points, stress_factory<double>(*this, multiply_antigen_titer_until_column_adjust::yes));
+    return blobs;
+
+} // acmacs::chart::Projection::blobs
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Projections::make_info() const
 {
     std::string result = "Projections: " + std::to_string(size());
