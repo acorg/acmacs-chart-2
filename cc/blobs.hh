@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <vector>
+#include <string>
 
 // ----------------------------------------------------------------------
 
@@ -24,6 +25,16 @@ namespace acmacs::chart
 
         void calculate(const acmacs::LayoutInterface& layout, const Stress<double>& stress);
         void calculate(const acmacs::LayoutInterface& layout, const PointIndexList& points, const Stress<double>& stress);
+
+        constexpr auto number_of_drections() const { return number_of_drections_; }
+        constexpr auto angle_step() const { return angle_step_; }
+
+        const std::vector<double>& data_for_point(size_t point_no) const
+        {
+            if (const auto found = std::find_if(std::begin(result_), std::end(result_), [point_no](const auto& entry) { return entry.first == point_no; }); found != std::end(result_))
+                return found->second;
+            throw std::runtime_error("Blobs::data_for_point: blob for point " + std::to_string(point_no) + " was not calculated");
+        }
 
       private:
         const double stress_diff_;
