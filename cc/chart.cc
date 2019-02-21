@@ -527,11 +527,11 @@ double acmacs::chart::Projection::stress(acmacs::chart::RecalculateStress recalc
 
 // ----------------------------------------------------------------------
 
-double acmacs::chart::Projection::stress_with_moved_point(size_t point_no, const std::vector<double>& move_to) const
+double acmacs::chart::Projection::stress_with_moved_point(size_t point_no, const PointCoordinates& move_to) const
 {
     acmacs::Layout new_layout(*layout());
-    new_layout.set(point_no, move_to);
-    return stress_factory<double>(*this, multiply_antigen_titer_until_column_adjust::yes).value(new_layout);
+    new_layout[point_no] = move_to;
+    return stress_factory(*this, multiply_antigen_titer_until_column_adjust::yes).value(new_layout);
 
 } // acmacs::chart::Projection::stress_with_moved_point
 
@@ -540,7 +540,7 @@ double acmacs::chart::Projection::stress_with_moved_point(size_t point_no, const
 acmacs::chart::Blobs acmacs::chart::Projection::blobs(double stress_diff, size_t number_of_drections, double stress_diff_precision) const
 {
     Blobs blobs(stress_diff, number_of_drections, stress_diff_precision);
-    blobs.calculate(*layout(), stress_factory<double>(*this, multiply_antigen_titer_until_column_adjust::yes));
+    blobs.calculate(*layout(), stress_factory(*this, multiply_antigen_titer_until_column_adjust::yes));
     return blobs;
 
 } // acmacs::chart::Projection::blobs
@@ -550,7 +550,7 @@ acmacs::chart::Blobs acmacs::chart::Projection::blobs(double stress_diff, size_t
 acmacs::chart::Blobs acmacs::chart::Projection::blobs(double stress_diff, const PointIndexList& points, size_t number_of_drections, double stress_diff_precision) const
 {
     Blobs blobs(stress_diff, number_of_drections, stress_diff_precision);
-    blobs.calculate(*layout(), points, stress_factory<double>(*this, multiply_antigen_titer_until_column_adjust::yes));
+    blobs.calculate(*layout(), points, stress_factory(*this, multiply_antigen_titer_until_column_adjust::yes));
     return blobs;
 
 } // acmacs::chart::Projection::blobs

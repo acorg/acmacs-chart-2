@@ -11,19 +11,17 @@ namespace acmacs::chart
       public:
         using Chart = acmacs::chart::ChartModify;
         using Projection = acmacs::chart::ProjectionModifyP;
-        using Coordinates = acmacs::Coordinates;
-        using Stress = acmacs::chart::Stress<double>;
 
         GridTest(Chart& chart, size_t projection_no, double grid_step)
-            : chart_(chart), projection_(chart.projection_modify(projection_no)), grid_step_(grid_step), original_layout_(*projection_->layout()), stress_(chart.make_stress<double>(projection_no)) {}
-        void reset(Projection projection) { projection_ = projection; original_layout_ = *projection_->layout(); stress_ = chart_.make_stress<double>(projection_->projection_no()); }
+            : chart_(chart), projection_(chart.projection_modify(projection_no)), grid_step_(grid_step), original_layout_(*projection_->layout()), stress_(chart.make_stress(projection_no)) {}
+        void reset(Projection projection) { projection_ = projection; original_layout_ = *projection_->layout(); stress_ = chart_.make_stress(projection_->projection_no()); }
 
         struct Result
         {
             enum diagnosis_t { excluded, not_tested, normal, trapped, hemisphering };
 
             Result(size_t a_point_no) : point_no(a_point_no), diagnosis(not_tested) {}
-            Result(size_t a_point_no, diagnosis_t a_diagnosis, const Coordinates& a_pos, double a_distance, double diff)
+            Result(size_t a_point_no, diagnosis_t a_diagnosis, const PointCoordinates& a_pos, double a_distance, double diff)
                 : point_no(a_point_no), diagnosis(a_diagnosis), pos(a_pos), distance(a_distance), contribution_diff(diff) {}
             operator bool() const { return diagnosis == trapped || diagnosis == hemisphering; }
             std::string report(const Chart& chart) const;
@@ -31,7 +29,7 @@ namespace acmacs::chart
 
             size_t point_no;
             diagnosis_t diagnosis;
-            Coordinates pos;
+            PointCoordinates pos;
             double distance;
             double contribution_diff;
         };
@@ -42,7 +40,7 @@ namespace acmacs::chart
             using std::vector<Result>::vector;
             std::string report() const;
             auto count_trapped_hemisphering() const { return std::count_if(begin(), end(), [](const auto& r) { return r.diagnosis == Result::trapped || r.diagnosis == Result::hemisphering; }); }
-            size_t num_dimensions() const { for (const auto& result : *this) { if (auto sz = result.pos.size(); sz > 0) return sz; } return 0; }
+            size_t num_dimensions() const { return front().pos.number_of_dimensions(); }
         };
 
         std::string point_name(size_t point_no) const;

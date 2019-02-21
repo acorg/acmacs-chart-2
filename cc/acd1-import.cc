@@ -604,7 +604,7 @@ void Acd1Antigens::make_name_index() const
 
 // ----------------------------------------------------------------------
 
-// std::shared_ptr<acmacs::chart::Layout> Acd1Projection::layout() const
+// std::shared_ptr<acmacs::Layout> Acd1Projection::layout() const
 // {
 //     if (!layout_)
 //         layout_ = std::make_shared<rjson_import::Layout>(data_.get_or_empty_array("layout"));

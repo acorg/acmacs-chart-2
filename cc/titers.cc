@@ -188,42 +188,28 @@ std::shared_ptr<acmacs::chart::ColumnBasesData> acmacs::chart::Titers::computed_
 
 // ----------------------------------------------------------------------
 
-template <typename Float> static void update(const acmacs::chart::Titers& titers, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters)
+void acmacs::chart::Titers::update(acmacs::chart::TableDistances& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const
 {
-    const auto number_of_antigens = titers.number_of_antigens();
-    const auto number_of_points = number_of_antigens + titers.number_of_sera();
+    const auto num_antigens{number_of_antigens()};
+    const auto number_of_points{num_antigens + number_of_sera()};
     const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     table_distances.dodgy_is_regular(parameters.dodgy_titer_is_regular);
-    if (titers.number_of_sera()) {
-        for (const auto& titer_ref : titers) {
-            if (!parameters.disconnected.contains(titer_ref.antigen) && !parameters.disconnected.contains(titer_ref.serum + number_of_antigens))
-                table_distances.update(titer_ref.titer, titer_ref.antigen, titer_ref.serum + number_of_antigens, column_bases.column_basis(titer_ref.serum), logged_adjusts[titer_ref.antigen] + logged_adjusts[titer_ref.serum + number_of_antigens], parameters.mult);
+    if (number_of_sera()) {
+        for (const auto& titer_ref : *this) {
+            if (!parameters.disconnected.contains(titer_ref.antigen) && !parameters.disconnected.contains(titer_ref.serum + num_antigens))
+                table_distances.update(titer_ref.titer, titer_ref.antigen, titer_ref.serum + num_antigens, column_bases.column_basis(titer_ref.serum), logged_adjusts[titer_ref.antigen] + logged_adjusts[titer_ref.serum + num_antigens], parameters.mult);
         }
     }
     else {
         throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
     }
-}
-
-void acmacs::chart::Titers::update(acmacs::chart::TableDistances<float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const
-{
-    ::update(*this, table_distances, column_bases, parameters);
-
 } // acmacs::chart::Titers::update
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Titers::update(acmacs::chart::TableDistances<double>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const
+acmacs::chart::TableDistances acmacs::chart::Titers::table_distances(const ColumnBases& column_bases, const StressParameters& parameters)
 {
-    ::update(*this, table_distances, column_bases, parameters);
-
-} // acmacs::chart::Titers::update
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::TableDistances<double> acmacs::chart::Titers::table_distances(const ColumnBases& column_bases, const StressParameters& parameters)
-{
-    acmacs::chart::TableDistances<double> result;
+    acmacs::chart::TableDistances result;
     update(result, column_bases, parameters);
     return result;
 

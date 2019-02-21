@@ -89,7 +89,7 @@ namespace acmacs::chart
         ProjectionsModifyP projections_;
         PlotSpecModifyP plot_spec_;
 
-        // std::shared_ptr<LayoutRandomizer> make_randomizer(const Stress<double>& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier) const;
+        // std::shared_ptr<LayoutRandomizer> make_randomizer(const Stress& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier) const;
 
     }; // class ChartModify
 
@@ -417,7 +417,7 @@ namespace acmacs::chart
         std::string comment() const override { return comment_; }
 
         std::optional<double> stored_stress() const override { return stress_; }
-        void move_point(size_t aPointNo, const std::vector<double>& aCoordinates) { modify(); layout_->set(aPointNo, aCoordinates); transformed_layout_.reset(); }
+        void move_point(size_t aPointNo, const PointCoordinates& aCoordinates) { modify(); (*layout_)[aPointNo] = aCoordinates; transformed_layout_.reset(); }
         void rotate_radians(double aAngle) { modify(); transformation_.rotate(aAngle); transformed_layout_.reset(); }
         void rotate_degrees(double aAngle) { rotate_radians(aAngle * M_PI / 180.0); }
         void flip(double aX, double aY) { modify(); transformation_.flip(aX, aY); transformed_layout_.reset(); }
@@ -432,7 +432,6 @@ namespace acmacs::chart
         std::shared_ptr<acmacs::Layout> randomize_layout(randomizer rnd, double diameter_multiplier);
         std::shared_ptr<acmacs::Layout> randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> randomizer); // randomize just some point coordinates
         virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
-        virtual void set_layout(const acmacs::LayoutInterface& layout);
         virtual void set_stress(double stress) { stress_ = stress; }
         virtual void comment(std::string comment) { modify(); comment_ = comment; }
         virtual optimization_status relax(optimization_options options);
@@ -451,7 +450,7 @@ namespace acmacs::chart
         double recalculate_stress() const override { stress_ = Projection::recalculate_stress(); return *stress_; }
         bool layout_present() const { return static_cast<bool>(layout_); }
         void clone_from(const Projection& aSource);
-        std::shared_ptr<Layout> transformed_layout_modified() const { if (!transformed_layout_) transformed_layout_.reset(layout_->transform(transformation_)); return transformed_layout_; }
+        std::shared_ptr<Layout> transformed_layout_modified() const { if (!transformed_layout_) transformed_layout_ = layout_->transform(transformation_); return transformed_layout_; }
         size_t number_of_points_modified() const { return layout_->number_of_points(); }
         size_t number_of_dimensions_modified() const { return layout_->number_of_dimensions(); }
         const Transformation& transformation_modified() const { return transformation_; }
@@ -462,7 +461,7 @@ namespace acmacs::chart
      private:
         std::shared_ptr<acmacs::Layout> layout_;
         Transformation transformation_;
-        mutable std::shared_ptr<acmacs::chart::Layout> transformed_layout_;
+        mutable std::shared_ptr<Layout> transformed_layout_;
         mutable std::optional<double> stress_;
         ColumnBasesModifyP forced_column_bases_;
         std::string comment_;

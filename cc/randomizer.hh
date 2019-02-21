@@ -5,7 +5,6 @@
 #include <algorithm>
 
 #include "acmacs-base/line.hh"
-#include "acmacs-base/vector.hh"
 #include "acmacs-chart-2/column-bases.hh"
 
 // ----------------------------------------------------------------------
@@ -19,9 +18,9 @@ namespace acmacs::chart
         // LayoutRandomizer(LayoutRandomizer&&) = default;
         virtual ~LayoutRandomizer() = default;
 
-        virtual acmacs::Vector get(size_t number_of_dimensions)
+        virtual PointCoordinates get(size_t number_of_dimensions)
             {
-                acmacs::Vector result(number_of_dimensions);
+                PointCoordinates result(number_of_dimensions);
                 std::generate(result.begin(), result.end(), [this]() { return this->get(); });
                 return result;
             }
@@ -65,7 +64,7 @@ namespace acmacs::chart
      public:
         LayoutRandomizerWithLineBorder(double diameter, const LineSide& line_side) : LayoutRandomizerPlain(diameter), line_side_(line_side) {}
 
-        acmacs::Vector get(size_t number_of_dimensions) override { return line().fix(LayoutRandomizerPlain::get(number_of_dimensions)); }
+        PointCoordinates get(size_t number_of_dimensions) override { return line().fix(LayoutRandomizerPlain::get(number_of_dimensions)); }
 
         LineSide& line() { return line_side_; }
         const LineSide& line() const { return line_side_; }
@@ -83,14 +82,14 @@ namespace acmacs::chart
     class Chart;
     class Projection;
     class ProjectionModify;
-    template <typename Float> class Stress;
+    class Stress;
 
     std::shared_ptr<LayoutRandomizerPlain> randomizer_plain_with_table_max_distance(const Projection& projection);
 
       // makes randomizer with table max distance, generates random layout, performs very rough optimization,
       // resets randomization diameter with the resulting projection layout size
-    std::shared_ptr<LayoutRandomizer> randomizer_plain_from_sample_optimization(const Chart& chart, const Stress<double>& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier);
-    std::shared_ptr<LayoutRandomizer> randomizer_plain_from_sample_optimization(const Projection& projection, const Stress<double>& stress, double diameter_multiplier);
+    std::shared_ptr<LayoutRandomizer> randomizer_plain_from_sample_optimization(const Chart& chart, const Stress& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier);
+    std::shared_ptr<LayoutRandomizer> randomizer_plain_from_sample_optimization(const Projection& projection, const Stress& stress, double diameter_multiplier);
 
     std::shared_ptr<LayoutRandomizer> randomizer_plain_with_current_layout_area(const ProjectionModify& projection, double diameter_multiplier);
     std::shared_ptr<LayoutRandomizer> randomizer_border_with_current_layout_area(const ProjectionModify& projection, double diameter_multiplier, const LineSide& line_side);

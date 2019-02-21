@@ -537,13 +537,11 @@ class LispmdsLayout : public acmacs::Layout
             }
         }
 
-    inline void set(size_t /*aPointNo*/, const acmacs::Vector& /*aCoordinates*/) override { throw acmacs::chart::chart_is_read_only{"LispmdsLayout::set: cannot modify"}; }
-
 }; // class LispmdsLayout
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Layout> LispmdsProjection::layout() const
+std::shared_ptr<acmacs::Layout> LispmdsProjection::layout() const
 {
     // std::cerr << "antigens: " << mNumberOfAntigens << " sera: " << mNumberOfSera << " points: " << (mNumberOfAntigens + mNumberOfSera) << '\n';
     if (!layout_)

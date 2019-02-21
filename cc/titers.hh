@@ -141,7 +141,7 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    template <typename Float> class TableDistances;
+    class TableDistances;
     class PointIndexList;
     class AvidityAdjusts;
     struct StressParameters;
@@ -173,9 +173,8 @@ namespace acmacs::chart
 
         std::shared_ptr<ColumnBasesData> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
 
-        TableDistances<double> table_distances(const ColumnBases& column_bases, const StressParameters& parameters);
-        virtual void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters) const;
-        virtual void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters) const;
+        TableDistances table_distances(const ColumnBases& column_bases, const StressParameters& parameters);
+        virtual void update(TableDistances& table_distances, const ColumnBases& column_bases, const StressParameters& parameters) const;
         virtual double max_distance(const ColumnBases& column_bases);
 
         virtual TiterIterator begin() const;
