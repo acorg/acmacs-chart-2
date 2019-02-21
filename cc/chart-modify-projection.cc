@@ -68,7 +68,7 @@ int main(int argc, char* const argv[])
             if (args["--move-to"].present()) {
                 if (points.empty())
                     throw std::runtime_error("--move-to requires at least one of --antigens, --sera, --points");
-                const auto target_coordinates = acmacs::string::split_into_double(std::string_view(args["--move-to"]), ",");
+                const acmacs::PointCoordinates target_coordinates = acmacs::string::split_into_double(std::string_view(args["--move-to"]), ",");
                 for (auto point_no: points)
                     projection->move_point(point_no, target_coordinates);
             }
