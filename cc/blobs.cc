@@ -5,6 +5,8 @@
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/point-index-list.hh"
 
+// http://docs.rexamine.com/R-devel/contour-common_8h.html
+
 // ----------------------------------------------------------------------
 
 void acmacs::chart::Blobs::calculate(const acmacs::LayoutInterface& layout, const Stress<double>& stress)

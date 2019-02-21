@@ -623,7 +623,8 @@ namespace acmacs::chart
         }
         virtual std::string make_info() const;
         virtual std::optional<double> stored_stress() const = 0;
-        virtual double stress(RecalculateStress recalculate = RecalculateStress::if_necessary) const;
+        double stress(RecalculateStress recalculate = RecalculateStress::if_necessary) const;
+        double stress_with_moved_point(size_t point_no, const std::vector<double>& move_to) const;
         virtual std::string comment() const = 0;
         virtual size_t number_of_dimensions() const = 0;
         virtual size_t number_of_points() const = 0;
