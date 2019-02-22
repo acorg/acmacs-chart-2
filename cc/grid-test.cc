@@ -43,7 +43,7 @@ acmacs::Area acmacs::chart::GridTest::area_for(const Stress::TableDistancesForPo
 
 acmacs::chart::GridTest::Result acmacs::chart::GridTest::test_point(size_t point_no)
 {
-    Result result(point_no);
+    Result result(point_no, original_layout_.number_of_dimensions());
     test_point(result);
     return result;
 
@@ -61,7 +61,8 @@ void acmacs::chart::GridTest::test_point(Result& result)
         const auto target_contribution = stress_.contribution(result.point_no, table_distances_for_point, layout.data());
         const auto original_pos = original_layout_.get(result.point_no);
         auto best_contribution = target_contribution;
-        PointCoordinates best_coord(PointCoordinates::with_nan_coordinates_2D), hemisphering_coord(PointCoordinates::with_nan_coordinates_2D);
+        PointCoordinates best_coord(PointCoordinates::with_nan_coordinates, original_pos.number_of_dimensions()),
+                hemisphering_coord(PointCoordinates::with_nan_coordinates, original_pos.number_of_dimensions());
         const auto hemisphering_stress_threshold_rough = hemisphering_stress_threshold_ * 2;
         auto hemisphering_contribution = target_contribution + hemisphering_stress_threshold_rough;
         const auto area = area_for(table_distances_for_point);
@@ -115,7 +116,7 @@ void acmacs::chart::GridTest::test_point(Result& result)
 acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all_prepare()
 {
       // std::cerr << "stress: " << stress_.value(original_layout_.data()) << '\n';
-    Results result(acmacs::index_iterator(0UL), acmacs::index_iterator(chart_.number_of_points()));
+    Results result(chart_.number_of_points(), original_layout_.number_of_dimensions()); // (acmacs::index_iterator(0UL), acmacs::index_iterator(chart_.number_of_points()));
     for (auto unmovable : projection_->unmovable())
         result[unmovable].diagnosis = Result::excluded;
     for (auto disconnected : projection_->disconnected())
