@@ -61,7 +61,7 @@ void acmacs::chart::GridTest::test_point(Result& result)
         const auto target_contribution = stress_.contribution(result.point_no, table_distances_for_point, layout.data());
         const auto original_pos = original_layout_.get(result.point_no);
         auto best_contribution = target_contribution;
-        PointCoordinates best_coord, hemisphering_coord;
+        PointCoordinates best_coord(PointCoordinates::with_nan_coordinates_2D), hemisphering_coord(PointCoordinates::with_nan_coordinates_2D);
         const auto hemisphering_stress_threshold_rough = hemisphering_stress_threshold_ * 2;
         auto hemisphering_contribution = target_contribution + hemisphering_stress_threshold_rough;
         const auto area = area_for(table_distances_for_point);

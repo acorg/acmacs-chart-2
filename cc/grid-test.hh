@@ -20,7 +20,7 @@ namespace acmacs::chart
         {
             enum diagnosis_t { excluded, not_tested, normal, trapped, hemisphering };
 
-            Result(size_t a_point_no) : point_no(a_point_no), diagnosis(not_tested) {}
+            Result(size_t a_point_no) : point_no(a_point_no), diagnosis(not_tested), pos(PointCoordinates::with_nan_coordinates_2D) {}
             Result(size_t a_point_no, diagnosis_t a_diagnosis, const PointCoordinates& a_pos, double a_distance, double diff)
                 : point_no(a_point_no), diagnosis(a_diagnosis), pos(a_pos), distance(a_distance), contribution_diff(diff) {}
             operator bool() const { return diagnosis == trapped || diagnosis == hemisphering; }
