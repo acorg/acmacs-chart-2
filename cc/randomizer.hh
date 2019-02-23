@@ -20,7 +20,7 @@ namespace acmacs::chart
 
         virtual PointCoordinates get(size_t number_of_dimensions)
             {
-                PointCoordinates result(PointCoordinates::with_nan_coordinates, number_of_dimensions);
+                PointCoordinates result(number_of_dimensions);
                 std::generate(result.begin(), result.end(), [this]() { return this->get(); });
                 return result;
             }

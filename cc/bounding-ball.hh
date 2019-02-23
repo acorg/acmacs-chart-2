@@ -14,7 +14,7 @@ namespace acmacs
         BoundingBall() = default;
           // aP1 and aP2 are opposite corners of some area, draw a minimal circle through them
         BoundingBall(const PointCoordinates& aP1, const PointCoordinates& aP2)
-            : mCenter(aP1.mean_with(aP2)), mDiameter(0)
+            : mCenter(acmacs::middle(aP1, aP2)), mDiameter(0)
             {
                 PointCoordinates v{aP1};
                 v -= aP2;
@@ -33,7 +33,7 @@ namespace acmacs
         void move(const PointCoordinates& aP1, const PointCoordinates& aP2, double aDistance)
             {
                 mDiameter = aDistance;
-                mCenter = aP1.mean_with(aP2);
+                mCenter = acmacs::middle(aP1, aP2);
             }
 
         void moveCenter(const PointCoordinates& aBy) { mCenter += aBy; }

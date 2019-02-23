@@ -233,7 +233,7 @@ void merge_projections_overlay(acmacs::chart::ChartModifyP result, const acmacs:
         if (auto found = report.antigens_secondary_target.find(ag_no); found != report.antigens_secondary_target.end()) {
             auto coord2 = layout2->get(ag_no);
             if (found->second.common)
-                (*result_layout)[found->second.index] = coord2.mean_with(result_layout->get(found->second.index));
+                (*result_layout)[found->second.index] = acmacs::middle(coord2, result_layout->get(found->second.index));
             else
                 (*result_layout)[found->second.index] = coord2;
         }
@@ -242,7 +242,7 @@ void merge_projections_overlay(acmacs::chart::ChartModifyP result, const acmacs:
         if (auto found = report.sera_secondary_target.find(sr_no); found != report.sera_secondary_target.end()) {
             auto coord2 = (*layout2)[sr_no + chart2.number_of_antigens()];
             if (found->second.common)
-                (*result_layout)[found->second.index + result->number_of_antigens()] = coord2.mean_with(result_layout->get(found->second.index + result->number_of_antigens()));
+                (*result_layout)[found->second.index + result->number_of_antigens()] = acmacs::middle(coord2, result_layout->get(found->second.index + result->number_of_antigens()));
             else
                 (*result_layout)[found->second.index + result->number_of_antigens()] = coord2;
         }

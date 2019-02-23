@@ -61,8 +61,8 @@ void acmacs::chart::GridTest::test_point(Result& result)
         const auto target_contribution = stress_.contribution(result.point_no, table_distances_for_point, layout.data());
         const auto original_pos = original_layout_.get(result.point_no);
         auto best_contribution = target_contribution;
-        PointCoordinates best_coord(PointCoordinates::with_nan_coordinates, original_pos.number_of_dimensions()),
-                hemisphering_coord(PointCoordinates::with_nan_coordinates, original_pos.number_of_dimensions());
+        PointCoordinates best_coord(original_pos.number_of_dimensions()),
+                hemisphering_coord(original_pos.number_of_dimensions());
         const auto hemisphering_stress_threshold_rough = hemisphering_stress_threshold_ * 2;
         auto hemisphering_contribution = target_contribution + hemisphering_stress_threshold_rough;
         const auto area = area_for(table_distances_for_point);
@@ -73,12 +73,12 @@ void acmacs::chart::GridTest::test_point(Result& result)
                 best_contribution = contribution;
                 best_coord = *it;
             }
-            else if (!best_coord.not_nan() && contribution < hemisphering_contribution && distance(original_pos, *it) > hemisphering_distance_threshold_) {
+            else if (!best_coord.exists() && contribution < hemisphering_contribution && distance(original_pos, *it) > hemisphering_distance_threshold_) {
                 hemisphering_contribution = contribution;
                 hemisphering_coord = *it;
             }
         }
-        if (best_coord.not_nan()) {
+        if (best_coord.exists()) {
             layout[result.point_no] = best_coord;
             const auto status = acmacs::chart::optimize(optimization_method_, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
             result.pos = layout.get(result.point_no);
@@ -86,7 +86,7 @@ void acmacs::chart::GridTest::test_point(Result& result)
             result.contribution_diff = status.final_stress - projection_->stress();
             result.diagnosis = std::abs(result.contribution_diff) > hemisphering_stress_threshold_ ? Result::trapped : Result::hemisphering;
         }
-        else if (hemisphering_coord.not_nan()) {
+        else if (hemisphering_coord.exists()) {
             // relax to find real contribution
             layout[result.point_no] = hemisphering_coord;
             auto status = acmacs::chart::optimize(optimization_method_, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
