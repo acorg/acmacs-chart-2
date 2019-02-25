@@ -21,7 +21,6 @@
 namespace acmacs::chart
 {
     using Indexes = PointIndexList;
-    using Layout = acmacs::LayoutInterface;
 
     class invalid_data : public std::runtime_error
     {
@@ -624,12 +623,12 @@ namespace acmacs::chart
         virtual std::string make_info() const;
         virtual std::optional<double> stored_stress() const = 0;
         double stress(RecalculateStress recalculate = RecalculateStress::if_necessary) const;
-        double stress_with_moved_point(size_t point_no, const std::vector<double>& move_to) const;
+        double stress_with_moved_point(size_t point_no, const PointCoordinates& move_to) const;
         virtual std::string comment() const = 0;
         virtual size_t number_of_dimensions() const = 0;
         virtual size_t number_of_points() const = 0;
         virtual std::shared_ptr<Layout> layout() const = 0;
-        virtual std::shared_ptr<Layout> transformed_layout() const { return std::shared_ptr<Layout>{layout()->transform(transformation())}; }
+        virtual std::shared_ptr<Layout> transformed_layout() const { return layout()->transform(transformation()); }
         virtual MinimumColumnBasis minimum_column_basis() const = 0;
         virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0; // returns nullptr if not forced
         virtual acmacs::Transformation transformation() const = 0;
@@ -641,11 +640,11 @@ namespace acmacs::chart
         virtual AvidityAdjusts avidity_adjusts() const = 0; // antigens_sera_titers_multipliers, double for each point
                                                             // antigens_sera_gradient_multipliers, double for each point
 
-        template <typename Float> double calculate_stress(const Stress<Float>& stress) const { return static_cast<double>(stress.value(*layout())); }
-        template <typename Float> std::vector<Float> calculate_gradient(const Stress<Float>& stress) const { return stress.gradient(*layout()); }
+        double calculate_stress(const Stress& stress) const { return stress.value(*layout()); }
+        std::vector<double> calculate_gradient(const Stress& stress) const { return stress.gradient(*layout()); }
 
-        template <typename Float> double calculate_stress(multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const;
-        template <typename Float> std::vector<Float> calculate_gradient(multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const;
+        double calculate_stress(multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const;
+        std::vector<double> calculate_gradient(multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const;
 
         Blobs blobs(double stress_diff, size_t number_of_drections = 36, double stress_diff_precision = 1e-5) const;
         Blobs blobs(double stress_diff, const PointIndexList& points, size_t number_of_drections = 36, double stress_diff_precision = 1e-5) const;
@@ -657,7 +656,7 @@ namespace acmacs::chart
         ErrorLines error_lines() const { return acmacs::chart::error_lines(*this); }
 
       protected:
-        virtual double recalculate_stress() const { return calculate_stress<double>(); }
+        virtual double recalculate_stress() const { return calculate_stress(); }
 
       private:
         const Chart& chart_;
@@ -764,12 +763,12 @@ namespace acmacs::chart
 
         void set_homologous(find_homologous options, std::shared_ptr<Sera> aSera = nullptr) const;
 
-        template <typename Float> Stress<Float> make_stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const
+        Stress make_stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const
         {
-            return stress_factory<Float>(projection, mult);
+            return stress_factory(projection, mult);
         }
 
-        template <typename Float> Stress<Float> make_stress(size_t aProjectionNo) const { return make_stress<Float>(*projection(aProjectionNo)); }
+        Stress make_stress(size_t aProjectionNo) const { return make_stress(*projection(aProjectionNo)); }
 
         void show_table(std::ostream& output, std::optional<size_t> layer_no = {}) const;
 
@@ -790,11 +789,11 @@ namespace acmacs::chart
     using ProjectionsP = std::shared_ptr<Projections>;
     using PlotSpecP = std::shared_ptr<PlotSpec>;
 
-    template <typename Float> inline double Projection::calculate_stress(multiply_antigen_titer_until_column_adjust mult) const { return calculate_stress(stress_factory<Float>(*this, mult)); }
+    inline double Projection::calculate_stress(multiply_antigen_titer_until_column_adjust mult) const { return calculate_stress(stress_factory(*this, mult)); }
 
-    template <typename Float> inline std::vector<Float> Projection::calculate_gradient(multiply_antigen_titer_until_column_adjust mult) const
+    inline std::vector<double> Projection::calculate_gradient(multiply_antigen_titer_until_column_adjust mult) const
     {
-        return calculate_gradient(stress_factory<Float>(*this, mult));
+        return calculate_gradient(stress_factory(*this, mult));
     }
 
 } // namespace acmacs::chart

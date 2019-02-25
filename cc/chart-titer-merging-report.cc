@@ -3,6 +3,7 @@
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/statistics.hh"
+#include "acmacs-base/vector.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
 

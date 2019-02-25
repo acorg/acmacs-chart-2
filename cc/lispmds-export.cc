@@ -12,7 +12,7 @@ static std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera, size_
 static std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters, const acmacs::chart::PointIndexList& disconnected);
 static std::string starting_coordss(const acmacs::chart::Chart& aChart, const acmacs::chart::PointIndexList& disconnected);
 static std::string batch_runs(const acmacs::chart::Chart& aChart, const acmacs::chart::PointIndexList& disconnected);
-static std::string coordinates(std::shared_ptr<acmacs::chart::Layout> aLayout, size_t number_of_points, size_t number_of_dimensions, size_t aIndent, const acmacs::chart::PointIndexList& disconnected);
+static std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_of_points, size_t number_of_dimensions, size_t aIndent, const acmacs::chart::PointIndexList& disconnected);
 static std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent, const acmacs::chart::PointIndexList& disconnected);
 static std::string reference_antigens(std::shared_ptr<acmacs::chart::Antigens> aAntigens, const acmacs::chart::PointIndexList& disconnected);
 static std::string plot_spec(const acmacs::chart::Chart& aChart, const acmacs::chart::PointIndexList& disconnected);
@@ -189,7 +189,7 @@ std::string batch_runs(const acmacs::chart::Chart& aChart, const acmacs::chart::
 
 // ----------------------------------------------------------------------
 
-std::string coordinates(std::shared_ptr<acmacs::chart::Layout> aLayout, size_t number_of_points, size_t number_of_dimensions, size_t aIndent, const acmacs::chart::PointIndexList& disconnected)
+std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_of_points, size_t number_of_dimensions, size_t aIndent, const acmacs::chart::PointIndexList& disconnected)
 {
     std::string result;
     for (size_t point_no = 0; point_no < number_of_points; ++point_no) {

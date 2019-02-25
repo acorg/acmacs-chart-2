@@ -13,15 +13,15 @@ namespace acmacs::chart
 {
     namespace detail
     {
-        template <typename Float> class DistancesBase
+        class DistancesBase
         {
           public:
             struct Entry
             {
-                Entry(size_t p1, size_t p2, Float dist) : point_1(p1), point_2(p2), distance{dist} {}
+                Entry(size_t p1, size_t p2, double dist) : point_1(p1), point_2(p2), distance{dist} {}
                 size_t point_1;
                 size_t point_2;
-                Float distance;
+                double distance;
             };
 
             using entries_t = std::vector<Entry>;
@@ -36,7 +36,7 @@ namespace acmacs::chart
             class IteratorForPoint
             {
               private:
-                friend class DistancesBase<Float>;
+                friend class DistancesBase;
 
                 using iterator_t = typename entries_t::const_iterator;
                 IteratorForPoint(size_t point_no, iterator_t it, iterator_t last) : point_no_(point_no), current_(it), last_(last)
@@ -75,19 +75,19 @@ namespace acmacs::chart
             entries_t less_than_;
             // entries_t more_than_;
 
-        }; // class DistancesBase<Float>
+        }; // class DistancesBase
 
     } // namespace detail
 
 // ----------------------------------------------------------------------
 
-    template <typename Float> class TableDistances : public detail::DistancesBase<Float>
+    class TableDistances : public detail::DistancesBase
     {
      public:
-        using entries_t = typename detail::DistancesBase<Float>::entries_t;
-        using detail::DistancesBase<Float>::regular;
-        using detail::DistancesBase<Float>::less_than;
-        // using detail::DistancesBase<Float>::more_than;
+        using entries_t = typename detail::DistancesBase::entries_t;
+        using detail::DistancesBase::regular;
+        using detail::DistancesBase::less_than;
+        // using detail::DistancesBase::more_than;
 
         void dodgy_is_regular(bool dodgy_is_regular) { dodgy_is_regular_ = dodgy_is_regular; }
 
@@ -97,7 +97,7 @@ namespace acmacs::chart
                 auto distance = column_basis - titer.logged() - adjust;
                 if (distance < 0 && mult == multiply_antigen_titer_until_column_adjust::yes)
                     distance = 0;
-                add_value(titer.type(), p1, p2, static_cast<Float>(distance));
+                add_value(titer.type(), p1, p2, distance);
             }
             catch (acmacs::chart::invalid_titer&) {
                 // ignore dont-care
@@ -108,9 +108,9 @@ namespace acmacs::chart
 
         struct EntryForPoint
         {
-            EntryForPoint(size_t ap, Float td) : another_point(ap), distance(td) {}
+            EntryForPoint(size_t ap, double td) : another_point(ap), distance(td) {}
             size_t another_point;
-            Float distance;
+            double distance;
         };
         using entries_for_point_t = std::vector<EntryForPoint>;
 
@@ -128,7 +128,7 @@ namespace acmacs::chart
 
         struct EntriesForPoint
         {
-            EntriesForPoint(size_t point_no, const TableDistances<Float>& table_distances)
+            EntriesForPoint(size_t point_no, const TableDistances& table_distances)
                 : regular(entries_for_point(table_distances.regular(), point_no)),
                   less_than(entries_for_point(table_distances.less_than(), point_no))
             {
@@ -139,7 +139,7 @@ namespace acmacs::chart
       private:
         bool dodgy_is_regular_ = false;
 
-        void add_value(Titer::Type type, size_t p1, size_t p2, Float value)
+        void add_value(Titer::Type type, size_t p1, size_t p2, double value)
         {
             switch (type) {
                 case Titer::Dodgy:
@@ -165,10 +165,10 @@ namespace acmacs::chart
 
     // ----------------------------------------------------------------------
 
-    class MapDistances : public detail::DistancesBase<double>
+    class MapDistances : public detail::DistancesBase
     {
      public:
-       MapDistances(const LayoutInterface& layout, const TableDistances<double>& table_distances)
+       MapDistances(const Layout& layout, const TableDistances& table_distances)
        {
            auto make_map_distance = [&layout](const auto& table_distance_entry) -> Entry {
                return {table_distance_entry.point_1, table_distance_entry.point_2, layout.distance(table_distance_entry.point_1, table_distance_entry.point_2)};

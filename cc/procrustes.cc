@@ -183,7 +183,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     result.rms = 0.0;
     size_t num_rows = 0;
     for (const auto& cp : common) {
-        if (const auto pc = primary_layout->get(cp.primary), sc = secondary_transformed->get(cp.secondary); pc.not_nan() && sc.not_nan()) {
+        if (const auto pc = primary_layout->get(cp.primary), sc = secondary_transformed->get(cp.secondary); pc.exists() && sc.exists()) {
             ++num_rows;
             auto make_rms_inc = [&pc, &sc](auto sum, auto dim) {
                 auto square = [](auto v) { return v * v; };
@@ -205,17 +205,17 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::Layout> acmacs::chart::ProcrustesData::apply(const acmacs::LayoutInterface& source) const
+std::shared_ptr<acmacs::Layout> acmacs::chart::ProcrustesData::apply(const acmacs::Layout& source) const
 {
     assert(source.number_of_dimensions() == transformation.number_of_dimensions);
     auto result = std::make_shared<acmacs::Layout>(source.number_of_points(), source.number_of_dimensions());
 
     // multiply source by transformation
     for (size_t row_no = 0; row_no < source.number_of_points(); ++row_no) {
-        if (const auto row = source[row_no]; row.not_nan()) {
+        if (const auto row = source[row_no]; row.exists()) {
             for (size_t dim = 0; dim < transformation.number_of_dimensions; ++dim) {
                 auto sum_squares = [&source, this, row_no, dim](double sum, size_t index) { return sum + source(row_no, index) * this->transformation(index, dim); };
-                result->set(row_no, dim, std::accumulate(acmacs::index_iterator(0UL), acmacs::index_iterator(source.number_of_dimensions()), 0.0, sum_squares) + transformation.translation(dim));
+                result->coordinate(row_no, dim) = std::accumulate(acmacs::index_iterator(0UL), acmacs::index_iterator(source.number_of_dimensions()), 0.0, sum_squares) + transformation.translation(dim);
             }
         }
         else {

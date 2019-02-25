@@ -211,7 +211,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     auto projection = projections_modify()->new_from_scratch(start_num_dim, minimum_column_basis);
     projection->set_disconnected(disconnect_points);
     auto layout = projection->layout_modified();
-    auto stress = acmacs::chart::stress_factory<double>(*projection, options.mult);
+    auto stress = acmacs::chart::stress_factory(*projection, options.mult);
     projection->randomize_layout(randomizer_plain_from_sample_optimization(*projection, stress, options.randomization_diameter_multiplier));
     auto status = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
     if (start_num_dim > number_of_dimensions) {
@@ -238,7 +238,7 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
                         bool report_stresses, const PointIndexList& disconnect_points)
 {
     const size_t start_num_dim = dimension_annealing && number_of_dimensions < 5 ? 5 : number_of_dimensions;
-    auto stress = acmacs::chart::stress_factory<double>(*this, start_num_dim, minimum_column_basis, options.mult, false);
+    auto stress = acmacs::chart::stress_factory(*this, start_num_dim, minimum_column_basis, options.mult, false);
     stress.set_disconnected(disconnect_points);
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
 
@@ -286,7 +286,7 @@ void ChartModify::relax_incremetal(size_t source_projection_no, size_t number_of
     auto source_projection = projection_modify(source_projection_no);
     const auto num_dim = source_projection->number_of_dimensions();
     const auto minimum_column_basis = source_projection->minimum_column_basis();
-    auto stress = acmacs::chart::stress_factory<double>(*this, num_dim, minimum_column_basis, options.mult, false);
+    auto stress = acmacs::chart::stress_factory(*this, num_dim, minimum_column_basis, options.mult, false);
     stress.set_disconnected(disconnect_points);
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
 
@@ -1427,7 +1427,7 @@ std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(ProjectionMod
           break;
       case randomizer::plain_from_sample_optimization:
       {
-          auto stress = acmacs::chart::stress_factory<double>(*this, multiply_antigen_titer_until_column_adjust::yes);
+          auto stress = acmacs::chart::stress_factory(*this, multiply_antigen_titer_until_column_adjust::yes);
           rnd_v = acmacs::chart::randomizer_plain_from_sample_optimization(*this, stress, diameter_multiplier);
       }
           break;
@@ -1444,7 +1444,7 @@ std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(std::shared_p
     auto layout = layout_modified();
     const auto number_of_dimensions = layout->number_of_dimensions();
     for (auto point_no : acmacs::range(layout->number_of_points()))
-        layout->set(point_no, randomizer->get(number_of_dimensions));
+        (*layout)[point_no] = randomizer->get(number_of_dimensions);
     return layout;
 
 } // ProjectionModify::randomize_layout
@@ -1457,7 +1457,7 @@ std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(const PointIn
     auto layout = layout_modified();
     const auto number_of_dimensions = layout->number_of_dimensions();
     for (auto point_no : to_randomize)
-        layout->set(point_no, randomizer->get(number_of_dimensions));
+        (*layout)[point_no] = randomizer->get(number_of_dimensions);
     return layout;
 
 } // ProjectionModify::randomize_layout
@@ -1471,17 +1471,6 @@ void ProjectionModify::set_layout(const acmacs::Layout& layout, bool allow_size_
     if (!allow_size_change && layout.size() != target_layout->size())
         throw invalid_data("ProjectionModify::set_layout(const acmacs::Layout&): wrong layout size");
     *target_layout = layout;
-
-} // ProjectionModify::set_layout
-
-// ----------------------------------------------------------------------
-
-void ProjectionModify::set_layout(const acmacs::LayoutInterface& layout)
-{
-    modify();
-    new_layout(layout.number_of_points(), layout.number_of_dimensions());
-    for (auto point_no : acmacs::range(layout.number_of_points()))
-        layout_->set(point_no, layout.get(point_no));
 
 } // ProjectionModify::set_layout
 

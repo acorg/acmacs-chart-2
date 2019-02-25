@@ -361,7 +361,7 @@ void test_insert_antigen(acmacs::chart::ChartP chart, size_t before, const argc_
                         throw std::runtime_error("inserted antigen has titer: sr_no:" + std::to_string(sr_no) + " titer:" + titers_imported->titer(imported_ag_no, sr_no));
                 }
                 for (auto projection : *projections_imported) {
-                    if (auto imp = projection->layout()->get(imported_ag_no); imp.not_nan())
+                    if (auto imp = projection->layout()->get(imported_ag_no); imp.exists())
                         throw std::runtime_error("inserted antigen has coordinates: " + acmacs::to_string(imp));
                 }
             };
@@ -420,7 +420,7 @@ void test_insert_serum(acmacs::chart::ChartP chart, size_t before, const argc_ar
                     throw std::runtime_error("inserted serum has titer: ag_no:" + std::to_string(ag_no) + " titer:" + titers_imported->titer(ag_no, imported_sr_no));
             }
             for (auto projection : *projections_imported) {
-                if (auto imp = projection->layout()->get(imported_sr_no + antigens_source->size()); imp.not_nan())
+                if (auto imp = projection->layout()->get(imported_sr_no + antigens_source->size()); imp.exists())
                     throw std::runtime_error("inserted serum has coordinates: " + acmacs::to_string(imp));
             }
         };

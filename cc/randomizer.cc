@@ -1,7 +1,7 @@
 #include "acmacs-chart-2/randomizer.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
-static std::shared_ptr<acmacs::chart::LayoutRandomizer> randomizer_plain_from_sample_optimization_internal(acmacs::chart::ProjectionModifyNew&& projection, const acmacs::chart::Stress<double>& stress, double diameter_multiplier);
+static std::shared_ptr<acmacs::chart::LayoutRandomizer> randomizer_plain_from_sample_optimization_internal(acmacs::chart::ProjectionModifyNew&& projection, const acmacs::chart::Stress& stress, double diameter_multiplier);
 
 // ----------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ std::shared_ptr<acmacs::chart::LayoutRandomizer> acmacs::chart::randomizer_borde
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::chart::LayoutRandomizer> randomizer_plain_from_sample_optimization_internal(acmacs::chart::ProjectionModifyNew&& projection, const acmacs::chart::Stress<double>& stress,
+std::shared_ptr<acmacs::chart::LayoutRandomizer> randomizer_plain_from_sample_optimization_internal(acmacs::chart::ProjectionModifyNew&& projection, const acmacs::chart::Stress& stress,
                                                                                                     double diameter_multiplier)
 {
     auto rnd = randomizer_plain_with_table_max_distance(projection);
@@ -59,7 +59,7 @@ std::shared_ptr<acmacs::chart::LayoutRandomizer> randomizer_plain_from_sample_op
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::chart::LayoutRandomizer> acmacs::chart::randomizer_plain_from_sample_optimization(const Projection& projection, const Stress<double>& stress, double diameter_multiplier)
+std::shared_ptr<acmacs::chart::LayoutRandomizer> acmacs::chart::randomizer_plain_from_sample_optimization(const Projection& projection, const Stress& stress, double diameter_multiplier)
 {
     return randomizer_plain_from_sample_optimization_internal(ProjectionModifyNew(projection.chart(), projection.number_of_dimensions(), projection.minimum_column_basis()), stress, diameter_multiplier);
 
@@ -67,7 +67,7 @@ std::shared_ptr<acmacs::chart::LayoutRandomizer> acmacs::chart::randomizer_plain
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::chart::LayoutRandomizer> acmacs::chart::randomizer_plain_from_sample_optimization(const Chart& chart, const Stress<double>& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier)
+std::shared_ptr<acmacs::chart::LayoutRandomizer> acmacs::chart::randomizer_plain_from_sample_optimization(const Chart& chart, const Stress& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier)
 {
     return randomizer_plain_from_sample_optimization_internal(ProjectionModifyNew(chart, number_of_dimensions, minimum_column_basis), stress, diameter_multiplier);
 

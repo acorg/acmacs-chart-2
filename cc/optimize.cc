@@ -33,9 +33,9 @@ template <typename T> constexpr inline aint_t cint(T src) { return static_cast<a
 
 struct OptimiserCallbackData
 {
-    OptimiserCallbackData(const acmacs::chart::Stress<double>& a_stress) : stress{a_stress}, intermediate_layouts{nullptr} {}
-    OptimiserCallbackData(const acmacs::chart::Stress<double>& a_stress, acmacs::chart::IntermediateLayouts& a_intermediate_layouts) : stress{a_stress}, intermediate_layouts{&a_intermediate_layouts} {}
-    const acmacs::chart::Stress<double>& stress;
+    OptimiserCallbackData(const acmacs::chart::Stress& a_stress) : stress{a_stress}, intermediate_layouts{nullptr} {}
+    OptimiserCallbackData(const acmacs::chart::Stress& a_stress, acmacs::chart::IntermediateLayouts& a_intermediate_layouts) : stress{a_stress}, intermediate_layouts{&a_intermediate_layouts} {}
+    const acmacs::chart::Stress& stress;
     acmacs::chart::IntermediateLayouts* intermediate_layouts = nullptr;
 };
 
@@ -54,7 +54,7 @@ static void alglib_pca(OptimiserCallbackData& callback_data, size_t source_numbe
 acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::ProjectionModify& projection, acmacs::chart::optimization_options options)
 {
     auto layout = projection.layout_modified();
-    auto stress = stress_factory<double>(projection, options.mult);
+    auto stress = stress_factory(projection, options.mult);
     OptimiserCallbackData callback_data(stress);
     return optimize(options.method, callback_data, layout->data(), layout->data() + layout->size(), options.precision);
 
@@ -65,7 +65,7 @@ acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::Projec
 acmacs::chart::optimization_status acmacs::chart::optimize(ProjectionModify& projection, IntermediateLayouts& intermediate_layouts, optimization_options options)
 {
     auto layout = projection.layout_modified();
-    auto stress = stress_factory<double>(projection, options.mult);
+    auto stress = stress_factory(projection, options.mult);
     OptimiserCallbackData callback_data(stress, intermediate_layouts);
     return optimize(options.method, callback_data, layout->data(), layout->data() + layout->size(), options.precision);
 
@@ -81,7 +81,7 @@ acmacs::chart::optimization_status acmacs::chart::optimize(ProjectionModify& pro
     const auto start = std::chrono::high_resolution_clock::now();
     optimization_status status(options.method);
     auto layout = projection.layout_modified();
-    auto stress = stress_factory<double>(projection, options.mult);
+    auto stress = stress_factory(projection, options.mult);
 
     bool initial_opt = true;
     for (size_t num_dims: schedule) {
@@ -146,7 +146,7 @@ std::ostream& acmacs::chart::operator<<(std::ostream& out, const acmacs::chart::
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::optimization_status acmacs::chart::optimize(optimization_method optimization_method, const Stress<double>& stress, double* arg_first, double* arg_last, optimization_precision precision)
+acmacs::chart::optimization_status acmacs::chart::optimize(optimization_method optimization_method, const Stress& stress, double* arg_first, double* arg_last, optimization_precision precision)
 {
     OptimiserCallbackData callback_data(stress);
     return optimize(optimization_method, callback_data, arg_first, arg_last, precision);
@@ -184,7 +184,7 @@ acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::optimi
 acmacs::chart::ErrorLines acmacs::chart::error_lines(const acmacs::chart::Projection& projection)
 {
     auto layout = projection.layout();
-    auto stress = stress_factory<double>(projection, multiply_antigen_titer_until_column_adjust::yes);
+    auto stress = stress_factory(projection, multiply_antigen_titer_until_column_adjust::yes);
     const auto& table_distances = stress.table_distances();
     const MapDistances map_distances(*layout, table_distances);
     ErrorLines result;
@@ -193,7 +193,7 @@ acmacs::chart::ErrorLines acmacs::chart::error_lines(const acmacs::chart::Projec
     }
     for (auto td = table_distances.less_than().begin(), md = map_distances.less_than().begin(); td != table_distances.less_than().end(); ++td, ++md) {
         auto diff = td->distance - md->distance + 1;
-        diff *= std::sqrt(acmacs::sigmoid(diff * SigmoidMutiplier<double>())); // see Derek's message Thu, 10 Mar 2016 16:32:20 +0000 (Re: acmacs error line error)
+        diff *= std::sqrt(acmacs::sigmoid(diff * SigmoidMutiplier())); // see Derek's message Thu, 10 Mar 2016 16:32:20 +0000 (Re: acmacs error line error)
         result.emplace_back(td->point_1, td->point_2, diff);
     }
     return result;
@@ -350,7 +350,7 @@ void alglib_cg_optimize(acmacs::chart::optimization_status& status, OptimiserCal
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(optimization_method optimization_method, const Stress<double>& stress, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
+acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(optimization_method optimization_method, const Stress& stress, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
 {
     // std::cerr << "dimension_annealing " << std::pair(arg_first, arg_last) << '\n';
     DimensionAnnelingStatus status;

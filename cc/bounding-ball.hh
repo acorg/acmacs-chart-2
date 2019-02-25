@@ -11,75 +11,65 @@ namespace acmacs
     class BoundingBall
     {
      public:
-        inline BoundingBall() = default;
+        BoundingBall() = default;
           // aP1 and aP2 are opposite corners of some area, draw a minimal circle through them
-        inline BoundingBall(const Coordinates& aP1, const Coordinates& aP2)
-            : mCenter(aP1.size()), mDiameter(0)
+        BoundingBall(const PointCoordinates& aP1, const PointCoordinates& aP2)
+            : mCenter(acmacs::middle(aP1, aP2)), mDiameter(0)
             {
-                Vector v{aP1};
+                PointCoordinates v{aP1};
                 v -= aP2;
-                mDiameter = acmacs::vector_math::eucledian_norm<Vector::value_type>(v.begin(), v.end());
-                for (Vector::size_type dim = 0; dim < aP1.size(); ++dim)
-                    mCenter[dim] = (aP1[dim] + aP2[dim]) * 0.5;
+                mDiameter = std::sqrt(std::inner_product(v.begin(), v.end(), v.begin(), 0.0));
             }
 
-        inline const Vector& center() const { return mCenter; }
-        inline double diameter() const { return mDiameter; }
+        const PointCoordinates& center() const { return mCenter; }
+        double diameter() const { return mDiameter; }
 
-        inline void set(const Vector& aCenter, double aDiameter)
+        void set(const PointCoordinates& aCenter, double aDiameter)
             {
                 mCenter = aCenter;
                 mDiameter = aDiameter;
             }
 
-          // The same as *this=BoundingBall(aP1, aP2, aDistance) but avoids assignment
-        inline void move(const Vector& aP1, const Vector& aP2, double aDistance)
+        void move(const PointCoordinates& aP1, const PointCoordinates& aP2, double aDistance)
             {
                 mDiameter = aDistance;
-                mCenter.resize(aP1.size());
-                for (Vector::size_type dim = 0; dim < aP1.size(); ++dim)
-                    mCenter[dim] = (aP1[dim] + aP2[dim]) * 0.5;
+                mCenter = acmacs::middle(aP1, aP2);
             }
 
-        inline void moveCenter(const Vector& aBy) { mCenter += aBy; }
+        void moveCenter(const PointCoordinates& aBy) { mCenter += aBy; }
 
           // Extends bounding ball (change center and diameter) to make sure the bounding ball includes the passed point
-        void extend(const Coordinates& aPoint);
+        void extend(const PointCoordinates& aPoint);
 
           // Extends bounding ball to make sure it includes all points of the second boundig ball
         void extend(const BoundingBall& aBoundingBall);
 
-        inline double top() const { return mCenter[1] - mDiameter / 2.0; }
-        inline double bottom() const { return mCenter[1] + mDiameter / 2.0; }
-        inline double left() const { return mCenter[0] - mDiameter / 2.0; }
-        inline double right() const { return mCenter[0] + mDiameter / 2.0; }
+        double top() const { return mCenter.y() - mDiameter / 2.0; }
+        double bottom() const { return mCenter.y() + mDiameter / 2.0; }
+        double left() const { return mCenter.x() - mDiameter / 2.0; }
+        double right() const { return mCenter.x() + mDiameter / 2.0; }
 
      private:
-        Vector mCenter;
+        PointCoordinates mCenter;
         double mDiameter;
 
-          // Returns distance^2 from the ball center to point
-        inline double distance2FromCenter(const Coordinates& aPoint) const
-            {
-                Vector v(aPoint);
-                v -= mCenter;
-                return acmacs::vector_math::inner_product<Vector::value_type>(v.begin(), v.end());
-            }
+        // Returns distance^2 from the ball center to point
+        double distance2FromCenter(const PointCoordinates& aPoint) const { return distance2(aPoint, mCenter); }
 
-        inline double radius2() const
-            {
-                return mDiameter * mDiameter * 0.25;
-            }
+        double radius2() const { return mDiameter * mDiameter * 0.25; }
 
     }; // class BoundingBall
 
-    BoundingBall* minimum_bounding_ball(const LayoutInterface& aLayout);
+    BoundingBall minimum_bounding_ball(const Layout& aLayout);
 
 } // namespace acmacs
 
 // ----------------------------------------------------------------------
 
-inline std::ostream& operator << (std::ostream& out, const acmacs::BoundingBall& a) { return out << "BoundingBall(" << a.center() << ", " << a.diameter() << ")"; }
+inline std::ostream& operator<<(std::ostream& out, const acmacs::BoundingBall& a)
+{
+    return out << "BoundingBall(" << a.center() << ", " << a.diameter() << ")";
+}
 
 // ----------------------------------------------------------------------
 /// Local Variables:

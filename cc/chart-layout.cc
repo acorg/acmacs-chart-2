@@ -8,8 +8,8 @@
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
 
-static void write_csv(std::string aFilename, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::chart::Layout> layout);
-static void write_text(std::string aFilename, std::string_view aFieldSeparator, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::chart::Layout> layout);
+static void write_csv(std::string aFilename, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::Layout> layout);
+static void write_text(std::string aFilename, std::string_view aFieldSeparator, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::Layout> layout);
 static std::string encode_name(std::string_view aName, std::string_view aFieldSeparator);
 
 // ----------------------------------------------------------------------
@@ -56,7 +56,7 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-void write_csv(std::string aFilename, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::chart::Layout> layout)
+void write_csv(std::string aFilename, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::Layout> layout)
 {
     acmacs::CsvWriter writer;
     const auto number_of_dimensions = layout->number_of_dimensions();
@@ -81,7 +81,7 @@ void write_csv(std::string aFilename, std::shared_ptr<acmacs::chart::Antigens> a
 
 // ----------------------------------------------------------------------
 
-void write_text(std::string aFilename, std::string_view aFieldSeparator, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::chart::Layout> layout)
+void write_text(std::string aFilename, std::string_view aFieldSeparator, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::Layout> layout)
 {
     std::string result;
     const auto number_of_dimensions = layout->number_of_dimensions();

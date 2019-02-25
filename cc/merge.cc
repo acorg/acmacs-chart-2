@@ -13,7 +13,7 @@ static void merge_titers(acmacs::chart::ChartModifyP result, const acmacs::chart
 static void merge_plot_spec(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, const acmacs::chart::MergeReport& report);
 static void merge_projections_incremental(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
 static void merge_projections_overlay(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
-static void copy_layout(const acmacs::chart::Layout& source, acmacs::chart::Layout& target, size_t source_number_of_antigens, size_t target_number_of_antigens);
+static void copy_layout(const acmacs::Layout& source, acmacs::Layout& target, size_t source_number_of_antigens, size_t target_number_of_antigens);
 static acmacs::chart::PointIndexList map_disconnected(const acmacs::chart::PointIndexList& source, size_t source_number_of_antigens, size_t target_number_of_antigens, const acmacs::chart::MergeReport::index_mapping_t& antigen_mapping, const acmacs::chart::MergeReport::index_mapping_t& sera_mapping);
 
 // ----------------------------------------------------------------------
@@ -233,18 +233,18 @@ void merge_projections_overlay(acmacs::chart::ChartModifyP result, const acmacs:
         if (auto found = report.antigens_secondary_target.find(ag_no); found != report.antigens_secondary_target.end()) {
             auto coord2 = layout2->get(ag_no);
             if (found->second.common)
-                result_layout->set(found->second.index, coord2.mean_with(result_layout->get(found->second.index)));
+                (*result_layout)[found->second.index] = acmacs::middle(coord2, result_layout->get(found->second.index));
             else
-                result_layout->set(found->second.index, coord2);
+                (*result_layout)[found->second.index] = coord2;
         }
     }
     for (size_t sr_no = 0; sr_no < chart2.number_of_sera(); ++sr_no) {
         if (auto found = report.sera_secondary_target.find(sr_no); found != report.sera_secondary_target.end()) {
-            auto coord2 = layout2->get(sr_no + chart2.number_of_antigens());
+            auto coord2 = (*layout2)[sr_no + chart2.number_of_antigens()];
             if (found->second.common)
-                result_layout->set(found->second.index + result->number_of_antigens(), coord2.mean_with(result_layout->get(found->second.index + result->number_of_antigens())));
+                (*result_layout)[found->second.index + result->number_of_antigens()] = acmacs::middle(coord2, result_layout->get(found->second.index + result->number_of_antigens()));
             else
-                result_layout->set(found->second.index + result->number_of_antigens(), coord2);
+                (*result_layout)[found->second.index + result->number_of_antigens()] = coord2;
         }
     }
 
@@ -281,12 +281,12 @@ acmacs::chart::PointIndexList map_disconnected(const acmacs::chart::PointIndexLi
 
 // ----------------------------------------------------------------------
 
-void copy_layout(const acmacs::chart::Layout& source, acmacs::chart::Layout& target, size_t source_number_of_antigens, size_t target_number_of_antigens)
+void copy_layout(const acmacs::Layout& source, acmacs::Layout& target, size_t source_number_of_antigens, size_t target_number_of_antigens)
 {
     for (size_t ag_no = 0; ag_no < source_number_of_antigens; ++ag_no)
-        target.set(ag_no, source.get(ag_no));
+        target[ag_no] = source[ag_no];
     for (size_t sr_no = 0; sr_no < (source.number_of_points() - source_number_of_antigens); ++sr_no)
-        target.set(sr_no + target_number_of_antigens, source.get(sr_no + source_number_of_antigens));
+        target[sr_no + target_number_of_antigens] = source[sr_no + source_number_of_antigens];
 }
 
 // ----------------------------------------------------------------------

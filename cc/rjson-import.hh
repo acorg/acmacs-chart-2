@@ -16,7 +16,7 @@
 
 namespace acmacs::chart
 {
-    template <typename Float> class TableDistances;
+    class TableDistances;
     class ColumnBases;
     class PointIndexList;
 
@@ -40,15 +40,11 @@ namespace acmacs::chart::rjson_import
      public:
         Layout(const rjson::value& aData);
 
-        void set(size_t /*aPointNo*/, const acmacs::Vector& /*aCoordinates*/) override;
-
     }; // class Layout
 
 // ----------------------------------------------------------------------
 
-    template <typename Float> void update(const rjson::value& data, const std::string& list_key, const std::string& dict_key, TableDistances<Float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
-    extern template void update<float>(const rjson::value& data, const std::string& list_key, const std::string& dict_key, TableDistances<float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
-    extern template void update<double>(const rjson::value& data, const std::string& list_key, const std::string& dict_key, TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
+    void update(const rjson::value& data, const std::string& list_key, const std::string& dict_key, TableDistances& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
 
 } // namespace acmacs::chart::rjson
 
@@ -99,15 +95,7 @@ namespace acmacs::chart
         const rjson::value& rjson_list_dict() const override { if (const auto& dict = data_[keys_.dict]; !dict.empty()) return dict; else throw data_not_available{"no \"" + keys_.dict + "\""}; }
         const rjson::value& rjson_layers() const override { if (const auto& layers = data_[keys_.layers]; !layers.empty()) return layers; else throw data_not_available{"no \"" + keys_.layers + "\""}; }
 
-        void update(TableDistances<float>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const override
-            {
-                if (number_of_sera())
-                    rjson_import::update(data_, keys_.list, keys_.dict, table_distances, column_bases, parameters, number_of_antigens() + number_of_sera());
-                else
-                    throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
-            }
-
-        void update(TableDistances<double>& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const override
+        void update(TableDistances& table_distances, const ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters) const override
             {
                 if (number_of_sera())
                     rjson_import::update(data_, keys_.list, keys_.dict, table_distances, column_bases, parameters, number_of_antigens() + number_of_sera());

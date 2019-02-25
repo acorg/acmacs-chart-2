@@ -201,14 +201,7 @@ acmacs::chart::rjson_import::Layout::Layout(const rjson::value& aData)
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::rjson_import::Layout::set(size_t /*aPointNo*/, const acmacs::Vector& /*aCoordinates*/)
-{
-    throw acmacs::chart::chart_is_read_only{"rjson_import::Layout::set: cannot modify"};
-}
-
-// ----------------------------------------------------------------------
-
-template <typename Float> static void update_list(const rjson::value& data, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters, size_t number_of_points)
+static void update_list(const rjson::value& data, acmacs::chart::TableDistances& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters, size_t number_of_points)
 {
     const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     for (auto p1 : acmacs::range(data.size())) {
@@ -225,7 +218,7 @@ template <typename Float> static void update_list(const rjson::value& data, acma
 
 } // update_list
 
-template <typename Float> static void update_dict(const rjson::value& data, acmacs::chart::TableDistances<Float>& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters, size_t number_of_points)
+static void update_dict(const rjson::value& data, acmacs::chart::TableDistances& table_distances, const acmacs::chart::ColumnBases& column_bases, const acmacs::chart::StressParameters& parameters, size_t number_of_points)
 {
     const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     for (auto p1 : acmacs::range(data.size())) {
@@ -241,7 +234,7 @@ template <typename Float> static void update_dict(const rjson::value& data, acma
 
 } // update_dict
 
-template <typename Float> void acmacs::chart::rjson_import::update(const rjson::value& data, const std::string& list_key, const std::string& dict_key, TableDistances<Float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points)
+void acmacs::chart::rjson_import::update(const rjson::value& data, const std::string& list_key, const std::string& dict_key, TableDistances& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points)
 {
     table_distances.dodgy_is_regular(parameters.dodgy_titer_is_regular);
     if (const auto& list = data[list_key]; !list.is_null())
@@ -250,9 +243,6 @@ template <typename Float> void acmacs::chart::rjson_import::update(const rjson::
         ::update_dict(data[dict_key], table_distances, column_bases, parameters, number_of_points);
 
 } // acmacs::chart::rjson_import::update
-
-template void acmacs::chart::rjson_import::update<float>(const rjson::value& data, const std::string& list_key, const std::string& dict_key, TableDistances<float>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
-template void acmacs::chart::rjson_import::update<double>(const rjson::value& data, const std::string& list_key, const std::string& dict_key, TableDistances<double>& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
 
 // ----------------------------------------------------------------------
 

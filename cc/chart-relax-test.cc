@@ -213,7 +213,7 @@ void optimize_n(acmacs::chart::optimization_method method, acmacs::chart::ChartM
         auto projection = chart.projections_modify()->new_from_scratch(schedule.initial(), min_col_basis);
         projection->randomize_layout(randomizer_plain_with_table_max_distance(*projection));
         auto layout = projection->layout_modified();
-        auto stress = acmacs::chart::stress_factory<double>(*projection, acmacs::chart::multiply_antigen_titer_until_column_adjust::yes);
+        auto stress = acmacs::chart::stress_factory(*projection, acmacs::chart::multiply_antigen_titer_until_column_adjust::yes);
         for (size_t num_dims: schedule) {
             if (num_dims > projection->number_of_dimensions())
                 throw std::runtime_error("invalid schedule: " + acmacs::to_string(schedule));

@@ -7,7 +7,7 @@
 
 // ----------------------------------------------------------------------
 
-namespace acmacs { class LayoutInterface; }
+namespace acmacs { class Layout; }
 
 namespace acmacs::chart
 {
@@ -33,65 +33,53 @@ namespace acmacs::chart
 
     }; // struct StressParameters
 
-    template <typename Float> class Stress
+    class Stress
     {
      public:
-        using TableDistancesForPoint = typename TableDistances<Float>::EntriesForPoint;
+        using TableDistancesForPoint = typename TableDistances::EntriesForPoint;
 
         Stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
         Stress(size_t number_of_dimensions, size_t number_of_points, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular);
 
-        Float value(const Float* first, const Float* /* unused */ = nullptr) const;
-        Float value(const acmacs::LayoutInterface& aLayout) const;
-        Float contribution(size_t point_no, const Float* first) const;
-        Float contribution(size_t point_no, const acmacs::LayoutInterface& aLayout) const;
-        Float contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const Float* first) const;
-        Float contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const acmacs::LayoutInterface& aLayout) const;
-        std::vector<Float> gradient(const Float* first, const Float* last) const;
-        void gradient(const Float* first, const Float* last, Float* gradient_first) const;
-        Float value_gradient(const Float* first, const Float* last, Float* gradient_first) const;
-        std::vector<Float> gradient(const acmacs::LayoutInterface& aLayout) const;
+        double value(const double* first, const double* /* unused */ = nullptr) const;
+        double value(const acmacs::Layout& aLayout) const;
+        double contribution(size_t point_no, const double* first) const;
+        double contribution(size_t point_no, const acmacs::Layout& aLayout) const;
+        double contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const double* first) const;
+        double contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const acmacs::Layout& aLayout) const;
+        std::vector<double> gradient(const double* first, const double* last) const;
+        void gradient(const double* first, const double* last, double* gradient_first) const;
+        double value_gradient(const double* first, const double* last, double* gradient_first) const;
+        std::vector<double> gradient(const acmacs::Layout& aLayout) const;
         constexpr size_t number_of_dimensions() const { return number_of_dimensions_; }
         void change_number_of_dimensions(size_t num_dim) { number_of_dimensions_ = num_dim; }
 
-        const TableDistances<Float>& table_distances() const { return table_distances_; }
-        TableDistances<Float>& table_distances() { return table_distances_; }
+        const TableDistances& table_distances() const { return table_distances_; }
+        TableDistances& table_distances() { return table_distances_; }
         TableDistancesForPoint table_distances_for(size_t point_no) const { return TableDistancesForPoint(point_no, table_distances_); }
         const StressParameters& parameters() const { return parameters_; }
         void set_disconnected(const PointIndexList& to_disconnect) { parameters_.disconnected = to_disconnect; }
         void set_unmovable(const PointIndexList& unmovable) { parameters_.unmovable = unmovable; }
         void set_unmovable_in_the_last_dimension(const PointIndexList& unmovable_in_the_last_dimension) { parameters_.unmovable_in_the_last_dimension = unmovable_in_the_last_dimension; }
 
-        void set_coordinates_of_disconnected(Float* first, Float value, size_t number_of_dimensions) const;
+        void set_coordinates_of_disconnected(double* first, double value, size_t number_of_dimensions) const;
 
      private:
         size_t number_of_dimensions_;
-        TableDistances<Float> table_distances_;
+        TableDistances table_distances_;
         StressParameters parameters_;
 
-        void gradient_plain(const Float* first, const Float* last, Float* gradient_first) const;
-        void gradient_with_unmovable(const Float* first, const Float* last, Float* gradient_first) const;
+        void gradient_plain(const double* first, const double* last, double* gradient_first) const;
+        void gradient_with_unmovable(const double* first, const double* last, double* gradient_first) const;
 
     }; // class Stress
 
-    template <typename Float> Stress<Float> stress_factory(const Projection& projection, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes);
-    template <typename Float> Stress<Float> stress_factory(const acmacs::chart::Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes, bool a_dodgy_titer_is_regular = true);
+    Stress stress_factory(const Projection& projection, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes);
+    Stress stress_factory(const Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular);
 
-    extern template class Stress<float>;
-    extern template class Stress<double>;
-#ifndef __clang__
-      // g++7 does not like extern template below
-#else
-      // clang5 wants those externs (otherwise warning -Wundefined-func-template)
-    extern template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Projection& projection, multiply_antigen_titer_until_column_adjust mult);
-    extern template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Projection& projection, multiply_antigen_titer_until_column_adjust mult);
-    extern template acmacs::chart::Stress<float> acmacs::chart::stress_factory<float>(const acmacs::chart::Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular);
-    extern template acmacs::chart::Stress<double> acmacs::chart::stress_factory<double>(const acmacs::chart::Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular);
-#endif
+    TableDistances table_distances(const acmacs::chart::Chart& chart, MinimumColumnBasis minimum_column_basis, bool a_dodgy_titer_is_regular);
 
-    TableDistances<double> table_distances(const acmacs::chart::Chart& chart, MinimumColumnBasis minimum_column_basis, bool a_dodgy_titer_is_regular);
-
-    template <typename Float> constexpr inline Float SigmoidMutiplier() { return 10; }
+    constexpr inline double SigmoidMutiplier() { return 10.0; }
 
 } // namespace acmacs::chart
 
