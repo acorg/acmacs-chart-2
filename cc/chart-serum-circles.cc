@@ -55,13 +55,13 @@ struct AntigenData
     acmacs::chart::AntigenP antigen;
     std::string infix;
     acmacs::chart::Titer titer;
-    double theoretical = -1;
-    double empirical = -1;
+    acmacs::chart::SerumCircle theoretical;
+    acmacs::chart::SerumCircle empirical;
 
     AntigenData(size_t ag_no, acmacs::chart::AntigenP ag, const acmacs::chart::Titer& a_titer)
         : antigen_no{ag_no}, antigen{ag}, infix(make_infix(ag_no, ag->full_name_with_passage())), titer{a_titer} {}
-    constexpr bool valid_theoretical() const { return theoretical > 0; }
-    constexpr bool valid_empirical() const { return empirical > 0; }
+    constexpr bool valid_theoretical() const { return theoretical.valid(); }
+    constexpr bool valid_empirical() const { return empirical.valid(); }
 };
 
 struct SerumData
@@ -116,8 +116,8 @@ std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t project
         for (auto ag_no : serum->homologous_antigens()) {
             auto& antigen_data = serum_data.antigens.emplace_back(ag_no, (*antigens)[ag_no], titers->titer(ag_no, sr_no));
             if (antigen_data.titer.is_regular()) {
-                antigen_data.theoretical = chart.serum_circle_radius_theoretical(ag_no, sr_no, projection_no, false);
-                antigen_data.empirical = chart.serum_circle_radius_empirical(ag_no, sr_no, projection_no, false);
+                antigen_data.theoretical = chart.serum_circle_radius_theoretical(ag_no, sr_no, projection_no);
+                antigen_data.empirical = chart.serum_circle_radius_empirical(ag_no, sr_no, projection_no);
             }
         }
     }
@@ -137,12 +137,12 @@ void report_text(const acmacs::chart::Chart& chart, const std::vector<SerumData>
             std::cout << "   titer theor empir\n";
             for (const auto& antigen_data : serum_data.antigens) {
                 std::cout << "  " << std::setw(6) << std::right << antigen_data.titer;
-                if (antigen_data.theoretical > 0)
-                    std::cout << ' ' << std::setw(5) << std::fixed << std::setprecision(2) << antigen_data.theoretical;
+                if (antigen_data.theoretical)
+                    std::cout << ' ' << std::setw(5) << std::fixed << std::setprecision(2) << antigen_data.theoretical.radius();
                 else
                     std::cout << std::setw(6) << ' ';
-                if (antigen_data.empirical > 0)
-                    std::cout << ' ' << std::setw(5) << std::fixed << std::setprecision(2) << antigen_data.empirical;
+                if (antigen_data.empirical)
+                    std::cout << ' ' << std::setw(5) << std::fixed << std::setprecision(2) << antigen_data.empirical.radius();
                 else
                     std::cout << std::setw(6) << ' ';
                 std::cout << "   " << std::setw(antigen_no_num_digits) << antigen_data.antigen_no << ' ' << antigen_data.antigen->full_name_with_passage() << '\n';
@@ -273,12 +273,12 @@ inline void make_serum_info(std::ostream& output, const SerumData& serum_data)
         for (const auto& antigen_data : serum_data.antigens) {
             output << "    \"??   titer:" << std::setw(5) << std::right << antigen_data.titer << " theor:";
             if (antigen_data.valid_theoretical())
-                output << std::setw(4) << std::fixed << std::setprecision(2) << std::left << antigen_data.theoretical;
+                output << std::setw(4) << std::fixed << std::setprecision(2) << std::left << antigen_data.theoretical.radius();
             else
                 output << "?   ";
             output << " empir:";
             if (antigen_data.valid_empirical())
-                output << std::setw(4) << std::fixed << std::setprecision(2) << std::left << antigen_data.empirical;
+                output << std::setw(4) << std::fixed << std::setprecision(2) << std::left << antigen_data.empirical.radius();
             else
                 output << "?   ";
             output << " AG " << std::setw(4) << std::right << antigen_data.antigen_no << ' ' << antigen_data.antigen->full_name_with_passage() << "\": false,\n";
@@ -339,8 +339,8 @@ template <mod_type mt, radius_type rt, time_type tt, std::enable_if_t<tt==time_t
     output << "        {\"serum_name\": \"" << serum_data.serum->full_name_with_passage() << "\", \"serum_no\": " << serum_data.serum_no
            << ", \"antigen_name\": \"" << antigen_data.antigen->full_name_with_passage() << "\", \"antigen_no\": " << antigen_data.antigen_no
            << ", \"titer\": \"" << antigen_data.titer
-           << "\", \"theoretical\": " << std::setprecision(2) << std::fixed << antigen_data.theoretical
-           << ", \"empirical\": " << std::setprecision(2) << std::fixed << antigen_data.empirical
+           << "\", \"theoretical\": " << std::setprecision(2) << std::fixed << antigen_data.theoretical.radius()
+           << ", \"empirical\": " << std::setprecision(2) << std::fixed << antigen_data.empirical.radius()
            << ", \"N\": \"comment\", \"type\": \"data\"},\n";
     output << "        {\"N\": \"" << mod_type_name<mt>()
            << "\", \"serum\": {\"index\": " << serum_data.serum_no

@@ -122,36 +122,6 @@ std::string acmacs::chart::Chart::lineage() const
 
 // ----------------------------------------------------------------------
 
-double acmacs::chart::Chart::serum_circle_radius_empirical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool aVerbose) const
-{
-    if (const auto circle_data = serum_circle_empirical(aAntigenNo, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers()); circle_data) {
-        return circle_data.radius();
-    }
-    else {
-        std::cerr << "WARNING: cannot calculate empirical serum projection radius for [sr:" << aSerumNo << ' ' << serum(aSerumNo)->full_name() << "] [ag:" << aAntigenNo << ' '
-                  << antigen(aAntigenNo)->full_name() << "] [titer:" << circle_data.homologous_titer() << "]: " << circle_data.report_reason() << '\n';
-        return -1;
-    }
-
-} // acmacs::chart::Chart::serum_circle_radius_empirical
-
-// ----------------------------------------------------------------------
-
-double acmacs::chart::Chart::serum_circle_radius_theoretical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool /*aVerbose*/) const
-{
-    if (const auto circle_data = serum_circle_theoretical(aAntigenNo, aSerumNo, column_basis(aSerumNo, aProjectionNo), *titers()); circle_data) {
-        return circle_data.radius();
-    }
-    else {
-        std::cerr << "WARNING: cannot calculate theoretical serum projection radius for [sr:" << aSerumNo << ' ' << serum(aSerumNo)->full_name() << "] [ag:" << aAntigenNo << ' '
-                  << antigen(aAntigenNo)->full_name() << "] [titer:" << circle_data.homologous_titer() << "]: " << circle_data.report_reason() << '\n';
-        return -1;
-    }
-
-} // acmacs::chart::Chart::serum_circle_radius_theoretical
-
-// ----------------------------------------------------------------------
-
 void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const
 {
     auto tts = titers();

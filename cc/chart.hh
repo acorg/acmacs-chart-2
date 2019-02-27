@@ -14,6 +14,7 @@
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/optimize.hh"
+#include "acmacs-chart-2/serum-circle.hh"
 #include "acmacs-chart-2/blobs.hh"
 
 // ----------------------------------------------------------------------
@@ -755,9 +756,14 @@ namespace acmacs::chart
         }
         std::vector<acmacs::PointStyle> default_all_styles() const;
 
-        // Negative radius means calculation failed (e.g. no homologous titer)
-        double serum_circle_radius_empirical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool aVerbose = false) const;
-        double serum_circle_radius_theoretical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, bool aVerbose = false) const;
+        SerumCircle serum_circle_radius_empirical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo) const
+        {
+            return serum_circle_empirical(aAntigenNo, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers());
+        }
+        SerumCircle serum_circle_radius_theoretical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo) const
+        {
+            return serum_circle_theoretical(aAntigenNo, aSerumNo, column_basis(aSerumNo, aProjectionNo), *titers());
+        }
         // aWithin4Fold: indices of antigens within 4fold from homologous titer
         // aOutside4Fold: indices of antigens with titers against aSerumNo outside 4fold distance from homologous titer
         void serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const;

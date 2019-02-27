@@ -9,13 +9,16 @@
 const char* acmacs::chart::SerumCircle::report_reason() const
 {
     switch (failure_reason_) {
-      case no_failure:
-          return "SUCCESS";
+      case not_calculated:
+          if (valid())
+              return "SUCCESS";
+          else
+              return "not calculated";
       case non_regular_homologous_titer:
           return "non-regular homologous titer";
       case titer_too_low:
           return "protectionboundary titer is too low, protects everything";
-    } // titer_too_low: protects everything
+    }
 
 } // acmacs::chart::SerumCircle::report_reason
 
