@@ -9,7 +9,7 @@
 acmacs::chart::SerumCircle::SerumCircle(size_t antigen_no, size_t serum_no, double column_basis, Titer homologous_titer)
     : serum_no_{serum_no}, column_basis_{column_basis}, per_antigen_(1)
 {
-    per_antigen_.front() = detail::PerAntigen(antigen_no, homologous_titer);
+    per_antigen_.front() = detail::SerumCirclePerAntigen(antigen_no, homologous_titer);
 
 } // acmacs::chart::SerumCircle::SerumCircle
 
@@ -19,16 +19,16 @@ acmacs::chart::SerumCircle::SerumCircle(const PointIndexList& antigens, size_t s
     : serum_no_{serum_no}, column_basis_{column_basis}, per_antigen_(antigens.size())
 {
     std::transform(std::begin(antigens), std::end(antigens), per_antigen_.begin(), [serum_no,&titers](size_t ag_no) {
-        return detail::PerAntigen(ag_no, titers.titer(ag_no, serum_no));
+        return detail::SerumCirclePerAntigen(ag_no, titers.titer(ag_no, serum_no));
     });
 
 } // acmacs::chart::SerumCircle::SerumCircle
 
 // ----------------------------------------------------------------------
 
-const char* acmacs::chart::SerumCircle::report_reason() const
+const char* acmacs::chart::detail::SerumCirclePerAntigen::report_reason() const
 {
-    switch (failure_reason()) {
+    switch (failure_reason) {
         case serum_circle_failure_reason::not_calculated:
             if (valid())
                 return "SUCCESS";
@@ -40,7 +40,7 @@ const char* acmacs::chart::SerumCircle::report_reason() const
             return "protectionboundary titer is too low, protects everything";
     }
 
-} // acmacs::chart::SerumCircle::report_reason
+} // acmacs::chart::detail::SerumCirclePerAntigen::report_reason
 
 // ----------------------------------------------------------------------
 
@@ -93,14 +93,13 @@ inline std::ostream& operator << (std::ostream& out, const TiterDistance& td)
 // the distance of the closest antigen. Then it takes the radius as
 // average between closest antigen distance and the second closest
 // antigen distance and gets stress. Then it takes the radius as
-// average between the second closest antigen distance and the third
 // closest antigen and gets stress. And so on, the stress increases
 // with each antigen included into the circle.
 //
 // If there are multiple optima with equal sums of 2 and 3, then the
 // radius is a mean of optimal radii.
 
-void acmacs::chart::detail::serum_circle_empirical(const SerumCircle& circle_data, detail::PerAntigen& per_antigen, const Layout& layout, const Titers& titers)
+void acmacs::chart::detail::serum_circle_empirical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen, const Layout& layout, const Titers& titers)
 {
     std::vector<TiterDistance> titers_and_distances(titers.number_of_antigens());
     size_t max_titer_for_serum_ag_no = 0;
@@ -222,7 +221,7 @@ acmacs::chart::SerumCircle acmacs::chart::serum_circle_empirical(const PointInde
 // same thing mathematically the theoretical radius for a serum circle
 // is 2 + log2(max titer for serum S against any antigen A) - log2(homologous titer for serum S).
 
-void acmacs::chart::detail::serum_circle_theoretical(const SerumCircle& circle_data, detail::PerAntigen& per_antigen)
+void acmacs::chart::detail::serum_circle_theoretical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen)
 {
     per_antigen.radius = 2.0 + circle_data.column_basis() - per_antigen.titer.logged_for_column_bases();
 

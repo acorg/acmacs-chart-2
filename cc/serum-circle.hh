@@ -17,28 +17,27 @@ namespace acmacs::chart
 
     namespace detail
     {
-        struct PerAntigen
+        struct SerumCirclePerAntigen
         {
-            PerAntigen() = default;
-            PerAntigen(size_t ag_no, const Titer& tit) : antigen_no{ag_no}, titer{tit} { if (!tit.is_regular()) failure_reason = serum_circle_failure_reason::non_regular_homologous_titer; }
+            SerumCirclePerAntigen() = default;
+            SerumCirclePerAntigen(size_t ag_no, const Titer& tit) : antigen_no{ag_no}, titer{tit} { if (!tit.is_regular()) failure_reason = serum_circle_failure_reason::non_regular_homologous_titer; }
 
-            constexpr bool operator<(const PerAntigen& rhs) const { return radius.has_value() ? (rhs.radius.has_value() ? *radius < *rhs.radius : true) : false; }
+            constexpr bool operator<(const SerumCirclePerAntigen& rhs) const { return radius.has_value() ? (rhs.radius.has_value() ? *radius < *rhs.radius : true) : false; }
             constexpr bool valid() const { return radius.has_value(); }
+            const char* report_reason() const;
 
             size_t antigen_no;
             Titer titer;
             std::optional<double> radius;
             serum_circle_failure_reason failure_reason{serum_circle_failure_reason::not_calculated};
         };
-
-        void serum_circle_empirical(const SerumCircle& circle_data, PerAntigen& per_antigen, const Layout& layout, const Titers& titers);
-        void serum_circle_theoretical(const SerumCircle& circle_data, PerAntigen& per_antigen);
+        void serum_circle_empirical(const SerumCircle& circle_data, SerumCirclePerAntigen& per_antigen, const Layout& layout, const Titers& titers);
+        void serum_circle_theoretical(const SerumCircle& circle_data, SerumCirclePerAntigen& per_antigen);
     }
 
     class SerumCircle
     {
       public:
-
         SerumCircle() = default;
         SerumCircle(size_t antigen_no, size_t serum_no, double column_basis, Titer homologous_titer);
         SerumCircle(const PointIndexList& antigens, size_t serum_no, double column_basis, const Titers& titers);
@@ -65,12 +64,17 @@ namespace acmacs::chart
         constexpr double column_basis() const { return column_basis_; }
         // constexpr const Titer& homologous_titer() const { return homologous_titer_; }
 
-        const char* report_reason() const;
+        const char* report_reason() const
+        {
+            sort();
+            return per_antigen_.empty() ? "not calculated" : per_antigen_.front().report_reason();
+        }
 
-      private:
+        constexpr const std::vector<detail::SerumCirclePerAntigen>& per_antigen() const { return per_antigen_; }
+
         size_t serum_no_;
         double column_basis_;
-        mutable std::vector<detail::PerAntigen> per_antigen_;
+        mutable std::vector<detail::SerumCirclePerAntigen> per_antigen_;
         mutable bool sorted_ = false;
 
         void sort() const
@@ -81,8 +85,8 @@ namespace acmacs::chart
             }
         }
 
-        friend void detail::serum_circle_empirical(const SerumCircle& circle_data, detail::PerAntigen& per_antigen, const Layout& layout, const Titers& titers);
-        friend void detail::serum_circle_theoretical(const SerumCircle& circle_data, detail::PerAntigen& per_antigen);
+        friend void detail::serum_circle_empirical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen, const Layout& layout, const Titers& titers);
+        friend void detail::serum_circle_theoretical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen);
         friend SerumCircle serum_circle_empirical(size_t antigen_no, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers);
         friend SerumCircle serum_circle_theoretical(size_t antigen_no, size_t serum_no, double column_basis, const Titers& titers);
         friend SerumCircle serum_circle_empirical(const PointIndexList& antigens, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers);
