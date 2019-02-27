@@ -1,23 +1,43 @@
-#include <algorithm>
 #include <cmath>
 
 #include "acmacs-base/layout.hh"
 #include "acmacs-chart-2/serum-circle.hh"
+#include "acmacs-chart-2/point-index-list.hh"
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::SerumCircle::SerumCircle(size_t antigen_no, size_t serum_no, double column_basis, Titer homologous_titer)
+    : serum_no_{serum_no}, column_basis_{column_basis}, per_antigen_(1)
+{
+    per_antigen_.front() = detail::PerAntigen(antigen_no, homologous_titer);
+
+} // acmacs::chart::SerumCircle::SerumCircle
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::SerumCircle::SerumCircle(const PointIndexList& antigens, size_t serum_no, double column_basis, const Titers& titers)
+    : serum_no_{serum_no}, column_basis_{column_basis}, per_antigen_(antigens.size())
+{
+    std::transform(std::begin(antigens), std::end(antigens), per_antigen_.begin(), [serum_no,&titers](size_t ag_no) {
+        return detail::PerAntigen(ag_no, titers.titer(ag_no, serum_no));
+    });
+
+} // acmacs::chart::SerumCircle::SerumCircle
 
 // ----------------------------------------------------------------------
 
 const char* acmacs::chart::SerumCircle::report_reason() const
 {
-    switch (failure_reason_) {
-      case not_calculated:
-          if (valid())
-              return "SUCCESS";
-          else
-              return "not calculated";
-      case non_regular_homologous_titer:
-          return "non-regular homologous titer";
-      case titer_too_low:
-          return "protectionboundary titer is too low, protects everything";
+    switch (failure_reason()) {
+        case serum_circle_failure_reason::not_calculated:
+            if (valid())
+                return "SUCCESS";
+            else
+                return "not calculated";
+        case serum_circle_failure_reason::non_regular_homologous_titer:
+            return "non-regular homologous titer";
+        case serum_circle_failure_reason::titer_too_low:
+            return "protectionboundary titer is too low, protects everything";
     }
 
 } // acmacs::chart::SerumCircle::report_reason
@@ -80,29 +100,27 @@ inline std::ostream& operator << (std::ostream& out, const TiterDistance& td)
 // If there are multiple optima with equal sums of 2 and 3, then the
 // radius is a mean of optimal radii.
 
-acmacs::chart::SerumCircle acmacs::chart::serum_circle_empirical(size_t antigen_no, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers)
+void acmacs::chart::detail::serum_circle_empirical(const SerumCircle& circle_data, detail::PerAntigen& per_antigen, const Layout& layout, const Titers& titers)
 {
-    SerumCircle circle_data(antigen_no, serum_no, column_basis, titers.titer(antigen_no, serum_no));
-
-    if (!circle_data.homologous_titer_.is_regular())
-        return circle_data.fail(SerumCircle::non_regular_homologous_titer);
-
     std::vector<TiterDistance> titers_and_distances(titers.number_of_antigens());
     size_t max_titer_for_serum_ag_no = 0;
     for (size_t ag_no = 0; ag_no < titers.number_of_antigens(); ++ag_no) {
-        const auto titer = titers.titer(ag_no, serum_no);
+        const auto titer = titers.titer(ag_no, circle_data.serum_no());
         if (!titer.is_dont_care()) {
             // TODO: antigensSeraTitersMultipliers (acmacs/plot/serum_circle.py:113)
-            titers_and_distances[ag_no] = TiterDistance(titer, column_basis, layout.distance(ag_no, serum_no + titers.number_of_antigens()));
+            titers_and_distances[ag_no] = TiterDistance(titer, circle_data.column_basis(), layout.distance(ag_no, circle_data.serum_no() + titers.number_of_antigens()));
             if (max_titer_for_serum_ag_no != ag_no && titers_and_distances[max_titer_for_serum_ag_no].final_similarity < titers_and_distances[ag_no].final_similarity)
                 max_titer_for_serum_ag_no = ag_no;
         }
-        // else if (ag_no == antigen_no)
+        // else if (ag_no == per_antigen.antigen_no)
         //     throw serum_circle_radius_calculation_error("no homologous titer");
     }
-    const double protection_boundary_titer = titers_and_distances[antigen_no].final_similarity - 2.0;
-    if (protection_boundary_titer < 1.0)
-        return circle_data.fail(SerumCircle::titer_too_low);
+    const double protection_boundary_titer = titers_and_distances[per_antigen.antigen_no].final_similarity - 2.0;
+    if (protection_boundary_titer < 1.0) {
+        per_antigen.failure_reason = serum_circle_failure_reason::titer_too_low;
+        return;
+    }
+
     // if (aVerbose) {
     //     std::cerr << ">>> titers_and_distances: " << titers_and_distances << '\n';
     //     std::cerr << ">>> serum_circle_radius_empirical protection_boundary_titer: " << protection_boundary_titer << '\n';
@@ -168,7 +186,30 @@ acmacs::chart::SerumCircle acmacs::chart::serum_circle_empirical(size_t antigen_
             previous = ag_no;
         }
     }
-    circle_data.radius_ = sum_radii / num_radii;
+    per_antigen.radius = sum_radii / num_radii;
+
+} // acmacs::chart::detail::serum_circle_empirical
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::SerumCircle acmacs::chart::serum_circle_empirical(size_t antigen_no, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers)
+{
+    SerumCircle circle_data(antigen_no, serum_no, column_basis, titers.titer(antigen_no, serum_no));
+    if (circle_data.failure_reason() == serum_circle_failure_reason::not_calculated)
+        serum_circle_empirical(circle_data, circle_data.per_antigen_.front(), layout, titers);
+    return circle_data;
+
+} // acmacs::chart::serum_circle_empirical
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::SerumCircle acmacs::chart::serum_circle_empirical(const PointIndexList& antigens, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers)
+{
+    SerumCircle circle_data(antigens, serum_no, column_basis, titers);
+    for (auto& per_antigen : circle_data.per_antigen_) {
+        if (per_antigen.failure_reason == serum_circle_failure_reason::not_calculated)
+            serum_circle_empirical(circle_data, per_antigen, layout, titers);
+    }
     return circle_data;
 
 } // acmacs::chart::serum_circle_empirical
@@ -181,20 +222,35 @@ acmacs::chart::SerumCircle acmacs::chart::serum_circle_empirical(size_t antigen_
 // same thing mathematically the theoretical radius for a serum circle
 // is 2 + log2(max titer for serum S against any antigen A) - log2(homologous titer for serum S).
 
+void acmacs::chart::detail::serum_circle_theoretical(const SerumCircle& circle_data, detail::PerAntigen& per_antigen)
+{
+    per_antigen.radius = 2.0 + circle_data.column_basis() - per_antigen.titer.logged_for_column_bases();
+
+} // acmacs::chart::detail::serum_circle_theoretical
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::SerumCircle acmacs::chart::serum_circle_theoretical(size_t antigen_no, size_t serum_no, double column_basis, const Titers& titers)
 {
     SerumCircle circle_data(antigen_no, serum_no, column_basis, titers.titer(antigen_no, serum_no));
-
-    if (!circle_data.homologous_titer_.is_regular())
-        return circle_data.fail(SerumCircle::non_regular_homologous_titer);
-
-    circle_data.radius_ = 2.0 + column_basis - circle_data.homologous_titer_.logged_for_column_bases();
+    if (circle_data.failure_reason() == serum_circle_failure_reason::not_calculated)
+        serum_circle_theoretical(circle_data, circle_data.per_antigen_.front());
     return circle_data;
 
 } // acmacs::chart::serum_circle_theoretical
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::SerumCircle acmacs::chart::serum_circle_theoretical(const PointIndexList& antigens, size_t serum_no, double column_basis, const Titers& titers)
+{
+    SerumCircle circle_data(antigens, serum_no, column_basis, titers);
+    for (auto& per_antigen : circle_data.per_antigen_) {
+        if (per_antigen.failure_reason == serum_circle_failure_reason::not_calculated)
+            serum_circle_theoretical(circle_data, per_antigen);
+    }
+    return circle_data;
+
+} // acmacs::chart::serum_circle_theoretical
 
 // ----------------------------------------------------------------------
 /// Local Variables:
