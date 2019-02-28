@@ -60,8 +60,8 @@ struct AntigenData
 
     AntigenData(size_t ag_no, acmacs::chart::AntigenP ag, const acmacs::chart::Titer& a_titer)
         : antigen_no{ag_no}, antigen{ag}, infix(make_infix(ag_no, ag->full_name_with_passage())), titer{a_titer} {}
-    constexpr bool valid_theoretical() const { return theoretical.valid(); }
-    constexpr bool valid_empirical() const { return empirical.valid(); }
+    bool valid_theoretical() const { return theoretical.valid(); }
+    bool valid_empirical() const { return empirical.valid(); }
 };
 
 struct SerumData
