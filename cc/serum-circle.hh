@@ -72,6 +72,7 @@ namespace acmacs::chart
 
         constexpr const std::vector<detail::SerumCirclePerAntigen>& per_antigen() const { return per_antigen_; }
 
+      private:
         size_t serum_no_;
         double column_basis_;
         mutable std::vector<detail::SerumCirclePerAntigen> per_antigen_;
