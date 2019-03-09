@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-chart-2/factory-import.hh"
@@ -9,37 +9,33 @@
 
 // ----------------------------------------------------------------------
 
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<str> match{*this, "match", dflt{"auto"}, desc{"match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""}};
+
+    argument<str> chart1{*this, arg_name{"chart1"}, mandatory};
+    argument<str> chart2{*this, arg_name{"chart2"}, mandatory};
+};
+
 int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv,
-                       {
-                           {"--match", "auto", "match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""},
-                           {"--time", false, "test speed"},
-                           {"--verbose", false},
-                           {"-h", false},
-                           {"--help", false},
-                           {"-v", false},
-                       });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file> <chart-file>\n" << args.usage_options() << '\n';
-            exit_code = 1;
+        Options opt(argc, argv);
+        const auto match_level = acmacs::chart::CommonAntigensSera::match_level(*opt.match);
+        if (*opt.chart1 == *opt.chart2) {
+            auto chart1 = acmacs::chart::import_from_file(*opt.chart1, acmacs::chart::Verify::None);
+            acmacs::chart::CommonAntigensSera common(*chart1);
+            common.report();
         }
         else {
-            const auto report = do_report_time(args["--time"]);
-            const auto match_level = acmacs::chart::CommonAntigensSera::match_level(args["--match"]);
-            if (std::string(args[0]) == args[1]) {
-                auto chart1 = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
-                acmacs::chart::CommonAntigensSera common(*chart1);
-                common.report();
-            }
-            else {
-                auto chart1 = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
-                auto chart2 = acmacs::chart::import_from_file(args[1], acmacs::chart::Verify::None, report);
-                acmacs::chart::CommonAntigensSera common(*chart1, *chart2, match_level);
-                common.report();
-            }
+            auto chart1 = acmacs::chart::import_from_file(opt.chart1, acmacs::chart::Verify::None);
+            auto chart2 = acmacs::chart::import_from_file(opt.chart2, acmacs::chart::Verify::None);
+            acmacs::chart::CommonAntigensSera common(*chart1, *chart2, match_level);
+            common.report();
         }
     }
     catch (std::exception& err) {

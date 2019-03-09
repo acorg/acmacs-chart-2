@@ -1,4 +1,6 @@
 #include "acmacs-base/string.hh"
+#include "acmacs-base/stream.hh"
+#include "acmacs-base/range.hh"
 #include "acmacs-chart-2/common.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -341,12 +343,23 @@ template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry
         const auto num_digits_secondary = static_cast<int>(std::log10(max_number_secondary)) + 1;
 
         stream << "common " << prefix << ": " << number_of_common_ << " (total primary: " << primary_.size() << " secondary: " << secondary_.size() << ")\n";
+        std::vector<size_t> common_in_primary, common_in_secondary;
         for (const auto& m: match_) {
-            if (m.use)
+            if (m.use) {
                 stream << std::setw(static_cast<int>(std::strlen(ignored_key) + 1)) << std::left << score_names[static_cast<size_t>(m.score)]
                        << std::setw(num_digits_primary) << std::right << m.primary_index << ' ' << std::setw(static_cast<int>(primary_name_size)) << std::left << find_primary(m.primary_index).full_name()
                        << "|" << std::setw(num_digits_secondary) << std::right << m.secondary_index << ' ' << /* std::setw(static_cast<int>(secondary_name_size)) << std::left << */ secondary_[m.secondary_index].full_name() << '\n';
+                common_in_primary.push_back(m.primary_index);
+                common_in_secondary.push_back(m.secondary_index);
+            }
         }
+        stream << "common in primary " << prefix << ": " << common_in_primary << '\n';
+        stream << "common in secondary " << prefix << ": " << common_in_secondary << '\n';
+        std::vector<size_t> unique_in_primary(primary_.size() - common_in_primary.size()), unique_in_secondary(secondary_.size() - common_in_secondary.size());
+        std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(primary_.size()), unique_in_primary.begin(), [&common_in_primary](size_t index) { return std::find(std::begin(common_in_primary), std::end(common_in_primary), index) == std::end(common_in_primary); });
+        std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(secondary_.size()), unique_in_secondary.begin(), [&common_in_secondary](size_t index) { return std::find(std::begin(common_in_secondary), std::end(common_in_secondary), index) == std::end(common_in_secondary); });
+        stream << "unique in primary " << prefix << ": " << unique_in_primary << '\n';
+        stream << "unique in secondary " << prefix << ": " << unique_in_secondary << '\n';
     }
     else {
         stream << "WARNING: no common " << prefix << '\n';
