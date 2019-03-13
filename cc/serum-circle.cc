@@ -125,7 +125,8 @@ void acmacs::chart::detail::serum_circle_empirical(const SerumCircle& circle_dat
         // else if (ag_no == per_antigen.antigen_no)
         //     throw serum_circle_radius_calculation_error("no homologous titer");
     }
-    const double protection_boundary_titer = titers_and_distances[per_antigen.antigen_no].final_similarity - 2.0;
+    // const double protection_boundary_titer = titers_and_distances[per_antigen.antigen_no].final_similarity - 2.0;
+    const double protection_boundary_titer = std::min(circle_data.column_basis(), per_antigen.titer.logged_for_column_bases()) - 2.0; // fixed to support forced homologous titer
     if (protection_boundary_titer < 1.0) {
         per_antigen.failure_reason = serum_circle_failure_reason::titer_too_low;
         return;
