@@ -122,15 +122,14 @@ std::string acmacs::chart::Chart::lineage() const
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const
+void acmacs::chart::Chart::serum_coverage(Titer aHomologousTiter, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const
 {
-    auto tts = titers();
-    const auto homologous_titer = tts->titer(aAntigenNo, aSerumNo);
-    if (!homologous_titer.is_regular())
-        throw serum_coverage_error("cannot handle non-regular homologous titer: " + homologous_titer);
-    const double titer_threshold = homologous_titer.logged() - 2;
+    if (!aHomologousTiter.is_regular())
+        throw serum_coverage_error("cannot handle non-regular homologous titer: " + aHomologousTiter);
+    const double titer_threshold = aHomologousTiter.logged() - 2;
     if (titer_threshold <= 0)
-        throw serum_coverage_error("homologous titer is too low: " + homologous_titer);
+        throw serum_coverage_error("homologous titer is too low: " + aHomologousTiter);
+    auto tts = titers();
     for (size_t ag_no = 0; ag_no < number_of_antigens(); ++ag_no) {
         const Titer titer = tts->titer(ag_no, aSerumNo);
         const double value = titer.is_dont_care() ? -1 : titer.logged_for_column_bases();
@@ -141,6 +140,14 @@ void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, In
     }
     if (aWithin4Fold.empty())
         throw serum_coverage_error("no antigens within 4fold from homologous titer (for serum coverage)"); // BUG? at least homologous antigen must be there!
+
+} // acmacs::chart::Chart::serum_coverage
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const
+{
+    serum_coverage(titers()->titer(aAntigenNo, aSerumNo), aSerumNo, aWithin4Fold, aOutside4Fold);
 
 } // acmacs::chart::Chart::serum_coverage
 

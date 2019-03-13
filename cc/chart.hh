@@ -756,6 +756,10 @@ namespace acmacs::chart
         }
         std::vector<acmacs::PointStyle> default_all_styles() const;
 
+        SerumCircle serum_circle_radius_empirical(const Indexes& antigens, Titer aHomologousTiter, size_t aSerumNo, size_t aProjectionNo) const
+        {
+            return serum_circle_empirical(antigens, aHomologousTiter, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers());
+        }
         SerumCircle serum_circle_radius_empirical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo) const
         {
             return serum_circle_empirical(aAntigenNo, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers());
@@ -763,6 +767,10 @@ namespace acmacs::chart
         SerumCircle serum_circle_radius_empirical(const Indexes& antigens, size_t aSerumNo, size_t aProjectionNo) const
         {
             return serum_circle_empirical(antigens, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers());
+        }
+        SerumCircle serum_circle_radius_theoretical(Titer aHomologousTiter, size_t aSerumNo, size_t aProjectionNo) const
+        {
+            return serum_circle_theoretical(aHomologousTiter, aSerumNo, column_basis(aSerumNo, aProjectionNo));
         }
         SerumCircle serum_circle_radius_theoretical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo) const
         {
@@ -775,6 +783,7 @@ namespace acmacs::chart
         // aWithin4Fold: indices of antigens within 4fold from homologous titer
         // aOutside4Fold: indices of antigens with titers against aSerumNo outside 4fold distance from homologous titer
         void serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const;
+        void serum_coverage(Titer aHomologousTiter, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const;
 
         void set_homologous(find_homologous options, std::shared_ptr<Sera> aSera = nullptr) const;
 

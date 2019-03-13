@@ -41,6 +41,7 @@ namespace acmacs::chart
         SerumCircle() = default;
         SerumCircle(size_t antigen_no, size_t serum_no, double column_basis, Titer homologous_titer);
         SerumCircle(const PointIndexList& antigens, size_t serum_no, double column_basis, const Titers& titers);
+        SerumCircle(const PointIndexList& antigens, size_t serum_no, double column_basis, Titer homologous_titer);
 
         bool valid() const
         {
@@ -88,12 +89,16 @@ namespace acmacs::chart
 
         friend void detail::serum_circle_empirical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen, const Layout& layout, const Titers& titers);
         friend void detail::serum_circle_theoretical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen);
+        friend SerumCircle serum_circle_empirical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers);
+        friend SerumCircle serum_circle_theoretical(Titer homologous_titer, size_t serum_no, double column_basis);
         friend SerumCircle serum_circle_empirical(size_t antigen_no, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers);
         friend SerumCircle serum_circle_theoretical(size_t antigen_no, size_t serum_no, double column_basis, const Titers& titers);
         friend SerumCircle serum_circle_empirical(const PointIndexList& antigens, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers);
         friend SerumCircle serum_circle_theoretical(const PointIndexList& antigens, size_t serum_no, double column_basis, const Titers& titers);
     };
 
+    SerumCircle serum_circle_empirical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers);
+    SerumCircle serum_circle_theoretical(Titer homologous_titer, size_t serum_no, double column_basis);
     SerumCircle serum_circle_empirical(size_t antigen_no, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers);
     SerumCircle serum_circle_theoretical(size_t antigen_no, size_t serum_no, double column_basis, const Titers& titers);
     SerumCircle serum_circle_empirical(const PointIndexList& antigens, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers);
