@@ -756,29 +756,29 @@ namespace acmacs::chart
         }
         std::vector<acmacs::PointStyle> default_all_styles() const;
 
-        SerumCircle serum_circle_radius_empirical(const Indexes& antigens, Titer aHomologousTiter, size_t aSerumNo, size_t aProjectionNo) const
+        SerumCircle serum_circle_radius_empirical(const Indexes& antigens, Titer aHomologousTiter, size_t aSerumNo, size_t aProjectionNo, double fold = 2) const // aFold=2 for 4fold, 3 - for 8fold
         {
-            return serum_circle_empirical(antigens, aHomologousTiter, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers());
+            return serum_circle_empirical(antigens, aHomologousTiter, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers(), fold);
         }
-        SerumCircle serum_circle_radius_empirical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo) const
+        SerumCircle serum_circle_radius_empirical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, double fold = 2) const
         {
-            return serum_circle_empirical(aAntigenNo, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers());
+            return serum_circle_empirical(aAntigenNo, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers(), fold);
         }
-        SerumCircle serum_circle_radius_empirical(const Indexes& antigens, size_t aSerumNo, size_t aProjectionNo) const
+        SerumCircle serum_circle_radius_empirical(const Indexes& antigens, size_t aSerumNo, size_t aProjectionNo, double fold = 2) const
         {
-            return serum_circle_empirical(antigens, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers());
+            return serum_circle_empirical(antigens, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers(), fold);
         }
-        SerumCircle serum_circle_radius_theoretical(Titer aHomologousTiter, size_t aSerumNo, size_t aProjectionNo) const
+        SerumCircle serum_circle_radius_theoretical(Titer aHomologousTiter, size_t aSerumNo, size_t aProjectionNo, double fold = 2) const
         {
-            return serum_circle_theoretical(aHomologousTiter, aSerumNo, column_basis(aSerumNo, aProjectionNo));
+            return serum_circle_theoretical(aHomologousTiter, aSerumNo, column_basis(aSerumNo, aProjectionNo), fold);
         }
-        SerumCircle serum_circle_radius_theoretical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo) const
+        SerumCircle serum_circle_radius_theoretical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, double fold = 2) const
         {
-            return serum_circle_theoretical(aAntigenNo, aSerumNo, column_basis(aSerumNo, aProjectionNo), *titers());
+            return serum_circle_theoretical(aAntigenNo, aSerumNo, column_basis(aSerumNo, aProjectionNo), *titers(), fold);
         }
-        SerumCircle serum_circle_radius_theoretical(const Indexes& antigens, size_t aSerumNo, size_t aProjectionNo) const
+        SerumCircle serum_circle_radius_theoretical(const Indexes& antigens, size_t aSerumNo, size_t aProjectionNo, double fold = 2) const
         {
-            return serum_circle_theoretical(antigens, aSerumNo, column_basis(aSerumNo, aProjectionNo), *titers());
+            return serum_circle_theoretical(antigens, aSerumNo, column_basis(aSerumNo, aProjectionNo), *titers(), fold);
         }
         // aWithin4Fold: indices of antigens within 4fold from homologous titer
         // aOutside4Fold: indices of antigens with titers against aSerumNo outside 4fold distance from homologous titer
