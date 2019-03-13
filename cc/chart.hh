@@ -782,8 +782,8 @@ namespace acmacs::chart
         }
         // aWithin4Fold: indices of antigens within 4fold from homologous titer
         // aOutside4Fold: indices of antigens with titers against aSerumNo outside 4fold distance from homologous titer
-        void serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const;
-        void serum_coverage(Titer aHomologousTiter, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const;
+        void serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithinFold, Indexes& aOutsideFold, double aFold = 2) const; // aFold=2 for 4fold, 3 - for 8fold
+        void serum_coverage(Titer aHomologousTiter, size_t aSerumNo, Indexes& aWithinFold, Indexes& aOutsideFold, double aFold = 2) const; // aFold=2 for 4fold, 3 - for 8fold
 
         void set_homologous(find_homologous options, std::shared_ptr<Sera> aSera = nullptr) const;
 

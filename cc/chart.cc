@@ -122,11 +122,11 @@ std::string acmacs::chart::Chart::lineage() const
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Chart::serum_coverage(Titer aHomologousTiter, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const
+void acmacs::chart::Chart::serum_coverage(Titer aHomologousTiter, size_t aSerumNo, Indexes& aWithinFold, Indexes& aOutsideFold, double aFold) const
 {
     if (!aHomologousTiter.is_regular())
         throw serum_coverage_error("cannot handle non-regular homologous titer: " + aHomologousTiter);
-    const double titer_threshold = aHomologousTiter.logged() - 2;
+    const double titer_threshold = aHomologousTiter.logged() - aFold;
     if (titer_threshold <= 0)
         throw serum_coverage_error("homologous titer is too low: " + aHomologousTiter);
     auto tts = titers();
@@ -134,20 +134,20 @@ void acmacs::chart::Chart::serum_coverage(Titer aHomologousTiter, size_t aSerumN
         const Titer titer = tts->titer(ag_no, aSerumNo);
         const double value = titer.is_dont_care() ? -1 : titer.logged_for_column_bases();
         if (value >= titer_threshold)
-            aWithin4Fold.insert(ag_no);
+            aWithinFold.insert(ag_no);
         else if (value >= 0 && value < titer_threshold)
-            aOutside4Fold.insert(ag_no);
+            aOutsideFold.insert(ag_no);
     }
-    if (aWithin4Fold.empty())
+    if (aWithinFold.empty())
         throw serum_coverage_error("no antigens within 4fold from homologous titer (for serum coverage)"); // BUG? at least homologous antigen must be there!
 
 } // acmacs::chart::Chart::serum_coverage
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithin4Fold, Indexes& aOutside4Fold) const
+void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithinFold, Indexes& aOutsideFold, double aFold) const
 {
-    serum_coverage(titers()->titer(aAntigenNo, aSerumNo), aSerumNo, aWithin4Fold, aOutside4Fold);
+    serum_coverage(titers()->titer(aAntigenNo, aSerumNo), aSerumNo, aWithinFold, aOutsideFold, aFold);
 
 } // acmacs::chart::Chart::serum_coverage
 
