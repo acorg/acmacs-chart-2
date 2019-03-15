@@ -15,6 +15,7 @@ TARGETS = \
     $(DIST)/chart-titer-merging-from-layers \
     $(DIST)/chart-titer-merging-for-serum \
     $(DIST)/chart-stress \
+    $(DIST)/chart-stresses \
     $(DIST)/chart-transformation \
     $(DIST)/chart-relax-test \
     $(DIST)/chart-relax \
