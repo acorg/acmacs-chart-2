@@ -258,7 +258,7 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
         projection->randomize_layout(rnd);
         auto layout = projection->layout_modified();
         stress.change_number_of_dimensions(start_num_dim);
-        const auto status1 = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
+        const auto status1 = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), start_num_dim > number_of_dimensions ? optimization_precision::rough : options.precision);
         if (start_num_dim > number_of_dimensions) {
             acmacs::chart::dimension_annealing(options.method, stress, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
             layout->change_number_of_dimensions(number_of_dimensions);
