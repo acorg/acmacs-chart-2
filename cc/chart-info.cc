@@ -83,6 +83,8 @@ int main(int argc, char* const argv[])
                         std::cout << std::setw(3) << src_no << ' ' << info->source(src_no)->make_name() << '\n';
                 }
             }
+            if (file_no < (opt.charts->size() - 1))
+                std::cout << '\n';
         }
     }
     catch (std::exception& err) {
