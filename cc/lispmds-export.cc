@@ -302,6 +302,7 @@ std::string point_shape(const acmacs::PointShape& aShape)
 {
     switch (static_cast<acmacs::PointShape::Shape>(aShape)) {
       case acmacs::PointShape::Circle:
+      case acmacs::PointShape::Egg:
           return "CIRCLE";
       case acmacs::PointShape::Box:
           return "RECTANGLE";

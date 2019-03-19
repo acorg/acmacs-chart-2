@@ -582,6 +582,10 @@ namespace acmacs::chart
         {
             remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_cell(); });
         }
+        void filter_reassortant(Indexes& aIndexes) const
+        {
+            remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); });
+        }
 
         virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const;
         virtual Indexes find_by_name(std::string_view aName) const;
