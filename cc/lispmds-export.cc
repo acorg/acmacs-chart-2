@@ -305,6 +305,7 @@ std::string point_shape(const acmacs::PointShape& aShape)
       case acmacs::PointShape::Egg:
           return "CIRCLE";
       case acmacs::PointShape::Box:
+      case acmacs::PointShape::UglyEgg:
           return "RECTANGLE";
       case acmacs::PointShape::Triangle:
           return "TRIANGLE";
