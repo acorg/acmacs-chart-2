@@ -456,7 +456,7 @@ namespace acmacs::chart
         const Transformation& transformation_modified() const { return transformation_; }
         ColumnBasesModifyP forced_column_bases_modified() const { return forced_column_bases_; }
         void set_forced_column_bases(ColumnBasesP aSource) { if (aSource) forced_column_bases_ = std::make_shared<ColumnBasesModify>(aSource); else forced_column_bases_.reset(); }
-        void new_layout(size_t number_of_points, size_t number_of_dimensions) { layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions); transformation_.reset(); transformed_layout_.reset(); }
+        void new_layout(size_t number_of_points, size_t number_of_dimensions) { layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions); transformation_.reset(number_of_dimensions); transformed_layout_.reset(); }
 
      private:
         std::shared_ptr<acmacs::Layout> layout_;
