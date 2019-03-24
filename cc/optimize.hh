@@ -74,7 +74,7 @@ namespace acmacs::chart
     {
         ErrorLine(size_t p1, size_t p2, double el) : point_1{p1}, point_2{p2}, error_line{el} {}
         size_t point_1, point_2;
-        double error_line;
+        double error_line;      // positive: table_dist > map_dist, i.e. draw line in direction opposite to corresponding point
 
     }; // struct ErrorLine
 
