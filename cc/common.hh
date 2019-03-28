@@ -5,11 +5,14 @@
 #include <vector>
 #include <iostream>
 
+#include "acmacs-chart-2/point-index-list.hh"
+
 // ----------------------------------------------------------------------
 
 namespace acmacs::chart
 {
     class Chart;
+    using Indexes = PointIndexList;
 
     class CommonAntigensSera
     {
@@ -52,6 +55,8 @@ namespace acmacs::chart
 
         enum class subset { all, antigens, sera };
         std::vector<common_t> points(subset a_subset) const;
+        std::vector<common_t> points_for_primary_antigens(const Indexes& antigen_indexes) const;
+        std::vector<common_t> points_for_primary_sera(const Indexes& serum_indexes) const;
 
         static match_level_t match_level(std::string_view source);
 

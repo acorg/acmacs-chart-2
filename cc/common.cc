@@ -556,6 +556,27 @@ std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAn
 
 // ----------------------------------------------------------------------
 
+std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAntigensSera::points_for_primary_antigens(const Indexes& antigen_indexes) const
+{
+    auto result = impl_->antigens_.common();
+    result.erase(std::remove_if(std::begin(result), std::end(result), [&antigen_indexes](const auto& entry) { return !antigen_indexes.contains(entry.primary); }), std::end(result));
+    return result;
+
+} // acmacs::chart::CommonAntigensSera::points_for_primary_antigens
+
+// ----------------------------------------------------------------------
+
+std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAntigensSera::points_for_primary_sera(const Indexes& serum_indexes) const
+{
+    auto result = impl_->sera_.common();
+    result.erase(std::remove_if(std::begin(result), std::end(result), [&serum_indexes](const auto& entry) { return !serum_indexes.contains(entry.primary); }), std::end(result));
+    std::transform(result.begin(), result.end(), result.begin(), [primary_base_=impl_->sera_.primary_base_,secondary_base=impl_->sera_.secondary_base_](const auto& entry) -> common_t { return {entry.primary + primary_base_, entry.secondary + secondary_base}; });
+    return result;
+
+} // acmacs::chart::CommonAntigensSera::points_for_primary_sera
+
+// ----------------------------------------------------------------------
+
 std::optional<size_t> acmacs::chart::CommonAntigensSera::antigen_primary_by_secondary(size_t secondary_no) const
 {
     return impl_->antigens_.primary_by_secondary(secondary_no);
