@@ -17,7 +17,7 @@
     "a": [               // antigen list
       // all antigen fields except "N" are optional
       {
-        "N": "mandatory name: TYPE(SUBTYPE)/{HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME",
+        "N": "mandatory name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME",
         "D": "date, e.g. 2016-04-04",
         "L": "lineage: Y[AMAGATA] or V[ICTORIA]",
         "P": "passage, e.g. MDCK2/SIAT1 (2016-05-12)",
