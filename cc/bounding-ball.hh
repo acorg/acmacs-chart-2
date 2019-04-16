@@ -50,7 +50,7 @@ namespace acmacs
         double right() const { return mCenter.x() + mDiameter / 2.0; }
 
      private:
-        PointCoordinates mCenter;
+        PointCoordinates mCenter{0.0, 0.0};
         double mDiameter;
 
         // Returns distance^2 from the ball center to point
