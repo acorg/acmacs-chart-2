@@ -521,7 +521,9 @@ namespace acmacs::chart
               dodgy_titer_is_regular_(aSource.dodgy_titer_is_regular()), stress_diff_to_stop_(aSource.stress_diff_to_stop()),
               disconnected_(aSource.disconnected())
             {
-                set_layout(*aSource.layout());
+                const auto& source_layout = *aSource.layout();
+                new_layout(source_layout.number_of_points(), source_layout.number_of_dimensions());
+                set_layout(source_layout);
                 set_forced_column_bases(aSource.forced_column_bases());
                 comment(aSource.comment());
             }

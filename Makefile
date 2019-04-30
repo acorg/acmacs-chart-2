@@ -2,68 +2,69 @@
 # ----------------------------------------------------------------------
 
 TARGETS = \
-    $(ACMACS_CHART_LIB) \
-    $(DIST)/chart-info \
-    $(DIST)/chart-names \
-    $(DIST)/chart-plot-spec \
-    $(DIST)/chart-layout \
-    $(DIST)/chart-convert \
-    $(DIST)/chart-txt-to-ace \
-    $(DIST)/chart-modify-projection \
-    $(DIST)/chart-modify-plot-spec \
-    $(DIST)/chart-titer-merging-report \
-    $(DIST)/chart-titer-merging-from-layers \
-    $(DIST)/chart-titer-merging-for-serum \
-    $(DIST)/chart-stress \
-    $(DIST)/chart-stresses \
-    $(DIST)/chart-transformation \
-    $(DIST)/chart-relax-test \
-    $(DIST)/chart-relax \
-    $(DIST)/chart-relax-existing \
-    $(DIST)/chart-relax-disconnected \
-    $(DIST)/chart-relax-incremental \
-    $(DIST)/chart-relax-save-intermediate-layouts \
-    $(DIST)/chart-grid-test \
-    $(DIST)/chart-relax-grid \
-    $(DIST)/chart-error-lines \
-    $(DIST)/chart-common \
-    $(DIST)/chart-procrustes \
-    $(DIST)/chart-reorient \
-    $(DIST)/chart-reorient-projections \
-    $(DIST)/chart-degradation-resolver \
-    $(DIST)/chart-html \
-    $(DIST)/chart-serum-circles \
-    $(DIST)/chart-update \
-    $(DIST)/chart-join \
-    $(DIST)/chart-remove-antigens-sera \
-    $(DIST)/chart-remove-antigens-by-full-name \
-    $(DIST)/chart-keep-antigens-sera \
-    $(DIST)/chart-keep-antigens-titrated-against-sera \
-    $(DIST)/chart-serum-titers-check \
-    $(DIST)/chart-column-bases \
-    $(DIST)/chart-list-antigens-without-titers \
-    $(DIST)/chart-remove-layers \
-    $(DIST)/chart-merge \
-    $(DIST)/chart-export \
-    $(DIST)/test-titer-iterator \
-    $(DIST)/test-chart-modify \
-    $(DIST)/test-chart-create-from-scratch \
-    $(DIST)/test-chart-from-text \
-    $(DIST)/test-chart-merge \
-    $(DIST)/test-get-titers \
-    $(DIST)/chart-homologous-pairs
+  $(ACMACS_CHART_LIB) \
+  $(DIST)/chart-info \
+  $(DIST)/chart-names \
+  $(DIST)/chart-plot-spec \
+  $(DIST)/chart-layout \
+  $(DIST)/chart-convert \
+  $(DIST)/chart-txt-to-ace \
+  $(DIST)/chart-modify-projection \
+  $(DIST)/chart-modify-plot-spec \
+  $(DIST)/chart-titer-merging-report \
+  $(DIST)/chart-titer-merging-from-layers \
+  $(DIST)/chart-titer-merging-for-serum \
+  $(DIST)/chart-stress \
+  $(DIST)/chart-stresses \
+  $(DIST)/chart-transformation \
+  $(DIST)/chart-relax-test \
+  $(DIST)/chart-relax \
+  $(DIST)/chart-relax-existing \
+  $(DIST)/chart-relax-disconnected \
+  $(DIST)/chart-relax-incremental \
+  $(DIST)/chart-relax-save-intermediate-layouts \
+  $(DIST)/chart-grid-test \
+  $(DIST)/chart-relax-grid \
+  $(DIST)/chart-error-lines \
+  $(DIST)/chart-common \
+  $(DIST)/chart-procrustes \
+  $(DIST)/chart-reorient \
+  $(DIST)/chart-reorient-projections \
+  $(DIST)/chart-degradation-resolver \
+  $(DIST)/chart-html \
+  $(DIST)/chart-serum-circles \
+  $(DIST)/chart-update \
+  $(DIST)/chart-join \
+  $(DIST)/chart-remove-antigens-sera \
+  $(DIST)/chart-remove-antigens-by-full-name \
+  $(DIST)/chart-keep-antigens-sera \
+  $(DIST)/chart-keep-antigens-titrated-against-sera \
+  $(DIST)/chart-serum-titers-check \
+  $(DIST)/chart-column-bases \
+  $(DIST)/chart-list-antigens-without-titers \
+  $(DIST)/chart-remove-layers \
+  $(DIST)/chart-merge \
+  $(DIST)/chart-export \
+  $(DIST)/test-titer-iterator \
+  $(DIST)/test-chart-modify \
+  $(DIST)/test-chart-create-from-scratch \
+  $(DIST)/test-chart-from-text \
+  $(DIST)/test-chart-merge \
+  $(DIST)/test-get-titers \
+  $(DIST)/test-clone-projection \
+  $(DIST)/chart-homologous-pairs
 
 SOURCES = \
-    chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc randomizer.cc serum-circle.cc \
-    merge.cc common.cc \
-    rjson-import.cc \
-    factory-import.cc ace-import.cc acd1-import.cc lispmds-import.cc lispmds-token.cc \
-    factory-export.cc ace-export.cc lispmds-export.cc lispmds-encode.cc chart-modify.cc \
-    procrustes.cc grid-test.cc serum-line.cc blobs.cc
+  chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc randomizer.cc serum-circle.cc \
+  merge.cc common.cc \
+  rjson-import.cc \
+  factory-import.cc ace-import.cc acd1-import.cc lispmds-import.cc lispmds-token.cc \
+  factory-export.cc ace-export.cc lispmds-export.cc lispmds-encode.cc chart-modify.cc \
+  procrustes.cc grid-test.cc serum-line.cc blobs.cc
 
 ALGLIB = alglib-3.13.0
 ALGLIB_SOURCES = optimization.cpp ap.cpp alglibinternal.cpp linalg.cpp alglibmisc.cpp \
-    dataanalysis.cpp statistics.cpp specialfunctions.cpp solvers.cpp
+  dataanalysis.cpp statistics.cpp specialfunctions.cpp solvers.cpp
 ALGLIB_CXXFLAGS = -DAE_COMPILE_MINLBFGS -DAE_COMPILE_PCA -DAE_COMPILE_MINCG -g -MMD -O3 -mfpmath=sse -mtune=intel -fPIC -std=c++11 -Icc -Wall
 ifeq ($(CXX_TYPE),GCC8)
 ALGLIB_CXXFLAGS += -Wno-maybe-uninitialized

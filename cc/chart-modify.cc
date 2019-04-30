@@ -1466,7 +1466,6 @@ std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(const PointIn
 
 void ProjectionModify::set_layout(const acmacs::Layout& layout, bool allow_size_change)
 {
-    modify();
     auto target_layout = layout_modified();
     if (!allow_size_change && layout.size() != target_layout->size())
         throw invalid_data("ProjectionModify::set_layout(const acmacs::Layout&): wrong layout size");

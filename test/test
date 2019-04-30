@@ -25,6 +25,7 @@ trap failed ERR
 
 export LD_LIBRARY_PATH="${ACMACSD_ROOT}/lib:${LD_LIBRARY_PATH}"
 cd "$TESTDIR"
+../dist/test-clone-projection test-2004-3.ace || failed test-clone-projection
 ./test-chart-create-from-scratch || failed test-chart-create-from-scratch
 ./test-modify-projection || failed test-modify-projection
 ./test-modify-plot-spec || failed test-modify-plot-spec
