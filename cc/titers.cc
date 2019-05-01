@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cctype>
 
 #include "acmacs-base/debug.hh"
 #include "acmacs-base/range.hh"
@@ -6,6 +7,35 @@
 #include "acmacs-base/stream.hh"
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/chart.hh"
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::Titer::validate(std::string_view titer)
+{
+    if (titer.empty())
+        throw invalid_titer(titer);
+
+    const auto just_digits = [titer](auto&& data) {
+        if (!std::all_of(std::begin(data), std::end(data), [](auto val) { return std::isdigit(val); }))
+            throw invalid_titer(titer);
+    };
+
+    switch (titer.front()) {
+      case '*':
+          if (titer.size() != 1)
+              throw invalid_titer(titer);
+          break;
+      case '<':
+      case '>':
+      case '~':
+          just_digits(titer.substr(1));
+          break;
+      default:
+          just_digits(titer);
+          break;
+    }
+
+} // acmacs::chart::Titer::validate
 
 // ----------------------------------------------------------------------
 

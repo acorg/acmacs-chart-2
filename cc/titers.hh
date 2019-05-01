@@ -12,7 +12,7 @@
 namespace acmacs::chart
 {
     class data_not_available : public std::runtime_error { public: data_not_available(std::string msg) : std::runtime_error("data_not_available: " + msg) {} };
-    class invalid_titer : public std::runtime_error { public: invalid_titer(std::string msg) : std::runtime_error("invalid_titer: " + msg) {} };
+    class invalid_titer : public std::runtime_error { public: invalid_titer(std::string msg) : std::runtime_error("invalid_titer: " + msg) {} invalid_titer(std::string_view msg) : invalid_titer(std::string(msg)) {} };
 
 // ----------------------------------------------------------------------
 
@@ -24,6 +24,8 @@ namespace acmacs::chart
         using detail::string_data::string_data;
         Titer() : detail::string_data::string_data("*") {}
         Titer(char typ, size_t value) : detail::string_data::string_data(typ + std::to_string(value)) {}
+        Titer& operator=(std::string source) { validate(source); detail::string_data::operator=(source); return *this; }
+        Titer& operator=(std::string_view source) { validate(source); detail::string_data::operator=(source); return *this; }
 
         Type type() const
         {
@@ -66,6 +68,8 @@ namespace acmacs::chart
 
           // static inline Titer from_logged(double aLogged, std::string aPrefix = "") { return aPrefix + std::to_string(std::lround(std::pow(2.0, aLogged) * 10.0)); }
         static inline Titer from_logged(double aLogged, const char* aPrefix = "") { return aPrefix + std::to_string(std::lround(std::exp2(aLogged) * 10.0)); }
+
+        static void validate(std::string_view titer);
 
     }; // class Titer
 

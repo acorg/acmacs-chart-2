@@ -72,7 +72,7 @@ namespace                       // to make class static in the module
             {
                 data_.antigen = 0;
                 data_.serum = 0;
-                data_.titer = titer();
+                data_.titer = static_cast<std::string_view>(titer());
                 if (data_.titer.is_dont_care())
                     operator++();
             }
@@ -89,7 +89,7 @@ namespace                       // to make class static in the module
                         data_.serum = 0;
                     }
                     if (data_.antigen < number_of_rows()) {
-                        data_.titer = titer();
+                        data_.titer = static_cast<std::string_view>(titer());
                         if (!data_.titer.is_dont_care())
                             break;
                     }
@@ -136,7 +136,7 @@ namespace                       // to make class static in the module
                 }
                 else {
                     data_.serum = *serum_;
-                    data_.titer = titer();
+                    data_.titer = static_cast<std::string_view>(titer());
                 }
             }
 
@@ -155,7 +155,7 @@ namespace                       // to make class static in the module
                 std::sort(sera_.begin(), sera_.end());
                 serum_ = sera_.begin();
                 data_.serum = *serum_;
-                data_.titer = titer();
+                data_.titer = static_cast<std::string_view>(titer());
             }
 
     }; // class TiterIteratorImplementationDict
