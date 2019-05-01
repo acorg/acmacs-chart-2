@@ -11,8 +11,8 @@
 
 namespace acmacs::chart
 {
-    class data_not_available : public std::runtime_error { public: data_not_available(std::string msg) : std::runtime_error("data_not_available: " + msg) {} };
-    class invalid_titer : public std::runtime_error { public: invalid_titer(std::string msg) : std::runtime_error("invalid_titer: " + msg) {} invalid_titer(std::string_view msg) : invalid_titer(std::string(msg)) {} };
+    class data_not_available : public std::runtime_error { public: data_not_available(std::string msg) : std::runtime_error("data not available: " + msg) {} };
+    class invalid_titer : public std::runtime_error { public: invalid_titer(std::string msg) : std::runtime_error("invalid titer: " + msg) {} invalid_titer(std::string_view msg) : invalid_titer(std::string(msg)) {} };
 
 // ----------------------------------------------------------------------
 
