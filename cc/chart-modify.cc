@@ -560,7 +560,7 @@ void AntigenModify::update_with(AntigenP main)
 void AntigenModify::set_continent()
 {
     if (continent().empty()) {
-        if (const auto& locdb = get_locdb(report_time::no); locdb) {
+        if (const auto& locdb = get_locdb(); locdb) {
             try {
                 continent(locdb.continent(virus_name::location(name())));
             }
