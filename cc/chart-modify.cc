@@ -1415,6 +1415,17 @@ void ProjectionModify::insert_serum(size_t before, size_t number_of_antigens)
 
 // ----------------------------------------------------------------------
 
+void ProjectionModify::set_forced_column_basis(size_t serum_no, double column_basis)
+{
+    modify();
+    if (!forced_column_bases_)
+        forced_column_bases_ = std::make_shared<ColumnBasesModify>(chart().column_bases(minimum_column_basis()));
+    forced_column_bases_->set(serum_no, column_basis);
+
+} // ProjectionModify::set_forced_column_basis
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(ProjectionModify::randomizer rnd, double diameter_multiplier)
 {
     std::shared_ptr<LayoutRandomizer> rnd_v;

@@ -70,6 +70,7 @@ namespace acmacs::chart
         double column_basis(size_t aSerumNo) const override { return data_.at(aSerumNo); }
         size_t size() const override { return data_.size(); }
         std::vector<double> data() const override { return data_; }
+        std::vector<double>& data() { return data_; }
 
         void set(size_t aSerumNo, double column_basis) { data_.at(aSerumNo) = column_basis; }
         void remove(const ReverseSortedIndexes& indexes, ReverseSortedIndexes::difference_type base_index = 0) { acmacs::remove(indexes, data_, base_index); }

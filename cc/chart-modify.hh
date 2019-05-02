@@ -425,6 +425,8 @@ namespace acmacs::chart
         void flip_north_south() { flip(1, 0); }
         void transformation(const Transformation& transformation) { modify(); transformation_ = transformation; transformed_layout_.reset(); }
         using Projection::transformation;
+        void set_forced_column_bases(ColumnBasesP aSource) { if (aSource) forced_column_bases_ = std::make_shared<ColumnBasesModify>(aSource); else forced_column_bases_.reset(); }
+        void set_forced_column_basis(size_t serum_no, double column_basis);
 
         std::shared_ptr<acmacs::Layout> layout_modified() { modify(); return layout_; }
         std::shared_ptr<acmacs::Layout> layout_modified() const { return layout_; }
@@ -455,7 +457,6 @@ namespace acmacs::chart
         size_t number_of_dimensions_modified() const { return layout_->number_of_dimensions(); }
         const Transformation& transformation_modified() const { return transformation_; }
         ColumnBasesModifyP forced_column_bases_modified() const { return forced_column_bases_; }
-        void set_forced_column_bases(ColumnBasesP aSource) { if (aSource) forced_column_bases_ = std::make_shared<ColumnBasesModify>(aSource); else forced_column_bases_.reset(); }
         void new_layout(size_t number_of_points, size_t number_of_dimensions) { layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions); transformation_.reset(number_of_dimensions); transformed_layout_.reset(); }
 
      private:
