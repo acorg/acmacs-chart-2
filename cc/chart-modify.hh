@@ -301,6 +301,13 @@ namespace acmacs::chart
     class TitersModify : public Titers
     {
      public:
+        using dense_t = std::vector<Titer>;
+        using sparse_entry_t = std::pair<size_t, Titer>; // serum no, titer
+        using sparse_row_t = std::vector<sparse_entry_t>;
+        using sparse_t = std::vector<sparse_row_t>;    // size = number_of_antigens
+        using titers_t = std::variant<dense_t, sparse_t>;
+        using layers_t = std::vector<sparse_t>;
+
         enum class titer_merge {
             all_dontcare,
             less_and_more_than,
@@ -329,9 +336,6 @@ namespace acmacs::chart
         explicit TitersModify(TitersP main);
 
         Titer titer(size_t aAntigenNo, size_t aSerumNo) const override;
-        Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override;
-        std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo, include_dotcare inc = include_dotcare::no) const override;
-        size_t number_of_layers() const override { return layers_.size(); }
         size_t number_of_antigens() const override;
         size_t number_of_sera() const override { return number_of_sera_; }
         size_t number_of_non_dont_cares() const override;
@@ -350,6 +354,10 @@ namespace acmacs::chart
         void insert_antigen(size_t before);
         void insert_serum(size_t before);
 
+        size_t number_of_layers() const override { return layers_.size(); }
+        Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override;
+        const layers_t& layers() const { return layers_; }
+        std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo, include_dotcare inc = include_dotcare::no) const override;
         void remove_layers();
         void create_layers(size_t number_of_layers, size_t number_of_antigens);
         void titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const std::string& aTiter);
@@ -360,13 +368,6 @@ namespace acmacs::chart
         static std::string titer_merge_report_description();
 
      private:
-        using dense_t = std::vector<Titer>;
-        using sparse_entry_t = std::pair<size_t, Titer>; // serum no, titer
-        using sparse_row_t = std::vector<sparse_entry_t>;
-        using sparse_t = std::vector<sparse_row_t>;    // size = number_of_antigens
-        using titers_t = std::variant<dense_t, sparse_t>;
-        using layers_t = std::vector<sparse_t>;
-
           // size_t number_of_antigens_;
         size_t number_of_sera_;
         titers_t titers_;
