@@ -68,9 +68,9 @@ namespace acmacs::chart
                 return titer_in_d(data_[keys_.layers][aLayerNo], aAntigenNo, aSerumNo);
             }
 
-        std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const override
+        std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo, include_dotcare inc = include_dotcare::no) const override
             {
-                return titers_for_layers(data_[keys_.layers], aAntigenNo, aSerumNo);
+                return titers_for_layers(data_[keys_.layers], aAntigenNo, aSerumNo, inc);
             }
 
         size_t number_of_layers() const override { return data_[keys_.layers].size(); }
@@ -127,7 +127,7 @@ namespace acmacs::chart
                 return {};
             }
 
-        std::vector<Titer> titers_for_layers(const rjson::value& layers, size_t aAntigenNo, size_t aSerumNo) const;
+        std::vector<Titer> titers_for_layers(const rjson::value& layers, size_t aAntigenNo, size_t aSerumNo, include_dotcare inc = include_dotcare::no) const;
 
         const rjson::value& data() const { return data_; }
 

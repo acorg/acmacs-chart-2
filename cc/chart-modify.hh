@@ -330,7 +330,7 @@ namespace acmacs::chart
 
         Titer titer(size_t aAntigenNo, size_t aSerumNo) const override;
         Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const override;
-        std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const override;
+        std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo, include_dotcare inc = include_dotcare::no) const override;
         size_t number_of_layers() const override { return layers_.size(); }
         size_t number_of_antigens() const override;
         size_t number_of_sera() const override { return number_of_sera_; }

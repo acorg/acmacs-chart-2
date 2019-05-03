@@ -24,15 +24,18 @@ size_t acmacs::chart::RjsonTiters::number_of_sera() const
 
 // ----------------------------------------------------------------------
 
-std::vector<acmacs::chart::Titer> acmacs::chart::RjsonTiters::titers_for_layers(const rjson::value& layers, size_t aAntigenNo, size_t aSerumNo) const
+std::vector<acmacs::chart::Titer> acmacs::chart::RjsonTiters::titers_for_layers(const rjson::value& layers, size_t aAntigenNo, size_t aSerumNo, include_dotcare inc) const
 {
     if (layers.empty())
         throw acmacs::chart::data_not_available("no layers");
     std::vector<Titer> result;
-    rjson::for_each(layers, [&result,aAntigenNo,aSerumNo](const rjson::value& layer) {
-        if (const auto& for_ag = layer[aAntigenNo]; !for_ag.empty())
+    rjson::for_each(layers, [&result, aAntigenNo, aSerumNo, inc](const rjson::value& layer) {
+        if (const auto& for_ag = layer[aAntigenNo]; !for_ag.empty()) {
             if (const auto& titer = for_ag[aSerumNo]; !titer.is_null())
                 result.push_back(titer);
+            else if (inc == include_dotcare::yes)
+                result.push_back({});
+        }
     });
     return result;
 

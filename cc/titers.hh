@@ -154,6 +154,8 @@ namespace acmacs::chart
     class Titers
     {
      public:
+        enum class include_dotcare { no, yes };
+
         static constexpr double dense_sparse_boundary = 0.7;
 
         virtual ~Titers() {}
@@ -162,7 +164,7 @@ namespace acmacs::chart
 
         virtual Titer titer(size_t aAntigenNo, size_t aSerumNo) const = 0;
         virtual Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const = 0;
-        virtual std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const = 0; // returns list of non-dont-care titers in layers, may throw data_not_available
+        virtual std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo, include_dotcare inc = include_dotcare::no) const = 0; // returns list of non-dont-care titers in layers, may throw data_not_available
         virtual size_t number_of_layers() const = 0;
         virtual size_t number_of_antigens() const = 0;
         virtual size_t number_of_sera() const = 0;
@@ -173,7 +175,7 @@ namespace acmacs::chart
           // support for fast exporting into ace, if source was ace or acd1
         virtual const rjson::value& rjson_list_list() const { throw data_not_available{"rjson_list_list titers are not available"}; }
         virtual const rjson::value& rjson_list_dict() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
-        virtual const rjson::value& rjson_layers() const { throw data_not_available{"rjson_list_dict titers are not available"}; }
+        virtual const rjson::value& rjson_layers() const { throw data_not_available{"rjson_list_dict titers are not available"}; } // also used by acmacs.r
 
         std::shared_ptr<ColumnBasesData> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
 

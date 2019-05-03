@@ -746,7 +746,7 @@ Titer TitersModify::titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aS
 
 // ----------------------------------------------------------------------
 
-std::vector<Titer> TitersModify::titers_for_layers(size_t aAntigenNo, size_t aSerumNo) const
+std::vector<Titer> TitersModify::titers_for_layers(size_t aAntigenNo, size_t aSerumNo, include_dotcare inc) const
 {
     if (layers_.empty())
         throw acmacs::chart::data_not_available("no layers");
@@ -754,6 +754,8 @@ std::vector<Titer> TitersModify::titers_for_layers(size_t aAntigenNo, size_t aSe
     for (const auto& layer: layers_) {
         if (const auto titer = find_titer_for_serum(layer[aAntigenNo], aSerumNo); !titer.is_dont_care())
             result.push_back(titer);
+        else if (inc == include_dotcare::yes)
+            result.push_back({});
     }
     return result;
 
