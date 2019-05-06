@@ -136,9 +136,6 @@ namespace acmacs::chart
             entries_for_point_t regular, less_than;
         };
 
-      private:
-        dodgy_titer_is_regular dodgy_is_regular_ = dodgy_titer_is_regular::no;
-
         void add_value(Titer::Type type, size_t p1, size_t p2, double value)
         {
             switch (type) {
@@ -160,6 +157,9 @@ namespace acmacs::chart
                     break;
             }
         }
+
+      private:
+        dodgy_titer_is_regular dodgy_is_regular_ = dodgy_titer_is_regular::no;
 
     }; // class TableDistances
 
