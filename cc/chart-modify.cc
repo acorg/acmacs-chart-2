@@ -204,10 +204,10 @@ PlotSpecModifyP ChartModify::plot_spec_modify()
 
 // ----------------------------------------------------------------------
 
-std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, optimization_options options, const PointIndexList& disconnect_points)
+std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, use_dimension_annealing dimension_annealing, optimization_options options, const PointIndexList& disconnect_points)
 {
     const auto start = std::chrono::high_resolution_clock::now();
-    const size_t start_num_dim = dimension_annealing && number_of_dimensions < 5 ? 5 : number_of_dimensions;
+    const size_t start_num_dim = dimension_annealing == use_dimension_annealing::yes && number_of_dimensions < 5 ? 5 : number_of_dimensions;
     auto projection = projections_modify()->new_from_scratch(start_num_dim, minimum_column_basis);
     projection->set_disconnected(disconnect_points);
     auto layout = projection->layout_modified();
@@ -234,10 +234,10 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
 
 // ----------------------------------------------------------------------
 
-void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options,
-                        bool report_stresses, const PointIndexList& disconnect_points)
+void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options,
+                        enum report_stresses report_stresses, const PointIndexList& disconnect_points)
 {
-    const size_t start_num_dim = dimension_annealing && number_of_dimensions < 5 ? 5 : number_of_dimensions;
+    const size_t start_num_dim = dimension_annealing == use_dimension_annealing::yes && number_of_dimensions < 5 ? 5 : number_of_dimensions;
     auto stress = acmacs::chart::stress_factory(*this, start_num_dim, minimum_column_basis, options.mult, dodgy_titer_is_regular::no);
     stress.set_disconnected(disconnect_points);
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
@@ -271,7 +271,7 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
             if (!std::isnan(status1.final_stress))
                 projection->stress_ = status1.final_stress;
         }
-        if (report_stresses) {
+        if (report_stresses == report_stresses::yes) {
             std::cout << std::setw(3) << p_no << ' ' << std::fixed << std::setprecision(4) << *projection->stress_ << '\n';
         }
     }

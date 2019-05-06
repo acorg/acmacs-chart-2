@@ -36,6 +36,11 @@ namespace acmacs::chart
     using ProjectionModifyP = std::shared_ptr<ProjectionModify>;
     using PlotSpecModifyP = std::shared_ptr<PlotSpecModify>;
 
+    enum class use_dimension_annealing { no, yes };
+    constexpr inline use_dimension_annealing use_dimension_annealing_from_bool(bool use) { return use ? use_dimension_annealing::yes : use_dimension_annealing::no; }
+
+    enum class report_stresses { no, yes };
+
 // ----------------------------------------------------------------------
 
     class ChartModify : public Chart
@@ -64,8 +69,8 @@ namespace acmacs::chart
         ProjectionModifyP projection_modify(size_t aProjectionNo);
         PlotSpecModifyP plot_spec_modify();
 
-        std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {});
-        void relax(size_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, bool dimension_annealing, acmacs::chart::optimization_options options, bool report_stresses, const PointIndexList& disconnect_points = {});
+        std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {});
+        void relax(size_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, enum report_stresses report_stresses, const PointIndexList& disconnect_points = {});
         void relax_incremetal(size_t source_projection_no, size_t number_of_optimizations, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {}, bool remove_source_projection = true);
 
         void remove_layers();
