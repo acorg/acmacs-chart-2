@@ -52,7 +52,8 @@ TARGETS = \
   $(DIST)/test-chart-merge \
   $(DIST)/test-get-titers \
   $(DIST)/test-clone-projection \
-  $(DIST)/chart-homologous-pairs
+  $(DIST)/chart-homologous-pairs \
+  $(DIST)/chart-map-resolution-test
 
 SOURCES = \
   chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc randomizer.cc serum-circle.cc \
@@ -60,7 +61,7 @@ SOURCES = \
   rjson-import.cc \
   factory-import.cc ace-import.cc acd1-import.cc lispmds-import.cc lispmds-token.cc \
   factory-export.cc ace-export.cc lispmds-export.cc lispmds-encode.cc chart-modify.cc \
-  procrustes.cc grid-test.cc serum-line.cc blobs.cc
+  procrustes.cc grid-test.cc serum-line.cc blobs.cc map-resolution-test.cc
 
 ALGLIB = alglib-3.13.0
 ALGLIB_SOURCES = optimization.cpp ap.cpp alglibinternal.cpp linalg.cpp alglibmisc.cpp \

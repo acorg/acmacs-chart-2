@@ -23,7 +23,7 @@ struct Options : public argv
     option<bool>   report_time{*this, "time", desc{"report time of loading chart"}};
     option<bool>   verbose{*this, "verbose"};
 
-    argument<str> source{*this, arg_name{"chart-to-text"}, mandatory};
+    argument<str> source{*this, arg_name{"chart-to-test"}, mandatory};
     argument<str> output{*this, arg_name{"output-chart"}};
 };
 
