@@ -12,6 +12,7 @@ namespace acmacs::chart
     enum class optimization_method { alglib_lbfgs_pca, alglib_cg_pca };
     enum class optimization_precision { rough, very_rough, fine };
     enum class multiply_antigen_titer_until_column_adjust { no, yes };
+    enum class dodgy_titer_is_regular { no, yes };
 
     struct optimization_options
     {
@@ -26,7 +27,7 @@ namespace acmacs::chart
         multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes;
         double randomization_diameter_multiplier = 2.0; // for layout randomizations
         int num_threads = 0;                            // 0 - omp_get_max_threads()
-        
+
     }; // struct optimization_options
 
     struct dimension_schedule

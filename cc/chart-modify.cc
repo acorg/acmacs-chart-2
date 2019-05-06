@@ -238,7 +238,7 @@ void ChartModify::relax(size_t number_of_optimizations, MinimumColumnBasis minim
                         bool report_stresses, const PointIndexList& disconnect_points)
 {
     const size_t start_num_dim = dimension_annealing && number_of_dimensions < 5 ? 5 : number_of_dimensions;
-    auto stress = acmacs::chart::stress_factory(*this, start_num_dim, minimum_column_basis, options.mult, false);
+    auto stress = acmacs::chart::stress_factory(*this, start_num_dim, minimum_column_basis, options.mult, dodgy_titer_is_regular::no);
     stress.set_disconnected(disconnect_points);
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
 
@@ -286,7 +286,7 @@ void ChartModify::relax_incremetal(size_t source_projection_no, size_t number_of
     auto source_projection = projection_modify(source_projection_no);
     const auto num_dim = source_projection->number_of_dimensions();
     const auto minimum_column_basis = source_projection->minimum_column_basis();
-    auto stress = acmacs::chart::stress_factory(*this, num_dim, minimum_column_basis, options.mult, false);
+    auto stress = acmacs::chart::stress_factory(*this, num_dim, minimum_column_basis, options.mult, dodgy_titer_is_regular::no);
     stress.set_disconnected(disconnect_points);
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
 

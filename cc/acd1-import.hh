@@ -207,7 +207,7 @@ namespace acmacs::chart
         // size_t number_of_dimensions() const override;
         ColumnBasesP forced_column_bases() const override;
         acmacs::Transformation transformation() const override;
-        bool dodgy_titer_is_regular() const override { if (const auto& sep = data()["stress_evaluator_parameters"]; !sep.is_null()) return sep["dodgy_titer_is_regular"].get_or_default(false); else return false; }
+        enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { if (const auto& sep = data()["stress_evaluator_parameters"]; !sep.is_null()) return sep["dodgy_titer_is_regular"].get_or_default(false) ? dodgy_titer_is_regular::yes : dodgy_titer_is_regular::no; else return dodgy_titer_is_regular::no; }
         double stress_diff_to_stop() const override { if (const auto& sep = data()["stress_evaluator_parameters"]; !sep.is_null()) return sep["stress_diff_to_stop"].get_or_default(0.0); else return 0.0; }
         PointIndexList unmovable() const override { return make_attributes(1); }
         PointIndexList unmovable_in_the_last_dimension() const override  { return make_attributes(3); }

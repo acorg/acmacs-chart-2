@@ -287,7 +287,7 @@ void export_projections(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Pr
             else
                 std::cerr << "WARNING: invalid transformation, not adding to projection\n";
         }
-        rjson::set_field_if_not_default(target, "d", projection->dodgy_titer_is_regular(), false);
+        rjson::set_field_if_not_default(target, "d", projection->dodgy_titer_is_regular() == acmacs::chart::dodgy_titer_is_regular::yes, false);
         rjson::set_field_if_not_default(target, "e", projection->stress_diff_to_stop(), 0.0);
         if (const auto unmovable = projection->unmovable(); ! unmovable.empty())
             target["U"] = rjson::array(unmovable.begin(), unmovable.end());

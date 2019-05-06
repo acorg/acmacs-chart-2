@@ -16,11 +16,11 @@ namespace acmacs::chart
 
     struct StressParameters
     {
-        StressParameters(size_t a_number_of_points, PointIndexList&& a_unmovable, PointIndexList&& a_disconnected, PointIndexList&& a_unmovable_in_the_last_dimension, multiply_antigen_titer_until_column_adjust a_mult, AvidityAdjusts&& a_avidity_adjusts, bool a_dodgy_titer_is_regular)
+        StressParameters(size_t a_number_of_points, PointIndexList&& a_unmovable, PointIndexList&& a_disconnected, PointIndexList&& a_unmovable_in_the_last_dimension, multiply_antigen_titer_until_column_adjust a_mult, AvidityAdjusts&& a_avidity_adjusts, dodgy_titer_is_regular a_dodgy_titer_is_regular)
             : number_of_points(a_number_of_points), unmovable(std::move(a_unmovable)), disconnected(std::move(a_disconnected)),
               unmovable_in_the_last_dimension(std::move(a_unmovable_in_the_last_dimension)), mult(a_mult),
               avidity_adjusts(std::move(a_avidity_adjusts)), dodgy_titer_is_regular(a_dodgy_titer_is_regular) {}
-        StressParameters(size_t a_number_of_points, multiply_antigen_titer_until_column_adjust a_mult, bool a_dodgy_titer_is_regular)
+        StressParameters(size_t a_number_of_points, multiply_antigen_titer_until_column_adjust a_mult, dodgy_titer_is_regular a_dodgy_titer_is_regular)
             : number_of_points(a_number_of_points), mult(a_mult), dodgy_titer_is_regular(a_dodgy_titer_is_regular) {}
 
         size_t number_of_points;
@@ -29,7 +29,7 @@ namespace acmacs::chart
         PointIndexList unmovable_in_the_last_dimension;
         multiply_antigen_titer_until_column_adjust mult;
         AvidityAdjusts avidity_adjusts;
-        bool dodgy_titer_is_regular;
+        enum dodgy_titer_is_regular dodgy_titer_is_regular;
 
     }; // struct StressParameters
 
@@ -39,7 +39,7 @@ namespace acmacs::chart
         using TableDistancesForPoint = typename TableDistances::EntriesForPoint;
 
         Stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
-        Stress(size_t number_of_dimensions, size_t number_of_points, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular);
+        Stress(size_t number_of_dimensions, size_t number_of_points, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular);
 
         double value(const double* first, const double* /* unused */ = nullptr) const;
         double value(const acmacs::Layout& aLayout) const;
@@ -75,9 +75,9 @@ namespace acmacs::chart
     }; // class Stress
 
     Stress stress_factory(const Projection& projection, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes);
-    Stress stress_factory(const Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular);
+    Stress stress_factory(const Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular = dodgy_titer_is_regular::no);
 
-    TableDistances table_distances(const acmacs::chart::Chart& chart, MinimumColumnBasis minimum_column_basis, bool a_dodgy_titer_is_regular);
+    TableDistances table_distances(const acmacs::chart::Chart& chart, MinimumColumnBasis minimum_column_basis, dodgy_titer_is_regular a_dodgy_titer_is_regular = dodgy_titer_is_regular::no);
 
     constexpr inline double SigmoidMutiplier() { return 10.0; }
 

@@ -637,7 +637,7 @@ namespace acmacs::chart
         virtual MinimumColumnBasis minimum_column_basis() const = 0;
         virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0; // returns nullptr if not forced
         virtual acmacs::Transformation transformation() const = 0;
-        virtual bool dodgy_titer_is_regular() const = 0;
+        virtual enum dodgy_titer_is_regular dodgy_titer_is_regular() const = 0;
         virtual double stress_diff_to_stop() const = 0;
         virtual PointIndexList unmovable() const = 0;
         virtual PointIndexList disconnected() const = 0;

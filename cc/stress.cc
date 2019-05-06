@@ -45,7 +45,7 @@ acmacs::chart::Stress acmacs::chart::stress_factory(const acmacs::chart::Project
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Stress acmacs::chart::stress_factory(const acmacs::chart::Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular)
+acmacs::chart::Stress acmacs::chart::stress_factory(const acmacs::chart::Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular)
 {
     Stress stress(number_of_dimensions, chart.number_of_points(), mult, a_dodgy_titer_is_regular);
     auto cb = chart.forced_column_bases(minimum_column_basis);
@@ -58,7 +58,7 @@ acmacs::chart::Stress acmacs::chart::stress_factory(const acmacs::chart::Chart& 
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::TableDistances acmacs::chart::table_distances(const acmacs::chart::Chart& chart, MinimumColumnBasis minimum_column_basis, bool a_dodgy_titer_is_regular)
+acmacs::chart::TableDistances acmacs::chart::table_distances(const acmacs::chart::Chart& chart, MinimumColumnBasis minimum_column_basis, dodgy_titer_is_regular a_dodgy_titer_is_regular)
 {
     Stress stress(2, chart.number_of_points(), multiply_antigen_titer_until_column_adjust::yes, a_dodgy_titer_is_regular);
     auto cb = chart.forced_column_bases(minimum_column_basis);
@@ -103,7 +103,7 @@ acmacs::chart::Stress::Stress(const Projection& projection, acmacs::chart::multi
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Stress::Stress(size_t number_of_dimensions, size_t number_of_points, multiply_antigen_titer_until_column_adjust mult, bool a_dodgy_titer_is_regular)
+acmacs::chart::Stress::Stress(size_t number_of_dimensions, size_t number_of_points, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular)
     : number_of_dimensions_(number_of_dimensions),
       parameters_(number_of_points, mult, a_dodgy_titer_is_regular)
 {

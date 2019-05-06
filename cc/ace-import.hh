@@ -185,7 +185,7 @@ namespace acmacs::chart
         MinimumColumnBasis minimum_column_basis() const override { return data()["m"].get_or_default("none"); }
         ColumnBasesP forced_column_bases() const override;
         acmacs::Transformation transformation() const override;
-        bool dodgy_titer_is_regular() const override { return data()["d"].get_or_default(false); }
+        enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { return data()["d"].get_or_default(false) ? dodgy_titer_is_regular::yes : dodgy_titer_is_regular::no; }
         double stress_diff_to_stop() const override { return data()["d"].get_or_default(0.0); }
         PointIndexList unmovable() const override { return data()["U"]; }
         PointIndexList unmovable_in_the_last_dimension() const override { return data()["u"]; }

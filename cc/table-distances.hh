@@ -89,7 +89,7 @@ namespace acmacs::chart
         using detail::DistancesBase::less_than;
         // using detail::DistancesBase::more_than;
 
-        void dodgy_is_regular(bool dodgy_is_regular) { dodgy_is_regular_ = dodgy_is_regular; }
+        void dodgy_is_regular(dodgy_titer_is_regular dodgy_is_regular) { dodgy_is_regular_ = dodgy_is_regular; }
 
         void update(const acmacs::chart::Titer& titer, size_t p1, size_t p2, double column_basis, double adjust, multiply_antigen_titer_until_column_adjust mult)
         {
@@ -137,13 +137,13 @@ namespace acmacs::chart
         };
 
       private:
-        bool dodgy_is_regular_ = false;
+        dodgy_titer_is_regular dodgy_is_regular_ = dodgy_titer_is_regular::no;
 
         void add_value(Titer::Type type, size_t p1, size_t p2, double value)
         {
             switch (type) {
                 case Titer::Dodgy:
-                    if (!dodgy_is_regular_)
+                    if (dodgy_is_regular_ == dodgy_titer_is_regular::no)
                         break;
                     [[fallthrough]];
                 case Titer::Regular:

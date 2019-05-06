@@ -490,7 +490,7 @@ namespace acmacs::chart
         MinimumColumnBasis minimum_column_basis() const override { return main_->minimum_column_basis(); }
         ColumnBasesP forced_column_bases() const override { return modified() ? forced_column_bases_modified() : main_->forced_column_bases(); }
         acmacs::Transformation transformation() const override { return modified() ? transformation_modified() : main_->transformation(); }
-        bool dodgy_titer_is_regular() const override { return main_->dodgy_titer_is_regular(); }
+        enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { return main_->dodgy_titer_is_regular(); }
         double stress_diff_to_stop() const override { return main_->stress_diff_to_stop(); }
         PointIndexList unmovable() const override { return main_->unmovable(); }
         PointIndexList disconnected() const override { return main_->disconnected(); }
@@ -538,7 +538,7 @@ namespace acmacs::chart
         ColumnBasesP forced_column_bases() const override { return forced_column_bases_modified(); }
         using ProjectionModify::transformation;
         acmacs::Transformation transformation() const override { return transformation_modified(); }
-        bool dodgy_titer_is_regular() const override { return dodgy_titer_is_regular_; }
+        enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { return dodgy_titer_is_regular_; }
         double stress_diff_to_stop() const override { return stress_diff_to_stop_; }
         PointIndexList unmovable() const override { return {}; }
         PointIndexList disconnected() const override { return disconnected_; }
@@ -549,7 +549,7 @@ namespace acmacs::chart
 
      private:
         MinimumColumnBasis minimum_column_basis_;
-        bool dodgy_titer_is_regular_{false};
+        enum dodgy_titer_is_regular dodgy_titer_is_regular_ = dodgy_titer_is_regular::no;
         double stress_diff_to_stop_{0};
         PointIndexList disconnected_;
 

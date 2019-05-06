@@ -199,7 +199,7 @@ namespace acmacs::chart
         MinimumColumnBasis minimum_column_basis() const override;
         ColumnBasesP forced_column_bases() const override;
         acmacs::Transformation transformation() const override;
-        bool dodgy_titer_is_regular() const override { return false; }
+        enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { return dodgy_titer_is_regular::no; }
         double stress_diff_to_stop() const override { return 0.0; }
         PointIndexList unmovable() const override;
         PointIndexList disconnected() const override;
