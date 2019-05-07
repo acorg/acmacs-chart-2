@@ -109,6 +109,16 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+    class ChartClone : public ChartModify
+    {
+     public:
+        explicit ChartClone(const Chart& source);
+        explicit ChartClone(ChartP source) : ChartClone(*source) {}
+
+    }; // class ChartNew
+
+// ----------------------------------------------------------------------
+
     class InfoModify : public Info
     {
      public:

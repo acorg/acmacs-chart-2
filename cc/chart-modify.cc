@@ -447,6 +447,15 @@ ChartNew::ChartNew(size_t number_of_antigens, size_t number_of_sera)
 
 // ----------------------------------------------------------------------
 
+ChartClone::ChartClone(const Chart& source)
+    : ChartModify(source.number_of_antigens(), source.number_of_sera())
+{
+    throw std::runtime_error("not implemented");
+
+} // ChartClone::ChartClone
+
+// ----------------------------------------------------------------------
+
 InfoModify::InfoModify(InfoP main)
     : name_{main->name(Compute::No)},
       computed_name_{main->name(Compute::Yes)},
