@@ -40,10 +40,10 @@ void relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, a
     if (parameters.column_bases_from_master == acmacs::chart::column_bases_from_master::yes)
         chart.forced_column_bases_modify(*master_chart.column_bases(parameters.minimum_column_basis));
     if (parameters.relax_from_full_table == acmacs::chart::relax_from_full_table::yes) {
-        // copy best projection from master_chart
-        //     chart.projections[0].stress_evaluator_parameters.columnBases(master_column_bases)
-        //     chart.projections[0].comment = "relaxed-from-full-table-best"
-        //     chart.projections[0].relax(chart=chart, number_of_dimensions=self.number_of_dimensions, rough_optimization=self.rough_optimization, dodgy_titer_is_regular=self.dodgy_titer_is_regular)
+        auto projection = chart.projections_modify()->new_by_cloning(*master_chart.projections_modify()->at(0), true);
+        projection->set_forced_column_bases(master_chart.column_bases(parameters.minimum_column_basis));
+        projection->comment("relaxed-from-full-table-best");
+        projection->relax(acmacs::chart::optimization_options{parameters.optimization_precision});
     }
 
     // entry_table, entry_projections = mongodb_collections.charts.new_from_chart(session=self.S, source=chart, copy_permissions_from=self, save=True, table_keywords={'map-resolution-test-result'})

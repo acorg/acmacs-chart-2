@@ -681,6 +681,7 @@ namespace acmacs::chart
         virtual bool empty() const = 0;
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Projection> operator[](size_t aIndex) const = 0;
+        virtual std::shared_ptr<Projection> best() const { return operator[](0); }
         using iterator = detail::iterator<Projections, std::shared_ptr<Projection>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
