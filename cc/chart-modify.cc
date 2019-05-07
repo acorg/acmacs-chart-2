@@ -1,6 +1,7 @@
 #include <random>
 #include <functional>
 #include <limits>
+#include <algorithm>
 
 #include "acmacs-base/omp.hh"
 #include "acmacs-base/range.hh"
@@ -1170,7 +1171,7 @@ void TitersModify::multiply_by_for_antigen(size_t aAntigenNo, double multiply_by
 void TitersModify::multiply_by_for_serum(size_t aSerumNo, double multiply_by)
 {
     modifiable_check();
-    auto multiply = [aSerumNo, multiply_by, this](auto& titers) {
+    const auto multiply = [aSerumNo, multiply_by, this](auto& titers) {
         using T = std::decay_t<decltype(titers)>;
         if constexpr (std::is_same_v<T, dense_t>) {
             for (auto ag_no : acmacs::range(number_of_antigens())) {
@@ -1188,6 +1189,44 @@ void TitersModify::multiply_by_for_serum(size_t aSerumNo, double multiply_by)
     return std::visit(multiply, titers_);
 
 } // TitersModify::multiply_by_for_serum
+
+// ----------------------------------------------------------------------
+
+// acmacs/backend/antigenic-table.hh setProportionToDontCare()
+void TitersModify::set_proportion_of_titers_to_dont_care(double proportion)
+{
+    modifiable_check();
+
+    if (proportion <= 0.0 || proportion > 0.5)
+        throw std::invalid_argument(string::concat("invalid proportion for set_proportion_of_titers_to_dont_care: ", proportion));
+
+    // collect all non-dont-care titers (row, col), randomly shuffle them, choose first proportion*size entries and set the to don't care
+
+    std::vector<std::pair<size_t, size_t>> cells;
+    for (const auto& titer_ref : *this)
+        cells.emplace_back(titer_ref.antigen, titer_ref.serum);
+
+    std::mt19937 generator{std::random_device{}()};
+    std::shuffle(cells.begin(), cells.end(), generator);
+    const auto entries_to_dont_care = static_cast<size_t>(std::lround(cells.size() * proportion));
+    const auto set_to_dont_care = [entries_to_dont_care, &cells, number_of_sera = number_of_sera_](auto& titers) {
+        for (auto index : acmacs::range(entries_to_dont_care)) {
+            const auto ag_no = cells[index].first, sr_no = cells[index].second;
+            using T = std::decay_t<decltype(titers)>;
+            if constexpr (std::is_same_v<T, dense_t>) {
+                titers[ag_no * number_of_sera + sr_no] = Titer{};
+            }
+            else {
+                if (auto& row = titers[ag_no]; !row.empty()) {
+                    if (auto found = std::lower_bound(row.begin(), row.end(), sr_no, [](const auto& e1, size_t sr_no_1) { return e1.first < sr_no_1; }); found != row.end() && found->first == sr_no)
+                        row.erase(found);
+                }
+            }
+        }
+    };
+    std::visit(set_to_dont_care, titers_);
+
+} // TitersModify::set_proportion_of_titers_to_dont_care
 
 // ----------------------------------------------------------------------
 

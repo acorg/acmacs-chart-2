@@ -372,6 +372,7 @@ namespace acmacs::chart
         void dontcare_for_serum(size_t aSerumNo);
         void multiply_by_for_antigen(size_t aAntigenNo, double multiply_by);
         void multiply_by_for_serum(size_t aSerumNo, double multiply_by);
+        void set_proportion_of_titers_to_dont_care(double proportion);
 
         void remove_antigens(const ReverseSortedIndexes& indexes);
         void remove_sera(const ReverseSortedIndexes& indexes);

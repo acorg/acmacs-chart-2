@@ -36,7 +36,8 @@ void relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, a
 {
     acmacs::chart::ChartClone chart(master_chart, acmacs::chart::ChartClone::clone_data::titers);
     chart.info_modify()->name_append(string::concat(proportion_to_dont_care, "-dont-cared"));
-    // self.rnd_first = chart.set_proportion_of_titers_to_dont_care(self.proportion_to_dont_care)
+    chart.titers_modify()->remove_layers();
+    chart.titers_modify()->set_proportion_of_titers_to_dont_care(proportion_to_dont_care);
     if (parameters.column_bases_from_master == acmacs::chart::column_bases_from_master::yes)
         chart.forced_column_bases_modify(*master_chart.column_bases(parameters.minimum_column_basis));
     if (parameters.relax_from_full_table == acmacs::chart::relax_from_full_table::yes) {
