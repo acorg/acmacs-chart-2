@@ -31,26 +31,24 @@ void relax(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t num
 
 // ----------------------------------------------------------------------
 
-void relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, acmacs::number_of_dimensions_t number_of_dimensions, double proportion_to_dont_care, const acmacs::chart::MapResoltionTestParameters& parameters)
+void relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, acmacs::number_of_dimensions_t number_of_dimensions, double proportion_to_dont_care,
+                                     const acmacs::chart::MapResoltionTestParameters& parameters)
 {
-    acmacs::chart::ChartClone chart(master_chart);
-    auto master_column_bases = parameters.column_bases_from_master == acmacs::chart::column_bases_from_master::yes ? master_chart.column_bases(parameters.minimum_column_basis) : std::shared_ptr<acmacs::chart::ColumnBases>{};
+    acmacs::chart::ChartClone chart(master_chart, acmacs::chart::ChartClone::clone_data::titers);
+    chart.info_modify()->name_append(string::concat(proportion_to_dont_care, "-dont-cared"));
+    // self.rnd_first = chart.set_proportion_of_titers_to_dont_care(self.proportion_to_dont_care)
+    if (parameters.column_bases_from_master == acmacs::chart::column_bases_from_master::yes)
+        chart.forced_column_bases_modify(*master_chart.column_bases(parameters.minimum_column_basis));
+    if (parameters.relax_from_full_table == acmacs::chart::relax_from_full_table::yes) {
+        // copy best projection from master_chart
+        //     chart.projections[0].stress_evaluator_parameters.columnBases(master_column_bases)
+        //     chart.projections[0].comment = "relaxed-from-full-table-best"
+        //     chart.projections[0].relax(chart=chart, number_of_dimensions=self.number_of_dimensions, rough_optimization=self.rough_optimization, dodgy_titer_is_regular=self.dodgy_titer_is_regular)
+    }
 
-            // self.rnd_first = chart.set_proportion_of_titers_to_dont_care(self.proportion_to_dont_care)
-            // if master_column_bases is not None:
-            //     chart.table.set_column_bases(master_column_bases)
-            // chart.info.comment = ' '.join(((chart.info.comment or ''), '{}-dont-cared'.format(self.proportion_to_dont_care))).strip()
-            // if self.relax_from_full_table:
-            //     chart.projections.remove_except('best')
-            //     chart.projections[0].stress_evaluator_parameters.columnBases(master_column_bases)
-            //     chart.projections[0].comment = "relaxed-from-full-table-best"
-            //     chart.projections[0].relax(chart=chart, number_of_dimensions=self.number_of_dimensions, rough_optimization=self.rough_optimization, dodgy_titer_is_regular=self.dodgy_titer_is_regular)
-            //     module_logger.info('Relaxed from full table: {}'.format(chart.projections[0].stress()))
-            // else:
-            //     chart.projections.remove('all')
-            // entry_table, entry_projections = mongodb_collections.charts.new_from_chart(session=self.S, source=chart, copy_permissions_from=self, save=True, table_keywords={'map-resolution-test-result'})
-            // source_id = entry_projections._id if entry_projections else entry_table._id
-            // self.results = [source_id]
+    // entry_table, entry_projections = mongodb_collections.charts.new_from_chart(session=self.S, source=chart, copy_permissions_from=self, save=True, table_keywords={'map-resolution-test-result'})
+    // source_id = entry_projections._id if entry_projections else entry_table._id
+    // self.results = [source_id]
 
 } // relax_with_proportion_dontcared
 

@@ -145,6 +145,7 @@ namespace acmacs::chart
         InfoP source(size_t aSourceNo) const override { return sources_.at(aSourceNo); }
 
         void name(std::string value) { name_ = value; computed_name_ = value; }
+        void name_append(std::string value) { name_ = ::string::join(" ", {name_, value}); computed_name_ = name_; }
         void virus(std::string value) { virus_ = value; }
         void virus_type(std::string value) { virus_type_ = value; }
         void subset(std::string value) { subset_ = value; }
