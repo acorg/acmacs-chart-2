@@ -20,7 +20,7 @@ namespace acmacs::chart
         {
             enum diagnosis_t { excluded, not_tested, normal, trapped, hemisphering };
 
-            Result(size_t a_point_no, size_t number_of_dimensions) : point_no(a_point_no), diagnosis(not_tested), pos(number_of_dimensions) {}
+            Result(size_t a_point_no, number_of_dimensions_t number_of_dimensions) : point_no(a_point_no), diagnosis(not_tested), pos(number_of_dimensions) {}
             Result(size_t a_point_no, diagnosis_t a_diagnosis, const PointCoordinates& a_pos, double a_distance, double diff)
                 : point_no(a_point_no), diagnosis(a_diagnosis), pos(a_pos), distance(a_distance), contribution_diff(diff) {}
             operator bool() const { return diagnosis == trapped || diagnosis == hemisphering; }
@@ -37,7 +37,7 @@ namespace acmacs::chart
         class Results : public std::vector<Result>
         {
          public:
-            Results(size_t number_of_points, size_t number_of_dimensions)
+            Results(size_t number_of_points, number_of_dimensions_t number_of_dimensions)
                 : std::vector<Result>(number_of_points, Result(0, number_of_dimensions))
             {
                 size_t point_no = 0;
@@ -46,7 +46,7 @@ namespace acmacs::chart
             }
             std::string report() const;
             auto count_trapped_hemisphering() const { return std::count_if(begin(), end(), [](const auto& r) { return r.diagnosis == Result::trapped || r.diagnosis == Result::hemisphering; }); }
-            size_t num_dimensions() const { return front().pos.number_of_dimensions(); }
+            number_of_dimensions_t num_dimensions() const { return front().pos.number_of_dimensions(); }
         };
 
         std::string point_name(size_t point_no) const;

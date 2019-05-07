@@ -69,9 +69,9 @@ namespace acmacs::chart
         ProjectionModifyP projection_modify(size_t aProjectionNo);
         PlotSpecModifyP plot_spec_modify();
 
-        std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {});
-        void relax(size_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, size_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, enum report_stresses report_stresses, const PointIndexList& disconnect_points = {});
-        void relax_incremetal(size_t source_projection_no, size_t number_of_optimizations, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {}, bool remove_source_projection = true);
+        std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {});
+        void relax(number_of_optimizations_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, enum report_stresses report_stresses, const PointIndexList& disconnect_points = {});
+        void relax_incremetal(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {}, bool remove_source_projection = true);
 
         void remove_layers();
         void remove_antigens(const ReverseSortedIndexes& indexes);
@@ -94,7 +94,7 @@ namespace acmacs::chart
         ProjectionsModifyP projections_;
         PlotSpecModifyP plot_spec_;
 
-        // std::shared_ptr<LayoutRandomizer> make_randomizer(const Stress& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier) const;
+        // std::shared_ptr<LayoutRandomizer> make_randomizer(const Stress& stress, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier) const;
 
     }; // class ChartModify
 
@@ -460,10 +460,10 @@ namespace acmacs::chart
         void clone_from(const Projection& aSource);
         std::shared_ptr<Layout> transformed_layout_modified() const { if (!transformed_layout_) transformed_layout_ = layout_->transform(transformation_); return transformed_layout_; }
         size_t number_of_points_modified() const { return layout_->number_of_points(); }
-        size_t number_of_dimensions_modified() const { return layout_->number_of_dimensions(); }
+        number_of_dimensions_t number_of_dimensions_modified() const { return layout_->number_of_dimensions(); }
         const Transformation& transformation_modified() const { return transformation_; }
         ColumnBasesModifyP forced_column_bases_modified() const { return forced_column_bases_; }
-        void new_layout(size_t number_of_points, size_t number_of_dimensions) { layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions); transformation_.reset(number_of_dimensions); transformed_layout_.reset(); }
+        void new_layout(size_t number_of_points, number_of_dimensions_t number_of_dimensions) { layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions); transformation_.reset(number_of_dimensions); transformed_layout_.reset(); }
 
      private:
         std::shared_ptr<acmacs::Layout> layout_;
@@ -491,7 +491,7 @@ namespace acmacs::chart
         std::shared_ptr<Layout> transformed_layout() const override { return modified() ? transformed_layout_modified() : main_->transformed_layout(); }
         std::string comment() const override { return modified() ? ProjectionModify::comment() : main_->comment(); }
         size_t number_of_points() const override { return modified() ? number_of_points_modified() : main_->number_of_points(); }
-        size_t number_of_dimensions() const override { return modified() ? number_of_dimensions_modified() : main_->number_of_dimensions(); }
+        number_of_dimensions_t number_of_dimensions() const override { return modified() ? number_of_dimensions_modified() : main_->number_of_dimensions(); }
         MinimumColumnBasis minimum_column_basis() const override { return main_->minimum_column_basis(); }
         ColumnBasesP forced_column_bases() const override { return modified() ? forced_column_bases_modified() : main_->forced_column_bases(); }
         acmacs::Transformation transformation() const override { return modified() ? transformation_modified() : main_->transformation(); }
@@ -516,7 +516,7 @@ namespace acmacs::chart
     class ProjectionModifyNew : public ProjectionModify
     {
      public:
-        explicit ProjectionModifyNew(const Chart& chart, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis)
+        explicit ProjectionModifyNew(const Chart& chart, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis)
             : ProjectionModify(chart), minimum_column_basis_(minimum_column_basis)
             {
                 new_layout(chart.number_of_points(), number_of_dimensions);
@@ -538,7 +538,7 @@ namespace acmacs::chart
         std::shared_ptr<Layout> layout() const override { return layout_modified(); }
         std::shared_ptr<Layout> transformed_layout() const override { return transformed_layout_modified(); }
         size_t number_of_points() const override { return number_of_points_modified(); }
-        size_t number_of_dimensions() const override { return number_of_dimensions_modified(); }
+        number_of_dimensions_t number_of_dimensions() const override { return number_of_dimensions_modified(); }
         MinimumColumnBasis minimum_column_basis() const override { return minimum_column_basis_; }
         ColumnBasesP forced_column_bases() const override { return forced_column_bases_modified(); }
         using ProjectionModify::transformation;
@@ -581,7 +581,7 @@ namespace acmacs::chart
         void sort() { std::sort(projections_.begin(), projections_.end(), [](const auto& p1, const auto& p2) { return p1->stress() < p2->stress(); }); set_projection_no(); }
         void add(std::shared_ptr<ProjectionModify> projection);
 
-        std::shared_ptr<ProjectionModifyNew> new_from_scratch(size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis);
+        std::shared_ptr<ProjectionModifyNew> new_from_scratch(number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis);
         std::shared_ptr<ProjectionModifyNew> new_by_cloning(const ProjectionModify& source, bool add_to_chart = true);
 
         void keep_just(size_t number_of_projections_to_keep)

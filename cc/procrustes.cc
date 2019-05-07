@@ -17,6 +17,7 @@ using namespace acmacs::chart;
 
 using aint_t = alglib::ae_int_t;
 template <typename T> constexpr inline aint_t cint(T src) { return static_cast<aint_t>(src); };
+constexpr inline aint_t cint(acmacs::number_of_dimensions_t src) { return static_cast<aint_t>(*src); };
 
 // ----------------------------------------------------------------------
 
@@ -102,7 +103,7 @@ inline bool has_nan(const alglib::real_2d_array& data)
 
 ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projection& secondary, const std::vector<CommonAntigensSera::common_t>& common, procrustes_scaling_t scaling)
 {
-    auto primary_layout = primary.number_of_dimensions() == 2 ? primary.transformed_layout() : primary.layout();
+    auto primary_layout = primary.number_of_dimensions() == number_of_dimensions_t{2} ? primary.transformed_layout() : primary.layout();
     auto secondary_layout = secondary.layout();
     const auto number_of_dimensions = primary_layout->number_of_dimensions();
     if (number_of_dimensions != secondary_layout->number_of_dimensions())
@@ -112,7 +113,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     x.setlength(cint(common.size()), cint(number_of_dimensions));
     y.setlength(cint(common.size()), cint(number_of_dimensions));
     for (size_t point_no = 0; point_no < common.size(); ++point_no) {
-        for (size_t dim = 0; dim < number_of_dimensions; ++dim) {
+        for (auto dim : range(number_of_dimensions)) {
             if (const auto x_v = primary_layout->coordinate(common[point_no].primary, dim); !std::isnan(x_v))
                 x(cint(point_no), cint(dim)) = x_v;
             if (const auto y_v = secondary_layout->coordinate(common[point_no].secondary, dim); !std::isnan(y_v))
@@ -172,7 +173,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     // translation
     auto m5 = multiply(y, transformation);
     multiply_add(m5, -1, x);
-    for (size_t dim = 0; dim < number_of_dimensions; ++dim) {
+    for (auto dim : range(number_of_dimensions)) {
         const auto t_i =
             std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(common.size())), 0.0, [&m5, dim = cint(dim)](auto sum, auto row) { return sum + m5(row, dim); });
         result.transformation.translation(dim) = t_i / common.size();
@@ -189,7 +190,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
                 auto square = [](auto v) { return v * v; };
                 return sum + square(pc[dim] - sc[dim]);
             };
-            result.rms = std::accumulate(acmacs::index_iterator(0UL), acmacs::index_iterator(number_of_dimensions), result.rms, make_rms_inc);
+            result.rms = std::accumulate(acmacs::index_iterator<number_of_dimensions_t>(0UL), acmacs::index_iterator(number_of_dimensions), result.rms, make_rms_inc);
               //std::cerr << cp.primary << ' ' << cp.secondary << ' ' << result.rms << '\n';
         }
     }
@@ -213,9 +214,9 @@ std::shared_ptr<acmacs::Layout> acmacs::chart::ProcrustesData::apply(const acmac
     // multiply source by transformation
     for (size_t row_no = 0; row_no < source.number_of_points(); ++row_no) {
         if (const auto row = source[row_no]; row.exists()) {
-            for (size_t dim = 0; dim < transformation.number_of_dimensions; ++dim) {
-                auto sum_squares = [&source, this, row_no, dim](double sum, size_t index) { return sum + source(row_no, index) * this->transformation(index, dim); };
-                result->coordinate(row_no, dim) = std::accumulate(acmacs::index_iterator(0UL), acmacs::index_iterator(source.number_of_dimensions()), 0.0, sum_squares) + transformation.translation(dim);
+            for (auto dim : range(transformation.number_of_dimensions)) {
+                auto sum_squares = [&source, this, row_no, dim](auto sum, auto index) { return sum + source(row_no, index) * this->transformation(index, dim); };
+                result->coordinate(row_no, dim) = std::accumulate(acmacs::index_iterator<number_of_dimensions_t>(0UL), acmacs::index_iterator(source.number_of_dimensions()), 0.0, sum_squares) + transformation.translation(dim);
             }
         }
         else {

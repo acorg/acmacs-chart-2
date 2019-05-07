@@ -193,11 +193,11 @@ acmacs::chart::rjson_import::Layout::Layout(const rjson::value& aData)
 {
     auto coord = Vec::begin();
     rjson::for_each(aData, [&coord,num_dim=number_of_dimensions()](const rjson::value& point) {
-        if (point.size() == num_dim)
+        if (point.size() == *num_dim)
             rjson::transform(point, coord, [](const rjson::value& coordinate) -> double { return coordinate; });
         else if (!point.empty())
-            throw invalid_data("rjson_import::Layout: point has invalid number of coordinates: " + std::to_string(point.size()) + ", expected 0 or " + std::to_string(num_dim));
-        coord += static_cast<decltype(coord)::difference_type>(num_dim);
+            throw invalid_data("rjson_import::Layout: point has invalid number of coordinates: " + std::to_string(point.size()) + ", expected 0 or " + acmacs::to_string(num_dim));
+        coord += static_cast<decltype(coord)::difference_type>(*num_dim);
     });
 
 } // acmacs::chart::rjson_import::Layout::Layout

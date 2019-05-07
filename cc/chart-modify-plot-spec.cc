@@ -48,11 +48,11 @@ int main(int argc, char* const argv[])
 
             std::vector<size_t> points;
             if (args["--points"])
-                extend(points, acmacs::string::split_into_uint(static_cast<std::string_view>(args["--points"]), ","), 0, chart->number_of_points());
+                extend(points, acmacs::string::split_into_size_t(static_cast<std::string_view>(args["--points"]), ","), 0, chart->number_of_points());
             if (args["--antigens"])
-                extend(points, acmacs::string::split_into_uint(static_cast<std::string_view>(args["--antigens"]), ","), 0, chart->number_of_antigens());
+                extend(points, acmacs::string::split_into_size_t(static_cast<std::string_view>(args["--antigens"]), ","), 0, chart->number_of_antigens());
             if (args["--sera"])
-                extend(points, acmacs::string::split_into_uint(static_cast<std::string_view>(args["--sera"]), ","), chart->number_of_antigens(), chart->number_of_sera());
+                extend(points, acmacs::string::split_into_size_t(static_cast<std::string_view>(args["--sera"]), ","), chart->number_of_antigens(), chart->number_of_sera());
             std::sort(points.begin(), points.end());
             points.erase(std::unique(points.begin(), points.end()), points.end());
             if (points.empty())

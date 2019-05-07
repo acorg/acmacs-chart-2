@@ -18,7 +18,7 @@ namespace acmacs::chart
         // LayoutRandomizer(LayoutRandomizer&&) = default;
         virtual ~LayoutRandomizer() = default;
 
-        virtual PointCoordinates get(size_t number_of_dimensions)
+        virtual PointCoordinates get(number_of_dimensions_t number_of_dimensions)
             {
                 PointCoordinates result(number_of_dimensions);
                 std::generate(result.begin(), result.end(), [this]() { return this->get(); });
@@ -64,7 +64,7 @@ namespace acmacs::chart
      public:
         LayoutRandomizerWithLineBorder(double diameter, const LineSide& line_side) : LayoutRandomizerPlain(diameter), line_side_(line_side) {}
 
-        PointCoordinates get(size_t number_of_dimensions) override { return line().fix(LayoutRandomizerPlain::get(number_of_dimensions)); }
+        PointCoordinates get(number_of_dimensions_t number_of_dimensions) override { return line().fix(LayoutRandomizerPlain::get(number_of_dimensions)); }
 
         LineSide& line() { return line_side_; }
         const LineSide& line() const { return line_side_; }
@@ -88,7 +88,7 @@ namespace acmacs::chart
 
       // makes randomizer with table max distance, generates random layout, performs very rough optimization,
       // resets randomization diameter with the resulting projection layout size
-    std::shared_ptr<LayoutRandomizer> randomizer_plain_from_sample_optimization(const Chart& chart, const Stress& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier);
+    std::shared_ptr<LayoutRandomizer> randomizer_plain_from_sample_optimization(const Chart& chart, const Stress& stress, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier);
     std::shared_ptr<LayoutRandomizer> randomizer_plain_from_sample_optimization(const Projection& projection, const Stress& stress, double diameter_multiplier);
 
     std::shared_ptr<LayoutRandomizer> randomizer_plain_with_current_layout_area(const ProjectionModify& projection, double diameter_multiplier);

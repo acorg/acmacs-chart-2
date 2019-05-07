@@ -19,7 +19,7 @@
 
 void acmacs::chart::Blobs::calculate(const acmacs::Layout& layout, const Stress& stress)
 {
-    if (layout.number_of_dimensions() != 2)
+    if (layout.number_of_dimensions() != number_of_dimensions_t{2})
         throw std::runtime_error("wrong number of dimensions for blobs");
     acmacs::Layout layout_for_blobs{layout};
     const auto initial_stress = stress.value(layout_for_blobs);
@@ -34,7 +34,7 @@ void acmacs::chart::Blobs::calculate(const acmacs::Layout& layout, const Stress&
 
 void acmacs::chart::Blobs::calculate(const acmacs::Layout& layout, const PointIndexList& points, const Stress& stress)
 {
-    if (layout.number_of_dimensions() != 2)
+    if (layout.number_of_dimensions() != number_of_dimensions_t{2})
         throw std::runtime_error("wrong number of dimensions for blobs");
     acmacs::Layout layout_for_blobs{layout};
     const auto initial_stress = stress.value(layout_for_blobs);

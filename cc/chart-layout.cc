@@ -63,7 +63,7 @@ void write_csv(std::string aFilename, std::shared_ptr<acmacs::chart::Antigens> a
     for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
         writer.add_field("AG");
         writer.add_field(antigen->full_name());
-        for (size_t dim = 0; dim < number_of_dimensions; ++dim)
+        for (auto dim : acmacs::range(number_of_dimensions))
             writer.add_field(acmacs::to_string(layout->coordinate(ag_no, dim)));
         writer.new_row();
     }
@@ -71,7 +71,7 @@ void write_csv(std::string aFilename, std::shared_ptr<acmacs::chart::Antigens> a
     for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
         writer.add_field("SR");
         writer.add_field(serum->full_name());
-        for (size_t dim = 0; dim < number_of_dimensions; ++dim)
+        for (auto dim : acmacs::range(number_of_dimensions))
             writer.add_field(acmacs::to_string(layout->coordinate(sr_no + number_of_antigens, dim)));
         writer.new_row();
     }
@@ -87,14 +87,14 @@ void write_text(std::string aFilename, std::string_view aFieldSeparator, std::sh
     const auto number_of_dimensions = layout->number_of_dimensions();
     for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
         result += string::concat("AG", aFieldSeparator, encode_name(antigen->full_name(), aFieldSeparator));
-        for (size_t dim = 0; dim < number_of_dimensions; ++dim)
+        for (auto dim : acmacs::range(number_of_dimensions))
             result += string::concat(aFieldSeparator, acmacs::to_string(layout->coordinate(ag_no, dim)));
         result += '\n';
     }
     const auto number_of_antigens = antigens->size();
     for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
         result += string::concat("SR", aFieldSeparator, encode_name(serum->full_name(), aFieldSeparator));
-        for (size_t dim = 0; dim < number_of_dimensions; ++dim)
+        for (auto dim : acmacs::range(number_of_dimensions))
             result += string::concat(aFieldSeparator, acmacs::to_string(layout->coordinate(sr_no + number_of_antigens, dim)));
         result += '\n';
     }

@@ -55,7 +55,7 @@ int main(int argc, char* const argv[])
         // relax
         acmacs::chart::optimization_options options(method, acmacs::chart::optimization_precision::rough, opt.max_distance_multiplier);
         options.num_threads = opt.threads;
-        chart.relax(opt.number_of_optimizations, *opt.minimum_column_basis, opt.number_of_dimensions, acmacs::chart::use_dimension_annealing::yes, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
+        chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, acmacs::chart::use_dimension_annealing::yes, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
         auto projections = chart.projections_modify();
         projections->sort();
         chart.projection_modify(0)->relax(acmacs::chart::optimization_options(method, acmacs::chart::optimization_precision::fine));

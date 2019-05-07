@@ -59,7 +59,7 @@ int main(int argc, char* const argv[])
         acmacs::chart::optimization_options options(method, precision, opt.max_distance_multiplier);
         options.num_threads = opt.threads;
         const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(!opt.no_dimension_annealing);
-        chart.relax(opt.number_of_optimizations, *opt.minimum_column_basis, opt.number_of_dimensions, dimension_annealing, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
+        chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{opt.number_of_dimensions}, dimension_annealing, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
         auto projections = chart.projections_modify();
         projections->sort();
         for (size_t p_no = 0; p_no < opt.fine; ++p_no)
@@ -92,9 +92,9 @@ acmacs::chart::PointIndexList get_disconnected(std::string_view antigens, std::s
 {
     acmacs::chart::PointIndexList points;
     if (!antigens.empty())
-        extend(points, acmacs::string::split_into_uint(antigens, ","), 0, number_of_antigens + number_of_sera);
+        extend(points, acmacs::string::split_into_size_t(antigens, ","), 0, number_of_antigens + number_of_sera);
     if (!sera.empty())
-        extend(points, acmacs::string::split_into_uint(sera, ","), number_of_antigens, number_of_sera);
+        extend(points, acmacs::string::split_into_size_t(sera, ","), number_of_antigens, number_of_sera);
     return points;
 
 } // get_disconnected

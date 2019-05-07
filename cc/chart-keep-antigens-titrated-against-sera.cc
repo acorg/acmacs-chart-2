@@ -30,7 +30,7 @@ int main(int argc, char* const argv[])
         }
         else {
             const std::string sera(args["-s"]);
-            acmacs::chart::PointIndexList sera_titrated_against{sera.empty() ? acmacs::Indexes{} : acmacs::string::split_into_uint(sera, ",")};
+            acmacs::chart::PointIndexList sera_titrated_against{sera.empty() ? acmacs::Indexes{} : acmacs::string::split_into_size_t(sera, ",")};
             // acmacs::ReverseSortedIndexes antigens_to_remove;
             const auto report = do_report_time(args["--time"]);
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};

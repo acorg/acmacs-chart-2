@@ -1,6 +1,7 @@
 #include "acmacs-base/time.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
+#include "acmacs-base/number-of-dimensions.hh"
 #include "acmacs-chart-2/lispmds-export.hh"
 #include "acmacs-chart-2/lispmds-encode.hh"
 #include "acmacs-chart-2/chart.hh"
@@ -12,7 +13,7 @@ static std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera, size_
 static std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters, const acmacs::chart::PointIndexList& disconnected);
 static std::string starting_coordss(const acmacs::chart::Chart& aChart, const acmacs::chart::PointIndexList& disconnected);
 static std::string batch_runs(const acmacs::chart::Chart& aChart, const acmacs::chart::PointIndexList& disconnected);
-static std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_of_points, size_t number_of_dimensions, size_t aIndent, const acmacs::chart::PointIndexList& disconnected);
+static std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_of_points, acmacs::number_of_dimensions_t number_of_dimensions, size_t aIndent, const acmacs::chart::PointIndexList& disconnected);
 static std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent, const acmacs::chart::PointIndexList& disconnected);
 static std::string reference_antigens(std::shared_ptr<acmacs::chart::Antigens> aAntigens, const acmacs::chart::PointIndexList& disconnected);
 static std::string plot_spec(const acmacs::chart::Chart& aChart, const acmacs::chart::PointIndexList& disconnected);
@@ -59,7 +60,7 @@ std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, st
                                   :TRANSLATE-TO-FIT-MDS-WINDOW T :SCALE-TO-FIT-MDS-WINDOW T
                                   :BASIS-VECTOR-X-COORD-SCALE 1 :BASIS-VECTOR-Y-COORD-SCALE 1
 )");
-        if (const auto transformation = projection->transformation(); transformation != acmacs::Transformation{} && transformation.valid() && transformation.number_of_dimensions == 2)
+        if (const auto transformation = projection->transformation(); transformation != acmacs::Transformation{} && transformation.valid() && transformation.number_of_dimensions == number_of_dimensions_t{2})
             result.append(string::concat_precise("                                  :CANVAS-BASIS-VECTOR-0 (", transformation.a(), ' ', transformation.c(), ") :CANVAS-BASIS-VECTOR-1 (", transformation.b(), ' ', transformation.d(), "))\n"));
     }
     result.append(reference_antigens(aChart.antigens(), disconnected));
@@ -154,7 +155,9 @@ std::string starting_coordss(const acmacs::chart::Chart& aChart, const acmacs::c
         return {};
     auto projection = (*projections)[0];
     auto layout = projection->layout();
-    if (const auto number_of_points = layout->number_of_points(), number_of_dimensions = layout->number_of_dimensions(); number_of_points && number_of_dimensions)
+    const auto number_of_points = layout->number_of_points();
+    const auto number_of_dimensions = layout->number_of_dimensions();
+    if (number_of_points && number_of_dimensions.valid())
         return "  :STARTING-COORDSS '(" + coordinates(layout, number_of_points, number_of_dimensions, 22, disconnected) + col_and_row_adjusts(aChart, projection, 22, disconnected) + ')';
     else
         return {};
@@ -189,7 +192,7 @@ std::string batch_runs(const acmacs::chart::Chart& aChart, const acmacs::chart::
 
 // ----------------------------------------------------------------------
 
-std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_of_points, size_t number_of_dimensions, size_t aIndent, const acmacs::chart::PointIndexList& disconnected)
+std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_of_points, acmacs::number_of_dimensions_t number_of_dimensions, size_t aIndent, const acmacs::chart::PointIndexList& disconnected)
 {
     std::string result;
     for (size_t point_no = 0; point_no < number_of_points; ++point_no) {
@@ -197,8 +200,8 @@ std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_o
             if (point_no)
                 result.append(1, '\n').append(aIndent, ' ');
             result.append(1, '(');
-            for (size_t dim = 0; dim < number_of_dimensions; ++dim) {
-                if (dim)
+            for (auto dim : acmacs::range(number_of_dimensions)) {
+                if (dim.valid())
                     result.append(1, ' ');
                 const auto c = aLayout->coordinate(point_no, dim);
                 if (std::isnan(c))

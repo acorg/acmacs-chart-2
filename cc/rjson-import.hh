@@ -25,12 +25,12 @@ namespace acmacs::chart
 
 namespace acmacs::chart::rjson_import
 {
-    inline size_t number_of_dimensions(const rjson::value& data) noexcept
+    inline number_of_dimensions_t number_of_dimensions(const rjson::value& data) noexcept
     {
         if (const auto& non_empty = rjson::find_if(data, [](const auto& val) -> bool { return !val.empty(); }); !non_empty.is_null())
-            return non_empty.size();
+            return number_of_dimensions_t{non_empty.size()};
         else
-            return 0;
+            return number_of_dimensions_t{0};
     }
 
 // ----------------------------------------------------------------------
@@ -146,7 +146,7 @@ namespace acmacs::chart
       public:
         std::optional<double> stored_stress() const override { if (const auto& stress = data_[keys_.stress]; !stress.is_null()) return stress; else return {}; }
         std::shared_ptr<Layout> layout() const override { if (!layout_) layout_ = std::make_shared<rjson_import::Layout>(data_[keys_.layout]); return layout_; }
-        size_t number_of_dimensions() const override { return rjson_import::number_of_dimensions(data_[keys_.layout]); }
+        number_of_dimensions_t number_of_dimensions() const override { return rjson_import::number_of_dimensions(data_[keys_.layout]); }
         std::string comment() const override { if (const auto& comment = data_[keys_.comment]; !comment.is_null()) return static_cast<std::string>(comment); else return {}; }
         size_t number_of_points() const override { return data_[keys_.layout].size(); }
         PointIndexList disconnected() const override;

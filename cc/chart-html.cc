@@ -56,16 +56,16 @@ int main(int argc, char* const argv[])
         groups_t groups;
         for (size_t group_no = 0; group_no < opt.groups->size(); ++group_no) {
             const std::string group_name = group_no < opt.group_names->size() ? static_cast<std::string>(opt.group_names->at(group_no)) : std::string{};
-            groups.emplace_back(group_name, acmacs::string::split_into_uint(opt.groups->at(group_no), ","));
+            groups.emplace_back(group_name, acmacs::string::split_into_size_t(opt.groups->at(group_no), ","));
         }
 
         groups_t serum_groups;
         for (size_t group_no = 0; group_no < opt.serum_groups->size(); ++group_no) {
             const std::string serum_group_name = group_no < opt.serum_group_names->size() ? static_cast<std::string>(opt.serum_group_names->at(group_no)) : std::string{};
-            serum_groups.emplace_back(serum_group_name, acmacs::string::split_into_uint(opt.serum_groups->at(group_no), ","));
+            serum_groups.emplace_back(serum_group_name, acmacs::string::split_into_size_t(opt.serum_groups->at(group_no), ","));
         }
         if (opt.sera.has_value() && serum_groups.empty())
-            serum_groups.emplace_back("", acmacs::string::split_into_uint(*opt.sera, ","));
+            serum_groups.emplace_back("", acmacs::string::split_into_size_t(*opt.sera, ","));
 
         header(output, chart->make_name());
         contents(output, *chart, groups, serum_groups, opt.all_fields, !opt.no_rest_group, opt.only_with_titers);

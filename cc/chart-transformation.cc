@@ -33,8 +33,8 @@ int main(int argc, char* const argv[])
             const auto tr = projection->transformation();
             const int precision = args["--precision"];
             std::cout << std::setprecision(precision) << std::right << std::fixed;
-            for (size_t row = 0; row < tr.number_of_dimensions; ++row) {
-                for (size_t column = 0; column < tr.number_of_dimensions; ++column)
+            for (auto row : acmacs::range(*tr.number_of_dimensions)) {
+                for (auto column : acmacs::range(*tr.number_of_dimensions))
                     std::cout << std::setw(precision + 4) << tr._x(row, column);
                 std::cout << '\n';
             }

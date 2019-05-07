@@ -492,7 +492,7 @@ size_t LispmdsTiters::number_of_non_dont_cares() const
 void LispmdsProjection::check() const
 {
     try {
-        if (auto nd = layout()->number_of_dimensions(); nd > 5)
+        if (auto nd = layout()->number_of_dimensions(); *nd > 5)
             throw import_error("[lispmds] projection " + acmacs::to_string(projection_no()) + " has unsupported number of dimensions: " + acmacs::to_string(nd));
     }
     catch (std::exception& err) {
@@ -521,19 +521,19 @@ class LispmdsLayout : public acmacs::Layout
 {
  public:
     LispmdsLayout(const acmacs::lispmds::value& aData, size_t aNumberOfAntigens, size_t aNumberOfSera)
-        : acmacs::Layout(aNumberOfAntigens + aNumberOfSera, aData[0].size())
+        : acmacs::Layout(aNumberOfAntigens + aNumberOfSera, acmacs::number_of_dimensions_t{aData[0].size()})
         {
             auto target = Vec::begin();
             for (size_t p_no = 0; p_no < number_of_points(); ++p_no) {
                 const auto& point = aData[p_no];
-                if (point.size() == number_of_dimensions()) {
-                    for (size_t dim = 0; dim < point.size(); ++dim)
+                if (point.size() == *number_of_dimensions()) {
+                    for (auto dim : acmacs::range(point.size()))
                         *target++ = std::get<acmacs::lispmds::number>(point[dim]);
                 }
                 else if (!point.empty())
-                    throw invalid_data("LispmdsLayout: point has invalid number of coordinates: " + std::to_string(point.size()) + ", expected 0 or " + std::to_string(number_of_dimensions()));
+                    throw invalid_data("LispmdsLayout: point has invalid number of coordinates: " + std::to_string(point.size()) + ", expected 0 or " + acmacs::to_string(number_of_dimensions()));
                 else
-                    target += static_cast<decltype(target)::difference_type>(number_of_dimensions());
+                    target += static_cast<decltype(target)::difference_type>(*number_of_dimensions());
             }
         }
 
@@ -552,9 +552,9 @@ std::shared_ptr<acmacs::Layout> LispmdsProjection::layout() const
 
 // ----------------------------------------------------------------------
 
-size_t LispmdsProjection::number_of_dimensions() const
+acmacs::number_of_dimensions_t LispmdsProjection::number_of_dimensions() const
 {
-    return projection_layout(mData, projection_no())[0].size();
+    return acmacs::number_of_dimensions_t{projection_layout(mData, projection_no())[0].size()};
 
 } // LispmdsProjection::number_of_dimensions
 

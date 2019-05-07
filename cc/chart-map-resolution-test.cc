@@ -32,8 +32,8 @@ int main(int argc, char* const argv[])
         Options opt(argc, argv);
 
         acmacs::chart::MapResoltionTestParameters parameters;
-        parameters.number_of_dimensions = acmacs::string::split_into_uint(*opt.number_of_dimensions, ",");
-        parameters.number_of_optimizations = opt.number_of_optimizations;
+        parameters.number_of_dimensions = acmacs::string::split_into_uint<acmacs::number_of_dimensions_t>(*opt.number_of_dimensions, ",");
+        parameters.number_of_optimizations = acmacs::chart::number_of_optimizations_t{opt.number_of_optimizations};
         parameters.number_of_random_replicates_for_each_proportion = opt.number_of_random_replicates_for_each_proportion;
         parameters.proportions_to_dont_care = acmacs::string::split_into_double(*opt.proportions_to_dont_care, ",");
         parameters.minimum_column_basis = *opt.minimum_column_basis;

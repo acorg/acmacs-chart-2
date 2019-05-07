@@ -42,7 +42,7 @@ namespace acmacs::chart
 
     struct IntermediateLayout
     {
-        IntermediateLayout(size_t number_of_dimensions, const double* first, long layout_size, double a_stress) : layout(number_of_dimensions, first, first + layout_size), stress{a_stress} {}
+        IntermediateLayout(number_of_dimensions_t number_of_dimensions, const double* first, long layout_size, double a_stress) : layout(number_of_dimensions, first, first + layout_size), stress{a_stress} {}
         const acmacs::Layout layout;
         const double stress;
     };
@@ -66,7 +66,7 @@ namespace acmacs::chart
         return optimize(method, stress, arg_first, arg_first + arg_size, precision);
     }
 
-    DimensionAnnelingStatus dimension_annealing(optimization_method optimization_method, const Stress& stress, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
+    DimensionAnnelingStatus dimension_annealing(optimization_method optimization_method, const Stress& stress, number_of_dimensions_t source_number_of_dimensions, number_of_dimensions_t target_number_of_dimensions, double* arg_first, double* arg_last);
 
 // ----------------------------------------------------------------------
 

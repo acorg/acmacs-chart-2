@@ -28,6 +28,7 @@
 
 using aint_t = alglib::ae_int_t;
 template <typename T> constexpr inline aint_t cint(T src) { return static_cast<aint_t>(src); };
+constexpr inline aint_t cint(acmacs::number_of_dimensions_t src) { return static_cast<aint_t>(*src); };
 
 // ----------------------------------------------------------------------
 
@@ -47,7 +48,7 @@ namespace acmacs::chart
 
 static void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
 static void alglib_cg_optimize(acmacs::chart::optimization_status& status, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
-static void alglib_pca(OptimiserCallbackData& callback_data, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last);
+static void alglib_pca(OptimiserCallbackData& callback_data, acmacs::number_of_dimensions_t source_number_of_dimensions, acmacs::number_of_dimensions_t target_number_of_dimensions, double* arg_first, double* arg_last);
 
 // ----------------------------------------------------------------------
 
@@ -84,7 +85,7 @@ acmacs::chart::optimization_status acmacs::chart::optimize(ProjectionModify& pro
     auto stress = stress_factory(projection, options.mult);
 
     bool initial_opt = true;
-    for (size_t num_dims: schedule) {
+    for (auto num_dims: schedule) {
         if (!initial_opt) {
             dimension_annealing(options.method, stress, projection.number_of_dimensions(), num_dims, layout->data(), layout->data() + layout->size());
             layout->change_number_of_dimensions(num_dims);
@@ -350,7 +351,7 @@ void alglib_cg_optimize(acmacs::chart::optimization_status& status, OptimiserCal
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(optimization_method optimization_method, const Stress& stress, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
+acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(optimization_method optimization_method, const Stress& stress, number_of_dimensions_t source_number_of_dimensions, number_of_dimensions_t target_number_of_dimensions, double* arg_first, double* arg_last)
 {
     // std::cerr << "dimension_annealing " << std::pair(arg_first, arg_last) << '\n';
     DimensionAnnelingStatus status;
@@ -371,7 +372,7 @@ acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(optimi
 
 // ----------------------------------------------------------------------
 
-void alglib_pca(OptimiserCallbackData& callback_data, size_t source_number_of_dimensions, size_t target_number_of_dimensions, double* arg_first, double* arg_last)
+void alglib_pca(OptimiserCallbackData& callback_data, acmacs::number_of_dimensions_t source_number_of_dimensions, acmacs::number_of_dimensions_t target_number_of_dimensions, double* arg_first, double* arg_last)
 {
     const double eps{0};
     const aint_t maxits{0};

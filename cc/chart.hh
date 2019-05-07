@@ -630,7 +630,7 @@ namespace acmacs::chart
         double stress(RecalculateStress recalculate = RecalculateStress::if_necessary) const;
         double stress_with_moved_point(size_t point_no, const PointCoordinates& move_to) const;
         virtual std::string comment() const = 0;
-        virtual size_t number_of_dimensions() const = 0;
+        virtual number_of_dimensions_t number_of_dimensions() const = 0;
         virtual size_t number_of_points() const = 0;
         virtual std::shared_ptr<Layout> layout() const = 0;
         virtual std::shared_ptr<Layout> transformed_layout() const { return layout()->transform(transformation()); }

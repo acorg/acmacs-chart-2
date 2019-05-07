@@ -2,7 +2,7 @@
 #include "acmacs-chart-2/map-resolution-test.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
-static void relax(acmacs::chart::ChartModify& chart, size_t number_of_dimensions, size_t number_of_optimizations, acmacs::chart::MinimumColumnBasis minimum_column_basis, enum acmacs::chart::optimization_precision optimization_precision);
+static void relax(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t number_of_dimensions, acmacs::chart::number_of_optimizations_t number_of_optimizations, acmacs::chart::MinimumColumnBasis minimum_column_basis, enum acmacs::chart::optimization_precision optimization_precision);
 
 // ----------------------------------------------------------------------
 
@@ -20,7 +20,7 @@ acmacs::chart::MapResoltionTestResults acmacs::chart::map_resolution_test(ChartM
 
 // ----------------------------------------------------------------------
 
-void relax(acmacs::chart::ChartModify& chart, size_t number_of_dimensions, size_t number_of_optimizations, acmacs::chart::MinimumColumnBasis minimum_column_basis, enum acmacs::chart::optimization_precision optimization_precision)
+void relax(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t number_of_dimensions, acmacs::chart::number_of_optimizations_t number_of_optimizations, acmacs::chart::MinimumColumnBasis minimum_column_basis, enum acmacs::chart::optimization_precision optimization_precision)
 {
     chart.relax(number_of_optimizations, minimum_column_basis, number_of_dimensions, acmacs::chart::use_dimension_annealing::yes, {optimization_precision}, acmacs::chart::report_stresses::no);
 

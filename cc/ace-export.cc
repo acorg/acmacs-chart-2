@@ -260,11 +260,12 @@ void export_projections(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Pr
         auto& target = aTarget.append(rjson::object{});
 
         auto layout = projection->layout();
-        if (const auto number_of_points = layout->number_of_points(), number_of_dimensions = layout->number_of_dimensions(); number_of_points && number_of_dimensions) {
+        const auto number_of_dimensions = layout->number_of_dimensions();
+        if (const auto number_of_points = layout->number_of_points(); number_of_points && number_of_dimensions.valid()) {
             rjson::value& ar = target["l"] = rjson::array{};
             for (size_t p_no = 0; p_no < number_of_points; ++p_no) {
                 auto& p = ar.append(rjson::array{});
-                for (size_t dim = 0; dim < number_of_dimensions; ++dim) {
+                for (auto dim : acmacs::range(number_of_dimensions)) {
                     const auto c = layout->coordinate(p_no, dim);
                     if (std::isnan(c))
                         break;
@@ -407,7 +408,7 @@ template <typename DF> std::string acmacs::chart::export_layout(const Chart& aCh
     for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
         DF::first_field(result, "AG");
         DF::second_field(result, antigen->full_name());
-        for (auto dim : acmacs::range(number_of_dimensions))
+        for (auto dim : acmacs::range<number_of_dimensions_t>(number_of_dimensions))
             DF::second_field(result, (*layout)(ag_no, dim));
         DF::end_of_record(result);
     }
@@ -415,7 +416,7 @@ template <typename DF> std::string acmacs::chart::export_layout(const Chart& aCh
     for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
         DF::first_field(result, "SR");
         DF::second_field(result, serum->full_name());
-        for (auto dim : acmacs::range(number_of_dimensions))
+        for (auto dim : acmacs::range<number_of_dimensions_t>(number_of_dimensions))
             DF::second_field(result, (*layout)(sr_no + number_of_antigens, dim));
         DF::end_of_record(result);
     }

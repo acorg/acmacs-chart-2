@@ -2,8 +2,11 @@
 
 #include <stdexcept>
 #include <vector>
+#include <algorithm>
 
+#include "acmacs-base/named-type.hh"
 #include "acmacs-base/to-string.hh"
+#include "acmacs-base/number-of-dimensions.hh"
 
 // ----------------------------------------------------------------------
 
@@ -13,6 +16,8 @@ namespace acmacs::chart
     enum class optimization_precision { rough, very_rough, fine };
     enum class multiply_antigen_titer_until_column_adjust { no, yes };
     enum class dodgy_titer_is_regular { no, yes };
+
+    using number_of_optimizations_t = named_t<size_t, struct number_of_optimizations_tag>;
 
     struct optimization_options
     {
@@ -32,19 +37,20 @@ namespace acmacs::chart
 
     struct dimension_schedule
     {
-        dimension_schedule(size_t target_number_of_dimensions = 2) : schedule{5, target_number_of_dimensions} {}
-        dimension_schedule(std::initializer_list<size_t> arg) : schedule(arg) {}
-        dimension_schedule(const std::vector<size_t>& arg) : schedule(arg) {}
+        dimension_schedule(number_of_dimensions_t target_number_of_dimensions = number_of_dimensions_t{2}) : schedule{5, target_number_of_dimensions} {}
+        dimension_schedule(std::initializer_list<number_of_dimensions_t> arg) : schedule(arg) {}
+        dimension_schedule(const std::vector<number_of_dimensions_t>& arg) : schedule(arg) {}
+        dimension_schedule(const std::vector<size_t>& arg) : schedule(arg.size(), number_of_dimensions_t{0}) { std::transform(std::begin(arg), std::end(arg), std::begin(schedule), [](size_t src) { return number_of_dimensions_t{src}; }); }
 
         size_t size() const { return schedule.size(); }
-        size_t initial() const { return schedule.front(); }
-        size_t final() const { return schedule.back(); }
+        number_of_dimensions_t initial() const { return schedule.front(); }
+        number_of_dimensions_t final() const { return schedule.back(); }
 
           // using const_iterator = std::vector<size_t>::const_iterator;
         auto begin() const { return schedule.begin(); }
         auto end() const { return schedule.end(); }
 
-        std::vector<size_t> schedule;
+        std::vector<number_of_dimensions_t> schedule;
 
     }; // struct dimension_schedule
 

@@ -24,8 +24,8 @@ namespace acmacs::chart
 
     struct MapResoltionTestParameters
     {
-        std::vector<size_t> number_of_dimensions{1, 2, 3, 4, 5};
-        size_t number_of_optimizations{100};
+        std::vector<number_of_dimensions_t> number_of_dimensions{number_of_dimensions_t{1}, number_of_dimensions_t{2}, number_of_dimensions_t{3}, number_of_dimensions_t{4}, number_of_dimensions_t{5}};
+        number_of_optimizations_t number_of_optimizations{100};
         size_t number_of_random_replicates_for_each_proportion{25};
         std::vector<double> proportions_to_dont_care{0.1, 0.2, 0.3};
         acmacs::chart::MinimumColumnBasis minimum_column_basis{};

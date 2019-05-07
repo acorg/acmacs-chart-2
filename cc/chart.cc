@@ -324,7 +324,7 @@ acmacs::chart::Lab acmacs::chart::Info::fix_lab_name(Lab source, FixLab fix) con
 std::string acmacs::chart::Projection::make_info() const
 {
     auto lt = layout();
-    std::string result = std::to_string(stress()) + " " + std::to_string(lt->number_of_dimensions()) + 'd';
+    std::string result = std::to_string(stress()) + " " + acmacs::to_string(lt->number_of_dimensions()) + 'd';
     if (auto cmt = comment(); !cmt.empty())
         result += " <" + cmt + '>';
     if (auto fcb = forced_column_bases(); fcb)

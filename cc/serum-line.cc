@@ -8,11 +8,11 @@
 acmacs::chart::SerumLine::SerumLine(const Projection& projection)
 {
     auto layout = projection.layout();
-    if (layout->number_of_dimensions() != 2)
-        throw std::runtime_error("invalid number of dimensions in projection: " + std::to_string(layout->number_of_dimensions()) + ", only 2 is supported");
+    if (layout->number_of_dimensions() != number_of_dimensions_t{2})
+        throw std::runtime_error("invalid number of dimensions in projection: " + acmacs::to_string(layout->number_of_dimensions()) + ", only 2 is supported");
 
     const auto number_of_antigens = projection.chart().number_of_antigens();
-    line_ = acmacs::statistics::simple_linear_regression(layout->begin_sera_dimension(number_of_antigens, 0), layout->end_sera_dimension(number_of_antigens, 0), layout->begin_sera_dimension(number_of_antigens, 1));
+    line_ = acmacs::statistics::simple_linear_regression(layout->begin_sera_dimension(number_of_antigens, number_of_dimensions_t{0}), layout->end_sera_dimension(number_of_antigens, number_of_dimensions_t{0}), layout->begin_sera_dimension(number_of_antigens, number_of_dimensions_t{1}));
 
     std::vector<double> distances;
     std::transform(layout->begin_sera(number_of_antigens), layout->end_sera(number_of_antigens), std::back_inserter(distances),

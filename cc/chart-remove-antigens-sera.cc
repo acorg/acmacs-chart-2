@@ -29,8 +29,8 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         Options opt(argc, argv);
-        acmacs::ReverseSortedIndexes antigens_to_remove{opt.antigens_to_remove->empty() ? acmacs::Indexes{} : acmacs::string::split_into_uint(*opt.antigens_to_remove, ",")};
-        acmacs::ReverseSortedIndexes sera_to_remove{opt.sera_to_remove->empty() ? acmacs::Indexes{} : acmacs::string::split_into_uint(*opt.sera_to_remove, ",")};
+        acmacs::ReverseSortedIndexes antigens_to_remove{opt.antigens_to_remove->empty() ? acmacs::Indexes{} : acmacs::string::split_into_size_t(*opt.antigens_to_remove, ",")};
+        acmacs::ReverseSortedIndexes sera_to_remove{opt.sera_to_remove->empty() ? acmacs::Indexes{} : acmacs::string::split_into_size_t(*opt.sera_to_remove, ",")};
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(*opt.source, acmacs::chart::Verify::None)};
         if (opt.remove_egg) {
             auto ag_egg = chart.antigens()->all_indexes();

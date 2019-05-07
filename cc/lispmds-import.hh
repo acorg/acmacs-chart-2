@@ -195,7 +195,7 @@ namespace acmacs::chart
         std::shared_ptr<Layout> layout() const override;
         std::string comment() const override { return {}; }
         size_t number_of_points() const override { return mNumberOfAntigens + mNumberOfSera; }
-        size_t number_of_dimensions() const override;
+        number_of_dimensions_t number_of_dimensions() const override;
         MinimumColumnBasis minimum_column_basis() const override;
         ColumnBasesP forced_column_bases() const override;
         acmacs::Transformation transformation() const override;

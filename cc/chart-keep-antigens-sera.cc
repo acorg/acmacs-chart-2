@@ -32,7 +32,7 @@ int main(int argc, char* const argv[])
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
 
             const std::string antigens_to_keep_s(args["-a"]);
-            acmacs::chart::PointIndexList antigens_to_keep{antigens_to_keep_s.empty() ? acmacs::Indexes{} : acmacs::string::split_into_uint(antigens_to_keep_s, ",")};
+            acmacs::chart::PointIndexList antigens_to_keep{antigens_to_keep_s.empty() ? acmacs::Indexes{} : acmacs::string::split_into_size_t(antigens_to_keep_s, ",")};
             if (!antigens_to_keep.empty()) {
                 acmacs::ReverseSortedIndexes antigens_to_remove(chart.number_of_antigens());
                 antigens_to_remove.remove(antigens_to_keep);
@@ -41,7 +41,7 @@ int main(int argc, char* const argv[])
             }
 
             const std::string sera_to_keep_s(args["-s"]);
-            acmacs::chart::PointIndexList sera_to_keep{sera_to_keep_s.empty() ? acmacs::Indexes{} : acmacs::string::split_into_uint(sera_to_keep_s, ",")};
+            acmacs::chart::PointIndexList sera_to_keep{sera_to_keep_s.empty() ? acmacs::Indexes{} : acmacs::string::split_into_size_t(sera_to_keep_s, ",")};
             if (!sera_to_keep.empty()) {
                 acmacs::ReverseSortedIndexes sera_to_remove(chart.number_of_sera());
                 sera_to_remove.remove(sera_to_keep);

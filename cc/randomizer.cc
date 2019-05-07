@@ -67,7 +67,7 @@ std::shared_ptr<acmacs::chart::LayoutRandomizer> acmacs::chart::randomizer_plain
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::chart::LayoutRandomizer> acmacs::chart::randomizer_plain_from_sample_optimization(const Chart& chart, const Stress& stress, size_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier)
+std::shared_ptr<acmacs::chart::LayoutRandomizer> acmacs::chart::randomizer_plain_from_sample_optimization(const Chart& chart, const Stress& stress, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier)
 {
     return randomizer_plain_from_sample_optimization_internal(ProjectionModifyNew(chart, number_of_dimensions, minimum_column_basis), stress, diameter_multiplier);
 
