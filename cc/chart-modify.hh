@@ -83,6 +83,7 @@ namespace acmacs::chart
 
      protected:
         explicit ChartModify(size_t number_of_antigens, size_t number_of_sera);
+        explicit ChartModify(const Chart& source, bool copy_projections, bool copy_plot_spec);
 
      private:
         ChartP main_;
@@ -112,8 +113,15 @@ namespace acmacs::chart
     class ChartClone : public ChartModify
     {
      public:
-        explicit ChartClone(const Chart& source);
-        explicit ChartClone(ChartP source) : ChartClone(*source) {}
+        enum class clone_data {
+            titers,             // info, antigens, sera, titers, forced_column_bases
+            projections,         // titers+projections
+            plot_spec,            // titers+plot_spec
+            projections_plot_spec,            // titers+projections+plot_spec
+        };
+
+        explicit ChartClone(const Chart& source, clone_data cd = clone_data::titers);
+        explicit ChartClone(ChartP source, clone_data cd = clone_data::titers) : ChartClone(*source, cd) {}
 
     }; // class ChartNew
 

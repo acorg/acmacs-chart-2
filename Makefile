@@ -45,6 +45,8 @@ TARGETS = \
   $(DIST)/chart-remove-layers \
   $(DIST)/chart-merge \
   $(DIST)/chart-export \
+  $(DIST)/chart-homologous-pairs \
+  $(DIST)/chart-map-resolution-test \
   $(DIST)/test-titer-iterator \
   $(DIST)/test-chart-modify \
   $(DIST)/test-chart-create-from-scratch \
@@ -52,8 +54,7 @@ TARGETS = \
   $(DIST)/test-chart-merge \
   $(DIST)/test-get-titers \
   $(DIST)/test-clone-projection \
-  $(DIST)/chart-homologous-pairs \
-  $(DIST)/chart-map-resolution-test
+  $(DIST)/test-chart-clone
 
 SOURCES = \
   chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc randomizer.cc serum-circle.cc \

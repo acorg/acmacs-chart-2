@@ -28,6 +28,18 @@ ChartModify::ChartModify(size_t number_of_antigens, size_t number_of_sera)
 
 // ----------------------------------------------------------------------
 
+ChartModify::ChartModify(const Chart& source, bool copy_projections, bool copy_plot_spec)
+    : info_{std::make_shared<InfoModify>(source.info())},
+      antigens_{std::make_shared<AntigensModify>(source.antigens())},
+      sera_{std::make_shared<SeraModify>(source.sera())},
+      titers_{std::make_shared<TitersModify>(source.titers())},
+      projections_{copy_projections ? std::make_shared<ProjectionsModify>(*this, source.projections()) : std::make_shared<ProjectionsModify>(*this)},
+      plot_spec_{copy_plot_spec ? std::make_shared<PlotSpecModify>(source.plot_spec(), source.number_of_antigens()) : std::make_shared<PlotSpecModify>(source.number_of_antigens(), source.number_of_sera())}
+{
+} // ChartModify::ChartModify
+
+// ----------------------------------------------------------------------
+
 InfoP ChartModify::info() const
 {
     if (info_)
@@ -250,8 +262,10 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
         return projection;
     });
 
+#ifdef _OPENMP
     const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
     const int slot_size = number_of_antigens() < 1000 ? 4 : 1;
+#endif
 #pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, slot_size)
     for (size_t p_no = 0; p_no < projections.size(); ++p_no) {
         auto projection = projections[p_no];
@@ -310,8 +324,10 @@ void ChartModify::relax_incremetal(size_t source_projection_no, number_of_optimi
         return projection;
     });
 
+#ifdef _OPENMP
     const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
     const int slot_size = number_of_antigens() < 1000 ? 4 : 1;
+#endif
 #pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, slot_size)
     for (size_t p_no = 0; p_no < projections.size(); ++p_no) {
         auto projection = projections[p_no];
@@ -447,11 +463,9 @@ ChartNew::ChartNew(size_t number_of_antigens, size_t number_of_sera)
 
 // ----------------------------------------------------------------------
 
-ChartClone::ChartClone(const Chart& source)
-    : ChartModify(source.number_of_antigens(), source.number_of_sera())
+ChartClone::ChartClone(const Chart& source, clone_data cd)
+    : ChartModify(source, cd == clone_data::projections || cd == clone_data::projections_plot_spec, cd == clone_data::plot_spec || cd == clone_data::projections_plot_spec)
 {
-    throw std::runtime_error("not implemented");
-
 } // ChartClone::ChartClone
 
 // ----------------------------------------------------------------------
