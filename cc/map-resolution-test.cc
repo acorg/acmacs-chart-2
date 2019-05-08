@@ -25,14 +25,15 @@ acmacs::chart::map_resolution_test_data::Results acmacs::chart::map_resolution_t
                 r2[replicate_no] = predictions.linear_regression.r2();
                 number_of_samples += predictions.number_of_samples;
             }
-            const map_resolution_test_data::PredictionsSummary predictions_summary{statistics::standard_deviation(av_abs_error), statistics::standard_deviation(sd_error),
-                                                                                   statistics::standard_deviation(correlations), statistics::standard_deviation(r2), number_of_samples};
+            const map_resolution_test_data::PredictionsSummary predictions_summary{number_of_dimensions,
+                                                                                   proportion_to_dont_care,
+                                                                                   statistics::standard_deviation(av_abs_error),
+                                                                                   statistics::standard_deviation(sd_error),
+                                                                                   statistics::standard_deviation(correlations),
+                                                                                   statistics::standard_deviation(r2),
+                                                                                   number_of_samples};
 
-            std::cout << "dim:" << number_of_dimensions << " prop:" << proportion_to_dont_care << '\n'
-                      << "    " << predictions_summary << '\n'
-                    // << chart.make_info(*parameters.number_of_optimizations + 10)
-                      << '\n';
-
+            std::cout << predictions_summary << '\n';
         }
     }
 
@@ -132,7 +133,9 @@ std::ostream& acmacs::chart::map_resolution_test_data::operator << (std::ostream
 
 std::ostream& acmacs::chart::map_resolution_test_data::operator << (std::ostream& out, const PredictionsSummary& predictions_summary)
 {
-    return out << "(mean sd) av_abs_error(" << predictions_summary.av_abs_error.mean() << ' ' << predictions_summary.av_abs_error.sd() << ')'
+    return out << "dimensions:" << predictions_summary.number_of_dimensions
+               << " proportion:" << predictions_summary.proportion_to_dont_care
+               << " (mean sd) av_abs_error(" << predictions_summary.av_abs_error.mean() << ' ' << predictions_summary.av_abs_error.sd() << ')'
                << " sd_error(" << predictions_summary.sd_error.mean() << ' ' << predictions_summary.sd_error.sd() << ')'
                << " correlations(" << predictions_summary.correlations.mean() << ' ' << predictions_summary.correlations.sd() << ')'
                << " r2(" << predictions_summary.r2.mean() << ' ' << predictions_summary.r2.sd() << ')'

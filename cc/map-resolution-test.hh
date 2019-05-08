@@ -62,11 +62,13 @@ namespace acmacs
 
             struct PredictionsSummary
             {
-                statistics::StandardDeviation av_abs_error;
-                statistics::StandardDeviation sd_error;
-                statistics::StandardDeviation correlations;
-                statistics::StandardDeviation r2;
-                size_t number_of_samples;
+                const number_of_dimensions_t number_of_dimensions;
+                const double proportion_to_dont_care;
+                const statistics::StandardDeviation av_abs_error;
+                const statistics::StandardDeviation sd_error;
+                const statistics::StandardDeviation correlations;
+                const statistics::StandardDeviation r2;
+                const size_t number_of_samples;
             };
 
             std::ostream& operator << (std::ostream& out, const PredictionsSummary& predictions_summary);
