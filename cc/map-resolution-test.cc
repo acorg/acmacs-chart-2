@@ -9,6 +9,7 @@ static acmacs::chart::map_resolution_test_data::ReplicateStat collect_errors(acm
 
 acmacs::chart::map_resolution_test_data::Results acmacs::chart::map_resolution_test(ChartModify& chart, const map_resolution_test_data::Parameters& parameters)
 {
+    map_resolution_test_data::Results results;
     chart.projections_modify()->remove_all();
     for (auto number_of_dimensions : parameters.number_of_dimensions) {
         for (auto proportion_to_dont_care : parameters.proportions_to_dont_care) {
@@ -25,19 +26,15 @@ acmacs::chart::map_resolution_test_data::Results acmacs::chart::map_resolution_t
                 r2[replicate_no] = predictions.linear_regression.r2();
                 number_of_samples += predictions.number_of_samples;
             }
-            const map_resolution_test_data::PredictionsSummary predictions_summary{number_of_dimensions,
-                                                                                   proportion_to_dont_care,
-                                                                                   statistics::standard_deviation(av_abs_error),
-                                                                                   statistics::standard_deviation(sd_error),
-                                                                                   statistics::standard_deviation(correlations),
-                                                                                   statistics::standard_deviation(r2),
-                                                                                   number_of_samples};
 
-            std::cout << predictions_summary << '\n';
+            results.predictions().emplace_back(number_of_dimensions, proportion_to_dont_care, statistics::standard_deviation(av_abs_error), statistics::standard_deviation(sd_error),
+                                 statistics::standard_deviation(correlations), statistics::standard_deviation(r2), number_of_samples);
+
+            std::cout << results.predictions().back() << '\n';
         }
     }
 
-    return {};
+    return results;
 
 } // acmacs::chart::map_resolution_test
 

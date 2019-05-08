@@ -41,6 +41,36 @@ namespace acmacs
                 enum relax_from_full_table relax_from_full_table { relax_from_full_table::no };
             };
 
+            struct PredictionsSummary
+            {
+                PredictionsSummary(number_of_dimensions_t a_number_of_dimensions, double a_proportion_to_dont_care, statistics::StandardDeviation a_av_abs_error,
+                                   statistics::StandardDeviation a_sd_error, statistics::StandardDeviation a_correlations, statistics::StandardDeviation a_r2, size_t a_number_of_samples)
+                    : number_of_dimensions{a_number_of_dimensions}, proportion_to_dont_care{a_proportion_to_dont_care}, av_abs_error{a_av_abs_error}, sd_error{a_sd_error},
+                      correlations{a_correlations}, r2{a_r2}, number_of_samples{a_number_of_samples}
+                {
+                }
+
+                const number_of_dimensions_t number_of_dimensions;
+                const double proportion_to_dont_care;
+                const statistics::StandardDeviation av_abs_error;
+                const statistics::StandardDeviation sd_error;
+                const statistics::StandardDeviation correlations;
+                const statistics::StandardDeviation r2;
+                const size_t number_of_samples;
+            };
+
+            std::ostream& operator << (std::ostream& out, const PredictionsSummary& predictions_summary);
+
+            class Results
+            {
+              public:
+                const auto& predictions() const { return predictions_; }
+                auto& predictions() { return predictions_; }
+
+              private:
+                std::vector<PredictionsSummary> predictions_;
+            };
+
             struct PredictionErrorForTiter
             {
                 PredictionErrorForTiter(size_t ag, size_t sr, double er) : antigen{ag}, serum{sr}, error{er} {}
@@ -60,28 +90,11 @@ namespace acmacs
 
             std::ostream& operator << (std::ostream& out, const Predictions& predictions);
 
-            struct PredictionsSummary
-            {
-                const number_of_dimensions_t number_of_dimensions;
-                const double proportion_to_dont_care;
-                const statistics::StandardDeviation av_abs_error;
-                const statistics::StandardDeviation sd_error;
-                const statistics::StandardDeviation correlations;
-                const statistics::StandardDeviation r2;
-                const size_t number_of_samples;
-            };
-
-            std::ostream& operator << (std::ostream& out, const PredictionsSummary& predictions_summary);
-
             struct ReplicateStat
             {
                 std::vector<double> master_distances;
                 std::vector<double> predicted_distances;
                 std::vector<PredictionErrorForTiter> prediction_errors_for_titers;
-            };
-
-            class Results
-            {
             };
 
         } // namespace map_resolution_test_data
