@@ -19,6 +19,8 @@ acmacs::chart::map_resolution_test_data::Results acmacs::chart::map_resolution_t
         }
     }
 
+    return {};
+    
 } // acmacs::chart::map_resolution_test
 
 // ----------------------------------------------------------------------
@@ -57,7 +59,7 @@ void relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, a
     const acmacs::chart::map_resolution_test_data::Predictions predictions{
         acmacs::statistics::mean_abs(prediction_errors),
         acmacs::statistics::standard_deviation(prediction_errors).sd(),
-        0.0, // acmacs::statistics::correlation(replicate_stat.master_distances, replicate_stat.predicted_distances),
+        acmacs::statistics::correlation(replicate_stat.master_distances, replicate_stat.predicted_distances),
         acmacs::statistics::simple_linear_regression(std::begin(replicate_stat.master_distances), std::end(replicate_stat.master_distances), std::begin(replicate_stat.predicted_distances)),
         prediction_errors.size()
     };
