@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 
+#include "acmacs-base/statistics.hh"
 #include "acmacs-chart-2/optimize-options.hh"
 #include "acmacs-chart-2/column-bases.hh"
 
@@ -53,12 +54,12 @@ namespace acmacs
                 double av_abs_error;
                 double sd_error;
                 double correlation;
-                // LinearRegression linear_regression;
+                statistics::SimpleLinearRegression linear_regression;
                 size_t number_of_samples;
             };
 
             std::ostream& operator << (std::ostream& out, const Predictions& predictions);
-            
+
             struct ReplicateStat
             {
                 std::vector<double> master_distances;

@@ -1,5 +1,4 @@
 #include "acmacs-base/range.hh"
-#include "acmacs-base/statistics.hh"
 #include "acmacs-chart-2/map-resolution-test.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
@@ -58,8 +57,8 @@ void relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, a
     const acmacs::chart::map_resolution_test_data::Predictions predictions{
         acmacs::statistics::mean_abs(prediction_errors),
         acmacs::statistics::standard_deviation(prediction_errors).sd(),
-        0.0, // acmacs::statistics::correlation(r["master_distances"], r["predicted_distances"]),
-        // statistics.linear_regression(r["master_distances"], r["predicted_distances"]),
+        0.0, // acmacs::statistics::correlation(replicate_stat.master_distances, replicate_stat.predicted_distances),
+        acmacs::statistics::simple_linear_regression(std::begin(replicate_stat.master_distances), std::end(replicate_stat.master_distances), std::begin(replicate_stat.predicted_distances)),
         prediction_errors.size()
     };
 
@@ -103,7 +102,7 @@ std::ostream& acmacs::chart::map_resolution_test_data::operator << (std::ostream
     return out << "av_abs_error:" << predictions.av_abs_error
                << " sd_error:" << predictions.sd_error
                << " correlation:" << predictions.correlation
-               // << " linear_regression:" << predictions.linear_regression
+               << " linear_regression:" << predictions.linear_regression
                << " number_of_samples:" << predictions.number_of_samples;
 
 } // acmacs::chart::map_resolution_test_data::operator << 
