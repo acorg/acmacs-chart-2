@@ -46,9 +46,10 @@ void relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, a
         projection->relax(acmacs::chart::optimization_options{parameters.optimization_precision});
     }
     relax(chart, number_of_dimensions, parameters);
+    chart.projections_modify()->sort();
 
     std::cout << "replicate:" << replicate_no << " dim:" << number_of_dimensions << " prop:" << proportion_to_dont_care << '\n'
-              << chart.make_info() << "\n\n";
+              << chart.make_info(*parameters.number_of_optimizations + 10) << "\n\n";
 
     // collect statistics
 

@@ -24,11 +24,11 @@ void acmacs::chart::Date::check() const
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::Chart::make_info() const
+std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_show) const
 {
     return string::join("\n", {info()->make_info(),
                     "Antigens:" + std::to_string(number_of_antigens()) + " Sera:" + std::to_string(number_of_sera()),
-                    projections()->make_info()
+                    projections()->make_info(max_number_of_projections_to_show)
                     });
 
 } // acmacs::chart::Chart::make_info
@@ -389,10 +389,10 @@ acmacs::chart::Blobs acmacs::chart::Projection::blobs(double stress_diff, const 
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::Projections::make_info() const
+std::string acmacs::chart::Projections::make_info(size_t max_number_of_projections_to_show) const
 {
     std::string result = "Projections: " + std::to_string(size());
-    for (auto projection_no: acmacs::range(0UL, std::min(20UL, size())))
+    for (auto projection_no: acmacs::range(0UL, std::min(max_number_of_projections_to_show, size())))
         result += "\n  " + std::to_string(projection_no) + ' ' + operator[](projection_no)->make_info();
     return result;
 

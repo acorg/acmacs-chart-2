@@ -687,7 +687,7 @@ namespace acmacs::chart
         iterator end() const { return {*this, size()}; }
         // virtual size_t projection_no(const Projection* projection) const;
 
-        virtual std::string make_info() const;
+        virtual std::string make_info(size_t max_number_of_projections_to_show = 20) const;
 
         // Chart& chart() { return const_cast<Chart&>(chart_); }
         const Chart& chart() const { return chart_; }
@@ -750,7 +750,7 @@ namespace acmacs::chart
         std::shared_ptr<Serum> serum(size_t aSerumNo) const { return sera()->operator[](aSerumNo); }
         std::string lineage() const;
 
-        std::string make_info() const;
+        std::string make_info(size_t max_number_of_projections_to_show = 20) const;
         std::string make_name(std::optional<size_t> aProjectionNo = {}) const;
         std::string description() const;
 
