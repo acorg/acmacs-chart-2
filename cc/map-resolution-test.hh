@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 
 #include "acmacs-chart-2/optimize-options.hh"
 #include "acmacs-chart-2/column-bases.hh"
@@ -47,6 +48,17 @@ namespace acmacs
                 double error;
             };
 
+            struct Predictions
+            {
+                double av_abs_error;
+                double sd_error;
+                double correlation;
+                // LinearRegression linear_regression;
+                size_t number_of_samples;
+            };
+
+            std::ostream& operator << (std::ostream& out, const Predictions& predictions);
+            
             struct ReplicateStat
             {
                 std::vector<double> master_distances;
@@ -62,7 +74,7 @@ namespace acmacs
 
         map_resolution_test_data::Results map_resolution_test(ChartModify& chart, const map_resolution_test_data::Parameters& parameters);
 
-        
+
     } // namespace chart
 
 } // namespace acmacs

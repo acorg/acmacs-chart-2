@@ -1,4 +1,5 @@
 #include "acmacs-base/range.hh"
+#include "acmacs-base/statistics.hh"
 #include "acmacs-chart-2/map-resolution-test.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
@@ -48,11 +49,24 @@ void relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, a
     relax(chart, number_of_dimensions, parameters);
     chart.projections_modify()->sort();
 
-    std::cout << "replicate:" << replicate_no << " dim:" << number_of_dimensions << " prop:" << proportion_to_dont_care << '\n'
-              << chart.make_info(*parameters.number_of_optimizations + 10) << "\n\n";
-
-    const auto replicate_stat = collect_errors(master_chart, chart, parameters);
     // collect statistics
+    const auto replicate_stat = collect_errors(master_chart, chart, parameters);
+    std::vector<double> prediction_errors(replicate_stat.prediction_errors_for_titers.size());
+    std::transform(std::begin(replicate_stat.prediction_errors_for_titers), std::end(replicate_stat.prediction_errors_for_titers), std::begin(prediction_errors),
+                   [](const auto& entry) -> double { return entry.error; });
+
+    const acmacs::chart::map_resolution_test_data::Predictions predictions{
+        acmacs::statistics::mean_abs(prediction_errors),
+        acmacs::statistics::standard_deviation(prediction_errors).sd(),
+        0.0, // acmacs::statistics::correlation(r["master_distances"], r["predicted_distances"]),
+        // statistics.linear_regression(r["master_distances"], r["predicted_distances"]),
+        prediction_errors.size()
+    };
+
+    std::cout << "replicate:" << replicate_no << " dim:" << number_of_dimensions << " prop:" << proportion_to_dont_care << '\n'
+              << "    " << predictions << '\n'
+              // << chart.make_info(*parameters.number_of_optimizations + 10)
+              << '\n';
 
 } // relax_with_proportion_dontcared
 
@@ -81,6 +95,18 @@ acmacs::chart::map_resolution_test_data::ReplicateStat collect_errors(acmacs::ch
     return replicate_stat;
 
 } // collect_errors
+
+// ----------------------------------------------------------------------
+
+std::ostream& acmacs::chart::map_resolution_test_data::operator << (std::ostream& out, const Predictions& predictions)
+{
+    return out << "av_abs_error:" << predictions.av_abs_error
+               << " sd_error:" << predictions.sd_error
+               << " correlation:" << predictions.correlation
+               // << " linear_regression:" << predictions.linear_regression
+               << " number_of_samples:" << predictions.number_of_samples;
+
+} // acmacs::chart::map_resolution_test_data::operator << 
 
 // ----------------------------------------------------------------------
 
