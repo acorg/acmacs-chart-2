@@ -2,8 +2,8 @@
 #include "acmacs-chart-2/map-resolution-test.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
-static void relax(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t number_of_dimensions, const acmacs::chart::MapResoltionTestParameters& parameters); // acmacs::chart::number_of_optimizations_t number_of_optimizations, acmacs::chart::MinimumColumnBasis minimum_column_basis, enum acmacs::chart::optimization_precision optimization_precision);
-static void relax_with_proportion_dontcared(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t number_of_dimensions, double proportion_to_dont_care, const acmacs::chart::MapResoltionTestParameters& parameters);
+static void relax(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t number_of_dimensions, const acmacs::chart::MapResoltionTestParameters& parameters);
+static void relax_with_proportion_dontcared(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t number_of_dimensions, double proportion_to_dont_care, size_t replicate_no, const acmacs::chart::MapResoltionTestParameters& parameters);
 
 // ----------------------------------------------------------------------
 
@@ -13,9 +13,9 @@ acmacs::chart::MapResoltionTestResults acmacs::chart::map_resolution_test(ChartM
     for (auto number_of_dimensions : parameters.number_of_dimensions) {
         for (auto proportion_to_dont_care : parameters.proportions_to_dont_care) {
             if (parameters.relax_from_full_table == relax_from_full_table::yes)
-                relax(chart, number_of_dimensions, parameters); // parameters.number_of_optimizations, parameters.minimum_column_basis, parameters.optimization_precision);
-            for (auto replicate : range(parameters.number_of_random_replicates_for_each_proportion))
-                relax_with_proportion_dontcared(chart, number_of_dimensions, proportion_to_dont_care, parameters); // parameters.number_of_optimizations, parameters.minimum_column_basis, parameters.optimization_precision);
+                relax(chart, number_of_dimensions, parameters);
+            for (auto replicate_no : range(parameters.number_of_random_replicates_for_each_proportion))
+                relax_with_proportion_dontcared(chart, number_of_dimensions, proportion_to_dont_care, replicate_no + 1, parameters);
         }
     }
 
@@ -23,7 +23,7 @@ acmacs::chart::MapResoltionTestResults acmacs::chart::map_resolution_test(ChartM
 
 // ----------------------------------------------------------------------
 
-void relax(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t number_of_dimensions, const acmacs::chart::MapResoltionTestParameters& parameters) // acmacs::chart::number_of_optimizations_t number_of_optimizations, acmacs::chart::MinimumColumnBasis minimum_column_basis, enum acmacs::chart::optimization_precision optimization_precision)
+void relax(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t number_of_dimensions, const acmacs::chart::MapResoltionTestParameters& parameters)
 {
     chart.relax(parameters.number_of_optimizations, parameters.minimum_column_basis, number_of_dimensions, acmacs::chart::use_dimension_annealing::yes, {parameters.optimization_precision}, acmacs::chart::report_stresses::no);
 
@@ -31,8 +31,7 @@ void relax(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t num
 
 // ----------------------------------------------------------------------
 
-void relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, acmacs::number_of_dimensions_t number_of_dimensions, double proportion_to_dont_care,
-                                     const acmacs::chart::MapResoltionTestParameters& parameters)
+void relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, acmacs::number_of_dimensions_t number_of_dimensions, double proportion_to_dont_care, size_t replicate_no, const acmacs::chart::MapResoltionTestParameters& parameters)
 {
     acmacs::chart::ChartClone chart(master_chart, acmacs::chart::ChartClone::clone_data::titers);
     chart.info_modify()->name_append(string::concat(proportion_to_dont_care, "-dont-cared"));
@@ -46,10 +45,12 @@ void relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, a
         projection->comment("relaxed-from-full-table-best");
         projection->relax(acmacs::chart::optimization_options{parameters.optimization_precision});
     }
+    relax(chart, number_of_dimensions, parameters);
 
-    // entry_table, entry_projections = mongodb_collections.charts.new_from_chart(session=self.S, source=chart, copy_permissions_from=self, save=True, table_keywords={'map-resolution-test-result'})
-    // source_id = entry_projections._id if entry_projections else entry_table._id
-    // self.results = [source_id]
+    std::cout << "replicate:" << replicate_no << " dim:" << number_of_dimensions << " prop:" << proportion_to_dont_care << '\n'
+              << chart.make_info() << "\n\n";
+
+    // collect statistics
 
 } // relax_with_proportion_dontcared
 
