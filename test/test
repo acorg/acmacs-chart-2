@@ -34,5 +34,8 @@ cd "$TESTDIR"
 ./test-titer-iterator || failed test-titer-iterator
 ./test-chart-modify || failed test-chart-modify
 
+echo ../dist/test-chart-proportion-to-dontcare *.ace
+../dist/test-chart-proportion-to-dontcare *.ace
+
 # ../bin/test-ace ./test.ace
 # ../bin/acmacs-chart-info ./test.ace

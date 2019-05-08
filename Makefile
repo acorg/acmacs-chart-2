@@ -54,7 +54,8 @@ TARGETS = \
   $(DIST)/test-chart-merge \
   $(DIST)/test-get-titers \
   $(DIST)/test-clone-projection \
-  $(DIST)/test-chart-clone
+  $(DIST)/test-chart-clone \
+  $(DIST)/test-chart-proportion-to-dontcare
 
 SOURCES = \
   chart.cc titers.cc column-bases.cc bounding-ball.cc stress.cc optimize.cc randomizer.cc serum-circle.cc \
