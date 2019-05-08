@@ -31,15 +31,15 @@ int main(int argc, char* const argv[])
     try {
         Options opt(argc, argv);
 
-        acmacs::chart::MapResoltionTestParameters parameters;
+        acmacs::chart::map_resolution_test_data::Parameters parameters;
         parameters.number_of_dimensions = acmacs::string::split_into_uint<acmacs::number_of_dimensions_t>(*opt.number_of_dimensions, ",");
         parameters.number_of_optimizations = acmacs::chart::number_of_optimizations_t{opt.number_of_optimizations};
         parameters.number_of_random_replicates_for_each_proportion = opt.number_of_random_replicates_for_each_proportion;
         parameters.proportions_to_dont_care = acmacs::string::split_into_double(*opt.proportions_to_dont_care, ",");
         parameters.minimum_column_basis = *opt.minimum_column_basis;
-        parameters.column_bases_from_master = *opt.no_column_bases_from_master ? acmacs::chart::column_bases_from_master::no : acmacs::chart::column_bases_from_master::yes;
+        parameters.column_bases_from_master = *opt.no_column_bases_from_master ? acmacs::chart::map_resolution_test_data::column_bases_from_master::no : acmacs::chart::map_resolution_test_data::column_bases_from_master::yes;
         parameters.optimization_precision = *opt.fine_optimisation ? acmacs::chart::optimization_precision::fine : acmacs::chart::optimization_precision::rough;
-        parameters.relax_from_full_table = *opt.relax_from_full_table ? acmacs::chart::relax_from_full_table::yes : acmacs::chart::relax_from_full_table::no;
+        parameters.relax_from_full_table = *opt.relax_from_full_table ? acmacs::chart::map_resolution_test_data::relax_from_full_table::yes : acmacs::chart::map_resolution_test_data::relax_from_full_table::no;
 
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source, acmacs::chart::Verify::None, report_time::no)};
         const auto results = acmacs::chart::map_resolution_test(chart, parameters);
