@@ -60,6 +60,17 @@ namespace acmacs
 
             std::ostream& operator << (std::ostream& out, const Predictions& predictions);
 
+            struct PredictionsSummary
+            {
+                statistics::StandardDeviation av_abs_error;
+                statistics::StandardDeviation sd_error;
+                statistics::StandardDeviation correlations;
+                statistics::StandardDeviation r2;
+                size_t number_of_samples;
+            };
+
+            std::ostream& operator << (std::ostream& out, const PredictionsSummary& predictions_summary);
+
             struct ReplicateStat
             {
                 std::vector<double> master_distances;
