@@ -39,3 +39,9 @@ echo ../dist/test-chart-proportion-to-dontcare *.ace
 
 # ../bin/test-ace ./test.ace
 # ../bin/acmacs-chart-info ./test.ace
+
+# map-resolution-test acmacs.r/tests/testthat/2004-01.ace
+# aw -u eu aw-map-resolution-test.py create chart_id=5cd2e2c12085ef3b493c6566 name='2004-01 eu test'
+# aw -u eu aw-map-resolution-test.py json chain_id=5cd2e3ed2085ef3b49563b91 >/d/results-5cd2e3ed2085ef3b49563b91.json
+# aw -u eu aw-map-resolution-test.py plot chain_id=5cd2e3ed2085ef3b49563b91 output=/d/map-res-test-5cd2e3ed2085ef3b49563b91 media=pdf size=300
+# aw -u eu aw-map-resolution-test.py collect_all_errors chain_id=5cd2e3ed2085ef3b49563b91 >/d/all-errors-5cd2e3ed2085ef3b49563b91.json

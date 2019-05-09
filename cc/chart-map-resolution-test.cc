@@ -43,7 +43,7 @@ int main(int argc, char* const argv[])
 
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source, acmacs::chart::Verify::None, report_time::no)};
         const auto results = acmacs::chart::map_resolution_test(chart, parameters);
-
+        std::cout << results << '\n';
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';

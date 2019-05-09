@@ -1,15 +1,17 @@
-#include "acmacs-base/range.hh"
+//#include "acmacs-base/range.hh"
+// #include "acmacs-base/float.hh"
 #include "acmacs-chart-2/map-resolution-test.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
 static void relax(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t number_of_dimensions, const acmacs::chart::map_resolution_test_data::Parameters& parameters);
 static acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontcared(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t number_of_dimensions, double proportion_to_dont_care, size_t replicate_no, const acmacs::chart::map_resolution_test_data::Parameters& parameters);
 static acmacs::chart::map_resolution_test_data::ReplicateStat collect_errors(acmacs::chart::ChartModify& master_chart, acmacs::chart::ChartModify& prediction_chart, const acmacs::chart::map_resolution_test_data::Parameters& parameters);
+
 // ----------------------------------------------------------------------
 
 acmacs::chart::map_resolution_test_data::Results acmacs::chart::map_resolution_test(ChartModify& chart, const map_resolution_test_data::Parameters& parameters)
 {
-    map_resolution_test_data::Results results;
+    map_resolution_test_data::Results results(parameters);
     chart.projections_modify()->remove_all();
     for (auto number_of_dimensions : parameters.number_of_dimensions) {
         for (auto proportion_to_dont_care : parameters.proportions_to_dont_care) {
@@ -30,7 +32,7 @@ acmacs::chart::map_resolution_test_data::Results acmacs::chart::map_resolution_t
             results.predictions().emplace_back(number_of_dimensions, proportion_to_dont_care, statistics::standard_deviation(av_abs_error), statistics::standard_deviation(sd_error),
                                  statistics::standard_deviation(correlations), statistics::standard_deviation(r2), number_of_samples);
 
-            std::cout << results.predictions().back() << '\n';
+            // std::cout << results.predictions().back() << '\n';
         }
     }
 
@@ -48,7 +50,9 @@ void relax(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t num
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, acmacs::number_of_dimensions_t number_of_dimensions, double proportion_to_dont_care, [[maybe_unused]] size_t replicate_no, const acmacs::chart::map_resolution_test_data::Parameters& parameters)
+acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, acmacs::number_of_dimensions_t number_of_dimensions,
+                                                                                     double proportion_to_dont_care, [[maybe_unused]] size_t replicate_no,
+                                                                                     const acmacs::chart::map_resolution_test_data::Parameters& parameters)
 {
     acmacs::chart::ChartClone chart(master_chart, acmacs::chart::ChartClone::clone_data::titers);
     chart.info_modify()->name_append(string::concat(proportion_to_dont_care, "-dont-cared"));
@@ -69,15 +73,16 @@ acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontc
     const auto replicate_stat = collect_errors(master_chart, chart, parameters);
     std::vector<double> prediction_errors(replicate_stat.prediction_errors_for_titers.size());
     std::transform(std::begin(replicate_stat.prediction_errors_for_titers), std::end(replicate_stat.prediction_errors_for_titers), std::begin(prediction_errors),
-                   [](const auto& entry) -> double { return entry.error; });
+                   [=](const auto& entry) -> double {
+                       // std::cout << "dim:" << number_of_dimensions << " prop:" << proportion_to_dont_care << " ag:" << entry.antigen << " sr:" << entry.serum << " err:" << entry.error << '\n';
+                       return entry.error;
+                   });
 
     const acmacs::chart::map_resolution_test_data::Predictions predictions{
-        acmacs::statistics::mean_abs(prediction_errors),
-        acmacs::statistics::standard_deviation(prediction_errors).sd(),
+        acmacs::statistics::mean_abs(prediction_errors), acmacs::statistics::standard_deviation(prediction_errors).sd(),
         acmacs::statistics::correlation(replicate_stat.master_distances, replicate_stat.predicted_distances),
         acmacs::statistics::simple_linear_regression(std::begin(replicate_stat.master_distances), std::end(replicate_stat.master_distances), std::begin(replicate_stat.predicted_distances)),
-        prediction_errors.size()
-    };
+        prediction_errors.size()};
 
     // std::cout << "replicate:" << replicate_no << " dim:" << number_of_dimensions << " prop:" << proportion_to_dont_care << '\n'
     //           << "    " << predictions << '\n'
@@ -138,7 +143,36 @@ std::ostream& acmacs::chart::map_resolution_test_data::operator << (std::ostream
                << " r2(" << predictions_summary.r2.mean() << ' ' << predictions_summary.r2.sd() << ')'
                << " number_of_samples:" << predictions_summary.number_of_samples;
 
-} // acmacs::chart::map_resolution_test_data::operator << 
+} // acmacs::chart::map_resolution_test_data::operator <<
+
+// ----------------------------------------------------------------------
+
+std::ostream& acmacs::chart::map_resolution_test_data::operator << (std::ostream& out, const Results& results)
+{
+    const auto print = [&out,&results](const char* prefix, double prop, auto func) {
+        out << "  " << prefix << ':';
+        for (auto dim : results.parameters_.number_of_dimensions) {
+            for (const auto& entry : results.predictions()) {
+                if (float_equal(entry.proportion_to_dont_care, prop) && entry.number_of_dimensions == dim)
+                    out << ' ' << func(entry);
+            }
+        }
+        out << '\n';
+    };
+
+    for (auto prop: results.parameters_.proportions_to_dont_care) {
+        out << "prop:" << prop << '\n';
+        print("av_abs_error", prop, [](const auto& entry) { return entry.av_abs_error.mean(); });
+        print("av_abs_error_sd", prop, [](const auto& entry) { return entry.av_abs_error.sd(); });
+        print("sd_error", prop, [](const auto& entry) { return entry.sd_error.mean(); });
+        print("sd_error_sd", prop, [](const auto& entry) { return entry.sd_error.sd(); });
+        print("correlation", prop, [](const auto& entry) { return entry.correlations.mean(); });
+        print("correlation_sd", prop, [](const auto& entry) { return entry.correlations.sd(); });
+        out << '\n';
+    }
+    return out;
+
+} // acmacs::chart::map_resolution_test_data::operator <<
 
 // ----------------------------------------------------------------------
 

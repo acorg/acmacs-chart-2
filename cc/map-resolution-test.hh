@@ -41,6 +41,8 @@ namespace acmacs
                 enum relax_from_full_table relax_from_full_table { relax_from_full_table::no };
             };
 
+            // ----------------------------------------------------------------------
+
             struct PredictionsSummary
             {
                 PredictionsSummary(number_of_dimensions_t a_number_of_dimensions, double a_proportion_to_dont_care, statistics::StandardDeviation a_av_abs_error,
@@ -64,20 +66,20 @@ namespace acmacs
             class Results
             {
               public:
+                Results(const Parameters& param) : parameters_{param} {}
+
                 const auto& predictions() const { return predictions_; }
                 auto& predictions() { return predictions_; }
 
               private:
+                const Parameters parameters_;
                 std::vector<PredictionsSummary> predictions_;
+
+                friend std::ostream& operator << (std::ostream& out, const Results& results);
+
             };
 
-            struct PredictionErrorForTiter
-            {
-                PredictionErrorForTiter(size_t ag, size_t sr, double er) : antigen{ag}, serum{sr}, error{er} {}
-                size_t antigen;
-                size_t serum;
-                double error;
-            };
+            // ----------------------------------------------------------------------
 
             struct Predictions
             {
@@ -89,6 +91,14 @@ namespace acmacs
             };
 
             std::ostream& operator << (std::ostream& out, const Predictions& predictions);
+
+            struct PredictionErrorForTiter
+            {
+                PredictionErrorForTiter(size_t ag, size_t sr, double er) : antigen{ag}, serum{sr}, error{er} {}
+                size_t antigen;
+                size_t serum;
+                double error;
+            };
 
             struct ReplicateStat
             {
