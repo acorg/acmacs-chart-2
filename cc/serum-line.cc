@@ -17,7 +17,7 @@ acmacs::chart::SerumLine::SerumLine(const Projection& projection)
     std::vector<double> distances;
     std::transform(layout->begin_sera(number_of_antigens), layout->end_sera(number_of_antigens), std::back_inserter(distances),
                    [this](const auto& coord) { return this->line_.distance_to(coord); });
-    standard_deviation_ = acmacs::statistics::standard_deviation(distances.begin(), distances.end()).sd();
+    standard_deviation_ = acmacs::statistics::standard_deviation(distances.begin(), distances.end()).sample_sd();
 
 } // acmacs::chart::SerumLine::SerumLine
 

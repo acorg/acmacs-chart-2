@@ -101,11 +101,11 @@ TiterMerger::Type TiterMerger::merge()
         }
         else {
             const auto sd = acmacs::statistics::standard_deviation(logged.begin(), logged.end());
-            if (sd.sd() > sd_threshold_) {
+            if (sd.sample_sd() > sd_threshold_) {
                 mType = SDTooBig;
                 // std::cerr << "SDTooBig: " << sd << ": " << mMerged << " <-- " << mTiters << '\n';
                 if (mMerged != "*")
-                    throw std::runtime_error("Invalid pre-merged titer: " + mMerged + " for sources: " + acmacs::to_string(mTiters) + ", must be: * (because SD is " + std::to_string(sd.sd()) + " > " + std::to_string(sd_threshold_) + ")");
+                    throw std::runtime_error("Invalid pre-merged titer: " + mMerged + " for sources: " + acmacs::to_string(mTiters) + ", must be: * (because SD is " + std::to_string(sd.sample_sd()) + " > " + std::to_string(sd_threshold_) + ")");
             }
             else if (num_less) {
                 if (const auto regular_max = regular.max(), thresholded_max = thresholded.max(); thresholded_max > regular_max) {

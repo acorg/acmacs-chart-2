@@ -1,5 +1,3 @@
-//#include "acmacs-base/range.hh"
-// #include "acmacs-base/float.hh"
 #include "acmacs-chart-2/map-resolution-test.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
@@ -79,7 +77,7 @@ acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontc
                    });
 
     const acmacs::chart::map_resolution_test_data::Predictions predictions{
-        acmacs::statistics::mean_abs(prediction_errors), acmacs::statistics::standard_deviation(prediction_errors).sd(),
+        acmacs::statistics::mean_abs(prediction_errors), acmacs::statistics::standard_deviation(prediction_errors).sample_sd(),
         acmacs::statistics::correlation(replicate_stat.master_distances, replicate_stat.predicted_distances),
         acmacs::statistics::simple_linear_regression(std::begin(replicate_stat.master_distances), std::end(replicate_stat.master_distances), std::begin(replicate_stat.predicted_distances)),
         prediction_errors.size()};
@@ -88,6 +86,11 @@ acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontc
     //           << "    " << predictions << '\n'
     //           // << chart.make_info(*parameters.number_of_optimizations + 10)
     //           << '\n';
+
+    if (*number_of_dimensions == 1 && float_equal(proportion_to_dont_care, 0.1)) {
+        // std::cout << "DEBUG: rep:" << replicate_no << " mean-abs:" << predictions.av_abs_error << " err: " << prediction_errors << '\n';
+        std::cout << "DEBUG: rep:" << replicate_no << " mean-abs:" << predictions.av_abs_error << " sd-err:" << predictions.sd_error << "\n " << prediction_errors << '\n';
+    }
 
     return predictions;
 
@@ -137,10 +140,10 @@ std::ostream& acmacs::chart::map_resolution_test_data::operator << (std::ostream
 {
     return out << "dimensions:" << predictions_summary.number_of_dimensions
                << " proportion:" << predictions_summary.proportion_to_dont_care
-               << " (mean sd) av_abs_error(" << predictions_summary.av_abs_error.mean() << ' ' << predictions_summary.av_abs_error.sd() << ')'
-               << " sd_error(" << predictions_summary.sd_error.mean() << ' ' << predictions_summary.sd_error.sd() << ')'
-               << " correlations(" << predictions_summary.correlations.mean() << ' ' << predictions_summary.correlations.sd() << ')'
-               << " r2(" << predictions_summary.r2.mean() << ' ' << predictions_summary.r2.sd() << ')'
+               << " (mean sd) av_abs_error(" << predictions_summary.av_abs_error.mean() << ' ' << predictions_summary.av_abs_error.sample_sd() << ')'
+               << " sd_error(" << predictions_summary.sd_error.mean() << ' ' << predictions_summary.sd_error.sample_sd() << ')'
+               << " correlations(" << predictions_summary.correlations.mean() << ' ' << predictions_summary.correlations.sample_sd() << ')'
+               << " r2(" << predictions_summary.r2.mean() << ' ' << predictions_summary.r2.sample_sd() << ')'
                << " number_of_samples:" << predictions_summary.number_of_samples;
 
 } // acmacs::chart::map_resolution_test_data::operator <<
@@ -163,11 +166,11 @@ std::ostream& acmacs::chart::map_resolution_test_data::operator << (std::ostream
     for (auto prop: results.parameters_.proportions_to_dont_care) {
         out << "prop:" << prop << '\n';
         print("av_abs_error", prop, [](const auto& entry) { return entry.av_abs_error.mean(); });
-        print("av_abs_error_sd", prop, [](const auto& entry) { return entry.av_abs_error.sd(); });
+        print("av_abs_error_sd", prop, [](const auto& entry) { return entry.av_abs_error.sample_sd(); });
         print("sd_error", prop, [](const auto& entry) { return entry.sd_error.mean(); });
-        print("sd_error_sd", prop, [](const auto& entry) { return entry.sd_error.sd(); });
+        print("sd_error_sd", prop, [](const auto& entry) { return entry.sd_error.sample_sd(); });
         print("correlation", prop, [](const auto& entry) { return entry.correlations.mean(); });
-        print("correlation_sd", prop, [](const auto& entry) { return entry.correlations.sd(); });
+        print("correlation_sd", prop, [](const auto& entry) { return entry.correlations.sample_sd(); });
         out << '\n';
     }
     return out;
