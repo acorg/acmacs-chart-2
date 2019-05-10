@@ -45,3 +45,10 @@ echo ../dist/test-chart-proportion-to-dontcare *.ace
 # aw -u eu aw-map-resolution-test.py json chain_id=5cd2e3ed2085ef3b49563b91 >/d/results-5cd2e3ed2085ef3b49563b91.json
 # aw -u eu aw-map-resolution-test.py plot chain_id=5cd2e3ed2085ef3b49563b91 output=/d/map-res-test-5cd2e3ed2085ef3b49563b91 media=pdf size=300
 # aw -u eu aw-map-resolution-test.py collect_all_errors chain_id=5cd2e3ed2085ef3b49563b91 >/d/all-errors-5cd2e3ed2085ef3b49563b91.json
+
+# aw -u eu aw-map-resolution-test.py create chart_id=5cd2e2c12085ef3b493c6566 name='2004-01 eu test 4'  proportions_to_dont_care='[0.1]'
+#  --> 5cd4596582f2aac1950107d7
+# aw -u eu aw-chain.py tree id=5cd4596582f2aac1950107d7 all=true
+#  aw -u eu aw-chain.py info id=
+# aw -u eu aw-map-resolution-test.py plot chain_id=5cd4596582f2aac1950107d7 output=/d/map-res-test/4 media=pdf size=300
+#  --> 

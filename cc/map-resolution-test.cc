@@ -11,6 +11,7 @@ acmacs::chart::map_resolution_test_data::Results acmacs::chart::map_resolution_t
 {
     map_resolution_test_data::Results results(parameters);
     chart.projections_modify()->remove_all();
+    // std::cout << "master dot-cares: " << (1.0 - chart.titers()->percent_of_non_dont_cares()) << '\n' << chart.titers()->print() << '\n';
     for (auto number_of_dimensions : parameters.number_of_dimensions) {
         for (auto proportion_to_dont_care : parameters.proportions_to_dont_care) {
             if (parameters.relax_from_full_table == map_resolution_test_data::relax_from_full_table::yes)
@@ -87,12 +88,13 @@ acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontc
     //           // << chart.make_info(*parameters.number_of_optimizations + 10)
     //           << '\n';
 
-    // if (*number_of_dimensions == 1 && float_equal(proportion_to_dont_care, 0.1)) {
-    //     std::cout << predictions.correlation << ' ' << replicate_stat.master_distances << ' ' << replicate_stat.predicted_distances << '\n';
-    //      // std::cout << "DEBUG: rep:" << replicate_no << " mean-abs:" << predictions.av_abs_error << " sd-err:" << predictions.sd_error << "\n " << prediction_errors << '\n';
-    //      // std::cout << "DEBUG: corr:" << predictions.correlation << " var-m:" << acmacs::statistics::varianceN(std::begin(replicate_stat.master_distances), std::end(replicate_stat.master_distances))
-    //      //          << "\n  m: " << replicate_stat.master_distances << "\n  p: " << replicate_stat.predicted_distances << '\n';
-    // }
+    //  if (*number_of_dimensions == 5 && float_equal(proportion_to_dont_care, 0.1)) {
+    //      std::cout << "dot-cares: " << (1.0 - chart.titers_modify()->percent_of_non_dont_cares()) << '\n' << chart.titers_modify()->print() << '\n';
+    //      std::cout << replicate_no << " corr:" << predictions.correlation << " mean-abs:" << predictions.av_abs_error << ' ' << replicate_stat.master_distances << ' ' << replicate_stat.predicted_distances << '\n';
+    // //      // std::cout << "DEBUG: rep:" << replicate_no << " mean-abs:" << predictions.av_abs_error << " sd-err:" << predictions.sd_error << "\n " << prediction_errors << '\n';
+    // //      // std::cout << "DEBUG: corr:" << predictions.correlation << " var-m:" << acmacs::statistics::varianceN(std::begin(replicate_stat.master_distances), std::end(replicate_stat.master_distances))
+    // //      //          << "\n  m: " << replicate_stat.master_distances << "\n  p: " << replicate_stat.predicted_distances << '\n';
+    //  }
 
     return predictions;
 
@@ -112,7 +114,9 @@ acmacs::chart::map_resolution_test_data::ReplicateStat collect_errors(acmacs::ch
     acmacs::chart::map_resolution_test_data::ReplicateStat replicate_stat;
 
     for (const auto& master_titer_ref : master_chart_titers->titers_regular()) {
+        // std::cout << ' ' << master_titer_ref << '\n';
         if (prediction_chart_titers->titer(master_titer_ref.antigen, master_titer_ref.serum).is_dont_care()) {
+            // std::cout << master_titer_ref << '\n';
             const auto predicted_distance = prediction_layout->distance(master_titer_ref.antigen, master_titer_ref.serum + number_of_antigens);
             const auto master_distance = master_column_bases->column_basis(master_titer_ref.serum) - master_titer_ref.titer.logged();
             replicate_stat.prediction_errors_for_titers.emplace_back(master_titer_ref.antigen, master_titer_ref.serum, master_distance - predicted_distance);
