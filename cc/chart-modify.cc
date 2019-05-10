@@ -959,7 +959,7 @@ std::pair<Titer, TitersModify::titer_merge> TitersModify::titer_from_layers(size
     std::vector<double> adjusted_log(titers.size());
     std::transform(titers.begin(), titers.end(), adjusted_log.begin(), [](const auto& titer) -> double { return titer.logged_with_thresholded(); }); // 4.
     const auto sd_mean = acmacs::statistics::standard_deviation(adjusted_log.begin(), adjusted_log.end());
-    if (sd_mean.sample_sd() > standard_deviation_threshold)
+    if (sd_mean.population_sd() > standard_deviation_threshold)
         return {Titer{}, titer_merge::sd_too_big}; // 5. if SD > 1, result is *
     if (max_less_than == 0 && min_more_than == max_limit) // 6. just regular
         return {Titer::from_logged(sd_mean.mean()), titer_merge::regular_only};
