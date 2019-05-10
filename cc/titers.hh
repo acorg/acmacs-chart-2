@@ -152,7 +152,7 @@ namespace acmacs::chart
         std::shared_ptr<TiterIterator::TiterGetter> getter_;
     };
 
-    // inline std::ostream& operator<<(std::ostream& s, const TiterIterator::Data& data) { return s << data.antigen << ':' << data.serum << ':' << data.titer; }
+    inline std::ostream& operator<<(std::ostream& s, const TiterIterator::Data& data) { return s << data.antigen << ':' << data.serum << ':' << data.titer; }
 
 // ----------------------------------------------------------------------
 
@@ -253,6 +253,8 @@ namespace acmacs::chart
           // returns list of points having less than threshold numeric titers
         PointIndexList having_too_few_numeric_titers(size_t threshold = 3) const;
 
+        std::string print() const;
+
     }; // class Titers
 
 } // namespace acmacs::chart
@@ -261,10 +263,10 @@ namespace acmacs::chart
 
 namespace acmacs
 {
-    // template <typename TiterValidator, typename TiterGetter> inline std::string to_string(const typename acmacs::chart::TiterIterator<TiterValidator, TiterGetter>::Data& data)
-    // {
-    //     return ::string::concat("ag:", data.antigen, " sr:", data.serum, " t:", data.titer);
-    // }
+    inline std::string to_string(const acmacs::chart::TiterIterator::Data& data)
+    {
+        return ::string::concat("ag:", data.antigen, " sr:", data.serum, " t:", data.titer);
+    }
 
 } // namespace acmacs
 

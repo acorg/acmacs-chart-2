@@ -380,6 +380,23 @@ acmacs::chart::PointIndexList acmacs::chart::Titers::having_too_few_numeric_tite
 } // acmacs::chart::Titers::having_too_few_numeric_titers
 
 // ----------------------------------------------------------------------
+
+std::string acmacs::chart::Titers::print() const
+{
+    std::string result;
+    for (auto ag_no : range(number_of_antigens())) {
+        for (auto sr_no : range(number_of_sera())) {
+            const auto tt = titer(ag_no, sr_no);
+            result.append(static_cast<size_t>(std::max(0, (5 - static_cast<int>(tt.size())))) + (sr_no > 0 ? 1 : 0), ' ');
+            result.append(titer(ag_no, sr_no));
+        }
+        result.append(1, '\n');
+    }
+    return result;
+
+} // acmacs::chart::Titers::print
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
