@@ -29,7 +29,7 @@ int main(int argc, char* const argv[])
                 auto chart = acmacs::chart::import_from_file(args[file_no], verify ? acmacs::chart::Verify::All : acmacs::chart::Verify::None, report);
                 auto titers = chart->titers();
                 size_t non_dont_care_titers = 0;
-                for (const auto& titer_data : *titers) {
+                for (const auto& titer_data : titers->titers_existing()) {
                     if (titer_data.titer != titers->titer(titer_data.antigen, titer_data.serum))
                         throw std::runtime_error("titer mistmatch for " + std::to_string(titer_data.antigen) + ':' + std::to_string(titer_data.serum) + ": " + titer_data.titer + " vs. " + titers->titer(titer_data.antigen, titer_data.serum));
                     ++non_dont_care_titers;

@@ -144,8 +144,9 @@ void test_modify_titers(acmacs::chart::ChartP chart, const argc_argv& args, repo
     const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
     auto titers_source{chart->titers()}, titers_modified{imported->titers()};
-    auto ti_source = titers_source->begin(), ti_modified = titers_modified->begin();
-    for (; ti_source != titers_source->end(); ++ti_source, ++ti_modified) {
+    const auto tim_source = titers_source->titers_existing(), tim_modified = titers_modified->titers_existing();
+    auto ti_source = tim_source.begin(), ti_modified = tim_modified.begin();
+    for (; ti_source != tim_source.end(); ++ti_source, ++ti_modified) {
         if (ti_source->antigen != ti_modified->antigen || ti_source->serum != ti_modified->serum)
             throw std::runtime_error("test_modify_titers: titer iterator mismatch: [" + acmacs::to_string(*ti_source) + "] vs. [" + acmacs::to_string(*ti_modified) + ']');
         if (auto found = std::find_if(test_data.begin(), test_data.end(), [ag_no=ti_source->antigen, sr_no=ti_source->serum](const auto& entry) { return ag_no == entry.ag_no && sr_no == entry.sr_no; }); found != test_data.end()) {
@@ -157,7 +158,7 @@ void test_modify_titers(acmacs::chart::ChartP chart, const argc_argv& args, repo
         else if (ti_source->titer != ti_modified->titer)
             throw std::runtime_error("test_modify_titers: titer mismatch: [" + acmacs::to_string(*ti_source) + "] vs. [" + acmacs::to_string(*ti_modified) + ']');
     }
-    if (ti_modified != titers_modified->end())
+    if (ti_modified != tim_modified.end())
         throw std::runtime_error("test_modify_titers: titer iterator end mismatch");
 
 } // test_modify_titers
@@ -173,7 +174,7 @@ void test_dont_care_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo, 
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
     auto titers_source{chart->titers()}, titers_modified{imported->titers()};
 
-    for (auto ti_source : *titers_source) {
+    for (auto ti_source : titers_source->titers_existing()) {
         if (ti_source.antigen == aAntigenNo) {
             if (!titers_modified->titer(ti_source.antigen, ti_source.serum).is_dont_care())
                 throw std::runtime_error("test_dont_care_for_antigen: unexpected titer: [" + acmacs::to_string(ti_source) + "], expected: *");
@@ -195,7 +196,7 @@ void test_dont_care_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, cons
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
     auto titers_source{chart->titers()}, titers_modified{imported->titers()};
 
-    for (auto ti_source : *titers_source) {
+    for (auto ti_source : titers_source->titers_existing()) {
         if (ti_source.serum == aSerumNo) {
             if (!titers_modified->titer(ti_source.antigen, ti_source.serum).is_dont_care())
                 throw std::runtime_error("test_dont_care_for_serum: unexpected titer: [" + acmacs::to_string(ti_source) + "], expected: *");
@@ -217,7 +218,7 @@ void test_multiply_by_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
     auto titers_source = chart->titers(), titers_modified = imported->titers();
 
-    for (auto ti_source : *titers_source) {
+    for (auto ti_source : titers_source->titers_existing()) {
         if (ti_source.antigen == aAntigenNo && !ti_source.titer.is_dont_care()) {
             const auto expected_value = static_cast<size_t>(std::lround(ti_source.titer.value() * aMult));
             if (titers_modified->titer(ti_source.antigen, ti_source.serum).value() != expected_value)
@@ -241,7 +242,7 @@ void test_multiply_by_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, do
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
     auto titers_source{chart->titers()}, titers_modified{imported->titers()};
 
-    for (auto ti_source : *titers_source) {
+    for (auto ti_source : titers_source->titers_existing()) {
         if (ti_source.serum == aSerumNo && !ti_source.titer.is_dont_care()) {
             const auto expected_value = static_cast<size_t>(std::lround(ti_source.titer.value() * aMult));
             if (titers_modified->titer(ti_source.antigen, ti_source.serum).value() != expected_value)

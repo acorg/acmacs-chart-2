@@ -43,7 +43,7 @@ int main(int argc, char* const argv[])
                 auto sera = chart->sera();
                 auto titers = chart->titers();
                 std::vector<std::pair<size_t, size_t>> titer_per_serum(sera->size()); // pair: number of regular titers, number of over-reacting titers
-                for (const auto& titer : *titers) {
+                for (const auto& titer : titers->titers_existing()) {
                     if (is_overreacting(titer.titer.value()))
                         ++titer_per_serum[titer.serum].second;
                     else

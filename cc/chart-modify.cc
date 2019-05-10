@@ -669,14 +669,14 @@ TitersModify::TitersModify(TitersP main)
         if constexpr (std::is_same_v<T, dense_t>) {
               // Dense ==================================================
             titers.resize(main->number_of_antigens() * this->number_of_sera_);
-            for (const auto &entry : *main) { // order of iterations is not specified!
+            for (const auto &entry : main->titers_existing()) { // order of iterations is not specified!
                 // std::cerr << entry.antigen << ' ' << entry.serum << ' ' << entry.titer << '\n';
                 titers[entry.antigen * this->number_of_sera_ + entry.serum] = entry.titer;
             }
         }
         else { // Sparse ==================================================
             titers.resize(main->number_of_antigens());
-            for (const auto &entry : *main) { // order of iterations is not specified!
+            for (const auto &entry : main->titers_existing()) { // order of iterations is not specified!
                 titers[entry.antigen].emplace_back(entry.serum, entry.titer);
             }
               // sort entries by serum no
@@ -1203,7 +1203,7 @@ void TitersModify::set_proportion_of_titers_to_dont_care(double proportion)
     // collect all non-dont-care titers (row, col), randomly shuffle them, choose first proportion*size entries and set the to don't care
 
     std::vector<std::pair<size_t, size_t>> cells;
-    for (const auto& titer_ref : *this)
+    for (const auto& titer_ref : titers_existing())
         cells.emplace_back(titer_ref.antigen, titer_ref.serum);
 
     std::mt19937 generator{std::random_device{}()};

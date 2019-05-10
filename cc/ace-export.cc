@@ -165,8 +165,8 @@ void export_sera(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Sera> aSe
 
 void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers> aTiters)
 {
-      // std::cerr << "number_of_non_dont_cares: " << aTiters->number_of_non_dont_cares() << '\n';
-      // std::cerr << "percent_of_non_dont_cares: " << aTiters->percent_of_non_dont_cares() << '\n';
+    // std::cerr << "number_of_non_dont_cares: " << aTiters->number_of_non_dont_cares() << '\n';
+    // std::cerr << "percent_of_non_dont_cares: " << aTiters->percent_of_non_dont_cares() << '\n';
     const size_t number_of_antigens = aTiters->number_of_antigens();
     const size_t number_of_sera = aTiters->number_of_sera();
 
@@ -177,9 +177,9 @@ void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers>
             aLayer[first->antigen][first->serum] = first->titer;
     };
 
-      // --------------------------------------------------
+    // --------------------------------------------------
 
-      // Timeit ti_titers("export titers ");
+    // Timeit ti_titers("export titers ");
     bool titers_exported = false;
     try {
         aTarget["d"] = aTiters->rjson_list_dict();
@@ -198,8 +198,9 @@ void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers>
     }
 
     if (!titers_exported) {
-          // slow method
-        if ((number_of_antigens < 100 && number_of_sera < 100) || (static_cast<double>(aTiters->number_of_non_dont_cares()) / (number_of_antigens * number_of_sera)) > acmacs::chart::Titers::dense_sparse_boundary) {
+        // slow method
+        if ((number_of_antigens < 100 && number_of_sera < 100) ||
+            (static_cast<double>(aTiters->number_of_non_dont_cares()) / (number_of_antigens * number_of_sera)) > acmacs::chart::Titers::dense_sparse_boundary) {
             auto& list = aTarget["l"] = rjson::array{};
             for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
                 auto& row = list.append(rjson::array{});
@@ -209,15 +210,16 @@ void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers>
             }
         }
         else {
-            fill_d(aTarget["d"] = rjson::array{}, aTiters->begin(), aTiters->end());
+            const auto iter_maker = aTiters->titers_existing();
+            fill_d(aTarget["d"] = rjson::array{}, iter_maker.begin(), iter_maker.end());
         }
     }
-      // ti_titers.report();
+    // ti_titers.report();
 
-      // --------------------------------------------------
-      // layers
+    // --------------------------------------------------
+    // layers
 
-      // Timeit ti_layers("export layers ");
+    // Timeit ti_layers("export layers ");
     bool layers_exported = false;
     try {
         aTarget["L"] = aTiters->rjson_layers();
@@ -227,15 +229,16 @@ void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers>
     }
 
     if (!layers_exported) {
-          // slow method
+        // slow method
         if (const size_t number_of_layers = aTiters->number_of_layers(); number_of_layers) {
             auto& layers = aTarget["L"] = rjson::array{};
             for (size_t layer_no = 0; layer_no < number_of_layers; ++layer_no) {
-                fill_d(layers.append(rjson::array{}), aTiters->begin(layer_no), aTiters->end(layer_no));
+                const auto iter_maker = aTiters->titers_existing_from_layer(layer_no);
+                fill_d(layers.append(rjson::array{}), iter_maker.begin(), iter_maker.end());
             }
         }
     }
-      // ti_layers.report();
+    // ti_layers.report();
 
 } // export_titers
 

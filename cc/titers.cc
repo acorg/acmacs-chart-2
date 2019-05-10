@@ -205,7 +205,8 @@ std::shared_ptr<acmacs::chart::ColumnBasesData> acmacs::chart::Titers::computed_
 
     auto cb = std::make_shared<ComputedColumnBases>(number_of_sera(), aMinimumColumnBasis);
 
-    std::for_each(begin(), end(), [&cb](const auto& titer_data) { cb->update(titer_data.serum, titer_data.titer.logged_for_column_bases()); });
+    for (const auto& titer_ref : titers_existing())
+        cb->update(titer_ref.serum, titer_ref.titer.logged_for_column_bases());
 
     // for (const auto& t : *this)
     //     if (t.serum == 30)
@@ -225,7 +226,7 @@ void acmacs::chart::Titers::update(acmacs::chart::TableDistances& table_distance
     const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     table_distances.dodgy_is_regular(parameters.dodgy_titer_is_regular);
     if (number_of_sera()) {
-        for (const auto& titer_ref : *this) {
+        for (const auto& titer_ref : titers_existing()) {
             if (!parameters.disconnected.contains(titer_ref.antigen) && !parameters.disconnected.contains(titer_ref.serum + num_antigens))
                 table_distances.update(titer_ref.titer, titer_ref.antigen, titer_ref.serum + num_antigens, column_bases.column_basis(titer_ref.serum), logged_adjusts[titer_ref.antigen] + logged_adjusts[titer_ref.serum + num_antigens], parameters.mult);
         }
@@ -272,7 +273,7 @@ double acmacs::chart::Titers::max_distance(const acmacs::chart::ColumnBases& col
 
     double max_distance = 0;
     if (number_of_sera()) {
-        for (const auto& titer_ref : *this)
+        for (const auto& titer_ref : titers_existing())
             max_distance = std::max(max_distance, column_bases.column_basis(titer_ref.serum) - titer_ref.titer.logged_with_thresholded());
     }
     else {
@@ -285,89 +286,13 @@ double acmacs::chart::Titers::max_distance(const acmacs::chart::ColumnBases& col
 
 // ----------------------------------------------------------------------
 
-namespace                       // to make class static in the module
-{
-    class TiterIteratorImplementation : public acmacs::chart::TiterIterator::Implementation
-    {
-     public:
-        using titer_getter_t = std::function<std::string (size_t, size_t)>;
-
-          // begin
-        TiterIteratorImplementation(titer_getter_t titer_getter, size_t number_of_antigens, size_t number_of_sera)
-            : acmacs::chart::TiterIterator::Implementation(titer_getter(0, 0), 0, 0), titer_getter_{titer_getter}, number_of_antigens_{number_of_antigens}, number_of_sera_{number_of_sera}
-            {
-                if (data_.titer.is_dont_care())
-                    operator++();
-            }
-
-          // end
-        TiterIteratorImplementation(size_t number_of_antigens)
-            : acmacs::chart::TiterIterator::Implementation({}, number_of_antigens, 0), titer_getter_{[](size_t, size_t) -> std::string { return ""; }}, number_of_antigens_{number_of_antigens}, number_of_sera_{0} {}
-
-        void operator++() override
-            {
-                while (data_.antigen < number_of_antigens_) {
-                    if (++data_.serum >= number_of_sera_) {
-                        ++data_.antigen;
-                        data_.serum = 0;
-                    }
-                    if (data_.antigen < number_of_antigens_) {
-                        data_.titer = titer_getter_(data_.antigen, data_.serum);
-                        if (!data_.titer.is_dont_care())
-                            break;
-                    }
-                    else
-                        data_.titer = acmacs::chart::Titer{};
-                }
-            }
-
-     private:
-        titer_getter_t titer_getter_;
-        size_t number_of_antigens_, number_of_sera_;
-
-    }; // class TiterIteratorImplementation
-}
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::TiterIterator acmacs::chart::Titers::begin() const
-{
-    return {new TiterIteratorImplementation([this](size_t ag, size_t sr) -> std::string { return titer(ag, sr); }, number_of_antigens(), number_of_sera())};
-
-} // acmacs::chart::Titers::begin
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::TiterIterator acmacs::chart::Titers::end() const
-{
-    return {new TiterIteratorImplementation(number_of_antigens())};
-
-} // acmacs::chart::Titers::end
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::TiterIterator acmacs::chart::Titers::begin(size_t aLayerNo) const
-{
-    return {new TiterIteratorImplementation([this,aLayerNo](size_t ag, size_t sr) -> std::string { return titer_of_layer(aLayerNo, ag, sr); }, number_of_antigens(), number_of_sera())};
-
-} // acmacs::chart::Titers::begin
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::TiterIterator acmacs::chart::Titers::end(size_t /*aLayerNo*/) const
-{
-    return {new TiterIteratorImplementation(number_of_antigens())};
-
-} // acmacs::chart::Titers::end
-
-// ----------------------------------------------------------------------
-
 std::pair<acmacs::chart::PointIndexList, acmacs::chart::PointIndexList> acmacs::chart::Titers::antigens_sera_of_layer(size_t aLayerNo) const
 {
     acmacs::chart::PointIndexList antigens, sera;
-    for (auto titer_it = begin(aLayerNo); titer_it != end(aLayerNo); ++titer_it) {
-        antigens.insert(titer_it->antigen);
-        sera.insert(titer_it->serum);
+
+    for (const auto& titer_ref : titers_existing_from_layer(aLayerNo)) {
+        antigens.insert(titer_ref.antigen);
+        sera.insert(titer_ref.serum);
     }
     return {antigens, sera};
 
@@ -379,9 +304,9 @@ std::pair<acmacs::chart::PointIndexList, acmacs::chart::PointIndexList> acmacs::
 {
     std::map<size_t, std::set<size_t>> antigen_to_layers, serum_to_layers;
     for (size_t layer_no = 0; layer_no < number_of_layers(); ++layer_no) {
-        for (auto titer_it = begin(layer_no); titer_it != end(layer_no); ++titer_it) {
-            antigen_to_layers[titer_it->antigen].insert(layer_no);
-            serum_to_layers[titer_it->serum].insert(layer_no);
+        for (const auto& titer_ref : titers_existing_from_layer(layer_no)) {
+            antigen_to_layers[titer_ref.antigen].insert(layer_no);
+            serum_to_layers[titer_ref.serum].insert(layer_no);
         }
     }
     acmacs::chart::PointIndexList antigens, sera;
@@ -402,8 +327,8 @@ std::pair<acmacs::chart::PointIndexList, acmacs::chart::PointIndexList> acmacs::
 bool acmacs::chart::Titers::has_morethan_in_layers() const
 {
     for (size_t layer_no = 0; layer_no < number_of_layers(); ++layer_no) {
-        for (auto titer_it = begin(layer_no); titer_it != end(layer_no); ++titer_it) {
-            if (titer_it->titer.is_more_than())
+        for (const auto& titer_ref : titers_existing_from_layer(layer_no)) {
+            if (titer_ref.titer.is_more_than())
                 return true;
         }
     }
@@ -418,14 +343,14 @@ acmacs::chart::PointIndexList acmacs::chart::Titers::having_titers_with(size_t p
     const auto num_antigens = number_of_antigens();
     PointIndexList result;
     if (point_no < num_antigens) {
-        for (const auto& titer_ref : *this) {
+        for (const auto& titer_ref : titers_existing()) {
             if (titer_ref.antigen == point_no)
                 result.insert(titer_ref.serum + num_antigens);
         }
     }
     else {
         const auto serum_no = point_no - num_antigens;
-        for (const auto& titer_ref : *this) {
+        for (const auto& titer_ref : titers_existing()) {
             if (titer_ref.serum == serum_no)
                 result.insert(titer_ref.antigen);
         }
@@ -439,7 +364,7 @@ acmacs::chart::PointIndexList acmacs::chart::Titers::having_titers_with(size_t p
 acmacs::chart::PointIndexList acmacs::chart::Titers::having_too_few_numeric_titers(size_t threshold) const
 {
     std::vector<size_t> number_of_numeric_titers(number_of_antigens() + number_of_sera(), 0);
-    for (const auto& titer_ref : *this) {
+    for (const auto& titer_ref : titers_existing()) {
         if (titer_ref.titer.is_regular()) {
             ++number_of_numeric_titers[titer_ref.antigen];
             ++number_of_numeric_titers[titer_ref.serum + number_of_antigens()];

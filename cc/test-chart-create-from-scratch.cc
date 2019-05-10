@@ -36,7 +36,7 @@ int main(int argc, char* const argv[])
                 throw std::runtime_error("invalid number_of_sera");
 
             auto titers = chart.titers();
-            for (auto ti_source : *titers) {
+            for (auto ti_source : titers->titers_existing()) {
                 if (!ti_source.titer.is_dont_care())
                     throw std::runtime_error("unexpected titer: [" + acmacs::to_string(ti_source) + "], expected: *");
             }

@@ -63,130 +63,132 @@ size_t acmacs::chart::RjsonTiters::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
-namespace                       // to make class static in the module
+namespace
 {
-    enum TiterIteratorImplementationEnd_ { TiterIteratorImplementationEnd };
-
-    class TiterIteratorImplementationList : public acmacs::chart::TiterIterator::Implementation
+    class TiterGetterExistingBase : public acmacs::chart::TiterIterator::TiterGetter
     {
-     public:
-        TiterIteratorImplementationList(const rjson::value& titer_data)
-            : titer_data_{titer_data}
-            {
-                data_.antigen = 0;
-                data_.serum = 0;
-                data_.titer = static_cast<std::string_view>(titer());
-                if (data_.titer.is_dont_care())
-                    operator++();
-            }
+      public:
+        TiterGetterExistingBase(const rjson::value& titer_data) : titer_data_{titer_data} {}
 
-        TiterIteratorImplementationList(TiterIteratorImplementationEnd_, const rjson::value& titer_data)
-            : acmacs::chart::TiterIterator::Implementation({}, titer_data.size(), 0), titer_data_{titer_data} {}
+        void last(acmacs::chart::TiterIterator::Data& data) const override
+        {
+            data.antigen = titer_data_.size();
+            data.serum = 0;
+        }
 
-        void operator++() override
-            {
-                while (data_.antigen < number_of_rows()) {
-                    ++data_.serum;
-                    if (data_.serum == row().size()) {
-                        ++data_.antigen;
-                        data_.serum = 0;
-                    }
-                    if (data_.antigen < number_of_rows()) {
-                        data_.titer = static_cast<std::string_view>(titer());
-                        if (!data_.titer.is_dont_care())
-                            break;
-                    }
-                    else
-                        data_.titer = acmacs::chart::Titer{};
-                }
-            }
-
-     private:
-        const rjson::value& titer_data_;
-
-        const rjson::value& row() const { return titer_data_[data_.antigen]; }
-        const rjson::value& titer() const { return titer_data_[data_.antigen][data_.serum]; }
+      protected:
+        bool valid(const acmacs::chart::Titer& titer) const { return !titer.is_dont_care(); }
         size_t number_of_rows() const { return titer_data_.size(); }
+        const rjson::value& row(acmacs::chart::TiterIterator::Data& data) const { return titer_data_[data.antigen]; }
+        const rjson::value& titer(acmacs::chart::TiterIterator::Data& data) const { return titer_data_[data.antigen][data.serum]; }
 
-    }; // class TiterIteratorImplementationList
+      private:
+        const rjson::value& titer_data_;
+    };
 
-    class TiterIteratorImplementationDict : public acmacs::chart::TiterIterator::Implementation
+    class TiterGetterExistingList : public TiterGetterExistingBase
     {
-     public:
-        TiterIteratorImplementationDict(const rjson::value& titer_data)
-            : titer_data_{titer_data}, serum_{sera_.begin()}
-            {
-                for (data_.antigen = 0; data_.antigen < number_of_rows() && row().empty(); ++data_.antigen);
-                if (data_.antigen < number_of_rows())
-                    populate_sera();
+      public:
+        using TiterGetterExistingBase::TiterGetterExistingBase;
+
+        void first(acmacs::chart::TiterIterator::Data& data) const override
+        {
+            data.antigen = 0;
+            data.serum = 0;
+            data.titer = static_cast<std::string_view>(titer(data));
+            if (!valid(data.titer))
+                next(data);
+        }
+
+        void next(acmacs::chart::TiterIterator::Data& data) const override
+        {
+            while (data.antigen < number_of_rows()) {
+                ++data.serum;
+                if (data.serum == row(data).size()) {
+                    ++data.antigen;
+                    data.serum = 0;
+                }
+                if (data.antigen < number_of_rows()) {
+                    data.titer = static_cast<std::string_view>(titer(data));
+                    if (valid(data.titer))
+                        break;
+                }
+                else
+                    data.titer = acmacs::chart::Titer{};
             }
+        }
+    };
 
-        TiterIteratorImplementationDict(TiterIteratorImplementationEnd_, const rjson::value& titer_data)
-            : acmacs::chart::TiterIterator::Implementation({}, titer_data.size(), 0), titer_data_{titer_data} {}
+    class TiterGetterExistingDict : public TiterGetterExistingBase
+    {
+      public:
+        using TiterGetterExistingBase::TiterGetterExistingBase;
 
-        void operator++() override
-            {
-                ++serum_;
-                if (serum_ == sera_.end()) {
-                    for (++data_.antigen; data_.antigen < number_of_rows() && row().empty(); ++data_.antigen);
-                    if (data_.antigen < number_of_rows()) {
-                        populate_sera();
-                    }
-                    else {
-                        data_.serum = 0;
-                        data_.titer = acmacs::chart::Titer{};
-                    }
+        void first(acmacs::chart::TiterIterator::Data& data) const override
+        {
+            for (data.antigen = 0; data.antigen < number_of_rows() && row(data).empty(); ++data.antigen)
+                ;
+            if (data.antigen < number_of_rows())
+                populate_sera(data);
+        }
+
+        void next(acmacs::chart::TiterIterator::Data& data) const override
+        {
+            ++serum_;
+            if (serum_ == sera_.end()) {
+                for (++data.antigen; data.antigen < number_of_rows() && row(data).empty(); ++data.antigen)
+                    ;
+                if (data.antigen < number_of_rows()) {
+                    populate_sera(data);
                 }
                 else {
-                    data_.serum = *serum_;
-                    data_.titer = static_cast<std::string_view>(titer());
+                    data.serum = 0;
+                    data.titer = acmacs::chart::Titer{};
                 }
             }
-
-     private:
-        const rjson::value& titer_data_;
-        std::vector<size_t> sera_;
-        std::vector<size_t>::const_iterator serum_;
-
-        const rjson::value& row() const { return titer_data_[data_.antigen]; }
-        const rjson::value& titer() const { return titer_data_[data_.antigen][data_.serum]; }
-        size_t number_of_rows() const { return titer_data_.size(); }
-
-        void populate_sera()
-            {
-                rjson::transform(row(), sera_, [](const rjson::object::value_type& kv) -> size_t { return std::stoul(kv.first); });
-                std::sort(sera_.begin(), sera_.end());
-                serum_ = sera_.begin();
-                data_.serum = *serum_;
-                data_.titer = static_cast<std::string_view>(titer());
+            else {
+                data.serum = *serum_;
+                data.titer = static_cast<std::string_view>(titer(data));
             }
+        }
 
-    }; // class TiterIteratorImplementationDict
-}
+      private:
+        mutable std::vector<size_t> sera_;
+        mutable std::vector<size_t>::const_iterator serum_;
+
+        void populate_sera(acmacs::chart::TiterIterator::Data& data) const
+        {
+            rjson::transform(row(data), sera_, [](const rjson::object::value_type& kv) -> size_t { return std::stoul(kv.first); });
+            std::sort(sera_.begin(), sera_.end());
+            serum_ = sera_.begin();
+            data.serum = *serum_;
+            data.titer = static_cast<std::string_view>(titer(data));
+        }
+    };
+} // namespace
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::TiterIterator acmacs::chart::RjsonTiters::begin() const
+acmacs::chart::TiterIteratorMaker acmacs::chart::RjsonTiters::titers_existing() const
 {
     if (const auto& list = data_[keys_.list]; !list.is_null())
-        return {new TiterIteratorImplementationList(list)};
+        return acmacs::chart::TiterIteratorMaker(std::make_shared<TiterGetterExistingList>(list));
     else
-        return {new TiterIteratorImplementationDict(data_[keys_.dict])};
+        return acmacs::chart::TiterIteratorMaker(std::make_shared<TiterGetterExistingDict>(data_[keys_.dict]));
 
-} // acmacs::chart::RjsonTiters::begin
+} // acmacs::chart::RjsonTiters::titers_existing
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::TiterIterator acmacs::chart::RjsonTiters::end() const
+
+acmacs::chart::TiterIteratorMaker acmacs::chart::RjsonTiters::titers_existing_from_layer(size_t layer_no) const
 {
-    if (const auto& list = data_[keys_.list]; !list.is_null())
-        return {new TiterIteratorImplementationList(TiterIteratorImplementationEnd, list)};
-    else
-        return {new TiterIteratorImplementationDict(TiterIteratorImplementationEnd, data_[keys_.dict])};
+    return acmacs::chart::TiterIteratorMaker(std::make_shared<TiterGetterExistingDict>(data_[keys_.layers][layer_no]));
 
-} // acmacs::chart::RjsonTiters::end
+} // acmacs::chart::RjsonTiters::titers_existing
 
 // ----------------------------------------------------------------------
+
 
 acmacs::chart::rjson_import::Layout::Layout(const rjson::value& aData)
     : acmacs::Layout(aData.size(), rjson_import::number_of_dimensions(aData))

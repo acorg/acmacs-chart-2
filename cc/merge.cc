@@ -135,18 +135,18 @@ void merge_titers(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart
     auto copy_layers = [&target_layer_no, &titers](size_t source_layers, const auto& source_titers, const acmacs::chart::MergeReport::index_mapping_t& antigen_target,
                                                    const acmacs::chart::MergeReport::index_mapping_t& serum_target) {
         auto assign = [&titers, &target_layer_no](size_t ag_no, size_t sr_no, std::string titer) { titers->titer(ag_no, sr_no, target_layer_no, titer); };
-        auto copy_titer = [&assign, &antigen_target, &serum_target](auto first, auto last) {
-            for (; first != last; ++first) {
-                if (auto ag_no = antigen_target.find(first->antigen), sr_no = serum_target.find(first->serum); ag_no != antigen_target.end() && sr_no != serum_target.end())
-                    assign(ag_no->second.index, sr_no->second.index, first->titer);
+        auto copy_titer = [&assign, &antigen_target, &serum_target](const auto& titer_iterator) {
+            for (auto titer_ref : titer_iterator) {
+                if (auto ag_no = antigen_target.find(titer_ref.antigen), sr_no = serum_target.find(titer_ref.serum); ag_no != antigen_target.end() && sr_no != serum_target.end())
+                    assign(ag_no->second.index, sr_no->second.index, titer_ref.titer);
             }
         };
         if (source_layers) {
             for (size_t source_layer_no = 0; source_layer_no < source_layers; ++source_layer_no, ++target_layer_no)
-                copy_titer(source_titers.begin(source_layer_no), source_titers.end(source_layer_no));
+                copy_titer(source_titers.titers_existing());
         }
         else {
-            copy_titer(source_titers.begin(), source_titers.end());
+            copy_titer(source_titers.titers_existing());
             ++target_layer_no;
         }
     };

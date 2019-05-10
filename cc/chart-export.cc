@@ -40,14 +40,14 @@ int main(int argc, char* const argv[])
         if (opt.titers) {
             auto titers = chart->titers();
             std::vector<std::vector<size_t>> values(titers->number_of_antigens(), std::vector<size_t>(titers->number_of_sera(), 0UL));
-            for (const auto& titer : *titers)
+            for (const auto& titer : titers->titers_existing())
                 values[titer.antigen][titer.serum] = titer.titer.value_with_thresholded();
             json = to_json::object_append(json, "titers", to_json::raw(to_json::array(values.begin(), values.end(), [](const auto& row) { return to_json::raw(to_json::array(row.begin(), row.end())); })));
         }
         if (opt.logged_titers) {
             auto titers = chart->titers();
             std::vector<std::vector<double>> values(titers->number_of_antigens(), std::vector<double>(titers->number_of_sera(), -1));
-            for (const auto& titer : *titers)
+            for (const auto& titer : titers->titers_existing())
                 values[titer.antigen][titer.serum] = titer.titer.logged_with_thresholded();
             json = to_json::object_append(json, "logged_titers", to_json::raw(to_json::array(values.begin(), values.end(), [](const auto& row) { return to_json::raw(to_json::array(row.begin(), row.end())); })));
         }

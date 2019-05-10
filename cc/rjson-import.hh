@@ -103,8 +103,8 @@ namespace acmacs::chart
                     throw std::runtime_error("genetic table support not implemented in " + DEBUG_LINE_FUNC_S);
             }
 
-        TiterIterator begin() const override;
-        TiterIterator end() const override;
+        TiterIteratorMaker titers_existing() const override;
+        TiterIteratorMaker titers_existing_from_layer(size_t layer_no) const override;
 
      protected:
         struct Keys

@@ -87,10 +87,12 @@ acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontc
     //           // << chart.make_info(*parameters.number_of_optimizations + 10)
     //           << '\n';
 
-    if (*number_of_dimensions == 1 && float_equal(proportion_to_dont_care, 0.1)) {
-        // std::cout << "DEBUG: rep:" << replicate_no << " mean-abs:" << predictions.av_abs_error << " err: " << prediction_errors << '\n';
-        std::cout << "DEBUG: rep:" << replicate_no << " mean-abs:" << predictions.av_abs_error << " sd-err:" << predictions.sd_error << "\n " << prediction_errors << '\n';
-    }
+    // if (*number_of_dimensions == 1 && float_equal(proportion_to_dont_care, 0.1)) {
+    //     std::cout << predictions.correlation << ' ' << replicate_stat.master_distances << ' ' << replicate_stat.predicted_distances << '\n';
+    //      // std::cout << "DEBUG: rep:" << replicate_no << " mean-abs:" << predictions.av_abs_error << " sd-err:" << predictions.sd_error << "\n " << prediction_errors << '\n';
+    //      // std::cout << "DEBUG: corr:" << predictions.correlation << " var-m:" << acmacs::statistics::varianceN(std::begin(replicate_stat.master_distances), std::end(replicate_stat.master_distances))
+    //      //          << "\n  m: " << replicate_stat.master_distances << "\n  p: " << replicate_stat.predicted_distances << '\n';
+    // }
 
     return predictions;
 
@@ -104,15 +106,16 @@ acmacs::chart::map_resolution_test_data::ReplicateStat collect_errors(acmacs::ch
     auto prediction_projection = prediction_chart.projection(0);
     auto prediction_layout = prediction_projection->layout();
     auto prediction_chart_titers = prediction_chart.titers();
+    auto master_chart_titers = master_chart.titers();
     auto master_column_bases = master_chart.column_bases(parameters.minimum_column_basis);
 
     acmacs::chart::map_resolution_test_data::ReplicateStat replicate_stat;
 
-    for (const auto& titer_ref : *prediction_chart_titers) {
-        if (const auto master_titer = master_chart.titers()->titer(titer_ref.antigen, titer_ref.serum); master_titer.is_regular()) {
-            const auto predicted_distance = prediction_layout->distance(titer_ref.antigen, titer_ref.serum + number_of_antigens);
-            const auto master_distance = master_column_bases->column_basis(titer_ref.serum) - master_titer.logged();
-            replicate_stat.prediction_errors_for_titers.emplace_back(titer_ref.antigen, titer_ref.serum, master_distance - predicted_distance);
+    for (const auto& master_titer_ref : master_chart_titers->titers_regular()) {
+        if (prediction_chart_titers->titer(master_titer_ref.antigen, master_titer_ref.serum).is_dont_care()) {
+            const auto predicted_distance = prediction_layout->distance(master_titer_ref.antigen, master_titer_ref.serum + number_of_antigens);
+            const auto master_distance = master_column_bases->column_basis(master_titer_ref.serum) - master_titer_ref.titer.logged();
+            replicate_stat.prediction_errors_for_titers.emplace_back(master_titer_ref.antigen, master_titer_ref.serum, master_distance - predicted_distance);
             replicate_stat.master_distances.push_back(master_distance);
             replicate_stat.predicted_distances.push_back(predicted_distance);
         }

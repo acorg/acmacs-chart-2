@@ -37,9 +37,9 @@ namespace acmacs::chart
         }
 
       private:
-        const double stress_diff_;
+        [[maybe_unused]] const double stress_diff_;
         const size_t number_of_drections_;
-        const double stress_diff_precision_;
+        [[maybe_unused]] const double stress_diff_precision_;
         const double angle_step_;
         std::vector<std::pair<size_t, std::vector<double>>> result_; // point_no, blob_data
 

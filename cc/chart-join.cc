@@ -42,7 +42,8 @@ int main(int argc, char* const argv[])
             auto titers1 = chart1.titers(), titers2 = chart2.titers();
             if (titers1->number_of_layers() != titers2->number_of_layers())
                 throw std::runtime_error{"titers of charts have differenet sets of layers"};
-            for (auto ti1 = titers1->begin(), ti2 = titers2->begin(); ti1 != titers1->end() && ti2 != titers2->end(); ++ti1, ++ti2) {
+            const auto tim1 = titers1->titers_existing(), tim2 = titers2->titers_existing();
+            for (auto ti1 = tim1.begin(), ti2 = tim2.begin(); ti1 != tim1.end() && ti2 != tim2.end(); ++ti1, ++ti2) {
                 if (*ti1 != *ti2)
                     throw std::runtime_error{"titers of charts are differenet"};
             }

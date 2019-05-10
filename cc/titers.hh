@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "acmacs-base/rjson-forward.hh"
+#include "acmacs-base/string.hh"
 #include "acmacs-chart-2/base.hh"
 #include "acmacs-chart-2/column-bases.hh"
 
@@ -100,12 +101,10 @@ namespace acmacs::chart
 
     class TiterIterator
     {
-     public:
+      public:
         struct Data
         {
             Data() = default;
-            Data(const Titer& a_titer, size_t ag_no, size_t sr_no) : titer{a_titer}, antigen{ag_no}, serum{sr_no} {}
-            Data(Titer&& a_titer, size_t ag_no, size_t sr_no) : titer{std::move(a_titer)}, antigen{ag_no}, serum{sr_no} {}
             constexpr operator const Titer& () const { return titer; }
             constexpr bool operator==(const Data& rhs) const { return antigen == rhs.antigen && serum == rhs.serum; }
             constexpr bool operator!=(const Data& rhs) const { return !operator==(rhs); }
@@ -113,35 +112,47 @@ namespace acmacs::chart
             size_t antigen, serum;
         };
 
-        class Implementation
+        class TiterGetter
         {
-         public:
-            Implementation() = default;
-            Implementation(const Titer& titer, size_t antigen, size_t serum) : data_{titer, antigen, serum} {}
-            virtual ~Implementation() = default;
-            constexpr bool operator==(const Implementation& rhs) const { return data_ == rhs.data_; }
-            constexpr bool operator!=(const Implementation& rhs) const { return !operator==(rhs); }
-            constexpr const Data& operator*() const { return data_; }
-            constexpr const Data* ptr() const { return &data_; }
-            virtual void operator++() = 0;
+          public:
+            virtual ~TiterGetter() = default;
 
-         protected:
-            Data data_;
+            virtual void first(Data& data) const = 0;
+            virtual void last(Data& data) const = 0;
+            virtual void next(Data& data) const = 0;
         };
 
-        TiterIterator(Implementation* implementation) : data_{implementation} {}
-        bool operator==(const TiterIterator& rhs) const { return *data_ == *rhs.data_; }
-        bool operator!=(const TiterIterator& rhs) const { return !operator==(rhs); }
-        const Data& operator*() const { return **data_; }
-        const Data* operator->() const { return data_->ptr(); }
-        const TiterIterator& operator++() { data_->operator++(); return *this; }
+        constexpr bool operator==(const TiterIterator& rhs) const { return data_ == rhs.data_; }
+        constexpr bool operator!=(const TiterIterator& rhs) const { return !operator==(rhs); }
+        const Data& operator*() const { return data_; }
+        const Data* operator->() const { return &data_; }
+        const TiterIterator& operator++() { getter_->next(data_); return *this; }
 
-     private:
-        std::unique_ptr<Implementation> data_;
+      private:
+        Data data_;
+        std::shared_ptr<TiterGetter> getter_;
+        enum class begin { begin };
+        enum class end { end };
+
+        TiterIterator(enum begin, std::shared_ptr<TiterGetter> titer_getter) : getter_{titer_getter} { getter_->first(data_); }
+        TiterIterator(enum end, std::shared_ptr<TiterGetter> titer_getter) : getter_{titer_getter} { getter_->last(data_); }
+
+        friend class TiterIteratorMaker;
 
     }; // class TiterIterator
 
-    inline std::ostream& operator<<(std::ostream& s, const TiterIterator::Data& data) { return s << data.antigen << ':' << data.serum << ':' << data.titer; }
+    class TiterIteratorMaker
+    {
+      public:
+        TiterIteratorMaker(std::shared_ptr<TiterIterator::TiterGetter> titer_getter) : getter_{titer_getter} {}
+        TiterIterator begin() const { return TiterIterator(TiterIterator::begin::begin, getter_); }
+        TiterIterator end() const { return TiterIterator(TiterIterator::end::end, getter_); }
+
+      private:
+        std::shared_ptr<TiterIterator::TiterGetter> getter_;
+    };
+
+    // inline std::ostream& operator<<(std::ostream& s, const TiterIterator::Data& data) { return s << data.antigen << ':' << data.serum << ':' << data.titer; }
 
 // ----------------------------------------------------------------------
 
@@ -183,10 +194,57 @@ namespace acmacs::chart
         virtual void update(TableDistances& table_distances, const ColumnBases& column_bases, const StressParameters& parameters) const;
         virtual double max_distance(const ColumnBases& column_bases);
 
-        virtual TiterIterator begin() const;
-        virtual TiterIterator end() const;
-        virtual TiterIterator begin(size_t aLayerNo) const;
-        virtual TiterIterator end(size_t aLayerNo) const;
+        class TiterGetterExisting : public TiterIterator::TiterGetter
+        {
+          public:
+            using titer_getter_t = std::function<Titer (size_t, size_t)>;
+
+            TiterGetterExisting(titer_getter_t getter, size_t number_of_antigens, size_t number_of_sera) : getter_{getter}, number_of_antigens_{number_of_antigens}, number_of_sera_{number_of_sera} {}
+            void first(TiterIterator::Data& data) const override { set(data, 0, 0); if (!valid(data.titer)) next(data); }
+            void last(TiterIterator::Data& data) const override { data.antigen = number_of_antigens_; data.serum = 0; }
+            void next(TiterIterator::Data& data) const override
+            {
+                while (data.antigen < number_of_antigens_) {
+                    set(data, data.antigen, data.serum + 1);
+                    if (data.serum >= number_of_sera_)
+                        set(data, data.antigen + 1, 0);
+                    if (valid(data.titer))
+                        break;
+                }
+            }
+
+          protected:
+            virtual bool valid(const Titer& titer) const { return !titer.is_dont_care(); }
+
+          private:
+            titer_getter_t getter_;
+            size_t number_of_antigens_, number_of_sera_;
+
+            void set(TiterIterator::Data& data, size_t ag, size_t sr) const
+            {
+                data.antigen = ag;
+                data.serum = sr;
+                if (ag < number_of_antigens_ && sr < number_of_sera_)
+                    data.titer = getter_(ag, sr);
+                else
+                    data.titer = Titer{};
+            }
+        };
+
+        class TiterGetterRegular : public TiterGetterExisting
+        {
+          public:
+            using TiterGetterExisting::TiterGetterExisting;
+
+          protected:
+            bool valid(const Titer& titer) const override { return titer.is_regular(); }
+
+        };
+
+        virtual TiterIteratorMaker titers_existing() const { return TiterIteratorMaker(std::make_shared<TiterGetterExisting>([this](size_t ag, size_t sr) { return this->titer(ag, sr); }, number_of_antigens(), number_of_sera())); }
+        virtual TiterIteratorMaker titers_regular() const { return TiterIteratorMaker(std::make_shared<TiterGetterRegular>([this](size_t ag, size_t sr) { return this->titer(ag, sr); }, number_of_antigens(), number_of_sera())); }
+        virtual TiterIteratorMaker titers_existing_from_layer(size_t layer_no) const { return TiterIteratorMaker(std::make_shared<TiterGetterExisting>([this,layer_no](size_t ag, size_t sr) { return this->titer_of_layer(layer_no, ag, sr); }, number_of_antigens(), number_of_sera())); }
+
         std::pair<PointIndexList, PointIndexList> antigens_sera_of_layer(size_t aLayerNo) const;
         std::pair<PointIndexList, PointIndexList> antigens_sera_in_multiple_layers() const;
         bool has_morethan_in_layers() const;
@@ -203,15 +261,10 @@ namespace acmacs::chart
 
 namespace acmacs
 {
-    // inline std::string to_string(acmacs::chart::Titer aTiter)
+    // template <typename TiterValidator, typename TiterGetter> inline std::string to_string(const typename acmacs::chart::TiterIterator<TiterValidator, TiterGetter>::Data& data)
     // {
-    //     return aTiter.data();
+    //     return ::string::concat("ag:", data.antigen, " sr:", data.serum, " t:", data.titer);
     // }
-
-    inline std::string to_string(acmacs::chart::TiterIterator::Data data)
-    {
-        return "ag:" + std::to_string(data.antigen) + " sr:" + std::to_string(data.serum) + " t:" + data.titer;
-    }
 
 } // namespace acmacs
 
