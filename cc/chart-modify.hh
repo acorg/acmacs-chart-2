@@ -671,16 +671,16 @@ namespace acmacs::chart
         void rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].rotation = rotation; }
         void aspect(size_t point_no, Aspect aspect) { modify(); validate_point_no(point_no); styles_[point_no].aspect = aspect; }
         void shape(size_t point_no, PointShape::Shape shape) { modify(); validate_point_no(point_no); styles_[point_no].shape = shape; }
-        // void label_shown(size_t point_no, bool shown) { modify(); validate_point_no(point_no); styles_[point_no]. = ; }
-        // void label_offset_x(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no]. = ; }
-        // void label_offset_y(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no]. = ; }
-        // void label_size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no]. = ; }
-        // void label_color(size_t point_no, Color color) { modify(); validate_point_no(point_no); styles_[point_no]. = ; }
-        // void label_rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no]. = ; }
-        // void label_slant(size_t point_no, FontSlant lant) { modify(); validate_point_no(point_no); styles_[point_no]. = ; }
-        // void label_weight(size_t point_no, FontWeight weight) { modify(); validate_point_no(point_no); styles_[point_no]. = ; }
-        // void label_font_family(size_t point_no, std::string font_family) { modify(); validate_point_no(point_no); styles_[point_no]. = ; }
-        // void label_text(size_t point_no, std::string text) { modify(); validate_point_no(point_no); styles_[point_no]. = ; }
+        void label_shown(size_t point_no, bool shown) { modify(); validate_point_no(point_no); styles_[point_no].label.shown = shown; }
+        void label_offset_x(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label.offset.set().x(offset); }
+        void label_offset_y(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label.offset.set().y(offset); }
+        void label_size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].label.size = size; }
+        void label_color(size_t point_no, Color color) { modify(); validate_point_no(point_no); styles_[point_no].label.color = color; }
+        void label_rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].label.rotation = rotation; }
+        void label_slant(size_t point_no, FontSlant slant) { modify(); validate_point_no(point_no); styles_[point_no].label.style.slant = slant; }
+        void label_weight(size_t point_no, FontWeight weight) { modify(); validate_point_no(point_no); styles_[point_no].label.style.weight = weight; }
+        void label_font_family(size_t point_no, std::string font_family) { modify(); validate_point_no(point_no); styles_[point_no].label.style.font_family = font_family; }
+        void label_text(size_t point_no, std::string text) { modify(); validate_point_no(point_no); styles_[point_no].label_text = text; }
 
         void scale_all(double point_scale, double outline_scale) { modify(); std::for_each(styles_.begin(), styles_.end(), [=](auto& style) { style.scale(point_scale).scale_outline(outline_scale); }); }
 
