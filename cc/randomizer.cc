@@ -1,3 +1,4 @@
+#include "acmacs-base/string.hh"
 #include "acmacs-chart-2/randomizer.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
@@ -50,8 +51,10 @@ std::shared_ptr<acmacs::chart::LayoutRandomizer> randomizer_plain_from_sample_op
     auto sq = [](double v) { return v * v; };
     const auto mm = projection.layout_modified()->minmax();
     const auto diameter = std::sqrt(std::accumulate(mm.begin(), mm.end(), 0.0, [&sq](double sum, const auto& p) { return sum + sq(p.second - p.first); }));
-    if (std::isnan(diameter) || float_zero(diameter))
-        std::cerr << "WARNING: randomizer_plain_from_sample_optimization_internal: diameter is " << diameter << '\n';
+    if (std::isnan(diameter) || float_zero(diameter)) {
+        // std::cerr << "WARNING: randomizer_plain_from_sample_optimization_internal: diameter is " << diameter << '\n';
+        throw std::runtime_error(string::concat("randomizer_plain_from_sample_optimization_internal: diameter is ", diameter));
+    }
     rnd->diameter(diameter * diameter_multiplier);
     return std::move(rnd);
 
