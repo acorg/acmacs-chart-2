@@ -82,7 +82,7 @@
           "F": "fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent",
           "O": "outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black",
           "o": 1.0,             // outline width, default 1.0
-          "S": "shape: C[IRCLE], B[OX], T[RIANGLE], default is circle",
+          "S": "shape: C[IRCLE], B[OX], T[RIANGLE], E[GG}, U[GLYEGG], default is circle",
           "s": 1.0,             // size, default is 1.0
           "r": 0.0,             // rotation in radians, default is 0.0
           "a": 1.0,              // aspect ratio, default is 1.0
@@ -91,7 +91,7 @@
             "p": [0.0, 1.0],    // label position (2D only), list of two doubles, default is [0, 1] means under point
             "t": "label text if forced by user",
             "f": "font face",
-            "S": "normal OR italic OR oblique", // font slant, default normal
+            "S": "normal OR italic", // font slant, default normal
             "W": "normal OR bold", // font weight, default normal
             "s": 1.0,           // size, default 1.0
             "c": "black",   // color, default black
