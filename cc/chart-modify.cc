@@ -6,7 +6,7 @@
 #include "acmacs-base/omp.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-base/virus-name.hh"
+#include "acmacs-virus/virus-name.hh"
 #include "acmacs-base/statistics.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -586,7 +586,7 @@ void AntigenModify::set_continent()
     if (continent().empty()) {
         if (const auto& locdb = get_locdb(); locdb) {
             try {
-                continent(locdb.continent(virus_name::location(name())));
+                continent(locdb.continent(::virus_name::location(name())));
             }
             catch (std::exception& err) {
                 std::cerr << "WARNING: cannot figure out continent for \"" << name() << "\": " << err.what() << '\n';

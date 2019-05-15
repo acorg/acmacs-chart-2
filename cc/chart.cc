@@ -2,7 +2,7 @@
 #include <algorithm>
 
 #include "acmacs-base/string.hh"
-#include "acmacs-base/virus-name.hh"
+#include "acmacs-virus/virus-name.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/range.hh"
 #include "locationdb/locdb.hh"
@@ -508,7 +508,7 @@ std::string acmacs::chart::Antigen::name_without_subtype() const
 
 std::string acmacs::chart::Antigen::location_abbreviated() const
 {
-    return get_locdb().abbreviation(virus_name::location(name()));
+    return get_locdb().abbreviation(::virus_name::location(name()));
 
 } // acmacs::chart::Antigen::location_abbreviated
 
@@ -554,7 +554,7 @@ std::string acmacs::chart::Serum::name_without_subtype() const
 
 std::string acmacs::chart::Serum::location_abbreviated() const
 {
-    return get_locdb().abbreviation(virus_name::location(name()));
+    return get_locdb().abbreviation(::virus_name::location(name()));
 
 } // acmacs::chart::Serum::location_abbreviated
 

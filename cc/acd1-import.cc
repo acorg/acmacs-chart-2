@@ -7,7 +7,7 @@
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-base/virus-name.hh"
+#include "acmacs-virus/virus-name.hh"
 #include "acmacs-chart-2/acd1-import.hh"
 
 using namespace std::string_literals;
@@ -568,7 +568,7 @@ std::optional<size_t> Acd1Antigens::find_by_full_name(std::string_view aFullName
 {
     if (mAntigenNameIndex.empty())
         make_name_index();
-    const std::string name(virus_name::name(aFullName));
+    const std::string name(::virus_name::name(aFullName));
     if (const auto found = mAntigenNameIndex.find(name); found != mAntigenNameIndex.end()) {
         for (auto index: found->second) {
             if (Acd1Antigen(data_[index]).full_name() == aFullName)

@@ -7,7 +7,7 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/timeit.hh"
-#include "acmacs-base/virus-name.hh"
+#include "acmacs-virus/virus-name.hh"
 #include "acmacs-chart-2/ace-import.hh"
 #include "acmacs-chart-2/ace.hh"
 
@@ -229,7 +229,7 @@ std::optional<size_t> AceAntigens::find_by_full_name(std::string_view aFullName)
 {
     if (mAntigenNameIndex.empty())
         make_name_index();
-    const auto name = virus_name::name(aFullName);
+    const auto name = ::virus_name::name(aFullName);
     if (const auto found = mAntigenNameIndex.find(name); found != mAntigenNameIndex.end()) {
         for (auto index: found->second) {
             if (AceAntigen(data_[index]).full_name() == aFullName)
