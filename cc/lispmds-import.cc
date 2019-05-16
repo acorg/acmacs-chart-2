@@ -271,7 +271,7 @@ Name LispmdsAntigen::name() const
 {
     Name name;
     acmacs::virus::Reassortant reassortant;
-    Passage passage;
+    acmacs::virus::Passage passage;
     Annotations annotations;
     lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
     return name;
@@ -280,11 +280,11 @@ Name LispmdsAntigen::name() const
 
 // ----------------------------------------------------------------------
 
-Passage LispmdsAntigen::passage() const
+acmacs::virus::Passage LispmdsAntigen::passage() const
 {
     Name name;
     acmacs::virus::Reassortant reassortant;
-    Passage passage;
+    acmacs::virus::Passage passage;
     Annotations annotations;
     lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
     return passage;
@@ -297,7 +297,7 @@ acmacs::virus::Reassortant LispmdsAntigen::reassortant() const
 {
     Name name;
     acmacs::virus::Reassortant reassortant;
-    Passage passage;
+    acmacs::virus::Passage passage;
     Annotations annotations;
     lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
     return reassortant;
@@ -310,7 +310,7 @@ Annotations LispmdsAntigen::annotations() const
 {
     Name name;
     acmacs::virus::Reassortant reassortant;
-    Passage passage;
+    acmacs::virus::Passage passage;
     Annotations annotations;
     lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
     return annotations;

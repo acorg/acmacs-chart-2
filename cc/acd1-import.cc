@@ -435,28 +435,28 @@ Name Acd1Serum::name() const
 
 // ----------------------------------------------------------------------
 
-static inline Passage make_passage(const rjson::value& aData)
+static inline acmacs::virus::Passage make_passage(const rjson::value& aData)
 {
     if (const auto& p_dict = aData["passage"]; !p_dict.is_null()) {
         std::string p = p_dict["passage"].get_or_default("");
         if (auto date = p_dict["date"].get_or_default(""); !date.empty())
             p += " (" + date + ")";
-        return Passage{std::move(p)};
+        return acmacs::virus::Passage{std::move(p)};
     }
     else if (auto p_str = aData["passage"].get_or_default(""); !p_str.empty()) {
-        return Passage{std::move(p_str)};
+        return acmacs::virus::Passage{std::move(p_str)};
     }
     else
         return {};
 }
 
-Passage Acd1Antigen::passage() const
+acmacs::virus::Passage Acd1Antigen::passage() const
 {
     return make_passage(data_);
 
 } // Acd1Antigen::passage
 
-Passage Acd1Serum::passage() const
+acmacs::virus::Passage Acd1Serum::passage() const
 {
     return make_passage(data_);
 

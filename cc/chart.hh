@@ -353,7 +353,7 @@ namespace acmacs::chart
 
         virtual Name name() const = 0;
         virtual Date date() const = 0;
-        virtual Passage passage() const = 0;
+        virtual acmacs::virus::Passage passage() const = 0;
         virtual BLineage lineage() const = 0;
         virtual acmacs::virus::Reassortant reassortant() const = 0;
         virtual LabIds lab_ids() const = 0;
@@ -411,7 +411,7 @@ namespace acmacs::chart
         bool operator!=(const Serum& rhs) const { return !operator==(rhs); }
 
         virtual Name name() const = 0;
-        virtual Passage passage() const = 0;
+        virtual acmacs::virus::Passage passage() const = 0;
         virtual BLineage lineage() const = 0;
         virtual acmacs::virus::Reassortant reassortant() const = 0;
         virtual Annotations annotations() const = 0;

@@ -718,7 +718,7 @@ bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annota
 
 acmacs::chart::Sera::homologous_canditates_t acmacs::chart::Sera::find_homologous_canditates(const Antigens& aAntigens) const
 {
-    const auto match_passage = [](Passage antigen_passage, Passage serum_passage, const Serum& serum) -> bool {
+    const auto match_passage = [](acmacs::virus::Passage antigen_passage, acmacs::virus::Passage serum_passage, const Serum& serum) -> bool {
         if (serum_passage.empty()) // NIID has passage type data in serum_id
             return antigen_passage.is_egg() == (serum.serum_id().find("EGG") != std::string::npos);
         else
@@ -750,14 +750,14 @@ acmacs::chart::Sera::homologous_canditates_t acmacs::chart::Sera::find_homologou
 
 void acmacs::chart::Sera::set_homologous(find_homologous options, const Antigens& aAntigens)
 {
-    const auto match_passage_strict = [](Passage antigen_passage, Passage serum_passage, const Serum& serum) -> bool {
+    const auto match_passage_strict = [](acmacs::virus::Passage antigen_passage, acmacs::virus::Passage serum_passage, const Serum& serum) -> bool {
         if (serum_passage.empty()) // NIID has passage type data in serum_id
             return antigen_passage.is_egg() == (serum.serum_id().find("EGG") != std::string::npos);
         else
             return antigen_passage == serum_passage;
     };
 
-    const auto match_passage_relaxed = [](Passage antigen_passage, Passage serum_passage, const Serum& serum) -> bool {
+    const auto match_passage_relaxed = [](acmacs::virus::Passage antigen_passage, acmacs::virus::Passage serum_passage, const Serum& serum) -> bool {
         if (serum_passage.empty()) // NIID has passage type data in serum_id
             return antigen_passage.is_egg() == (serum.serum_id().find("EGG") != std::string::npos);
         else

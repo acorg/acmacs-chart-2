@@ -58,7 +58,7 @@ class CommonAntigensSera::Impl
                 return lhs.passage.compare(rhs.passage);
             }
 
-        Passage passage;
+        acmacs::virus::Passage passage;
 
     }; // class AntigenEntry
 
@@ -81,7 +81,7 @@ class CommonAntigensSera::Impl
             }
 
         SerumId serum_id;
-        Passage passage;
+        acmacs::virus::Passage passage;
 
     }; // class SerumEntry
 

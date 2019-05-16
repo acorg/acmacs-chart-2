@@ -85,7 +85,7 @@ namespace acmacs::chart
 
         Name name() const override;
         Date date() const override { return data_["date"].get_or_default(""); }
-        Passage passage() const override;
+        acmacs::virus::Passage passage() const override;
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override;
         LabIds lab_ids() const override;
@@ -106,7 +106,7 @@ namespace acmacs::chart
         Acd1Serum(const rjson::value& aData) : data_{aData} {}
 
         Name name() const override;
-        Passage passage() const override;
+        acmacs::virus::Passage passage() const override;
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override;
         Annotations annotations() const override;

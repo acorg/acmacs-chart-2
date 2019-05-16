@@ -81,7 +81,7 @@ namespace acmacs::chart
 
         Name name() const override;
         Date date() const override { return {}; }
-        Passage passage() const override;
+        acmacs::virus::Passage passage() const override;
         BLineage lineage() const override { return {}; }
         acmacs::virus::Reassortant reassortant() const override;
         LabIds lab_ids() const override { return {}; }
@@ -103,7 +103,7 @@ namespace acmacs::chart
         LispmdsSerum(const acmacs::lispmds::value& aData, size_t aIndex) : mData{aData}, mIndex{aIndex} {}
 
         Name name() const override;
-        Passage passage() const override { return {}; }
+        acmacs::virus::Passage passage() const override { return {}; }
         BLineage lineage() const override { return {}; }
         acmacs::virus::Reassortant reassortant() const override;
         Annotations annotations() const override;

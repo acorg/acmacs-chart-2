@@ -76,7 +76,7 @@ namespace acmacs::chart
 
         Name name() const override { return data_["N"]; }
         Date date() const override { return data_["D"].get_or_default(""); }
-        Passage passage() const override { return Passage{data_["P"].get_or_default("")}; }
+        acmacs::virus::Passage passage() const override { return acmacs::virus::Passage{data_["P"].get_or_default("")}; }
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override { return acmacs::virus::Reassortant{data_["R"].get_or_default("")}; }
         LabIds lab_ids() const override { return data_["l"]; }
@@ -97,7 +97,7 @@ namespace acmacs::chart
         AceSerum(const rjson::value& aData) : data_{aData} {}
 
         Name name() const override { return data_["N"]; }
-        Passage passage() const override { return Passage{data_["P"].get_or_default("")}; }
+        acmacs::virus::Passage passage() const override { return acmacs::virus::Passage{data_["P"].get_or_default("")}; }
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override { return acmacs::virus::Reassortant{data_["R"].get_or_default("")}; }
         Annotations annotations() const override { return data_["a"]; }

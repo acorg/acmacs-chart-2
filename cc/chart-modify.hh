@@ -180,7 +180,7 @@ namespace acmacs::chart
 
         Name name() const override { return name_; }
         Date date() const override { return date_; }
-        Passage passage() const override { return passage_; }
+        acmacs::virus::Passage passage() const override { return passage_; }
         BLineage lineage() const override { return lineage_; }
         acmacs::virus::Reassortant reassortant() const override { return reassortant_; }
         LabIds lab_ids() const override { return lab_ids_; }
@@ -191,7 +191,7 @@ namespace acmacs::chart
 
         void name(const std::string& value) { name_ = value; }
         void date(const std::string& value) { date_ = value; }
-        void passage(const Passage& value) { passage_ = value; }
+        void passage(const acmacs::virus::Passage& value) { passage_ = value; }
         void lineage(const std::string& value) { lineage_ = value; }
         void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
         void reference(bool value) { reference_ = value; }
@@ -207,7 +207,7 @@ namespace acmacs::chart
      private:
         Name name_;
         Date date_;
-        Passage passage_;
+        acmacs::virus::Passage passage_;
         BLineage lineage_;
         acmacs::virus::Reassortant reassortant_;
         Annotations annotations_;
@@ -227,7 +227,7 @@ namespace acmacs::chart
         explicit SerumModify(SerumP main);
 
         Name name() const override { return name_; }
-        Passage passage() const override { return passage_; }
+        acmacs::virus::Passage passage() const override { return passage_; }
         BLineage lineage() const override { return lineage_; }
         acmacs::virus::Reassortant reassortant() const override { return reassortant_; }
         Annotations annotations() const override { return annotations_; }
@@ -237,7 +237,7 @@ namespace acmacs::chart
         void set_homologous(const std::vector<size_t>& ags) const override { homologous_antigens_ = ags; }
 
         void name(const std::string& value) { name_ = value; }
-        void passage(const Passage& value) { passage_ = value; }
+        void passage(const acmacs::virus::Passage& value) { passage_ = value; }
         void lineage(const std::string& value) { lineage_ = value; }
         void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
         void serum_id(const std::string& value) { serum_id_ = value; }
@@ -251,7 +251,7 @@ namespace acmacs::chart
 
      private:
         Name name_;
-        Passage passage_;
+        acmacs::virus::Passage passage_;
         BLineage lineage_;
         acmacs::virus::Reassortant reassortant_;
         Annotations annotations_;
