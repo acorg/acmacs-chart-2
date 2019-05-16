@@ -76,9 +76,9 @@ namespace acmacs::chart
 
         Name name() const override { return data_["N"]; }
         Date date() const override { return data_["D"].get_or_default(""); }
-        Passage passage() const override { return data_["P"].get_or_default(""); }
+        Passage passage() const override { return Passage{data_["P"].get_or_default("")}; }
         BLineage lineage() const override;
-        Reassortant reassortant() const override { return data_["R"].get_or_default(""); }
+        Reassortant reassortant() const override { return Reassortant{data_["R"].get_or_default("")}; }
         LabIds lab_ids() const override { return data_["l"]; }
         Clades clades() const override { return data_["c"]; }
         Annotations annotations() const override { return data_["a"]; }
@@ -97,9 +97,9 @@ namespace acmacs::chart
         AceSerum(const rjson::value& aData) : data_{aData} {}
 
         Name name() const override { return data_["N"]; }
-        Passage passage() const override { return data_["P"].get_or_default(""); }
+        Passage passage() const override { return Passage{data_["P"].get_or_default("")}; }
         BLineage lineage() const override;
-        Reassortant reassortant() const override { return data_["R"].get_or_default(""); }
+        Reassortant reassortant() const override { return Reassortant{data_["R"].get_or_default("")}; }
         Annotations annotations() const override { return data_["a"]; }
         SerumId serum_id() const override { return data_["I"].get_or_default(""); }
         SerumSpecies serum_species() const override { return data_["s"].get_or_default(""); }

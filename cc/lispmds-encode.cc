@@ -265,10 +265,10 @@ void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName
                 const size_t chunk_len = (sep_no + 1) < sep_pos.size() ? (sep_pos[sep_no + 1] - sep_pos[sep_no] - sep_len) : std::string::npos;
                 switch (std::tolower(stage1[sep_pos[sep_no] + 1])) {
                   case 'r':
-                      aReassortant = stage1.substr(sep_pos[sep_no] + sep_len, chunk_len);
+                      aReassortant = Reassortant{stage1.substr(sep_pos[sep_no] + sep_len, chunk_len)};
                       break;
                   case 'p':
-                      aPassage = fix_passage_date(stage1.substr(sep_pos[sep_no] + sep_len, chunk_len));
+                      aPassage = Passage{fix_passage_date(stage1.substr(sep_pos[sep_no] + sep_len, chunk_len))};
                       break;
                   case 'a':
                       aAnnotations.push_back(stage1.substr(sep_pos[sep_no] + sep_len, chunk_len));
@@ -299,7 +299,7 @@ void acmacs::chart::lispmds_serum_name_decode(std::string aSource, Name& aName, 
                 const size_t chunk_len = (sep_no + 1) < sep_pos.size() ? (sep_pos[sep_no + 1] - sep_pos[sep_no] - sep_len) : std::string::npos;
                 switch (std::tolower(stage1[sep_pos[sep_no] + 1])) {
                   case 'r':
-                      aReassortant = stage1.substr(sep_pos[sep_no] + sep_len, chunk_len);
+                      aReassortant = Reassortant{stage1.substr(sep_pos[sep_no] + sep_len, chunk_len)};
                       break;
                   case 'i':
                       aSerumId = stage1.substr(sep_pos[sep_no] + sep_len, chunk_len);

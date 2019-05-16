@@ -418,11 +418,11 @@ std::string acmacs::chart::Antigen::full_name_with_fields() const
 {
     std::string r = name();
     if (const auto value = reassortant(); !value.empty())
-        r += " reassortant=\"" + value + '"';
+        r += " reassortant=\"" + *value + '"';
     if (const auto value = ::string::join(" ", annotations()); !value.empty())
         r += " annotations=\"" + value + '"';
     if (const auto value = passage(); !value.empty())
-        r += " passage=\"" + value + "\" ptype=" + value.passage_type();
+        r += " passage=\"" + *value + "\" ptype=" + value.passage_type();
     if (const auto value = date(); !value.empty())
         r += " date=" + value;
     if (const auto value = lineage(); value != BLineage::Unknown)
@@ -441,13 +441,13 @@ std::string acmacs::chart::Serum::full_name_with_fields() const
 {
     std::string r = name();
     if (const auto value = reassortant(); !value.empty())
-        r += " reassortant=\"" + value + '"';
+        r += " reassortant=\"" + *value + '"';
     if (const auto value = ::string::join(" ", annotations()); !value.empty())
         r += " annotations=\"" + value + '"';
     if (const auto value = serum_id(); !value.empty())
         r += " serum_id=\"" + value + '"';
     if (const auto value = passage(); !value.empty())
-        r += " passage=\"" + value + "\" ptype=" + value.passage_type();
+        r += " passage=\"" + *value + "\" ptype=" + value.passage_type();
     if (const auto value = serum_species(); !value.empty())
         r += " serum_species=\"" + value + '"';
     if (const auto value = lineage(); value != BLineage::Unknown)

@@ -441,10 +441,10 @@ static inline Passage make_passage(const rjson::value& aData)
         std::string p = p_dict["passage"].get_or_default("");
         if (auto date = p_dict["date"].get_or_default(""); !date.empty())
             p += " (" + date + ")";
-        return std::move(p);
+        return Passage{std::move(p)};
     }
     else if (auto p_str = aData["passage"].get_or_default(""); !p_str.empty()) {
-        return std::move(p_str);
+        return Passage{std::move(p_str)};
     }
     else
         return {};
@@ -472,10 +472,10 @@ static inline Reassortant make_reassortant(const rjson::value& aData)
         std::vector<std::string> composition;
         rjson::transform(complete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val); }); // cannot use rjson::copy here
         rjson::transform(incomplete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val); }); // cannot use rjson::copy here
-        return string::join(" ", composition);
+        return Reassortant{string::join(" ", composition)};
     }
     else if (auto r_str = aData["reassortant"].get_or_default(""); !r_str.empty()) {
-        return std::move(r_str);
+        return Reassortant{std::move(r_str)};
     }
     else
         return {};

@@ -191,9 +191,9 @@ namespace acmacs::chart
 
         void name(const std::string& value) { name_ = value; }
         void date(const std::string& value) { date_ = value; }
-        void passage(const std::string& value) { passage_ = value; }
+        void passage(const Passage& value) { passage_ = value; }
         void lineage(const std::string& value) { lineage_ = value; }
-        void reassortant(const std::string& value) { reassortant_ = value; }
+        void reassortant(const Reassortant& value) { reassortant_ = value; }
         void reference(bool value) { reference_ = value; }
         void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
         void add_clade(const std::string& clade) { clades_.add(clade); }
@@ -237,9 +237,9 @@ namespace acmacs::chart
         void set_homologous(const std::vector<size_t>& ags) const override { homologous_antigens_ = ags; }
 
         void name(const std::string& value) { name_ = value; }
-        void passage(const std::string& value) { passage_ = value; }
+        void passage(const Passage& value) { passage_ = value; }
         void lineage(const std::string& value) { lineage_ = value; }
-        void reassortant(const std::string& value) { reassortant_ = value; }
+        void reassortant(const Reassortant& value) { reassortant_ = value; }
         void serum_id(const std::string& value) { serum_id_ = value; }
         void serum_species(const std::string& value) { serum_species_ = value; }
         void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
