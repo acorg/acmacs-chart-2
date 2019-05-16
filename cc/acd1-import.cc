@@ -464,7 +464,7 @@ Passage Acd1Serum::passage() const
 
 // ----------------------------------------------------------------------
 
-static inline Reassortant make_reassortant(const rjson::value& aData)
+static inline acmacs::virus::Reassortant make_reassortant(const rjson::value& aData)
 {
     if (const auto& r_dict = aData["reassortant"]; !r_dict.is_null()) {
         const auto& complete = r_dict["complete"];
@@ -472,22 +472,22 @@ static inline Reassortant make_reassortant(const rjson::value& aData)
         std::vector<std::string> composition;
         rjson::transform(complete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val); }); // cannot use rjson::copy here
         rjson::transform(incomplete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val); }); // cannot use rjson::copy here
-        return Reassortant{string::join(" ", composition)};
+        return acmacs::virus::Reassortant{string::join(" ", composition)};
     }
     else if (auto r_str = aData["reassortant"].get_or_default(""); !r_str.empty()) {
-        return Reassortant{std::move(r_str)};
+        return acmacs::virus::Reassortant{std::move(r_str)};
     }
     else
         return {};
 }
 
-Reassortant Acd1Antigen::reassortant() const
+acmacs::virus::Reassortant Acd1Antigen::reassortant() const
 {
     return make_reassortant(data_);
 
 } // Acd1Antigen::reassortant
 
-Reassortant Acd1Serum::reassortant() const
+acmacs::virus::Reassortant Acd1Serum::reassortant() const
 {
     return make_reassortant(data_);
 

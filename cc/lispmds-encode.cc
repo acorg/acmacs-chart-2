@@ -138,7 +138,7 @@ std::string acmacs::chart::lispmds_table_name_encode(std::string name)
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::lispmds_antigen_name_encode(const Name& aName, const Reassortant& aReassortant, const Passage& aPassage, const Annotations& aAnnotations, lispmds_encoding_signature signature)
+std::string acmacs::chart::lispmds_antigen_name_encode(const Name& aName, const acmacs::virus::Reassortant& aReassortant, const Passage& aPassage, const Annotations& aAnnotations, lispmds_encoding_signature signature)
 {
     std::string result = lispmds_encode(aName, lispmds_encoding_signature::no);
     if (!aReassortant.empty())
@@ -153,7 +153,7 @@ std::string acmacs::chart::lispmds_antigen_name_encode(const Name& aName, const 
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::lispmds_serum_name_encode(const Name& aName, const Reassortant& aReassortant, const Annotations& aAnnotations, const SerumId& aSerumId, lispmds_encoding_signature signature)
+std::string acmacs::chart::lispmds_serum_name_encode(const Name& aName, const acmacs::virus::Reassortant& aReassortant, const Annotations& aAnnotations, const SerumId& aSerumId, lispmds_encoding_signature signature)
 {
     std::string result = lispmds_encode(aName, lispmds_encoding_signature::no);
     if (!aReassortant.empty())
@@ -252,7 +252,7 @@ static inline std::string fix_passage_date(std::string source)
     return source;
 }
 
-void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName, Reassortant& aReassortant, Passage& aPassage, Annotations& aAnnotations)
+void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName, acmacs::virus::Reassortant& aReassortant, Passage& aPassage, Annotations& aAnnotations)
 {
     if (strain_name_encoded(aSource)) {
         const bool v1 = std::tolower(aSource.back()) == 'a';
@@ -265,7 +265,7 @@ void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName
                 const size_t chunk_len = (sep_no + 1) < sep_pos.size() ? (sep_pos[sep_no + 1] - sep_pos[sep_no] - sep_len) : std::string::npos;
                 switch (std::tolower(stage1[sep_pos[sep_no] + 1])) {
                   case 'r':
-                      aReassortant = Reassortant{stage1.substr(sep_pos[sep_no] + sep_len, chunk_len)};
+                      aReassortant = acmacs::virus::Reassortant{stage1.substr(sep_pos[sep_no] + sep_len, chunk_len)};
                       break;
                   case 'p':
                       aPassage = Passage{fix_passage_date(stage1.substr(sep_pos[sep_no] + sep_len, chunk_len))};
@@ -286,7 +286,7 @@ void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::lispmds_serum_name_decode(std::string aSource, Name& aName, Reassortant& aReassortant, Annotations& aAnnotations, SerumId& aSerumId)
+void acmacs::chart::lispmds_serum_name_decode(std::string aSource, Name& aName, acmacs::virus::Reassortant& aReassortant, Annotations& aAnnotations, SerumId& aSerumId)
 {
     if (strain_name_encoded(aSource)) {
         const bool v1 = std::tolower(aSource.back()) == 'a';
@@ -299,7 +299,7 @@ void acmacs::chart::lispmds_serum_name_decode(std::string aSource, Name& aName, 
                 const size_t chunk_len = (sep_no + 1) < sep_pos.size() ? (sep_pos[sep_no + 1] - sep_pos[sep_no] - sep_len) : std::string::npos;
                 switch (std::tolower(stage1[sep_pos[sep_no] + 1])) {
                   case 'r':
-                      aReassortant = Reassortant{stage1.substr(sep_pos[sep_no] + sep_len, chunk_len)};
+                      aReassortant = acmacs::virus::Reassortant{stage1.substr(sep_pos[sep_no] + sep_len, chunk_len)};
                       break;
                   case 'i':
                       aSerumId = stage1.substr(sep_pos[sep_no] + sep_len, chunk_len);

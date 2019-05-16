@@ -182,7 +182,7 @@ namespace acmacs::chart
         Date date() const override { return date_; }
         Passage passage() const override { return passage_; }
         BLineage lineage() const override { return lineage_; }
-        Reassortant reassortant() const override { return reassortant_; }
+        acmacs::virus::Reassortant reassortant() const override { return reassortant_; }
         LabIds lab_ids() const override { return lab_ids_; }
         Clades clades() const override { return clades_; }
         Annotations annotations() const override { return annotations_; }
@@ -193,7 +193,7 @@ namespace acmacs::chart
         void date(const std::string& value) { date_ = value; }
         void passage(const Passage& value) { passage_ = value; }
         void lineage(const std::string& value) { lineage_ = value; }
-        void reassortant(const Reassortant& value) { reassortant_ = value; }
+        void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
         void reference(bool value) { reference_ = value; }
         void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
         void add_clade(const std::string& clade) { clades_.add(clade); }
@@ -209,7 +209,7 @@ namespace acmacs::chart
         Date date_;
         Passage passage_;
         BLineage lineage_;
-        Reassortant reassortant_;
+        acmacs::virus::Reassortant reassortant_;
         Annotations annotations_;
         LabIds lab_ids_;
         Clades clades_;
@@ -229,7 +229,7 @@ namespace acmacs::chart
         Name name() const override { return name_; }
         Passage passage() const override { return passage_; }
         BLineage lineage() const override { return lineage_; }
-        Reassortant reassortant() const override { return reassortant_; }
+        acmacs::virus::Reassortant reassortant() const override { return reassortant_; }
         Annotations annotations() const override { return annotations_; }
         SerumId serum_id() const override { return serum_id_; }
         SerumSpecies serum_species() const override { return serum_species_; }
@@ -239,7 +239,7 @@ namespace acmacs::chart
         void name(const std::string& value) { name_ = value; }
         void passage(const Passage& value) { passage_ = value; }
         void lineage(const std::string& value) { lineage_ = value; }
-        void reassortant(const Reassortant& value) { reassortant_ = value; }
+        void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
         void serum_id(const std::string& value) { serum_id_ = value; }
         void serum_species(const std::string& value) { serum_species_ = value; }
         void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
@@ -253,7 +253,7 @@ namespace acmacs::chart
         Name name_;
         Passage passage_;
         BLineage lineage_;
-        Reassortant reassortant_;
+        acmacs::virus::Reassortant reassortant_;
         Annotations annotations_;
         SerumId serum_id_;
         SerumSpecies serum_species_;

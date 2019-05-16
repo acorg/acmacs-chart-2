@@ -355,7 +355,7 @@ namespace acmacs::chart
         virtual Date date() const = 0;
         virtual Passage passage() const = 0;
         virtual BLineage lineage() const = 0;
-        virtual Reassortant reassortant() const = 0;
+        virtual acmacs::virus::Reassortant reassortant() const = 0;
         virtual LabIds lab_ids() const = 0;
         virtual Clades clades() const = 0;
         virtual Annotations annotations() const = 0;
@@ -413,7 +413,7 @@ namespace acmacs::chart
         virtual Name name() const = 0;
         virtual Passage passage() const = 0;
         virtual BLineage lineage() const = 0;
-        virtual Reassortant reassortant() const = 0;
+        virtual acmacs::virus::Reassortant reassortant() const = 0;
         virtual Annotations annotations() const = 0;
         virtual SerumId serum_id() const = 0;
         virtual SerumSpecies serum_species() const = 0;

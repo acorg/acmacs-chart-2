@@ -35,7 +35,7 @@ class CommonAntigensSera::Impl
 
         size_t index;
         Name name;
-        Reassortant reassortant;
+        acmacs::virus::Reassortant reassortant;
         Annotations annotations;
 
     }; // struct CoreEntry

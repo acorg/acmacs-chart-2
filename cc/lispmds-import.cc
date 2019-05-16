@@ -270,7 +270,7 @@ static inline std::string antigen_name(const acmacs::lispmds::value& aData, size
 Name LispmdsAntigen::name() const
 {
     Name name;
-    Reassortant reassortant;
+    acmacs::virus::Reassortant reassortant;
     Passage passage;
     Annotations annotations;
     lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
@@ -283,7 +283,7 @@ Name LispmdsAntigen::name() const
 Passage LispmdsAntigen::passage() const
 {
     Name name;
-    Reassortant reassortant;
+    acmacs::virus::Reassortant reassortant;
     Passage passage;
     Annotations annotations;
     lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
@@ -293,10 +293,10 @@ Passage LispmdsAntigen::passage() const
 
 // ----------------------------------------------------------------------
 
-Reassortant LispmdsAntigen::reassortant() const
+acmacs::virus::Reassortant LispmdsAntigen::reassortant() const
 {
     Name name;
-    Reassortant reassortant;
+    acmacs::virus::Reassortant reassortant;
     Passage passage;
     Annotations annotations;
     lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
@@ -309,7 +309,7 @@ Reassortant LispmdsAntigen::reassortant() const
 Annotations LispmdsAntigen::annotations() const
 {
     Name name;
-    Reassortant reassortant;
+    acmacs::virus::Reassortant reassortant;
     Passage passage;
     Annotations annotations;
     lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
@@ -347,7 +347,7 @@ static inline std::string serum_name(const acmacs::lispmds::value& aData, size_t
 Name LispmdsSerum::name() const
 {
     Name name;
-    Reassortant reassortant;
+    acmacs::virus::Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
     lispmds_serum_name_decode(serum_name(mData, mIndex), name, reassortant, annotations, serum_id);
@@ -357,10 +357,10 @@ Name LispmdsSerum::name() const
 
 // ----------------------------------------------------------------------
 
-Reassortant LispmdsSerum::reassortant() const
+acmacs::virus::Reassortant LispmdsSerum::reassortant() const
 {
     Name name;
-    Reassortant reassortant;
+    acmacs::virus::Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
     lispmds_serum_name_decode(serum_name(mData, mIndex), name, reassortant, annotations, serum_id);
@@ -373,7 +373,7 @@ Reassortant LispmdsSerum::reassortant() const
 Annotations LispmdsSerum::annotations() const
 {
     Name name;
-    Reassortant reassortant;
+    acmacs::virus::Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
     lispmds_serum_name_decode(serum_name(mData, mIndex), name, reassortant, annotations, serum_id);
@@ -386,7 +386,7 @@ Annotations LispmdsSerum::annotations() const
 SerumId LispmdsSerum::serum_id() const
 {
     Name name;
-    Reassortant reassortant;
+    acmacs::virus::Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
     lispmds_serum_name_decode(serum_name(mData, mIndex), name, reassortant, annotations, serum_id);

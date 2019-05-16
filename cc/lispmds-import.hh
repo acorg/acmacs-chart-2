@@ -83,7 +83,7 @@ namespace acmacs::chart
         Date date() const override { return {}; }
         Passage passage() const override;
         BLineage lineage() const override { return {}; }
-        Reassortant reassortant() const override;
+        acmacs::virus::Reassortant reassortant() const override;
         LabIds lab_ids() const override { return {}; }
         Clades clades() const override { return {}; }
         Annotations annotations() const override;
@@ -105,7 +105,7 @@ namespace acmacs::chart
         Name name() const override;
         Passage passage() const override { return {}; }
         BLineage lineage() const override { return {}; }
-        Reassortant reassortant() const override;
+        acmacs::virus::Reassortant reassortant() const override;
         Annotations annotations() const override;
         SerumId serum_id() const override;
         SerumSpecies serum_species() const override { return {}; }
