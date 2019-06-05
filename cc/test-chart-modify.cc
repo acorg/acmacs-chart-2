@@ -591,9 +591,9 @@ void test_extensions(acmacs::chart::ChartP chart, const argc_argv& args, report_
 
         const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
         auto chart_imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
-        std::cerr << "EXT imported: " << chart_imported->extension_fields() << '\n';
-        // if (const auto& r4 = chart_imported->extension_field("test-chart-modify-2"); r4 != test_value_3)
-        //     throw std::runtime_error("test_extensions: r4 != test_value_3");
+        // std::cerr << "EXT imported: " << chart_imported->extension_fields() << '\n';
+        if (const auto& r4 = chart_imported->extension_field("test-chart-modify-2"); r4 != test_value_3)
+            throw std::runtime_error("test_extensions: r4 != test_value_3");
     }
 
 } // test_extensions

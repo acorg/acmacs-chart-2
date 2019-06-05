@@ -52,6 +52,8 @@ rjson::value acmacs::chart::export_ace_to_rjson(const Chart& aChart, std::string
     if (auto plot_spec = aChart.plot_spec(); !plot_spec->empty())
         export_plot_spec(ace["c"]["p"], plot_spec);
       // ti_plot_spec.report();
+    if (const auto& ext = aChart.extension_fields(); ext.is_object())
+         ace["c"]["x"] = ext;
     return ace;
 
 } // acmacs::chart::export_ace_to_rjson

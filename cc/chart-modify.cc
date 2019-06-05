@@ -183,7 +183,7 @@ ColumnBasesModifyP ChartModify::forced_column_bases_modify(const ColumnBases& so
 
 const rjson::value& ChartModify::extension_fields() const
 {
-    if (extensions_.is_null())
+    if (extensions_.is_null() && main_)
         return main_->extension_fields();
     else
         return extensions_;
@@ -194,7 +194,7 @@ const rjson::value& ChartModify::extension_fields() const
 
 const rjson::value& ChartModify::extension_field(std::string field_name) const
 {
-    if (extensions_.is_null())
+    if (extensions_.is_null() && main_)
         return main_->extension_field(field_name);
     else
         return extensions_.get(field_name);
@@ -206,7 +206,7 @@ const rjson::value& ChartModify::extension_field(std::string field_name) const
 const rjson::value& ChartModify::extension_field_modify(std::string field_name)
 {
     if (extensions_.is_null()) {
-        if (const auto& ef = main_->extension_fields(); !ef.is_null())
+        if (const auto& ef = main_ ? main_->extension_fields() : rjson::ConstNull; !ef.is_null())
             extensions_ = ef;
         else
             extensions_ = rjson::object{};
