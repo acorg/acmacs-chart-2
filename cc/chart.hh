@@ -746,6 +746,7 @@ namespace acmacs::chart
         virtual size_t number_of_projections() const { return projections()->size(); }
 
         virtual const rjson::value& extension_field(std::string /*field_name*/) const { return rjson::ConstNull; }
+        virtual const rjson::value& extension_fields() const { return rjson::ConstNull; }
 
         std::shared_ptr<Antigen> antigen(size_t aAntigenNo) const { return antigens()->operator[](aAntigenNo); }
         std::shared_ptr<Serum> serum(size_t aSerumNo) const { return sera()->operator[](aSerumNo); }

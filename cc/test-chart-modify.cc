@@ -23,6 +23,7 @@ static void test_insert_antigen(acmacs::chart::ChartP chart, size_t before, cons
 static void test_insert_serum(acmacs::chart::ChartP chart, size_t before, const argc_argv& args, report_time report);
 static void test_insert_remove_antigen(acmacs::chart::ChartP chart, size_t before, const argc_argv& args, report_time report);
 static void test_insert_remove_serum(acmacs::chart::ChartP chart, size_t before, const argc_argv& args, report_time report);
+static void test_extensions(acmacs::chart::ChartP chart, const argc_argv& args, report_time report);
 
 enum class compare_titers { no, yes };
 static void compare_antigens(acmacs::chart::ChartP chart_source, size_t source_ag_no, acmacs::chart::AntigenP source_antigen, acmacs::chart::ChartP chart_imported, size_t imported_ag_no, compare_titers ct);
@@ -85,6 +86,8 @@ int main(int argc, char* const argv[])
             std::cout << "  test_remove_sera\n";
             for (auto sr_no : sera_to_test)
                 test_remove_sera(chart, {sr_no}, args, report);
+            std::cout << "  test_extensions\n";
+            test_extensions(chart, args, report);
         }
     }
     catch (std::exception& err) {
@@ -552,6 +555,48 @@ void test_insert_remove_serum(acmacs::chart::ChartP chart, size_t before, const 
     }
 
 } // test_insert_remove_serum
+
+// ----------------------------------------------------------------------
+
+void test_extensions(acmacs::chart::ChartP chart, const argc_argv& args, report_time report)
+{
+    {
+        acmacs::chart::ChartModify chart_modify{chart};
+        if (const auto& ext1 = chart_modify.extension_field("test-chart-modify"); !ext1.is_const_null())
+            throw std::runtime_error("test_extensions: initial test-chart-modify value is not const_null");
+        if (const auto& ext2 = chart_modify.extension_field_modify("test-chart-modify"); !ext2.is_const_null())
+            throw std::runtime_error("test_extensions: initial modifiy test-chart-modify value is not const_null");
+    }
+
+    {
+        acmacs::chart::ChartModify chart_modify{chart};
+        const rjson::value test_value_1{rjson::object{{"A", 1}, {"B", 2.1}, {"C", "D"}}};
+        chart_modify.extension_field_modify("test-chart-modify-1", test_value_1);
+        const rjson::value test_value_2{rjson::object{{"E", rjson::array{11, "F", 12.12}}}};
+        chart_modify.extension_field_modify("test-chart-modify-2", test_value_2);
+        // std::cerr << "EXT: " << chart_modify.extension_fields() << '\n';
+        // std::cerr << "EXT1: " << chart_modify.extension_field("test-chart-modify-1") << '\n';
+        // std::cerr << "EXT2: " << chart_modify.extension_field("test-chart-modify-2") << '\n';
+        if (const auto& r1 = chart_modify.extension_field("test-chart-modify-1"); r1 != test_value_1)
+            throw std::runtime_error("test_extensions: r1 != test_value_1");
+        if (const auto& r2 = chart_modify.extension_field("test-chart-modify-2"); r2 != test_value_2)
+            throw std::runtime_error("test_extensions: r2 != test_value_2");
+
+        // replace
+        const rjson::value test_value_3{rjson::array{rjson::object{{"G", "GG"}}, "HHHH", 123.123}};
+        chart_modify.extension_field_modify("test-chart-modify-2", test_value_3);
+        // std::cerr << "EXT: " << chart_modify.extension_fields() << '\n';
+        if (const auto& r3 = chart_modify.extension_field("test-chart-modify-2"); r3 != test_value_3)
+            throw std::runtime_error("test_extensions: r3 != test_value_3");
+
+        const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
+        auto chart_imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
+        std::cerr << "EXT imported: " << chart_imported->extension_fields() << '\n';
+        // if (const auto& r4 = chart_imported->extension_field("test-chart-modify-2"); r4 != test_value_3)
+        //     throw std::runtime_error("test_extensions: r4 != test_value_3");
+    }
+
+} // test_extensions
 
 // ----------------------------------------------------------------------
 /// Local Variables:

@@ -181,11 +181,48 @@ ColumnBasesModifyP ChartModify::forced_column_bases_modify(const ColumnBases& so
 
 // ----------------------------------------------------------------------
 
+const rjson::value& ChartModify::extension_fields() const
+{
+    if (extensions_.is_null())
+        return main_->extension_fields();
+    else
+        return extensions_;
+
+} // ChartModify::extension_fields
+
+// ----------------------------------------------------------------------
+
 const rjson::value& ChartModify::extension_field(std::string field_name) const
 {
-    return main_->extension_field(field_name);
+    if (extensions_.is_null())
+        return main_->extension_field(field_name);
+    else
+        return extensions_.get(field_name);
 
 } // ChartModify::extension_field
+
+// ----------------------------------------------------------------------
+
+const rjson::value& ChartModify::extension_field_modify(std::string field_name)
+{
+    if (extensions_.is_null()) {
+        if (const auto& ef = main_->extension_fields(); !ef.is_null())
+            extensions_ = ef;
+        else
+            extensions_ = rjson::object{};
+    }
+    return extensions_.get(field_name);
+
+} // ChartModify::extension_field_modify
+
+// ----------------------------------------------------------------------
+
+void ChartModify::extension_field_modify(std::string field_name, const rjson::value& value)
+{
+    extension_field_modify(field_name);
+    extensions_.set(field_name) = value;
+
+} // ChartModify::extension_field_modify
 
 // ----------------------------------------------------------------------
 

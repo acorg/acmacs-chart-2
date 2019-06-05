@@ -56,6 +56,7 @@ namespace acmacs::chart
         ProjectionsP projections() const override;
         PlotSpecP plot_spec() const override;
         const rjson::value& extension_field(std::string field_name) const override;
+        const rjson::value& extension_fields() const override;
 
         bool is_merge() const override { return main_ ? main_->is_merge() : false; }
 
@@ -68,6 +69,8 @@ namespace acmacs::chart
         ProjectionsModifyP projections_modify();
         ProjectionModifyP projection_modify(size_t aProjectionNo);
         PlotSpecModifyP plot_spec_modify();
+        const rjson::value& extension_field_modify(std::string field_name);
+        void extension_field_modify(std::string field_name, const rjson::value& value);
 
         std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {});
         void relax(number_of_optimizations_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, enum report_stresses report_stresses, const PointIndexList& disconnect_points = {});
@@ -94,6 +97,7 @@ namespace acmacs::chart
         ColumnBasesModifyP forced_column_bases_;
         ProjectionsModifyP projections_;
         PlotSpecModifyP plot_spec_;
+        rjson::value extensions_{rjson::null{}};
 
         // std::shared_ptr<LayoutRandomizer> make_randomizer(const Stress& stress, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier) const;
 
