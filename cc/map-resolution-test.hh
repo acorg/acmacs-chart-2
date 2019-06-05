@@ -79,6 +79,8 @@ namespace acmacs
 
             };
 
+            std::ostream& operator << (std::ostream& out, const Results& results);
+
             // ----------------------------------------------------------------------
 
             struct Predictions
