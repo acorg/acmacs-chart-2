@@ -1593,7 +1593,8 @@ optimization_status ProjectionModify::relax(optimization_options options)
 {
     const auto status = optimize(*this, options);
     stress_ = status.final_stress;
-    transformation_reset();
+    if (transformation_.number_of_dimensions != layout_->number_of_dimensions())
+        transformation_.reset(layout_->number_of_dimensions());
     return status;
 
 } // ProjectionModify::relax
@@ -1604,7 +1605,8 @@ optimization_status ProjectionModify::relax(optimization_options options, Interm
 {
     const auto status = optimize(*this, intermediate_layouts, options);
     stress_ = status.final_stress;
-    transformation_reset();
+    if (transformation_.number_of_dimensions != layout_->number_of_dimensions())
+        transformation_.reset(layout_->number_of_dimensions());
     return status;
 
 } // ProjectionModify::relax
