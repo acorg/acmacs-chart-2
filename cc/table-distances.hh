@@ -129,10 +129,12 @@ namespace acmacs::chart
         struct EntriesForPoint
         {
             EntriesForPoint(size_t point_no, const TableDistances& table_distances)
-                : regular(entries_for_point(table_distances.regular(), point_no)),
-                  less_than(entries_for_point(table_distances.less_than(), point_no))
+                : regular(entries_for_point(table_distances.regular(), point_no)), less_than(entries_for_point(table_distances.less_than(), point_no))
             {
             }
+
+            bool empty() const { return regular.empty() && less_than.empty(); }
+
             entries_for_point_t regular, less_than;
         };
 

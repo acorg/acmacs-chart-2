@@ -1,4 +1,5 @@
 #include "acmacs-base/omp.hh"
+#include "acmacs-base/fmt.hh"
 #include "acmacs-chart-2/grid-test.hh"
 
 // ----------------------------------------------------------------------
@@ -26,7 +27,14 @@ std::string acmacs::chart::GridTest::point_name(size_t point_no) const
 
 acmacs::Area acmacs::chart::GridTest::area_for(const Stress::TableDistancesForPoint& table_distances_for_point) const
 {
-    acmacs::Area result(original_layout_.get(table_distances_for_point.regular.empty() ? table_distances_for_point.less_than.front().another_point : table_distances_for_point.regular.front().another_point));
+    size_t another_point;
+    if (!table_distances_for_point.regular.empty())
+        another_point = table_distances_for_point.regular.front().another_point;
+    else if (!table_distances_for_point.less_than.empty())
+        another_point = table_distances_for_point.less_than.front().another_point;
+    else
+        throw std::runtime_error("acmacs::chart::GridTest::area_for: table_distances_for_point has neither regulr nor less_than entries");
+    acmacs::Area result(original_layout_.get(another_point));
     auto extend = [&result,this](const auto& entry) {
         const auto coord = this->original_layout_.get(entry.another_point);
         const auto radius = entry.distance; // + 1;
@@ -54,10 +62,15 @@ acmacs::chart::GridTest::Result acmacs::chart::GridTest::test_point(size_t point
 void acmacs::chart::GridTest::test_point(Result& result)
 {
     if (result.diagnosis == Result::not_tested) {
+        const auto table_distances_for_point = stress_.table_distances_for(result.point_no);
+        if (table_distances_for_point.empty()) { // no table distances, cannot test
+            result.diagnosis = Result::excluded;
+            return;
+        }
+
         result.diagnosis = Result::normal;
 
         acmacs::Layout layout(original_layout_);
-        const auto table_distances_for_point = stress_.table_distances_for(result.point_no);
         const auto target_contribution = stress_.contribution(result.point_no, table_distances_for_point, layout.data());
         const auto original_pos = original_layout_.get(result.point_no);
         auto best_contribution = target_contribution;
