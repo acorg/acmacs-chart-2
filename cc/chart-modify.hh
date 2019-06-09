@@ -454,6 +454,7 @@ namespace acmacs::chart
         void flip_east_west() { flip(0, 1); }
         void flip_north_south() { flip(1, 0); }
         void transformation(const Transformation& transformation) { modify(); transformation_ = transformation; transformed_layout_.reset(); }
+        void transformation_reset() { modify(); transformation_.reset(number_of_dimensions()); transformed_layout_.reset(); }
         using Projection::transformation;
         void set_forced_column_bases(ColumnBasesP aSource) { if (aSource) forced_column_bases_ = std::make_shared<ColumnBasesModify>(aSource); else forced_column_bases_.reset(); }
         void set_forced_column_basis(size_t serum_no, double column_basis);

@@ -6,6 +6,7 @@
 #include "acmacs-base/omp.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
+#include "acmacs-base/fmt.hh"
 #include "acmacs-virus/virus-name.hh"
 #include "acmacs-base/statistics.hh"
 #include "locationdb/locdb.hh"
@@ -277,6 +278,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     }
     if (!std::isnan(status.final_stress))
         projection->stress_ = status.final_stress;
+    projection->transformation_reset();
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
     return {status, projection};
 
@@ -323,9 +325,9 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
             if (!std::isnan(status1.final_stress))
                 projection->stress_ = status1.final_stress;
         }
-        if (report_stresses == report_stresses::yes) {
-            std::cout << std::setw(3) << p_no << ' ' << std::fixed << std::setprecision(4) << *projection->stress_ << '\n';
-        }
+        projection->transformation_reset();
+        if (report_stresses == report_stresses::yes)
+            fmt::print("{:3d} {:.4f}\n", p_no, *projection->stress_);
     }
 
 } // ChartModify::relax
@@ -352,7 +354,7 @@ void ChartModify::relax_incremetal(size_t source_projection_no, number_of_optimi
         return result;
     };
     const auto points_with_nan_coordinates = make_points_with_nan_coordinates();
-      // std::cout << "INFO: about to randomize coordinates of " << points_with_nan_coordinates.size() << " points\n";
+      // fmt::print("INFO: about to randomize coordinates of {} points\n", points_with_nan_coordinates.size());
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
     std::transform(projections.begin(), projections.end(), projections.begin(), [&disconnect_points, &source_projection, pp = projections_modify()](const auto&) {
@@ -458,7 +460,7 @@ SerumModifyP ChartModify::insert_serum(size_t before)
     projections_modify()->insert_serum(before, number_of_antigens());
     plot_spec_modify()->insert_serum(before);
     if (auto fcb = forced_column_bases_modify(MinimumColumnBasis{}); fcb) {
-        std::cerr << "WARNING: inserting serum in the table having forced column bases, please set column basis for that serum\n";
+        fmt::print(stderr, "WARNING: inserting serum in the table having forced column bases, please set column basis for that serum\n");
         fcb->insert(before, 7.0); // all titers for the new serum are dont-care, there is no real column basis, use 1280 just to have something
     }
     return result;
@@ -600,14 +602,14 @@ void AntigenModify::update_with(AntigenP main)
         date_ = main->date();
     }
     else if (!main->date().empty() && date_ != main->date()) {
-        std::cerr << "WARNING: merged antigen dates " << date_ << " vs. " << main->date() << '\n';
+        fmt::print(stderr, "WARNING: merged antigen dates {} vs. {}\n", date_, main->date());
     }
 
     if (lineage_ == BLineage::Unknown) {
         lineage_ = main->lineage();
     }
     else if (main->lineage() != BLineage::Unknown && lineage_ != main->lineage()) {
-        std::cerr << "WARNING: merged antigen lineages " << lineage_ << " vs. " << main->lineage() << '\n';
+        fmt::print(stderr, "WARNING: merged antigen lineages {} vs. {}\n", static_cast<std::string>(lineage_), static_cast<std::string>(main->lineage()));
     }
     lab_ids_.merge_in(main->lab_ids());
     clades_.merge_in(main->clades());
@@ -626,10 +628,10 @@ void AntigenModify::set_continent()
                 continent(locdb.continent(::virus_name::location(name())));
             }
             catch (std::exception& err) {
-                std::cerr << "WARNING: cannot figure out continent for \"" << name() << "\": " << err.what() << '\n';
+                fmt::print(stderr, "WARNING: cannot figure out continent for \"{}\": {}\n", name(), err.what());
             }
             catch (...) {
-                std::cerr << "WARNING: cannot figure out continent for \"" << name() << "\": unknown exception" << '\n';
+                fmt::print(stderr, "WARNING: cannot figure out continent for \"{}\": unknown exception\n", name());
             }
         }
     }
@@ -1591,6 +1593,7 @@ optimization_status ProjectionModify::relax(optimization_options options)
 {
     const auto status = optimize(*this, options);
     stress_ = status.final_stress;
+    transformation_reset();
     return status;
 
 } // ProjectionModify::relax
@@ -1601,6 +1604,7 @@ optimization_status ProjectionModify::relax(optimization_options options, Interm
 {
     const auto status = optimize(*this, intermediate_layouts, options);
     stress_ = status.final_stress;
+    transformation_reset();
     return status;
 
 } // ProjectionModify::relax
