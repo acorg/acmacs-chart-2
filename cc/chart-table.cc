@@ -1,5 +1,3 @@
-#include <numeric>
-
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/fmt.hh"
 #include "acmacs-base/range.hh"
