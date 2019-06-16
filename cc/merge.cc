@@ -99,14 +99,24 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
     merge_antigens_sera(*result_antigens, *chart2.antigens(), report.antigens_secondary_target);
     merge_antigens_sera(*result_sera, *chart1.sera(), report.sera_primary_target);
     merge_antigens_sera(*result_sera, *chart2.sera(), report.sera_secondary_target);
-    if (const auto rda = result_antigens->find_duplicates(), rds =result_sera->find_duplicates(); !rda.empty() || !rds.empty()) {
+    if (const auto rda = result_antigens->find_duplicates(), rds = result_sera->find_duplicates(); !rda.empty() || !rds.empty()) {
         const auto err_message = fmt::format("Merge \"{}\" has duplicates: AG:{} SR:{}", result->description(), rda, rds);
         fmt::print(stderr, "ERROR: {}\n", err_message);
-        for (auto [ag_no, antigen] : acmacs::enumerate(*result_antigens))
-            fmt::print(stderr, "  {:3d} {}\n", ag_no, antigen->full_name());
-        fmt::print(stderr, "\n");
-        for (auto [sr_no, serum] : acmacs::enumerate(*result_sera))
-            fmt::print(stderr, "  {:3d} {}\n ", sr_no, serum->full_name());
+        for (const auto& dups : rda) {
+            for (const auto ag_no : dups)
+                fmt::print(stderr, "  AG {:5d} {}\n", ag_no, result_antigens->at(ag_no).full_name());
+            fmt::print(stderr, "\n");
+        }
+        for (const auto& dups : rds) {
+            for (const auto sr_no : dups)
+                fmt::print(stderr, "  SR {:5d} {}\n", sr_no, result_sera->at(sr_no).full_name());
+            fmt::print(stderr, "\n");
+        }
+        // for (auto [ag_no, antigen] : acmacs::enumerate(*result_antigens))
+        //     fmt::print(stderr, "  {:3d} {}\n", ag_no, antigen->full_name());
+        // fmt::print(stderr, "\n");
+        // for (auto [sr_no, serum] : acmacs::enumerate(*result_sera))
+        //     fmt::print(stderr, "  {:3d} {}\n ", sr_no, serum->full_name());
         throw merge_error{err_message}; // ::string::concat("Merge ", result->description(), " has duplicates among antigens or sera: ", to_string(rda), ' ' , to_string(rds))};
     }
 
