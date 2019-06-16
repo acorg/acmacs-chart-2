@@ -5,6 +5,7 @@ TARGETS = \
   $(ACMACS_CHART_LIB) \
   $(DIST)/chart-info \
   $(DIST)/chart-names \
+  $(DIST)/chart-table \
   $(DIST)/chart-plot-spec \
   $(DIST)/chart-layout \
   $(DIST)/chart-convert \

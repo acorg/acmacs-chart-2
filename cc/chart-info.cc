@@ -16,6 +16,8 @@ struct Options : public argv
     option<bool> show_lab{*this, "lab", desc{"just show lab"}};
     option<bool> show_virus_type{*this, "virus-type", desc{"just show virus type and lineage"}};
     option<bool> show_assay{*this, "assay", desc{"just show assay"}};
+    option<bool> show_number_of_antigens{*this, "antigens", desc{"just show number of antigens"}};
+    option<bool> show_number_of_sera{*this, "sera", desc{"just show number of sera"}};
     option<bool> column_bases{*this, "column-bases"};
     option<bool> list_tables{*this, "list-tables"};
     option<bool> verify{*this, "verify"};
@@ -60,6 +62,10 @@ int main(int argc, char* const argv[])
                 if (const auto assay = info->assay(acmacs::chart::Info::Compute::Yes); !assay.empty())
                     fields.push_back(assay);
             }
+            if (opt.show_number_of_antigens)
+                fields.push_back(std::to_string(chart->number_of_antigens()));
+            if (opt.show_number_of_sera)
+                fields.push_back(std::to_string(chart->number_of_sera()));
 
             if (!fields.empty()) {
                 std::cout << string::join(" ", fields) << '\n';
