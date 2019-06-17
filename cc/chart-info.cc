@@ -32,6 +32,7 @@ int main(int argc, char* const argv[])
     try {
         Options opt(argc, argv);
         const auto report = do_report_time(opt.report_time);
+        size_t total_number_of_antigens = 0;
         for (size_t file_no = 0; file_no < opt.charts->size(); ++file_no) {
             auto chart = acmacs::chart::import_from_file((*opt.charts)[file_no], opt.verify ? acmacs::chart::Verify::All : acmacs::chart::Verify::None, report);
             auto info = chart->info();
@@ -62,8 +63,11 @@ int main(int argc, char* const argv[])
                 if (const auto assay = info->assay(acmacs::chart::Info::Compute::Yes); !assay.empty())
                     fields.push_back(assay);
             }
-            if (opt.show_number_of_antigens)
-                fields.push_back(std::to_string(chart->number_of_antigens()));
+            if (opt.show_number_of_antigens) {
+                const auto na = chart->number_of_antigens();
+                fields.push_back(std::to_string(na));
+                total_number_of_antigens += na;
+            }
             if (opt.show_number_of_sera)
                 fields.push_back(std::to_string(chart->number_of_sera()));
 
@@ -92,6 +96,8 @@ int main(int argc, char* const argv[])
             if (file_no < (opt.charts->size() - 1))
                 std::cout << '\n';
         }
+        if (total_number_of_antigens > 0)
+            std::cout << "Total number of antigens: " << total_number_of_antigens << '\n';
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';
