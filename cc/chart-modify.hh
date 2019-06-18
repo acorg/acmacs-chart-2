@@ -202,7 +202,7 @@ namespace acmacs::chart
         void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
         void add_clade(const std::string& clade) { clades_.add(clade); }
         void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
-        void continent(const std::string& value) { continent_ = value; }
+        template <typename S> void continent(S&& value) { continent_ = std::forward<S>(value); }
         void set_continent();
 
         void replace_with(AntigenP main);
