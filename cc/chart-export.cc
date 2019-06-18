@@ -70,7 +70,7 @@ int main(int argc, char* const argv[])
                 json << to_json::key_val{"column_bases", to_json::array(cb_data.begin(), cb_data.end())};
             }
         }
-        acmacs::file::write(opt.output, json.str());
+        acmacs::file::write(opt.output, json.pretty(2));
     }
     catch (std::exception& err) {
         fmt::print(stderr, "ERROR: {}\n", err);
