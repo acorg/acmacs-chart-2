@@ -152,6 +152,25 @@ namespace acmacs::chart
         bool operator==(Lineage lineage) const { return mLineage == lineage; }
         bool operator!=(Lineage lineage) const { return !operator==(lineage); }
 
+        bool operator==(std::string_view rhs) const
+        {
+            if (rhs.empty())
+                return mLineage == Unknown;
+            switch (rhs.front()) {
+              case 'V':
+              case 'v':
+                  return mLineage == Victoria;
+              case 'Y':
+              case 'y':
+                  return mLineage == Yamagata;
+            }
+            return mLineage == Unknown;
+        }
+
+        bool operator!=(std::string_view rhs) const { return !operator==(rhs); }
+        bool operator==(const std::string& rhs) const { return operator==(std::string_view{rhs}); }
+        bool operator!=(const std::string& rhs) const { return !operator==(rhs); }
+
         operator std::string() const
         {
             switch (mLineage) {
