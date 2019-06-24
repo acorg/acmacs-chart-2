@@ -20,7 +20,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv, {
                 {"--json", "", "write json data into file suitable for ssm report"},
-                {"--projection", 0UL},
+                {"--projection", 0},
                 {"--verbose", false},
                 {"--time", false, "report time of loading chart"},
                 {"-h", false},

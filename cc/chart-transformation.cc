@@ -14,8 +14,8 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
-                {"--projection", 0L},
-                {"--precision", 5U, "report precision (double)"},
+                {"--projection", 0},
+                {"--precision", 5, "report precision (double)"},
                 {"--time", false, "test speed"},
                 {"-h", false},
                 {"--help", false},

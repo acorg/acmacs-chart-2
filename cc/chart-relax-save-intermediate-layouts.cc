@@ -14,7 +14,7 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
-                {"-d", 2U, "number of dimensions"},
+                {"-d", 2, "number of dimensions"},
                 {"-m", "none", "minimum column basis"},
                 {"--rough", false},
                 {"--method", "cg", "method: lbfgs, cg"},

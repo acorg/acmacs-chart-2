@@ -26,7 +26,7 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
-                {"-n", 1U, "number of optimizations"},
+                {"-n", 1, "number of optimizations"},
                 {"-d", "2", "number of dimensions (comma separated values for dimension annealing)"},
                 {"-m", "none", "minimum column basis"},
                 {"--rough", false},

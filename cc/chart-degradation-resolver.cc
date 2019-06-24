@@ -56,7 +56,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv,
                        {
-                           {"-n", 1U, "number of resolution attempts"},
+                           {"-n", 1, "number of resolution attempts"},
                            {"--type", "random", "type of search: recursive, random"},
                            {"--keep-projections", 10, "number of projections to keep, 0 - keep all"},
                            {"--no-disconnect-having-few-titers", false, "do not disconnect points having too few numeric titers"},

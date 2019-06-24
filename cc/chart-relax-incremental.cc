@@ -16,7 +16,7 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
-                {"-n", 1U, "number of optimizations"},
+                {"-n", 1, "number of optimizations"},
                 {"--rough", false},
                 {"--method", "cg", "method: lbfgs, cg"},
                 {"--md", 2.0, "randomization diameter multiplier"},

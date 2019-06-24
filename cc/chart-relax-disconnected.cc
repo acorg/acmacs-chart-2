@@ -17,7 +17,7 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
-                {"-n", 1U, "number of optimizations"},
+                {"-n", 1, "number of optimizations"},
                 {"--projection", 0},
                 {"--rough", false},
                 {"--remove-source-projections", false},

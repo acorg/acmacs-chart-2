@@ -44,11 +44,11 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         argc_argv args(argc, argv, {
-                {"--projection", 0L},
+                {"--projection", 0},
                 {"--double", false, "just report stress (double)"},
                 {"--gradient", false, "just report gradient (double)"},
                 {"--gradient-max", false, "just report gradient max (double)"},
-                {"--precision", 5U, "stress/gradient report precision (double)"},
+                {"--precision", 5, "stress/gradient report precision (double)"},
                 {"--time", false, "test speed"},
                 {"--verbose", false},
                 {"-h", false},
