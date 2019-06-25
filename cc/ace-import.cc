@@ -41,7 +41,7 @@ ChartP acmacs::chart::ace_import(const std::string_view& aData, Verify aVerify)
 {
     auto chart = std::make_shared<AceChart>(rjson::parse_string(aData));
     chart->verify_data(aVerify);
-    return std::move(chart);
+    return chart;
 
 } // acmacs::chart::ace_import
 
@@ -213,7 +213,7 @@ TableDate AceInfo::date(Compute aCompute) const
             result = string::join("-", {composition.front(), composition.back()});
         }
     }
-    return std::move(result);
+    return result;
 
 } // AceInfo::date
 

@@ -40,7 +40,7 @@ ChartP acmacs::chart::acd1_import(const std::string_view& aData, Verify aVerify)
     try {
         auto chart = std::make_shared<Acd1Chart>(rjson::parse_string(json));
         chart->verify_data(aVerify);
-        return std::move(chart);
+        return chart;
     }
     catch (rjson::parse_error&) {
         std::cout << json << '\n';
@@ -393,7 +393,7 @@ TableDate Acd1Info::date(Compute aCompute) const
             result = string::join("-", {composition.front(), composition.back()});
         }
     }
-    return std::move(result);
+    return result;
 
 } // Acd1Info::date
 
@@ -402,7 +402,7 @@ TableDate Acd1Info::date(Compute aCompute) const
 static inline Name make_name(const rjson::value& aData)
 {
     if (auto name = aData["_name"].get_or_default(""); !name.empty())
-        return std::move(name);
+        return name;
     if (auto isolation_number = aData["isolation_number"].get_or_default(""); !isolation_number.empty()) {
         std::string host = aData["host"].get_or_default("");
         if (host == "HUMAN")
@@ -410,7 +410,7 @@ static inline Name make_name(const rjson::value& aData)
         return string::join("/", {aData["virus_type"].get_or_default(""), host, aData.get("location", "name").get_or_default(""), isolation_number, aData["year"].get_or_default("")});
     }
     else if (auto raw_name = aData["raw_name"].get_or_default(""); !raw_name.empty()) {
-        return std::move(raw_name);
+        return raw_name;
     }
     else {
         const std::string cdc_abbreviation = aData.get("location", "cdc_abbreviation").get_or_default("");
@@ -555,7 +555,7 @@ SerumId Acd1Serum::serum_id() const
         return s_dict["serum_id"];
     }
     else if (auto p_str = data_["serum_id"].get_or_default(""); !p_str.empty()) {
-        return std::move(p_str);
+        return p_str;
     }
     else
         return {};
