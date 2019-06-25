@@ -238,7 +238,7 @@ acmacs::chart::ProjectionModifyP flip_relax(acmacs::chart::ChartModify& chart, a
     const SplitData new_split_data(*relax_from_flipped);
     relax_from_flipped->comment(relax_from_flipped->comment() + ", relaxed, wrong_side:" +std::to_string(new_split_data.on_the_wrong_side.size()));
     std::cerr << "wrong_side: " << std::setw(3) << new_split_data.on_the_wrong_side.size() << "  stress: " << relax_from_flipped->stress() << " line-sera-sd: " << new_split_data.serum_line.standard_deviation() << '\n';
-    return std::move(relax_from_flipped);
+    return relax_from_flipped;
 
 } // flip_relax
 
