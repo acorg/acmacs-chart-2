@@ -148,7 +148,7 @@ ChartP acmacs::chart::lispmds_import(const std::string_view& aData, Verify aVeri
     // try {
         auto chart = std::make_shared<LispmdsChart>(acmacs::lispmds::parse_string(aData));
         chart->verify_data(aVerify);
-        return std::move(chart);
+        return chart;
     // }
     // catch (std::exception& err) {
     //     std::cerr << "ERROR: " << err.what() << '\n';
@@ -440,7 +440,7 @@ Titer LispmdsTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
         const std::string sym = std::get<acmacs::lispmds::symbol>(titer_v);
         prefix.append(1, sym[0]);
         if (prefix == "*")
-            return std::move(prefix);
+            return prefix;
         titer = std::stod(sym.substr(1));
     }
     return prefix + acmacs::to_string(std::lround(std::exp2(titer) * 10));
