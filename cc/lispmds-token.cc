@@ -51,7 +51,7 @@ acmacs::lispmds::value acmacs::lispmds::parse_string(const std::string_view& aDa
     for (auto [token, text] = tokenizer.next(); token != Tokenizer::End; std::tie(token, text) = tokenizer.next()) {
         switch (token) {
           case Tokenizer::OpenList:
-              stack.push(&stack.top()->append(list{}));
+              stack.push(&acmacs::lispmds::append(*stack.top(), list{}));
               break;
           case Tokenizer::CloseList:
               stack.pop();
@@ -60,18 +60,18 @@ acmacs::lispmds::value acmacs::lispmds::parse_string(const std::string_view& aDa
               throw acmacs::lispmds::type_mismatch{"unexpected end of input in acmacs::lispmds::parse_string"};
           case Tokenizer::Symbol:
               if (text.size() == 3 && (text[0] == 'n' || text[0] == 'N') && (text[1] == 'i' || text[1] == 'I') && (text[2] == 'l' || text[2] == 'L'))
-                  stack.top()->append(acmacs::lispmds::nil{});
+                  acmacs::lispmds::append(*stack.top(), acmacs::lispmds::nil{});
               else if (text.size() == 1 && (text[0] == 't' || text[0] == 'T'))
-                  stack.top()->append(acmacs::lispmds::boolean{true});
+                  acmacs::lispmds::append(*stack.top(), acmacs::lispmds::boolean{true});
               else if (text.size() == 1 && (text[0] == 'f' || text[0] == 'F'))
-                  stack.top()->append(acmacs::lispmds::boolean{false});
+                  acmacs::lispmds::append(*stack.top(), acmacs::lispmds::boolean{false});
               else
-                  stack.top()->append(Tokenizer::to_value(token, text));
+                  acmacs::lispmds::append(*stack.top(), Tokenizer::to_value(token, text));
               break;
           case Tokenizer::Keyword:
           case Tokenizer::Number:
           case Tokenizer::String:
-              stack.top()->append(Tokenizer::to_value(token, text));
+              acmacs::lispmds::append(*stack.top(), Tokenizer::to_value(token, text));
               break;
         }
     }

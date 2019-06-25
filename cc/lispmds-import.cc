@@ -24,35 +24,35 @@ static std::pair<std::shared_ptr<acmacs::chart::ColumnBases>, acmacs::chart::Min
 
 static inline size_t number_of_antigens(const acmacs::lispmds::value& aData)
 {
-    return aData[0][1].size();
+    return acmacs::lispmds::size(aData, 0, 1);
 
 } // number_of_antigens
 
 static inline size_t number_of_sera(const acmacs::lispmds::value& aData)
 {
-    return aData[0][2].size();
+    return acmacs::lispmds::size(aData, 0, 2);
 
 } // number_of_sera
 
 static inline const acmacs::lispmds::value& projection_data(const acmacs::lispmds::value& aData, size_t aProjectionNo)
 {
-    if (aData.empty(":STARTING-COORDSS"))
-        return aData[":BATCH-RUNS"][aProjectionNo];
+    if (acmacs::lispmds::empty(aData, ":STARTING-COORDSS"))
+        return acmacs::lispmds::get(aData, ":BATCH-RUNS", aProjectionNo);
     else if (aProjectionNo == 0)
-        return aData[":STARTING-COORDSS"];
+        return acmacs::lispmds::get(aData, ":STARTING-COORDSS");
     else
-        return aData[":BATCH-RUNS"][aProjectionNo - 1];
+        return acmacs::lispmds::get(aData, ":BATCH-RUNS", aProjectionNo - 1);
 
 } // LispmdsProjection::data
 
 static inline const acmacs::lispmds::value& projection_layout(const acmacs::lispmds::value& aData, size_t aProjectionNo)
 {
-    if (aData.empty(":STARTING-COORDSS"))
-        return aData[":BATCH-RUNS"][aProjectionNo][0];
+    if (acmacs::lispmds::empty(aData, ":STARTING-COORDSS"))
+        return acmacs::lispmds::get(aData, ":BATCH-RUNS", aProjectionNo, 0);
     else if (aProjectionNo == 0)
-        return aData[":STARTING-COORDSS"];
+        return acmacs::lispmds::get(aData, ":STARTING-COORDSS");
     else
-        return aData[":BATCH-RUNS"][aProjectionNo - 1][0];
+        return acmacs::lispmds::get(aData, ":BATCH-RUNS", aProjectionNo - 1, 0);
 
 } // LispmdsProjection::data
 
@@ -61,7 +61,7 @@ static inline const acmacs::lispmds::value& projection_layout(const acmacs::lisp
 std::vector<double> native_column_bases(const acmacs::lispmds::value& aData)
 {
     std::vector<double> cb(number_of_sera(aData), 0);
-    for (const auto& row: std::get<acmacs::lispmds::list>(aData[0][3])) {
+    for (const auto& row: std::get<acmacs::lispmds::list>(acmacs::lispmds::get(aData, 0, 3))) {
         for (auto [sr_no, titer_v]: acmacs::enumerate(std::get<acmacs::lispmds::list>(row))) {
             try {
                 const double titer = std::get<acmacs::lispmds::number>(titer_v);
@@ -69,7 +69,7 @@ std::vector<double> native_column_bases(const acmacs::lispmds::value& aData)
                     cb[sr_no] = titer;
             }
             catch (std::bad_variant_access&) {
-                if (const std::string titer_s = titer_v; !titer_s.empty()) {
+                if (const std::string titer_s = std::get<acmacs::lispmds::string>(titer_v); !titer_s.empty()) {
                     double titer;
                     switch (titer_s[0]) {
                       case '<':
@@ -100,7 +100,7 @@ std::vector<double> column_bases(const acmacs::lispmds::value& aData, size_t aPr
     const auto num_antigens = number_of_antigens(aData);
     const auto num_sera = number_of_sera(aData);
     const auto number_of_points = num_antigens + num_sera;
-    const acmacs::lispmds::list& cb = projection_layout(aData, aProjectionNo)[number_of_points][0][1];
+    const auto& cb = std::get<acmacs::lispmds::list>(acmacs::lispmds::get(projection_layout(aData, aProjectionNo), number_of_points, 0, 1));
     std::vector<double> result(num_sera);
     using diff_t = decltype(cb.end() - cb.begin());
     std::transform(cb.begin() + static_cast<diff_t>(num_antigens), cb.begin() + static_cast<diff_t>(number_of_points), result.begin(), [](const auto& val) -> double { return std::get<acmacs::lispmds::number>(val); });
@@ -251,8 +251,8 @@ size_t LispmdsChart::number_of_sera() const
 
 std::string LispmdsInfo::name(Compute) const
 {
-    if (mData[0].size() >= 5)
-        return lispmds_decode(std::get<acmacs::lispmds::symbol>(mData[0][4]));
+    if (acmacs::lispmds::size(mData, 0) >= 5)
+        return lispmds_decode(std::get<acmacs::lispmds::symbol>(acmacs::lispmds::get(mData, 0, 4)));
     else
         return {};
 
@@ -262,7 +262,7 @@ std::string LispmdsInfo::name(Compute) const
 
 static inline std::string antigen_name(const acmacs::lispmds::value& aData, size_t aIndex)
 {
-    return std::get<acmacs::lispmds::symbol>(aData[0][1][aIndex]);
+    return std::get<acmacs::lispmds::symbol>(acmacs::lispmds::get(aData, 0, 1, aIndex));
 }
 
 // ----------------------------------------------------------------------
@@ -322,8 +322,8 @@ Annotations LispmdsAntigen::annotations() const
 bool LispmdsAntigen::reference() const
 {
     try {
-        const auto& val = mData[":REFERENCE-ANTIGENS"];
-        if (val.empty())
+        const auto& val = acmacs::lispmds::get(mData, ":REFERENCE-ANTIGENS");
+        if (acmacs::lispmds::empty(val))
             return false;
         const auto name = antigen_name(mData, mIndex);
         const auto& val_l = std::get<acmacs::lispmds::list>(val);
@@ -339,7 +339,7 @@ bool LispmdsAntigen::reference() const
 
 static inline std::string serum_name(const acmacs::lispmds::value& aData, size_t aIndex)
 {
-    return std::get<acmacs::lispmds::symbol>(aData[0][2][aIndex]);
+    return std::get<acmacs::lispmds::symbol>(acmacs::lispmds::get(aData, 0, 2, aIndex));
 }
 
 // ----------------------------------------------------------------------
@@ -430,7 +430,7 @@ SerumP LispmdsSera::operator[](size_t aIndex) const
 
 Titer LispmdsTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
 {
-    const auto& titer_v = mData[0][3][aAntigenNo][aSerumNo];
+    const auto& titer_v = acmacs::lispmds::get(mData, 0, 3, aAntigenNo, aSerumNo);
     std::string prefix;
     double titer = 0;
     try {
@@ -451,7 +451,7 @@ Titer LispmdsTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
 
 size_t LispmdsTiters::number_of_antigens() const
 {
-    return mData[0][3].size();
+    return acmacs::lispmds::size(mData, 0, 3);
 
 } // LispmdsTiters::number_of_antigens
 
@@ -459,7 +459,7 @@ size_t LispmdsTiters::number_of_antigens() const
 
 size_t LispmdsTiters::number_of_sera() const
 {
-    return mData[0][3][0].size();
+    return acmacs::lispmds::size(mData, 0, 3, 0);
 
 } // LispmdsTiters::number_of_sera
 
@@ -468,7 +468,7 @@ size_t LispmdsTiters::number_of_sera() const
 size_t LispmdsTiters::number_of_non_dont_cares() const
 {
     size_t result = 0;
-    for (const auto& row: std::get<acmacs::lispmds::list>(mData[0][3])) {
+    for (const auto& row: std::get<acmacs::lispmds::list>(acmacs::lispmds::get(mData, 0, 3))) {
         for (const auto& titer: std::get<acmacs::lispmds::list>(row)) {
             std::visit([&result](auto&& arg) {
                 using T = std::decay_t<decltype(arg)>;
@@ -505,13 +505,15 @@ void LispmdsProjection::check() const
 
 std::optional<double> LispmdsProjection::stored_stress() const
 {
-    return std::visit([](auto&& arg) -> std::optional<double> {
-        using T = std::decay_t<decltype(arg)>;
-        if constexpr (std::is_same_v<T, acmacs::lispmds::number>)
-            return static_cast<double>(arg);
-        else
-            return {};
-    }, projection_data(mData, projection_no())[1]);
+    return std::visit(
+        [](auto&& arg) -> std::optional<double> {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, acmacs::lispmds::number>)
+                return static_cast<double>(arg);
+            else
+                return {};
+        },
+        acmacs::lispmds::get(projection_data(mData, projection_no()), 1));
 
 } // LispmdsProjection::stress
 
@@ -521,17 +523,17 @@ class LispmdsLayout : public acmacs::Layout
 {
  public:
     LispmdsLayout(const acmacs::lispmds::value& aData, size_t aNumberOfAntigens, size_t aNumberOfSera)
-        : acmacs::Layout(aNumberOfAntigens + aNumberOfSera, acmacs::number_of_dimensions_t{aData[0].size()})
+        : acmacs::Layout(aNumberOfAntigens + aNumberOfSera, acmacs::number_of_dimensions_t{acmacs::lispmds::size(aData, 0)})
         {
             auto target = Vec::begin();
             for (size_t p_no = 0; p_no < number_of_points(); ++p_no) {
-                const auto& point = aData[p_no];
-                if (point.size() == *number_of_dimensions()) {
-                    for (auto dim : acmacs::range(point.size()))
-                        *target++ = std::get<acmacs::lispmds::number>(point[dim]);
+                const auto& point = acmacs::lispmds::get(aData, p_no);
+                if (const auto ps = acmacs::lispmds::size(point); ps == *number_of_dimensions()) {
+                    for (auto dim : acmacs::range(ps))
+                        *target++ = std::get<acmacs::lispmds::number>(acmacs::lispmds::get(point, dim));
                 }
-                else if (!point.empty())
-                    throw invalid_data("LispmdsLayout: point has invalid number of coordinates: " + std::to_string(point.size()) + ", expected 0 or " + acmacs::to_string(number_of_dimensions()));
+                else if (ps > 0)
+                    throw invalid_data("LispmdsLayout: point has invalid number of coordinates: " + std::to_string(ps) + ", expected 0 or " + acmacs::to_string(number_of_dimensions()));
                 else
                     target += static_cast<decltype(target)::difference_type>(*number_of_dimensions());
             }
@@ -554,7 +556,7 @@ std::shared_ptr<acmacs::Layout> LispmdsProjection::layout() const
 
 acmacs::number_of_dimensions_t LispmdsProjection::number_of_dimensions() const
 {
-    return acmacs::number_of_dimensions_t{projection_layout(mData, projection_no())[0].size()};
+    return acmacs::number_of_dimensions_t{acmacs::lispmds::size(projection_layout(mData, projection_no()), 0)};
 
 } // LispmdsProjection::number_of_dimensions
 
@@ -580,25 +582,25 @@ acmacs::Transformation LispmdsProjection::transformation() const
 {
     acmacs::Transformation result;
     try {
-        if (const auto& coord_tr = mData[":CANVAS-COORD-TRANSFORMATIONS"]; !coord_tr.empty()) {
+        if (const auto& coord_tr = acmacs::lispmds::get(mData, ":CANVAS-COORD-TRANSFORMATIONS"); !acmacs::lispmds::empty(coord_tr)) {
             try {
-                if (const auto& v0 = coord_tr[":CANVAS-BASIS-VECTOR-0"]; !v0.empty()) {
-                    result.a() = std::get<acmacs::lispmds::number>(v0[0]);
-                    result.c() = std::get<acmacs::lispmds::number>(v0[1]);
+                if (const auto& v0 = acmacs::lispmds::get(coord_tr, ":CANVAS-BASIS-VECTOR-0"); !acmacs::lispmds::empty(v0)) {
+                    result.a() = std::get<acmacs::lispmds::number>(acmacs::lispmds::get(v0, 0));
+                    result.c() = std::get<acmacs::lispmds::number>(acmacs::lispmds::get(v0, 1));
                 }
             }
             catch (std::exception&) {
             }
             try {
-                if (const auto& v1 = coord_tr[":CANVAS-BASIS-VECTOR-1"]; !v1.empty()) {
-                    result.b() = std::get<acmacs::lispmds::number>(v1[0]);
-                    result.d() = std::get<acmacs::lispmds::number>(v1[1]);
+                if (const auto& v1 = acmacs::lispmds::get(coord_tr, ":CANVAS-BASIS-VECTOR-1"); !acmacs::lispmds::empty(v1)) {
+                    result.b() = std::get<acmacs::lispmds::number>(acmacs::lispmds::get(v1, 0));
+                    result.d() = std::get<acmacs::lispmds::number>(acmacs::lispmds::get(v1, 1));
                 }
             }
             catch (std::exception&) {
             }
             try {
-                if (static_cast<double>(std::get<acmacs::lispmds::number>(coord_tr[":CANVAS-X-COORD-SCALE"])) < 0) {
+                if (static_cast<double>(std::get<acmacs::lispmds::number>(acmacs::lispmds::get(coord_tr, ":CANVAS-X-COORD-SCALE"))) < 0) {
                     result.a() = - result.a();
                     result.c() = - result.c();
                 }
@@ -606,7 +608,7 @@ acmacs::Transformation LispmdsProjection::transformation() const
             catch (std::exception&) {
             }
             try {
-                if (static_cast<double>(std::get<acmacs::lispmds::number>(coord_tr[":CANVAS-Y-COORD-SCALE"])) < 0) {
+                if (static_cast<double>(std::get<acmacs::lispmds::number>(acmacs::lispmds::get(coord_tr, ":CANVAS-Y-COORD-SCALE"))) < 0) {
                     result.b() = - result.b();
                     result.d() = - result.d();
                 }
@@ -627,7 +629,7 @@ PointIndexList LispmdsProjection::unmovable() const
 {
       //   :UNMOVEABLE-COORDS '(87 86 85 83 82 80 81)
     try {
-        const acmacs::lispmds::list& val = mData[":UNMOVEABLE-COORDS"];
+        const auto& val = std::get<acmacs::lispmds::list>(acmacs::lispmds::get(mData, ":UNMOVEABLE-COORDS"));
         return {val.begin(), val.end(), [](const auto& v) -> size_t { return std::get<acmacs::lispmds::number>(v); }};
     }
     catch (std::exception&) {
@@ -651,7 +653,7 @@ AvidityAdjusts LispmdsProjection::avidity_adjusts() const
 {
     try {
         const auto num_points = layout()->number_of_points();
-        const acmacs::lispmds::list& cb = projection_layout(mData, projection_no())[num_points][0][1];
+        const acmacs::lispmds::list& cb = std::get<acmacs::lispmds::list>(acmacs::lispmds::get(projection_layout(mData, projection_no()), num_points, 0, 1));
         AvidityAdjusts result(num_points);
         for (size_t i = 0; i < num_points; ++i)
             result[i] = std::exp2(static_cast<double>(std::get<acmacs::lispmds::number>(cb[num_points + i])));
@@ -668,7 +670,7 @@ AvidityAdjusts LispmdsProjection::avidity_adjusts() const
 
 bool LispmdsProjections::empty() const
 {
-    return mData.empty(":STARTING-COORDSS") && mData.empty(":BATCH-RUNS");
+    return acmacs::lispmds::empty(mData, ":STARTING-COORDSS") && acmacs::lispmds::empty(mData, ":BATCH-RUNS");
 
 } // LispmdsProjections::empty
 
@@ -677,10 +679,10 @@ bool LispmdsProjections::empty() const
 size_t LispmdsProjections::size() const
 {
     size_t result = 0;
-    if (!mData.empty(":STARTING-COORDSS"))
+    if (!acmacs::lispmds::empty(mData, ":STARTING-COORDSS"))
         ++result;
     try {
-        result += mData[":BATCH-RUNS"].size();
+        result += acmacs::lispmds::size(mData, ":BATCH-RUNS");
     }
     catch (acmacs::lispmds::error&) {
     }
@@ -703,7 +705,7 @@ ProjectionP LispmdsProjections::operator[](size_t aIndex) const
 bool LispmdsPlotSpec::empty() const
 {
     try {
-        return mData[":PLOT-SPEC"].empty();
+        return acmacs::lispmds::empty(mData, ":PLOT-SPEC");
     }
     catch (std::exception&) {
         return true;
@@ -753,7 +755,7 @@ acmacs::PointStyle LispmdsPlotSpec::style(size_t aPointNo) const
 std::vector<acmacs::PointStyle> LispmdsPlotSpec::all_styles() const
 {
     try {
-        const auto number_of_points = mData[0][1].size() + mData[0][2].size();
+        const auto number_of_points = acmacs::lispmds::size(mData, 0, 1) + acmacs::lispmds::size(mData, 0, 2);
         std::vector<acmacs::PointStyle> result(number_of_points);
         for (size_t point_no = 0; point_no < number_of_points; ++point_no) {
             extract_style(result[point_no], point_no);
@@ -772,7 +774,7 @@ std::vector<acmacs::PointStyle> LispmdsPlotSpec::all_styles() const
 size_t LispmdsPlotSpec::number_of_points() const
 {
     try {
-        return mData[0][1].size() + mData[0][2].size();
+        return acmacs::lispmds::size(mData, 0, 1) + acmacs::lispmds::size(mData, 0, 2);
     }
     catch (std::exception& err) {
         std::cerr << "WARNING: [lispmds]: cannot get point styles: " << err.what() << '\n';
@@ -786,12 +788,12 @@ size_t LispmdsPlotSpec::number_of_points() const
 void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, size_t aPointNo) const
 {
     std::string name = aPointNo < number_of_antigens(mData)
-                                  ? static_cast<std::string>(std::get<acmacs::lispmds::symbol>(mData[0][1][aPointNo])) + "-AG"
-                                  : static_cast<std::string>(std::get<acmacs::lispmds::symbol>(mData[0][2][aPointNo - number_of_antigens(mData)])) + "-SR";
-    const acmacs::lispmds::list& plot_spec = mData[":PLOT-SPEC"];
-    for (const acmacs::lispmds::list& pstyle: plot_spec) {
-        if (std::get<acmacs::lispmds::symbol>(pstyle[0]) == name) {
-            extract_style(aTarget, pstyle);
+                                  ? static_cast<std::string>(std::get<acmacs::lispmds::symbol>(acmacs::lispmds::get(mData, 0, 1, aPointNo))) + "-AG"
+                                  : static_cast<std::string>(std::get<acmacs::lispmds::symbol>(acmacs::lispmds::get(mData, 0, 2, aPointNo - number_of_antigens(mData)))) + "-SR";
+    const auto& plot_spec = std::get<acmacs::lispmds::list>(acmacs::lispmds::get(mData, ":PLOT-SPEC"));
+    for (const auto& pstyle : plot_spec) {
+        if (std::get<acmacs::lispmds::symbol>(acmacs::lispmds::get(pstyle, 0)) == name) {
+            extract_style(aTarget, std::get<acmacs::lispmds::list>(pstyle));
             break;
         }
     }
@@ -810,14 +812,14 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
     }
 
     try {
-        aTarget.label_text = aSource[":WN"];
+        aTarget.label_text = std::get<acmacs::lispmds::string>(aSource[":WN"]);
         aTarget.label.shown = !aTarget.label_text->empty();
     }
     catch (std::exception&) {
     }
 
     try {
-        aTarget.shape = static_cast<std::string>(aSource[":SH"]);
+        aTarget.shape = static_cast<std::string>(std::get<acmacs::lispmds::string>(aSource[":SH"]));
     }
     catch (std::exception&) {
     }
@@ -829,14 +831,14 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
     }
 
     try {
-        if (const std::string label_color = aSource[":NC"]; label_color != "{}")
+        if (const std::string label_color = std::get<acmacs::lispmds::string>(aSource[":NC"]); label_color != "{}")
             aTarget.label.color = Color(label_color);
     }
     catch (std::exception&) {
     }
 
     try {
-        if (const std::string fill_color = aSource[":CO"]; fill_color != "{}")
+        if (const std::string fill_color = std::get<acmacs::lispmds::string>(aSource[":CO"]); fill_color != "{}")
             aTarget.fill = Color(fill_color);
         else
             aTarget.fill = TRANSPARENT;
@@ -845,7 +847,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
     }
 
     try {
-        if (const std::string outline_color = aSource[":OC"]; outline_color != "{}")
+        if (const std::string outline_color = std::get<acmacs::lispmds::string>(aSource[":OC"]); outline_color != "{}")
             aTarget.outline = Color(outline_color);
         else
             aTarget.outline = TRANSPARENT;

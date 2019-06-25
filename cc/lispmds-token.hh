@@ -17,8 +17,6 @@ namespace acmacs::lispmds
     class keyword_no_found : public error { public: using error::error; };
     class keyword_has_no_value : public error { public: using error::error; };
 
-    class value;
-
     class nil
     {
      public:
@@ -95,6 +93,10 @@ namespace acmacs::lispmds
 
     class keyword : public detail::string { public: using detail::string::string; };
 
+    class list;
+
+    using value = std::variant<nil, boolean, number, string, symbol, keyword, list>; // nil must be the first alternative, it is the default value;
+
     class list
     {
      public:
@@ -119,7 +121,7 @@ namespace acmacs::lispmds
                 return mContent.at(aIndex);
             }
 
-        const value& operator[](std::string aKeyword) const;
+        const value& operator[](std::string_view aKeyword) const;
 
         inline size_t size() const { return mContent.size(); }
         inline bool empty() const { return mContent.empty(); }
@@ -129,85 +131,10 @@ namespace acmacs::lispmds
 
     }; // class list
 
-    using value_base = std::variant<nil, boolean, number, string, symbol, keyword, list>; // nil must be the first alternative, it is the default value;
-
-    class value : public value_base
-    {
-     public:
-        using value_base::operator=;
-        using value_base::value_base;
-        inline value(const value&) = default; // otherwise it is deleted
-          //inline value(const value& aSrc) : value_base(aSrc) { std::cerr << "rjson::value copy " << aSrc.to_json() << '\n'; }
-        inline value(value&&) = default;
-          // inline value(value&& aSrc) : value_base(std::move(aSrc)) { std::cerr << "rjson::value move " << to_json() << '\n'; }
-        inline value& operator=(const value&) = default; // otherwise it is deleted
-        inline value& operator=(value&&) = default;
-          // inline ~value() { std::cerr << "DEBUG: ~value " << to_json() << DEBUG_LINE_FUNC << '\n'; }
-
-        value& append(value&& to_add);
-        const value& operator[](size_t aIndex) const;
-        const value& operator[](std::string aKeyword) const;
-        size_t size() const;
-        bool empty() const;
-        bool empty(std::string aKeyword) const;
-
-        inline operator const list&() const { return std::get<list>(*this); }
-          // inline operator const number&() const { return std::get<number>(*this); } // leads to ambiguity for operator[]: bug in llvm 5.0?
-        inline operator std::string() const
-            {
-                try {
-                    return std::get<string>(*this);
-                }
-                catch (std::bad_variant_access&) {
-                    return std::get<symbol>(*this);
-                }
-            }
-
-    }; // class value
 
 // ----------------------------------------------------------------------
 
-    inline const value& list::operator[](std::string aKeyword) const
-    {
-        auto p = mContent.begin();
-        while (p != mContent.end() && (!std::get_if<keyword>(&*p) || std::get<keyword>(*p) != aKeyword))
-            ++p;
-        if (p == mContent.end())
-            throw keyword_no_found{aKeyword};
-        ++p;
-        if (p == mContent.end())
-            throw keyword_has_no_value{aKeyword};
-        return *p;
-    }
-
-// ----------------------------------------------------------------------
-
-    value parse_string(const std::string_view& aData);
-
-} // namespace acmacs::lispmds
-
-// ----------------------------------------------------------------------
-
-// ----------------------------------------------------------------------
-// gcc support
-// ----------------------------------------------------------------------
-
-#ifndef __clang__
-namespace std
-{
-      // gcc 7.2 wants those, if we derive from std::variant
-    template<> struct variant_size<acmacs::lispmds::value> : variant_size<acmacs::lispmds::value_base> {};
-    template<size_t _Np> struct variant_alternative<_Np, acmacs::lispmds::value> : variant_alternative<_Np, acmacs::lispmds::value_base> {};
-}
-#endif
-
-// ----------------------------------------------------------------------
-
-namespace acmacs::lispmds
-{
-      // gcc 7.2 wants the following functions to be defined here (not inside the class
-
-    inline value& value::append(value&& to_add)
+    inline value& append(value& target, value&& to_add)
     {
         return std::visit([&](auto&& arg) -> value& {
             using T = std::decay_t<decltype(arg)>;
@@ -215,10 +142,10 @@ namespace acmacs::lispmds
                 return arg.append(std::move(to_add));
             else
                 throw type_mismatch{"not a lispmds::list, cannot append value"};
-        }, *this);
+        }, target);
     }
 
-    inline const value& value::operator[](size_t aIndex) const
+    inline const value& get_(const value& val, size_t aIndex)
     {
         using namespace std::string_literals;
         return std::visit([aIndex](const auto& arg) -> const value& {
@@ -227,10 +154,15 @@ namespace acmacs::lispmds
                 return arg[aIndex];
             else
                 throw type_mismatch{"not a lispmds::list, cannot use [index]: "s + typeid(arg).name()};
-        }, *this);
+        }, val);
     }
 
-    inline const value& value::operator[](std::string aKeyword) const
+    inline const value& get_(const value& val, int aIndex)
+    {
+        return get_(val, static_cast<size_t>(aIndex));
+    }
+
+    inline const value& get_(const value& val, std::string aKeyword)
     {
         return std::visit([aKeyword](auto&& arg) -> const value& {
             using T = std::decay_t<decltype(arg)>;
@@ -238,10 +170,20 @@ namespace acmacs::lispmds
                 return arg[aKeyword];
             else
                 throw type_mismatch{"not a lispmds::list, cannot use [keyword]"};
-        }, *this);
+        }, val);
     }
 
-    inline size_t value::size() const
+    template <typename Arg, typename... Args> inline const value& get(const value& val, Arg&& arg, Args&&... args)
+    {
+        if constexpr (sizeof...(args) == 0) {
+            return get_(val, std::forward<Arg>(arg));
+        }
+        else {
+            return get(get_(val, std::forward<Arg>(arg)), args...);
+        }
+    }
+
+    inline size_t size(const value& val)
     {
         return std::visit([](auto&& arg) -> size_t {
             using T = std::decay_t<decltype(arg)>;
@@ -251,10 +193,15 @@ namespace acmacs::lispmds
                 return 0;
             else
                 throw type_mismatch{"not a lispmds::list, cannot use size()"};
-        }, *this);
+        }, val);
     }
 
-    inline bool value::empty() const
+    template <typename... Args> inline size_t size(const value& val, Args&&... args)
+    {
+        return size(get(val, args...));
+    }
+
+    inline bool empty(const value& val)
     {
         return std::visit([](auto&& arg) -> bool {
             using T = std::decay_t<decltype(arg)>;
@@ -264,24 +211,32 @@ namespace acmacs::lispmds
                 return true;
             else
                 throw type_mismatch{"not a lispmds::list, cannot use empty()"};
-        }, *this);
+        }, val);
     }
 
-    inline bool value::empty(std::string aKeyword) const
+    template <typename... Args> inline bool empty(const value& val, Args&&... args)
     {
-        return std::visit([aKeyword](auto&& arg) -> bool {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, list>)
-                try {
-                    return arg[aKeyword].empty();
-                }
-                catch (error&) {
-                    return true;
-                }
-            else
-                throw type_mismatch{"not a lispmds::list, cannot use empty(keyword)"};
-        }, *this);
+        return empty(get(val, args...));
     }
+
+// ----------------------------------------------------------------------
+
+    inline const value& list::operator[](std::string_view aKeyword) const
+    {
+        auto p = mContent.begin();
+        while (p != mContent.end() && (!std::get_if<keyword>(&*p) || std::get<keyword>(*p) != aKeyword))
+            ++p;
+        if (p == mContent.end())
+            throw keyword_no_found{std::string{aKeyword}};
+        ++p;
+        if (p == mContent.end())
+            throw keyword_has_no_value{std::string{aKeyword}};
+        return *p;
+    }
+
+// ----------------------------------------------------------------------
+
+    value parse_string(const std::string_view& aData);
 
 } // namespace acmacs::lispmds
 
