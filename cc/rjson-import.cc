@@ -43,6 +43,27 @@ std::vector<acmacs::chart::Titer> acmacs::chart::RjsonTiters::titers_for_layers(
 
 // ----------------------------------------------------------------------
 
+std::vector<size_t> acmacs::chart::RjsonTiters::layers_with_antigen(const rjson::value& layers, size_t aAntigenNo) const
+{
+    if (layers.empty())
+        throw acmacs::chart::data_not_available("no layers");
+    std::vector<size_t> result;
+    rjson::for_each(layers, [&result, aAntigenNo, num_sera = number_of_sera()](const rjson::value& layer, size_t layer_no) {
+        if (const auto& for_ag = layer[aAntigenNo]; !for_ag.empty()) {
+            for (size_t serum_no = 0; serum_no < num_sera; ++serum_no) {
+                if (const auto& titer = for_ag[serum_no]; !titer.is_null()) {
+                    result.push_back(layer_no);
+                    break;
+                }
+            }
+        }
+    });
+    return result;
+
+} // acmacs::chart::RjsonTiters::layers_with_antigen
+
+// ----------------------------------------------------------------------
+
 size_t acmacs::chart::RjsonTiters::number_of_non_dont_cares() const
 {
     size_t result = 0;

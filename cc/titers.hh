@@ -176,6 +176,7 @@ namespace acmacs::chart
         virtual Titer titer(size_t aAntigenNo, size_t aSerumNo) const = 0;
         virtual Titer titer_of_layer(size_t aLayerNo, size_t aAntigenNo, size_t aSerumNo) const = 0;
         virtual std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo, include_dotcare inc = include_dotcare::no) const = 0; // returns list of non-dont-care titers in layers, may throw data_not_available
+        virtual std::vector<size_t> layers_with_antigen(size_t aAntigenNo) const = 0; // returns list of layer indexes that have non-dont-care titers for the antigen, may throw data_not_available
         virtual size_t number_of_layers() const = 0;
         virtual size_t number_of_antigens() const = 0;
         virtual size_t number_of_sera() const = 0;
