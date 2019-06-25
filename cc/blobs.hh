@@ -5,6 +5,12 @@
 #include <string>
 #include <algorithm>
 
+#ifdef __clang__
+# define MAYBE_UNUSED [[maybe_unused]]
+#else
+# define MAYBE_UNUSED
+#endif
+
 // ----------------------------------------------------------------------
 
 namespace acmacs
@@ -37,9 +43,9 @@ namespace acmacs::chart
         }
 
       private:
-        [[maybe_unused]] const double stress_diff_;
+        MAYBE_UNUSED const double stress_diff_;
         const size_t number_of_drections_;
-        [[maybe_unused]] const double stress_diff_precision_;
+        MAYBE_UNUSED const double stress_diff_precision_;
         const double angle_step_;
         std::vector<std::pair<size_t, std::vector<double>>> result_; // point_no, blob_data
 
