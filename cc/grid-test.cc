@@ -157,10 +157,9 @@ acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all_parallel([[ma
 {
     auto result = test_all_prepare();
 
-#ifdef _OPENMP
-    const int num_threads = threads <= 0 ? omp_get_max_threads() : threads;
-    const int slot_size = chart_.number_of_antigens() < 1000 ? 4 : 1;
-#endif
+    [[maybe_unused]] const int num_threads = threads <= 0 ? omp_get_max_threads() : threads;
+    [[maybe_unused]] const int slot_size = chart_.number_of_antigens() < 1000 ? 4 : 1;
+
 #pragma omp parallel for default(none) shared(result) num_threads(num_threads) schedule(static, slot_size)
     for (size_t entry_no = 0; entry_no < result.size(); ++entry_no) {
         test_point(result[entry_no]);
