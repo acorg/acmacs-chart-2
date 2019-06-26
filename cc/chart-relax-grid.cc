@@ -1,10 +1,9 @@
-#include <iostream>
-
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
 #include "acmacs-base/filesystem.hh"
 #include "acmacs-base/timeit.hh"
+#include "acmacs-base/fmt.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -52,6 +51,13 @@ int main(int argc, char* const argv[])
         if (!opt.no_disconnect_having_few_titers)
             disconnected.extend(chart.titers()->having_too_few_numeric_titers());
 
+        std::shared_ptr<acmacs::chart::Chart> master;
+        if (opt.output_chart.has_value() && !opt.reorient->empty()) {
+            master = acmacs::chart::import_from_file(opt.reorient, acmacs::chart::Verify::None, report);
+            if (master->number_of_projections() == 0)
+                throw std::runtime_error(fmt::format("chart for reorienting has no projections: {}", *opt.reorient));
+        }
+
         // relax
         acmacs::chart::optimization_options options(method, acmacs::chart::optimization_precision::rough, opt.max_distance_multiplier);
         options.num_threads = opt.threads;
@@ -66,11 +72,11 @@ int main(int argc, char* const argv[])
         for (auto attempt = 1; attempt < 20; ++attempt) {
             acmacs::chart::GridTest test(chart, projection_no_to_test, opt.grid_step);
             const auto results = test.test_all_parallel(opt.threads);
-            std::cout << results.report() << '\n';
+            fmt::print("{}\n", results.report());
             if (opt.verbose) {
                 for (const auto& entry : results) {
                     if (entry)
-                        std::cout << entry.report(chart) << '\n';
+                        fmt::print("{}\n", entry.report(chart));
                 }
             }
             auto projection = test.make_new_projection_and_relax(results, true);
@@ -87,7 +93,6 @@ int main(int argc, char* const argv[])
             projections->keep_just(keep_projections + grid_projections);
 
         if (opt.output_chart.has_value() && !opt.reorient->empty()) {
-            auto master = acmacs::chart::import_from_file(opt.reorient, acmacs::chart::Verify::None, report);
             acmacs::chart::CommonAntigensSera common(*master, chart, acmacs::chart::CommonAntigensSera::match_level_t::automatic);
             auto master_projection = master->projection(0);
             for (auto projection_to_reorient : acmacs::filled_with_indexes(chart.number_of_projections())) {
@@ -96,12 +101,12 @@ int main(int argc, char* const argv[])
             }
         }
 
-        std::cout << chart.make_info() << '\n';
+        fmt::print("{}\n", chart.make_info());
         if (opt.output_chart.has_value())
             acmacs::chart::export_factory(chart, opt.output_chart, fs::path(opt.program_name()).filename(), report);
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        fmt::print(stderr, "ERROR: {}\n", err);
         exit_code = 2;
     }
     return exit_code;
