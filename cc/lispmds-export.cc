@@ -157,7 +157,7 @@ std::string starting_coordss(const acmacs::chart::Chart& aChart, const acmacs::c
     auto layout = projection->layout();
     const auto number_of_points = layout->number_of_points();
     const auto number_of_dimensions = layout->number_of_dimensions();
-    if (number_of_points && number_of_dimensions.valid())
+    if (number_of_points && acmacs::valid(number_of_dimensions))
         return "  :STARTING-COORDSS '(" + coordinates(layout, number_of_points, number_of_dimensions, 22, disconnected) + col_and_row_adjusts(aChart, projection, 22, disconnected) + ')';
     else
         return {};
@@ -201,7 +201,7 @@ std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_o
                 result.append(1, '\n').append(aIndent, ' ');
             result.append(1, '(');
             for (auto dim : acmacs::range(number_of_dimensions)) {
-                if (dim.valid())
+                if (acmacs::valid(dim))
                     result.append(1, ' ');
                 const auto c = aLayout->coordinate(point_no, dim);
                 if (std::isnan(c))

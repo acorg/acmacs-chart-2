@@ -303,7 +303,7 @@ acmacs::Transformation AceProjection::transformation() const
     acmacs::Transformation result(number_of_dimensions());
     if (const auto& array = data()["t"]; !array.empty()) {
         if (array.size() != (number_of_dimensions().get() * number_of_dimensions().get()))
-            std::cerr << "WARNING: transformation stored in ace file (" << array << ") does not correspond to the number of dimensions in the projection (" << number_of_dimensions() << ")\n";
+            fmt::print(stderr, "WARNING: transformation stored in ace file ({}) does not correspond to the number of dimensions in the projection ({})\n", array, number_of_dimensions());
         std::vector<double> tr;
         rjson::copy(array, tr);
         result.set(tr.begin(), tr.size());

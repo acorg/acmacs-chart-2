@@ -5,7 +5,6 @@
 #include <algorithm>
 
 #include "acmacs-base/named-type.hh"
-#include "acmacs-base/to-string.hh"
 #include "acmacs-base/number-of-dimensions.hh"
 
 // ----------------------------------------------------------------------
@@ -17,7 +16,7 @@ namespace acmacs::chart
     enum class multiply_antigen_titer_until_column_adjust { no, yes };
     enum class dodgy_titer_is_regular { no, yes };
 
-    using number_of_optimizations_t = named_t<size_t, struct number_of_optimizations_tag>;
+    using number_of_optimizations_t = named_size_t<struct number_of_optimizations_tag>;
 
     struct optimization_options
     {

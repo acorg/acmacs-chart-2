@@ -25,7 +25,7 @@ int main(int argc, char* const argv[])
         else {
             auto chart = import_from_file(std::string(args[0]));
             std::cout << chart->make_info() << '\n';
-            chart->relax(acmacs::chart::number_of_optimizations_t{20UL}, acmacs::chart::MinimumColumnBasis("none"), acmacs::number_of_dimensions_t{2}, acmacs::chart::use_dimension_annealing::yes, acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_cg_pca, acmacs::chart::optimization_precision::rough), acmacs::chart::report_stresses::yes);
+            chart->relax(acmacs::chart::number_of_optimizations_t{20}, acmacs::chart::MinimumColumnBasis("none"), acmacs::number_of_dimensions_t{2}, acmacs::chart::use_dimension_annealing::yes, acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_cg_pca, acmacs::chart::optimization_precision::rough), acmacs::chart::report_stresses::yes);
         }
     }
     catch (std::exception& err) {

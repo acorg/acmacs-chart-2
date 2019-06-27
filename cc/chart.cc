@@ -323,15 +323,16 @@ acmacs::chart::Lab acmacs::chart::Info::fix_lab_name(Lab source, FixLab fix) con
 
 std::string acmacs::chart::Projection::make_info() const
 {
+    fmt::memory_buffer result;
     auto lt = layout();
-    std::string result = std::to_string(stress()) + " " + acmacs::to_string(lt->number_of_dimensions()) + 'd';
+    fmt::format_to(result, "{} {}d", stress(), lt->number_of_dimensions());
     if (auto cmt = comment(); !cmt.empty())
-        result += " <" + cmt + '>';
+        fmt::format_to(result, " <{}>", cmt);
     if (auto fcb = forced_column_bases(); fcb)
-        result += " forced-column-bases"; // + acmacs::to_string(fcb);
+        fmt::format_to(result, " forced-column-bases"); // fcb
     else
-        result += " >=" + static_cast<std::string>(minimum_column_basis());
-    return result;
+        fmt::format_to(result, " >={}", minimum_column_basis());
+    return fmt::to_string(result);
 
 } // acmacs::chart::Projection::make_info
 

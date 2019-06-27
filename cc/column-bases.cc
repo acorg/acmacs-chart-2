@@ -6,14 +6,15 @@
 
 std::string acmacs::to_string(const acmacs::chart::ColumnBases& aColumnBases)
 {
-    std::string result{'['};
-    for (auto serum_no: acmacs::range(0UL, aColumnBases.size())) {
+    fmt::memory_buffer result;
+    fmt::format_to(result, "[");
+    for (auto serum_no: acmacs::range(0, aColumnBases.size())) {
         if (serum_no)
-            result += ' ';
-        result += std::to_string(aColumnBases.column_basis(serum_no));
+            fmt::format_to(result, " ");
+        fmt::format_to(result, "{}", aColumnBases.column_basis(serum_no));
     }
-    result += ']';
-    return result;
+    fmt::format_to(result, "]");
+    return fmt::to_string(result);
 
 } // acmacs::to_string
 

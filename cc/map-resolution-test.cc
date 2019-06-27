@@ -145,7 +145,7 @@ std::ostream& acmacs::chart::map_resolution_test_data::operator << (std::ostream
 
 std::ostream& acmacs::chart::map_resolution_test_data::operator << (std::ostream& out, const PredictionsSummary& predictions_summary)
 {
-    return out << "dimensions:" << predictions_summary.number_of_dimensions
+    return out << "dimensions:" << acmacs::to_string(predictions_summary.number_of_dimensions)
                << " proportion:" << predictions_summary.proportion_to_dont_care
                << " (mean sd) av_abs_error(" << predictions_summary.av_abs_error.mean() << ' ' << predictions_summary.av_abs_error.population_sd() << ')'
                << " sd_error(" << predictions_summary.sd_error.mean() << ' ' << predictions_summary.sd_error.population_sd() << ')'

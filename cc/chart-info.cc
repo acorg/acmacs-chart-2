@@ -81,10 +81,10 @@ int main(int argc, char* const argv[])
                 if (opt.column_bases) {
                     // Timeit ti("column bases computing ");
                     auto cb = chart->computed_column_bases(acmacs::chart::MinimumColumnBasis{});
-                    std::cout << "computed column bases: " << *cb << '\n';
+                    fmt::print("computed column bases: {}\n", *cb);
                     for (auto projection_no : acmacs::range(chart->number_of_projections())) {
                         if (auto fcb = chart->projection(projection_no)->forced_column_bases(); fcb)
-                            std::cout << "forced column bases for projection " << projection_no << ": " << *fcb << '\n';
+                            fmt::print("forced column bases for projection {}: {}\n", projection_no, *fcb);
                     }
                 }
                 if (opt.list_tables && info->number_of_sources() > 0) {

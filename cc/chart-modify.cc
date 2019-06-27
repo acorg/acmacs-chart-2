@@ -913,7 +913,7 @@ std::unique_ptr<TitersModify::titer_merge_report> TitersModify::set_from_layers(
     auto titer_merge_report = set_titers_from_layers(more_than_thresholded::to_dont_care);
     if (column_bases) {
         chart.forced_column_bases_modify(*column_bases);
-        std::cout << "INFO: forced column bases: " << *chart.forced_column_bases(no_column_bases) << '\n';
+        fmt::print("INFO: forced column bases: {}\n", *chart.forced_column_bases(no_column_bases));
     }
     return titer_merge_report;
 
