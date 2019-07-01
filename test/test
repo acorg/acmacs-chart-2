@@ -37,6 +37,9 @@ cd "$TESTDIR"
 echo ../dist/test-chart-proportion-to-dontcare *.ace
 ../dist/test-chart-proportion-to-dontcare *.ace
 
+echo test-chart-merge
+../dist/test-chart-merge --ignore-passages ../../acmacs.r/tests/testthat/2004-01.ace ../../acmacs.r/tests/testthat/2004-02.ace ../../acmacs.r/tests/testthat/2004-3.ace
+
 # ../bin/test-ace ./test.ace
 # ../bin/acmacs-chart-info ./test.ace
 
