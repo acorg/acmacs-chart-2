@@ -161,9 +161,10 @@ void merge_titers(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart
                     assign(ag_no->second.index, sr_no->second.index, titer_ref.titer);
             }
         };
+
         if (source_layers) {
             for (size_t source_layer_no = 0; source_layer_no < source_layers; ++source_layer_no, ++target_layer_no)
-                copy_titer(source_titers.titers_existing());
+                copy_titer(source_titers.titers_existing_from_layer(source_layer_no));
         }
         else {
             copy_titer(source_titers.titers_existing());
