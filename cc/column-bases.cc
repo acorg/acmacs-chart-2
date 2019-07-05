@@ -1,3 +1,4 @@
+#include "acmacs-base/fmt.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/column-bases.hh"
@@ -26,15 +27,15 @@ void acmacs::chart::MinimumColumnBasis::from(std::string_view value)
         value_ = 0;
     }
     else if (value.find('.') != std::string::npos) {
-        value_ = std::stod(std::string(value));
+        value_ = ::string::from_chars<double>(value);
     }
     else {
-        value_ = std::stol(std::string(value));
+        value_ = ::string::from_chars<long>(value);
         if (value_ > 9)
             value_ = std::log2(value_ / 10.0);
     }
     if (value_ < 0 || value_ > 30)
-        throw std::runtime_error{"Unrecognized minimum_column_basis value: " + std::string(value)};
+        throw std::runtime_error{fmt::format("Unrecognized minimum_column_basis value: {}", value)};
 
 } // acmacs::chart::MinimumColumnBasis::from
 

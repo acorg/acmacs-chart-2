@@ -1,7 +1,7 @@
 #include <fstream>
 #include <cctype>
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -13,20 +13,23 @@ static std::vector<std::string> read_fields(std::istream& input);
 
 // ----------------------------------------------------------------------
 
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    argument<str> table{*this, arg_name{"table.txt"}, mandatory};
+};
+
 int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {{"-h", false}, {"--help", false}, {"-v", false}, {"--verbose", false}});
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
-            std::cerr << "Usage: " << args.program() << " [options] <table.txt>\n" << args.usage_options() << '\n';
-            exit_code = 1;
-        }
-        else {
-            auto chart = import_from_file(std::string(args[0]));
-            std::cout << chart->make_info() << '\n';
-            chart->relax(acmacs::chart::number_of_optimizations_t{20}, acmacs::chart::MinimumColumnBasis("none"), acmacs::number_of_dimensions_t{2}, acmacs::chart::use_dimension_annealing::yes, acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_cg_pca, acmacs::chart::optimization_precision::rough), acmacs::chart::report_stresses::yes);
-        }
+        Options opt(argc, argv);
+        auto chart = import_from_file(opt.table);
+        std::cout << chart->make_info() << '\n';
+        chart->relax(acmacs::chart::number_of_optimizations_t{20}, acmacs::chart::MinimumColumnBasis("none"), acmacs::number_of_dimensions_t{2}, acmacs::chart::use_dimension_annealing::yes,
+                     acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_cg_pca, acmacs::chart::optimization_precision::rough), acmacs::chart::report_stresses::yes);
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';
