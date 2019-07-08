@@ -1,83 +1,76 @@
-#! /bin/bash
+#! /usr/bin/env python3
 
-fail()
-{
-    echo FAILED: $@ >&2
-    if [[ -f "${SUBMIT_FILE}" ]]; then
-        echo "Submit file: ${SUBMIT_FILE}"
-    fi
-    exit 1
-}
+import sys, os, datetime, subprocess, traceback
 
-trap fail ERR
+def main(args):
+    source = os.path.realpath(args.source[0])
+    if args.number_of_optimizations < 1000:
+        num_opt = str(args.number_of_optimizations)
+    else:
+        num_opt = f"{int(args.number_of_optimizations/1000)}k"
+    transfer_input_files = source
+    if args.reorient_to:
+        transfer_input_files += "," + os.path.realpath(args.reorient_to)
 
-if [[ $# -lt 1 ]]; then
-    fail "Usage: $0 <o16|o17|i20|i21|i22> -n 10000 -d 2 -m 1280 --keep-projections 5 --reorient <reorient-to.ace> <source.ace> <output.ace>"
-fi
+    submission_dir = datetime.datetime.now().strftime("submit.%Y-%m%d-%H%M%S")
+    os.makedirs(submission_dir)
+    os.chmod(submission_dir, 0o777)
+    submission_file = os.path.join(submission_dir, "submit.txt")
+    with open(submission_file, "w") as sf:
+        for host in args.hosts.split(","):
+            target = f"{os.path.dirname(source)}/{os.path.splitext(os.path.basename(source))[0]}.{num_opt}-grid-{host}.ace"
+            submit_command_args = f"-n {args.number_of_optimizations} -m {args.min_col_basis} -d {args.number_of_dimensions} '{os.path.basename(source)}' '{os.path.basename(target)}'"
+            if args.reorient_to:
+                submit_command_args += f" --reorient '{os.path.basename(args.reorient_to)}'"
+            sf.write(sSubmitEntry.format(arguments=submit_command_args, host=host, nproc=sNproc[host], source=source, target=target, log_file=os.path.join(submission_dir, f"{host}.log"),
+                                         stdout_file=os.path.join(submission_dir, f"{host}.stdout.txt"), stderr_file=os.path.join(submission_dir, f"{host}.stderr.txt"),
+                                         number_of_optimizations=args.number_of_optimizations))
+    print(submission_dir)
+    subprocess.run(["condor_submit", submission_file])
 
-MACHINE="$1"
-shift
-case ${MACHINE} in
-    o16|o17)
-        NPROC=64
-        ;;
-    i20|i21|i22)
-        NPROC=32
-        ;;
-    *)
-        fail "Unknow machine: ${MACHINE}"
-        ;;
-esac
+# ======================================================================
 
-FIRST_ACE=""
-SOURCE=""
-TARGET=""
-for arg in "$@"; do
-    if [[ "${arg}" == *.ace ]]; then
-        if [[ "${arg}" != /syn/* ]]; then
-            if [[ -z "${FIRST_ACE}" ]]; then
-                SOURCE="${arg}"
-            else
-                TARGET="${arg}"
-            fi
-            # fail "Full pathname starting with /syn required for SOURCE ${arg}, you may use \$(pwd)/${arg}"
-        fi
-        if [[ -z "${FIRST_ACE}" ]]; then
-            FIRST_ACE="${arg}"
-        fi
-    fi
-done
-
-NOW=$(date +"%Y%m%d-%H%M%S")
-TMP_DIR=$(mktemp -d "$(pwd)/condor.${NOW}.XXXXXXXXXX")
-chmod 0777 ${TMP_DIR}
-SUBMIT_FILE="${TMP_DIR}/submit.txt"
-LOG_FILE="${TMP_DIR}/submit.log"
-STDOUT_FILE="${TMP_DIR}/stdout.txt"
-STDERR_FILE="${TMP_DIR}/stderr.txt"
-
-cat >"${SUBMIT_FILE}" <<EOF
+sSubmitEntry = """
 executable = /syn/eu/AD/bin/chart-relax-grid
-arguments = "$@"
+arguments = "{arguments}"
 environment = "ACMACSD_ROOT=/syn/eu/AD LD_LIBRARY_PATH=/syn/eu/AD/lib"
-request_cpus = ${NPROC}
+requirements = (machine == "{host}")
+request_cpus = {nproc}
 should_transfer_files = IF_NEEDED
 transfer_executable = False
-transfer_input_files = ${SOURCE}
-transfer_output_files = ${TARGET}
+transfer_input_files = {source}
+transfer_output_files = {target}
 when_to_transfer_output = ON_EXIT
-log = ${LOG_FILE}
+log = {log_file}
 notification = Always
 notify_user = eu@antigenic-cartography.org
-output = ${STDOUT_FILE}
-error = ${STDERR_FILE}
-JobBatchName = "chart-relax-grid $@"
-description = "chart-relax-grid $@"
+output = {stdout_file}
+error = {stderr_file}
+JobBatchName = "AD chart-relax-grid {host} {number_of_optimizations}"
+description = "AD chart-relax-grid {host} {number_of_optimizations}"
 coresize = -1
 queue
-EOF
+"""
 
-# echo
-# cat "${SUBMIT_FILE}"
+sNproc = {"o16": 64, "o17": 64, "i18": 32, "i19": 32, "i20": 32, "i21": 32, "i22": 32}
 
-condor_submit "${SUBMIT_FILE}"
+# ======================================================================
+
+try:
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--hosts", dest="hosts", default="o16,o17,i20,i21,i22", help='comma separated list of hosts to run chart-relax-grid on.')
+
+    parser.add_argument("-n", "--number-of-optimizations", dest="number_of_optimizations", type=int, default=1)
+    parser.add_argument("-m", "--min-column-basis", dest="min_col_basis", default="none")
+    parser.add_argument("-d", "--number-of-dimensions", dest="number_of_dimensions", type=int, default=2)
+    parser.add_argument("-k", "--keep-projections", dest="keep_projections", type=int, default=0)
+    parser.add_argument("-r", "--reorient", dest="reorient_to", default=None)
+
+    parser.add_argument("source", nargs=1)
+    args = parser.parse_args()
+    exit_code = main(args)
+except Exception as err:
+    print('{}\n{}'.format(err, traceback.format_exc()), file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
