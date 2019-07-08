@@ -22,7 +22,8 @@ def main(args):
             submit_command_args = f"-n {args.number_of_optimizations} -m {args.min_col_basis} -d {args.number_of_dimensions} --keep-projections {args.keep_projections} '{os.path.basename(source)}' '{os.path.basename(target)}'"
             if args.reorient_to:
                 submit_command_args += f" --reorient '{os.path.basename(args.reorient_to)}'"
-            sf.write(sSubmitEntry.format(arguments=submit_command_args, host=host, nproc=sNproc[host], source=source, target=target, log_file=os.path.join(submission_dir, f"{host}.log"),
+            sf.write(sSubmitEntry.format(arguments=submit_command_args, host=host, nproc=sNproc[host], source=source, source_basename=os.path.basename(source),
+                                         target=target, log_file=os.path.join(submission_dir, f"{host}.log"),
                                          stdout_file=os.path.join(submission_dir, f"{host}.stdout.txt"), stderr_file=os.path.join(submission_dir, f"{host}.stderr.txt"),
                                          number_of_optimizations=args.number_of_optimizations))
     print(submission_dir)
@@ -46,8 +47,8 @@ notification = Always
 notify_user = eu@antigenic-cartography.org
 output = {stdout_file}
 error = {stderr_file}
-JobBatchName = "AD chart-relax-grid {host} {number_of_optimizations}"
-description = "AD chart-relax-grid {host} {number_of_optimizations}"
+JobBatchName = "AD chart-relax-grid {source_basename} {host} {number_of_optimizations}"
+description = "AD chart-relax-grid {source_basename} {host} {number_of_optimizations}"
 coresize = -1
 queue
 """
