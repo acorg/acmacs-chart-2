@@ -12,7 +12,7 @@ fail()
 trap fail ERR
 
 if [[ $# -lt 1 ]]; then
-    fail "Usage: $0 <o16|o17|i20|i21> -n 10000 -d 2 -m 1280 --keep-projections 5 --reorient <reorient-to.ace> <source.ace> <output.ace>"
+    fail "Usage: $0 <o16|o17|i20|i21|i22> -n 10000 -d 2 -m 1280 --keep-projections 5 --reorient <reorient-to.ace> <source.ace> <output.ace>"
 fi
 
 MACHINE="$1"
@@ -21,7 +21,7 @@ case ${MACHINE} in
     o16|o17)
         NPROC=64
         ;;
-    i20|i21)
+    i20|i21|i22)
         NPROC=32
         ;;
     *)
@@ -71,8 +71,8 @@ notification = Always
 notify_user = eu@antigenic-cartography.org
 output = ${STDOUT_FILE}
 error = ${STDERR_FILE}
-JobBatchName = "AD chart-relax $@"
-description = "ad chart-relax $@"
+JobBatchName = "chart-relax-grid $@"
+description = "chart-relax-grid $@"
 coresize = -1
 queue
 EOF
