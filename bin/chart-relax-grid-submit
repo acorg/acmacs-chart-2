@@ -4,6 +4,7 @@ import sys, os, datetime, subprocess, traceback
 
 def main(args):
     source = os.path.realpath(args.source[0])
+    os.chmod(os.path.dirname(source), 0o777) # to allow condor creating output ace there
     if args.number_of_optimizations < 1000:
         num_opt = str(args.number_of_optimizations)
     else:
