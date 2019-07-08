@@ -58,37 +58,45 @@ int main(int argc, char* const argv[])
                 throw std::runtime_error(fmt::format("chart for reorienting has no projections: {}", *opt.reorient));
         }
 
-        // relax
-        acmacs::chart::optimization_options options(method, acmacs::chart::optimization_precision::rough, opt.max_distance_multiplier);
-        options.num_threads = opt.threads;
-        chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, acmacs::chart::use_dimension_annealing::yes, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
         auto projections = chart.projections_modify();
-        projections->sort();
-        chart.projection_modify(0)->relax(acmacs::chart::optimization_options(method, acmacs::chart::optimization_precision::fine));
 
-        // grid test
-        size_t grid_projections = 0;
-        size_t projection_no_to_test = 0;
-        for (auto attempt = 1; attempt < 20; ++attempt) {
-            acmacs::chart::GridTest test(chart, projection_no_to_test, opt.grid_step);
-            const auto results = test.test_all_parallel(opt.threads);
-            fmt::print("{}\n", results.report());
-            if (opt.verbose) {
-                for (const auto& entry : results) {
-                    if (entry)
-                        fmt::print("{}\n", entry.report(chart));
-                }
-            }
-            auto projection = test.make_new_projection_and_relax(results, true);
-            ++grid_projections;
-            projection->comment("grid-test-" + acmacs::to_string(attempt));
-            projection_no_to_test = projection->projection_no();
-            // projections_to_reorient.push_back(projection_no_to_test);
-            if (std::all_of(results.begin(), results.end(), [](const auto& result) { return result.diagnosis != acmacs::chart::GridTest::Result::trapped; }))
-                break;
+        {
+            // relax
+            const Timeit ti(fmt::format("{} rough optimizations: ", opt.number_of_optimizations), report_time::yes);
+            acmacs::chart::optimization_options options(method, acmacs::chart::optimization_precision::rough, opt.max_distance_multiplier);
+            options.num_threads = opt.threads;
+            chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, acmacs::chart::use_dimension_annealing::yes, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
+            projections->sort();
+            chart.projection_modify(0)->relax(acmacs::chart::optimization_options(method, acmacs::chart::optimization_precision::fine));
         }
 
-        chart.projections_modify()->sort();
+        size_t grid_projections = 0;
+
+        {
+            // grid test
+            const Timeit ti(fmt::format("grid test: ", opt.number_of_optimizations), report_time::yes);
+            size_t projection_no_to_test = 0;
+            for (auto attempt = 1; attempt < 20; ++attempt) {
+                acmacs::chart::GridTest test(chart, projection_no_to_test, opt.grid_step);
+                const auto results = test.test_all_parallel(opt.threads);
+                fmt::print("{}\n", results.report());
+                if (opt.verbose) {
+                    for (const auto& entry : results) {
+                        if (entry)
+                            fmt::print("{}\n", entry.report(chart));
+                    }
+                }
+                auto projection = test.make_new_projection_and_relax(results, true);
+                ++grid_projections;
+                projection->comment("grid-test-" + acmacs::to_string(attempt));
+                projection_no_to_test = projection->projection_no();
+                // projections_to_reorient.push_back(projection_no_to_test);
+                if (std::all_of(results.begin(), results.end(), [](const auto& result) { return result.diagnosis != acmacs::chart::GridTest::Result::trapped; }))
+                    break;
+            }
+        }
+
+        projections->sort();
         if (const size_t keep_projections = opt.keep_projections; keep_projections > 0 && projections->size() > (keep_projections + grid_projections))
             projections->keep_just(keep_projections + grid_projections);
 
