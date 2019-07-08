@@ -19,7 +19,7 @@ def main(args):
     with open(submission_file, "w") as sf:
         for host in args.hosts.split(","):
             target = f"{os.path.dirname(source)}/{os.path.splitext(os.path.basename(source))[0]}.{num_opt}-grid-{host}.ace"
-            submit_command_args = f"-n {args.number_of_optimizations} -m {args.min_col_basis} -d {args.number_of_dimensions} '{os.path.basename(source)}' '{os.path.basename(target)}'"
+            submit_command_args = f"-n {args.number_of_optimizations} -m {args.min_col_basis} -d {args.number_of_dimensions} --keep-projections {args.keep_projections} '{os.path.basename(source)}' '{os.path.basename(target)}'"
             if args.reorient_to:
                 submit_command_args += f" --reorient '{os.path.basename(args.reorient_to)}'"
             sf.write(sSubmitEntry.format(arguments=submit_command_args, host=host, nproc=sNproc[host], source=source, target=target, log_file=os.path.join(submission_dir, f"{host}.log"),
@@ -64,7 +64,7 @@ try:
     parser.add_argument("-n", "--number-of-optimizations", dest="number_of_optimizations", type=int, default=1)
     parser.add_argument("-m", "--min-column-basis", dest="min_col_basis", default="none")
     parser.add_argument("-d", "--number-of-dimensions", dest="number_of_dimensions", type=int, default=2)
-    parser.add_argument("-k", "--keep-projections", dest="keep_projections", type=int, default=0)
+    parser.add_argument("-k", "--keep-projections", dest="keep_projections", type=int, default=10)
     parser.add_argument("-r", "--reorient", dest="reorient_to", default=None)
 
     parser.add_argument("source", nargs=1)
