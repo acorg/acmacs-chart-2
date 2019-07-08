@@ -1,0 +1,83 @@
+#! /bin/bash
+
+fail()
+{
+    echo FAILED: $@ >&2
+    if [[ -f "${SUBMIT_FILE}" ]]; then
+        echo "Submit file: ${SUBMIT_FILE}"
+    fi
+    exit 1
+}
+
+trap fail ERR
+
+if [[ $# -lt 1 ]]; then
+    fail "Usage: $0 <o16|o17|i20|i21> -n 10000 -d 2 -m 1280 --keep-projections 5 --reorient <reorient-to.ace> <source.ace> <output.ace>"
+fi
+
+MACHINE="$1"
+shift
+case ${MACHINE} in
+    o16|o17)
+        NPROC=64
+        ;;
+    i20|i21)
+        NPROC=32
+        ;;
+    *)
+        fail "Unknow machine: ${MACHINE}"
+        ;;
+esac
+
+FIRST_ACE=""
+SOURCE=""
+TARGET=""
+for arg in "$@"; do
+    if [[ "${arg}" == *.ace ]]; then
+        if [[ "${arg}" != /syn/* ]]; then
+            if [[ -z "${FIRST_ACE}" ]]; then
+                SOURCE="${arg}"
+            else
+                TARGET="${arg}"
+            fi
+            # fail "Full pathname starting with /syn required for SOURCE ${arg}, you may use \$(pwd)/${arg}"
+        fi
+        if [[ -z "${FIRST_ACE}" ]]; then
+            FIRST_ACE="${arg}"
+        fi
+    fi
+done
+
+NOW=$(date +"%Y%m%d-%H%M%S")
+TMP_DIR=$(mktemp -d "$(pwd)/condor.${NOW}.XXXXXXXXXX")
+chmod 0777 ${TMP_DIR}
+SUBMIT_FILE="${TMP_DIR}/submit.txt"
+LOG_FILE="${TMP_DIR}/submit.log"
+STDOUT_FILE="${TMP_DIR}/stdout.txt"
+STDERR_FILE="${TMP_DIR}/stderr.txt"
+
+cat >"${SUBMIT_FILE}" <<EOF
+executable = /syn/eu/AD/bin/chart-relax-grid
+arguments = "$@"
+environment = "ACMACSD_ROOT=/syn/eu/AD LD_LIBRARY_PATH=/syn/eu/AD/lib"
+request_cpus = ${NPROC}
+should_transfer_files = IF_NEEDED
+transfer_executable = False
+transfer_input_files = ${SOURCE}
+transfer_output_files = ${TARGET}
+when_to_transfer_output = ON_EXIT
+log = ${LOG_FILE}
+notification = Always
+notify_user = eu@antigenic-cartography.org
+output = ${STDOUT_FILE}
+error = ${STDERR_FILE}
+JobBatchName = "AD chart-relax $@"
+description = "ad chart-relax $@"
+coresize = -1
+queue
+EOF
+
+# echo
+# cat "${SUBMIT_FILE}"
+
+condor_submit "${SUBMIT_FILE}"
