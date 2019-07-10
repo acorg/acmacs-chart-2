@@ -213,7 +213,7 @@ std::shared_ptr<acmacs::chart::ColumnBasesData> acmacs::chart::Titers::computed_
     //         std::cerr << "DEBUG: " << t.antigen << ' ' << t.serum << ' ' << t.titer << '\n';
     // std::cerr << "DEBUG: computed_column_bases_new: " << cb->column_basis(30) << '\n';
 
-    return std::move(cb);
+    return cb;
 
 } // acmacs::chart::Titers::computed_column_bases
 

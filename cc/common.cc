@@ -393,7 +393,7 @@ template <typename AgSrEntry> inline std::optional<size_t> CommonAntigensSera::I
     if (const auto found = std::find_if(match_.begin(), match_.end(), [secondary_no](const auto& match) { return match.use && match.secondary_index == secondary_no; }); found != match_.end())
         return found->primary_index;
     else
-        return {};
+        return std::nullopt;
 
 } // CommonAntigensSera::Impl::ChartData<AgSrEntry>::primary_by_secondary
 
@@ -404,7 +404,7 @@ template <typename AgSrEntry> inline std::optional<size_t> CommonAntigensSera::I
     if (const auto found = std::find_if(match_.begin(), match_.end(), [primary_no](const auto& match) { return match.use && match.primary_index == primary_no; }); found != match_.end())
         return found->secondary_index;
     else
-        return {};
+        return std::nullopt;
 
 } // CommonAntigensSera::Impl::ChartData<AgSrEntry>::secondary_by_primary
 

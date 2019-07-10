@@ -56,7 +56,7 @@ std::shared_ptr<acmacs::chart::LayoutRandomizer> randomizer_plain_from_sample_op
         throw std::runtime_error(string::concat("randomizer_plain_from_sample_optimization_internal: diameter is ", diameter));
     }
     rnd->diameter(diameter * diameter_multiplier);
-    return std::move(rnd);
+    return rnd;
 
 } // randomizer_plain_from_sample_optimization_internal
 
