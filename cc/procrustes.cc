@@ -109,15 +109,19 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     if (number_of_dimensions != secondary_layout->number_of_dimensions())
         throw invalid_data("procrustes: projections have different number of dimensions");
 
+    auto common_without_disconnected = common;
+    common_without_disconnected.erase(std::remove_if(std::begin(common_without_disconnected), std::end(common_without_disconnected), [&primary_layout,&secondary_layout](const auto& en) {
+        return std::isnan(primary_layout->coordinate(en.primary, number_of_dimensions_t{0})) || std::isnan(secondary_layout->coordinate(en.secondary, number_of_dimensions_t{0}));
+    }), std::end(common_without_disconnected));
+    // std::cerr << "common: " << common.size() << " common_without_disconnected: " << common_without_disconnected.size() << '\n';
+
     alglib::real_2d_array x, y;
-    x.setlength(cint(common.size()), cint(number_of_dimensions));
-    y.setlength(cint(common.size()), cint(number_of_dimensions));
-    for (size_t point_no = 0; point_no < common.size(); ++point_no) {
+    x.setlength(cint(common_without_disconnected.size()), cint(number_of_dimensions));
+    y.setlength(cint(common_without_disconnected.size()), cint(number_of_dimensions));
+    for (size_t point_no = 0; point_no < common_without_disconnected.size(); ++point_no) {
         for (auto dim : range(number_of_dimensions)) {
-            if (const auto x_v = primary_layout->coordinate(common[point_no].primary, dim); !std::isnan(x_v))
-                x(cint(point_no), cint(dim)) = x_v;
-            if (const auto y_v = secondary_layout->coordinate(common[point_no].secondary, dim); !std::isnan(y_v))
-                y(cint(point_no), cint(dim)) = y_v;
+            x(cint(point_no), cint(dim)) = primary_layout->coordinate(common_without_disconnected[point_no].primary, dim);
+            y(cint(point_no), cint(dim)) = secondary_layout->coordinate(common_without_disconnected[point_no].secondary, dim);
         }
     }
 
@@ -132,7 +136,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
 
     alglib::real_2d_array transformation;
     if (scaling == procrustes_scaling_t::no) {
-        const MatrixJProcrustes j(common.size());
+        const MatrixJProcrustes j(common_without_disconnected.size());
         auto m4 = transpose(multiply_left_transposed(multiply(j, y), multiply(j, x)));
         alglib::real_2d_array u, vt;
         singular_value_decomposition(m4, u, vt);
@@ -145,7 +149,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
             std::cerr << "WARNING: procrustes: invalid transformation after svd (no scaling)\n";
     }
     else {
-        const MatrixJProcrustesScaling j(common.size());
+        const MatrixJProcrustesScaling j(common_without_disconnected.size());
         const auto m1 = multiply(j, y);
         const auto m2 = multiply_left_transposed(x, m1);
         alglib::real_2d_array u, vt;
@@ -175,15 +179,15 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     multiply_add(m5, -1, x);
     for (auto dim : range(number_of_dimensions)) {
         const auto t_i =
-            std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(common.size())), 0.0, [&m5, dim = cint(dim)](auto sum, auto row) { return sum + m5(row, dim); });
-        result.transformation.translation(dim) = t_i / common.size();
+            std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(common_without_disconnected.size())), 0.0, [&m5, dim = cint(dim)](auto sum, auto row) { return sum + m5(row, dim); });
+        result.transformation.translation(dim) = t_i / common_without_disconnected.size();
     }
 
     // rms
     auto secondary_transformed = result.apply(*secondary_layout);
     result.rms = 0.0;
     size_t num_rows = 0;
-    for (const auto& cp : common) {
+    for (const auto& cp : common_without_disconnected) {
         if (const auto pc = primary_layout->get(cp.primary), sc = secondary_transformed->get(cp.secondary); pc.exists() && sc.exists()) {
             ++num_rows;
             auto make_rms_inc = [&pc, &sc](auto sum, auto dim) {
@@ -196,7 +200,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     }
     result.rms = std::sqrt(result.rms / num_rows);
 
-      // std::cerr << "common points: " << common.size() << '\n';
+      // std::cerr << "common points (without disconnected): " << common_without_disconnected.size() << '\n';
       // std::cerr << "transformation: " << acmacs::to_string(result.transformation) << '\n';
       // std::cerr << "rms: " << acmacs::to_string(result.rms) << '\n';
 
