@@ -14,6 +14,7 @@ namespace acmacs::chart
 
     void export_factory(const Chart& aChart, std::string aFilename, std::string aProgramName, report_time aReport = report_time::no);
     inline void export_factory(const Chart& aChart, std::string_view aFilename, std::string aProgramName, report_time aReport = report_time::no) { export_factory(aChart, std::string(aFilename), aProgramName, aReport); }
+    inline void export_factory(const Chart& aChart, std::string_view aFilename, std::string_view aProgramName, report_time aReport = report_time::no) { export_factory(aChart, std::string(aFilename), std::string{aProgramName}, aReport); }
     inline void export_factory(const Chart& aChart, const char* aFilename, std::string aProgramName, report_time aReport = report_time::no) { export_factory(aChart, std::string(aFilename), aProgramName, aReport); }
 
     enum class export_format { ace, save };
