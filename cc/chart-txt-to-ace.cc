@@ -1,7 +1,7 @@
 #include <fstream>
 #include <cctype>
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-chart-2/factory-import.hh"
@@ -15,29 +15,31 @@ static std::vector<std::string> read_fields(std::istream& input);
 
 // ----------------------------------------------------------------------
 
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    argument<str> input_table{*this, arg_name{"table.txt"}, mandatory};
+    argument<str> output_chart{*this, arg_name{"output-chart"}, mandatory};
+};
+
 int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {{"-h", false}, {"--help", false}, {"-v", false}, {"--verbose", false}, {"--time", false, "report time of loading chart"}});
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
-            std::cerr << "Usage: " << args.program() << " [options] <table.txt> <output.ace>\n" << args.usage_options() << '\n';
-            exit_code = 1;
-        }
-        else {
-            const auto report = do_report_time(args["--time"]);
-            auto chart = import_from_file(std::string(args[0]));
-            acmacs::chart::export_factory(*chart, args[1], fs::path(args.program()).filename(), report);
+        Options opt(argc, argv);
+        auto chart = import_from_file(opt.input_table);
+        acmacs::chart::export_factory(*chart, opt.output_chart, fs::path(opt.program_name()).filename());
 
-            std::cout << chart->make_info() << '\n';
-            auto antigens = chart->antigens();
-            auto sera = chart->sera();
-            const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
-            for (auto [ag_no, antigen] : acmacs::enumerate(*antigens))
-                std::cout << "AG " << std::setw(num_digits) << ag_no << ' ' << antigen->full_name() << '\n';
-            for (auto [sr_no, serum] : acmacs::enumerate(*sera))
-                std::cout << "SR " << std::setw(num_digits) << sr_no << ' ' << serum->full_name() << '\n';
-        }
+        std::cout << chart->make_info() << '\n';
+        auto antigens = chart->antigens();
+        auto sera = chart->sera();
+        const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
+        for (auto [ag_no, antigen] : acmacs::enumerate(*antigens))
+            std::cout << "AG " << std::setw(num_digits) << ag_no << ' ' << antigen->full_name() << '\n';
+        for (auto [sr_no, serum] : acmacs::enumerate(*sera))
+            std::cout << "SR " << std::setw(num_digits) << sr_no << ' ' << serum->full_name() << '\n';
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';

@@ -3,7 +3,7 @@
 #include <map>
 #include <algorithm>
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/time.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/string.hh"
@@ -15,29 +15,25 @@
 
 using fields_t = std::map<std::string, std::vector<std::string>>;
 
-static void print_plot_spec(const argc_argv& args);
+static void print_plot_spec(std::string_view chart_filename);
 static std::map<std::string, size_t> field_max_length(const fields_t& aFields);
 
 // ----------------------------------------------------------------------
+
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    argument<str> chart{*this, arg_name{"chart-file"}, mandatory};
+};
 
 int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {
-                {"--verbose", false},
-                {"--time", false, "report time of loading chart"},
-                {"-h", false},
-                {"--help", false},
-                {"-v", false},
-        });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file>\n" << args.usage_options() << '\n';
-            exit_code = 1;
-        }
-        else {
-            print_plot_spec(args);
-        }
+        Options opt(argc, argv);
+        print_plot_spec(opt.chart);
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';
@@ -48,10 +44,9 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-void print_plot_spec(const argc_argv& args)
+void print_plot_spec(std::string_view chart_filename)
 {
-    const auto report = do_report_time(args["--time"]);
-    auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
+    auto chart = acmacs::chart::import_from_file(chart_filename);
     auto antigens = chart->antigens();
     auto sera = chart->sera();
     auto plot_spec = chart->plot_spec();

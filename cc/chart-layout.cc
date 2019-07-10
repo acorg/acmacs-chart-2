@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/read-file.hh"
@@ -14,38 +14,34 @@ static std::string encode_name(std::string_view aName, std::string_view aFieldSe
 
 // ----------------------------------------------------------------------
 
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<size_t> projection{*this, "projection", dflt{0UL}};
+    option<str>    field_separator{*this, "field-separator", dflt{" "}};
+
+    argument<str> input_chart{*this, arg_name{"chart-file"}, mandatory};
+    argument<str> output_layout{*this, arg_name{"output-layout.{txt,csv}[.xz]"}, mandatory};
+};
+
 int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {
-                {"--projection", 0},
-                {"--field-separator", " "},
-                {"--time", false, "report time of loading chart"},
-                {"--verbose", false},
-                {"-h", false},
-                {"--help", false},
-                {"-v", false},
-        });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file> <output-layout.{txt,csv}[.xz]>\n" << args.usage_options() << '\n';
-            exit_code = 1;
-        }
-        else {
-            const auto report = do_report_time(args["--time"]);
-            auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
-            auto antigens = chart->antigens();
-            auto sera = chart->sera();
-            auto layout = chart->projection(args["--projection"])->layout();
-            const std::string filename{args[1]};
-            if (filename == "-")
-                write_text(filename, args["--field-separator"], antigens, sera, layout);
-            else if (string::ends_with(filename, ".csv") || string::ends_with(filename, ".csv.xz"))
-                write_csv(filename, antigens, sera, layout);
-            else
-                write_text(filename, args["--field-separator"], antigens, sera, layout);
-                // const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
-        }
+        Options opt(argc, argv);
+        auto chart = acmacs::chart::import_from_file(opt.input_chart);
+        auto antigens = chart->antigens();
+        auto sera = chart->sera();
+        auto layout = chart->projection(opt.projection)->layout();
+        if (*opt.output_layout == "-")
+            write_text(std::string{opt.output_layout}, opt.field_separator, antigens, sera, layout);
+        else if (string::ends_with(*opt.output_layout, ".csv") || string::ends_with(*opt.output_layout, ".csv.xz"))
+            write_csv(std::string{opt.output_layout}, antigens, sera, layout);
+        else
+            write_text(std::string{opt.output_layout}, opt.field_separator, antigens, sera, layout);
+        // const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';

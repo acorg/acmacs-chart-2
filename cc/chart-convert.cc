@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/filesystem.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
@@ -8,27 +8,23 @@
 
 // ----------------------------------------------------------------------
 
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    argument<str> input_chart{*this, arg_name{"input-chart-file"}, mandatory};
+    argument<str> output_chart{*this, arg_name{"output-chart-file"}, mandatory};
+};
+
 int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {
-                {"--verbose", false},
-                {"--time", false, "report time of loading chart"},
-                {"-h", false},
-                {"--help", false},
-                {"-v", false},
-        });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
-            std::cerr << "Usage: " << args.program() << " [options] <input-chart-file> <output-chart-file>\n" << args.usage_options() << '\n';
-            exit_code = 1;
-        }
-        else {
-            const auto report = do_report_time(args["--time"]);
-            auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::All, report);
-            std::cout << chart->make_info() << '\n';
-            acmacs::chart::export_factory(*chart, args[1], fs::path(args.program()).filename(), report);
-        }
+        Options opt(argc, argv);
+        auto chart = acmacs::chart::import_from_file(opt.input_chart);
+        std::cout << chart->make_info() << '\n';
+        acmacs::chart::export_factory(*chart, opt.output_chart, fs::path(opt.program_name()).filename());
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';
