@@ -72,8 +72,7 @@ int main(int argc, char* const argv[])
         footer(output);
         output.close();
 
-        if (opt.open || !opt.output.has_value())
-            acmacs::open(output_filename);
+        acmacs::open_or_quicklook(opt.open || !opt.output.has_value(), false, output_filename);
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';

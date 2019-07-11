@@ -62,7 +62,7 @@ int main(int argc, char* const argv[])
 
         {
             // relax
-            const Timeit ti(fmt::format("{} rough optimizations: ", opt.number_of_optimizations), report_time::yes);
+            const Timeit ti_relax(fmt::format("{} rough optimizations: ", opt.number_of_optimizations), report_time::yes);
             acmacs::chart::optimization_options options(method, acmacs::chart::optimization_precision::rough, opt.max_distance_multiplier);
             options.num_threads = opt.threads;
             chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, acmacs::chart::use_dimension_annealing::yes, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
@@ -74,7 +74,7 @@ int main(int argc, char* const argv[])
 
         {
             // grid test
-            const Timeit ti(fmt::format("grid test: ", opt.number_of_optimizations), report_time::yes);
+            const Timeit ti_grid(fmt::format("grid test: ", opt.number_of_optimizations), report_time::yes);
             size_t projection_no_to_test = 0;
             for (auto attempt = 1; attempt < 20; ++attempt) {
                 acmacs::chart::GridTest test(chart, projection_no_to_test, opt.grid_step);
