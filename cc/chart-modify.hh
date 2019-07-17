@@ -437,13 +437,14 @@ namespace acmacs::chart
         enum class randomizer { plain_with_table_max_distance, plain_with_current_layout_area, plain_from_sample_optimization };
 
         explicit ProjectionModify(const Chart& chart) : Projection(chart) {}
-        explicit ProjectionModify(const ProjectionModify& aSource) : Projection(aSource.chart())
+        explicit ProjectionModify(const ProjectionModify& aSource, const Chart& chart) : Projection(chart)
             {
                 if (aSource.modified()) {
                     layout_ = std::make_shared<acmacs::Layout>(*aSource.layout_modified());
                     transformation_ = aSource.transformation_modified();
                 }
             }
+        explicit ProjectionModify(const ProjectionModify& aSource) : ProjectionModify(aSource, aSource.chart()) {}
 
         std::string comment() const override { return comment_; }
 
@@ -549,8 +550,8 @@ namespace acmacs::chart
                 set_forced_column_bases(chart.forced_column_bases(minimum_column_basis));
             }
 
-        explicit ProjectionModifyNew(const ProjectionModify& aSource)
-            : ProjectionModify(aSource), minimum_column_basis_(aSource.minimum_column_basis()),
+        explicit ProjectionModifyNew(const ProjectionModify& aSource, const Chart& chart)
+            : ProjectionModify(aSource, chart), minimum_column_basis_(aSource.minimum_column_basis()),
               dodgy_titer_is_regular_(aSource.dodgy_titer_is_regular()), stress_diff_to_stop_(aSource.stress_diff_to_stop()),
               disconnected_(aSource.disconnected())
             {
@@ -560,6 +561,8 @@ namespace acmacs::chart
                 set_forced_column_bases(aSource.forced_column_bases());
                 comment(aSource.comment());
             }
+
+        explicit ProjectionModifyNew(const ProjectionModify& aSource) : ProjectionModifyNew(aSource, aSource.chart()) {}
 
         std::shared_ptr<Layout> layout() const override { return layout_modified(); }
         std::shared_ptr<Layout> transformed_layout() const override { return transformed_layout_modified(); }
@@ -608,7 +611,10 @@ namespace acmacs::chart
         void add(std::shared_ptr<ProjectionModify> projection);
 
         std::shared_ptr<ProjectionModifyNew> new_from_scratch(number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis);
+        // clone projection of the ssame chart
         std::shared_ptr<ProjectionModifyNew> new_by_cloning(const ProjectionModify& source, bool add_to_chart = true);
+        // clone projection of another chart (source.chart()) and add it to this chart (chart argument)
+        std::shared_ptr<ProjectionModifyNew> new_by_cloning(const ProjectionModify& source, Chart& chart);
 
         void keep_just(size_t number_of_projections_to_keep)
             {

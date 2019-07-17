@@ -1467,6 +1467,16 @@ std::shared_ptr<ProjectionModifyNew> ProjectionsModify::new_by_cloning(const Pro
 
 // ----------------------------------------------------------------------
 
+std::shared_ptr<ProjectionModifyNew> ProjectionsModify::new_by_cloning(const ProjectionModify& source, Chart& chart)
+{
+    auto projection = std::make_shared<ProjectionModifyNew>(source, chart);
+    add(projection);
+    return projection;
+
+} // ProjectionsModify::new_by_cloning
+
+// ----------------------------------------------------------------------
+
 void ProjectionsModify::remove_all()
 {
     projections_.erase(projections_.begin(), projections_.end());

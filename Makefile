@@ -45,6 +45,7 @@ TARGETS = \
   $(DIST)/chart-list-antigens-without-titers \
   $(DIST)/chart-remove-layers \
   $(DIST)/chart-merge \
+  $(DIST)/chart-combine-projections \
   $(DIST)/chart-export \
   $(DIST)/chart-homologous-pairs \
   $(DIST)/chart-map-resolution-test \
