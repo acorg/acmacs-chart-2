@@ -19,14 +19,18 @@ def main(args):
     submission_file = os.path.join(submission_dir, "submit.txt")
     with open(submission_file, "w") as sf:
         for host in args.hosts.split(","):
-            target = f"{os.path.dirname(source)}/{os.path.splitext(os.path.basename(source))[0]}.{num_opt}-grid-{host}.ace"
+            if args.queue > 1:
+                queue_infix = "-q$(Process)"
+            else:
+                queue_infix = ""
+            target = f"{os.path.dirname(source)}/{os.path.splitext(os.path.basename(source))[0]}.{num_opt}-grid-{host}{queue_infix}.ace"
             submit_command_args = f"-n {args.number_of_optimizations} -m {args.min_col_basis} -d {args.number_of_dimensions} --keep-projections {args.keep_projections} '{os.path.basename(source)}' '{os.path.basename(target)}'"
             if args.reorient_to:
                 submit_command_args += f" --reorient '{os.path.basename(args.reorient_to)}'"
             sf.write(sSubmitEntry.format(arguments=submit_command_args, host=host, nproc=sNproc[host], source=source, source_basename=os.path.basename(source),
                                          target=target, log_file=os.path.join(submission_dir, f"{host}.log"),
                                          stdout_file=os.path.join(submission_dir, f"{host}.stdout.txt"), stderr_file=os.path.join(submission_dir, f"{host}.stderr.txt"),
-                                         number_of_optimizations=args.number_of_optimizations))
+                                         number_of_optimizations=args.number_of_optimizations, queue=args.queue))
     print(submission_dir)
     subprocess.run(["condor_submit", submission_file])
 
@@ -51,7 +55,7 @@ error = {stderr_file}
 JobBatchName = "AD chart-relax-grid {source_basename} {host} {number_of_optimizations}"
 description = "AD chart-relax-grid {source_basename} {host} {number_of_optimizations}"
 coresize = -1
-queue
+queue {queue}
 """
 
 sNproc = {"o16": 64, "o17": 64, "i18": 32, "i19": 32, "i20": 32, "i21": 32, "i22": 32}
@@ -68,6 +72,7 @@ try:
     parser.add_argument("-d", "--number-of-dimensions", dest="number_of_dimensions", type=int, default=2)
     parser.add_argument("-k", "--keep-projections", dest="keep_projections", type=int, default=10)
     parser.add_argument("-r", "--reorient", dest="reorient_to", default=None)
+    parser.add_argument("-q", "--queue", dest="queue", type=int, default=1, help='enqueue specified number of jobs, output in files with infix -qN')
 
     parser.add_argument("source", nargs=1)
     args = parser.parse_args()
