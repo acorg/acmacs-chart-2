@@ -43,12 +43,20 @@ namespace acmacs::chart
 
             std::string report() const;
             std::string export_to_json(const Chart& chart) const;
+            std::string export_to_layout_csv(const Chart& chart, const acmacs::chart::Projection& projection) const;
             auto count_trapped_hemisphering() const { return std::count_if(begin(), end(), [](const auto& r) { return r.diagnosis == Result::trapped || r.diagnosis == Result::hemisphering; }); }
             number_of_dimensions_t num_dimensions() const { return front().pos.number_of_dimensions(); }
 
           private:
             void exclude_disconnected(const acmacs::chart::Projection& projection);
             Result* find(size_t point_no)
+            {
+                if (const auto found = std::find_if(begin(), end(), [point_no](const auto& en) { return en.point_no == point_no; }); found != end())
+                    return &*found;
+                else
+                    return nullptr;
+            }
+            const Result* find(size_t point_no) const
             {
                 if (const auto found = std::find_if(begin(), end(), [point_no](const auto& en) { return en.point_no == point_no; }); found != end())
                     return &*found;

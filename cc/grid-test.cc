@@ -2,6 +2,7 @@
 #include "acmacs-base/fmt.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/to-json.hh"
+#include "acmacs-base/data-formatter.hh"
 #include "acmacs-chart-2/grid-test.hh"
 
 // ----------------------------------------------------------------------
@@ -318,6 +319,66 @@ std::string acmacs::chart::GridTest::Results::export_to_json(const Chart& chart)
         });
 
 } // acmacs::chart::GridTest::Results::export_to_json
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::GridTest::Results::export_to_layout_csv(const Chart& chart, const acmacs::chart::Projection& projection) const
+{
+    using DF = acmacs::DataFormatterCSV;
+
+    auto antigens = chart.antigens();
+    const auto number_of_antigens = antigens->size();
+    auto sera = chart.sera();
+    auto layout = projection.layout();
+    const auto number_of_dimensions = layout->number_of_dimensions();
+
+    std::string result;
+
+    const auto add = [&](size_t point_no) {
+        for (auto dim : acmacs::range<number_of_dimensions_t>(number_of_dimensions))
+            DF::second_field(result, (*layout)(point_no, dim));
+        if (const auto* res = find(point_no); res) {
+            DF::second_field(result, res->diagnosis_str());
+            DF::second_field(result, res->distance);
+            DF::second_field(result, res->contribution_diff);
+            for (auto dim : acmacs::range<number_of_dimensions_t>(number_of_dimensions))
+                DF::second_field(result, res->pos[dim]);
+        }
+        else {
+            DF::second_field(result, "not-tested");
+            DF::second_field(result, "");
+            DF::second_field(result, "");
+        }
+    };
+
+    DF::first_field(result, "");
+    DF::second_field(result, "name");
+    for (auto dim : acmacs::range<number_of_dimensions_t>(number_of_dimensions))
+        DF::second_field(result, fmt::format("coord {}", dim));
+    DF::second_field(result, "hemisphering");
+    DF::second_field(result, "distance");
+    DF::second_field(result, "contribution_diff");
+    for (auto dim : acmacs::range<number_of_dimensions_t>(number_of_dimensions))
+        DF::second_field(result, fmt::format("other coord {}", dim));
+    DF::end_of_record(result);
+
+    for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
+        DF::first_field(result, "AG");
+        DF::second_field(result, antigen->full_name());
+        add(ag_no);
+        DF::end_of_record(result);
+    }
+
+    for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
+        DF::first_field(result, "SR");
+        DF::second_field(result, serum->full_name());
+        add(sr_no + number_of_antigens);
+        DF::end_of_record(result);
+    }
+
+    return result;
+
+} // acmacs::chart::GridTest::Results::export_to_layout_csv
 
 // ----------------------------------------------------------------------
 

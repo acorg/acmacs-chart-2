@@ -20,7 +20,8 @@ struct Options : public argv
     option<size_t> projection{*this, "projection", dflt{0UL}, desc{"projection number to test"}};
     option<double> step{*this, "step", dflt{0.1}, desc{"grid step"}};
     option<str>    points_to_test{*this, "points", dflt{"all"}, desc{"comma separated list of point numbers or names to test, \"all\" to test all"}};
-    option<str>    json{*this, "json", desc{"export test results in json"}};
+    option<str>    json{*this, "json", desc{"export test results into json"}};
+    option<str>    csv{*this, "csv", desc{"export layout and test results into csv"}};
     option<int>    threads{*this, "threads", dflt{0}, desc{"number of threads to use for test (omp): 0 - autodetect, 1 - sequential"}};
     option<bool>   report_time{*this, "time", desc{"report time of loading chart"}};
     option<bool>   verbose{*this, "verbose"};
@@ -94,10 +95,11 @@ int main(int argc, char* const argv[])
             results = test.test(points);
             fmt::print("{}\n", results.report());
         }
-        if (opt.json) {
+        if (opt.json)
             acmacs::file::write(opt.json, results.export_to_json(chart));
-        }
-        else {
+        if (opt.csv)
+            acmacs::file::write(opt.csv, results.export_to_layout_csv(chart, *chart.projection(opt.projection)));
+        if (!opt.json && !opt.csv) {
             for (const auto& res : results) {
                 if (res.diagnosis == acmacs::chart::GridTest::Result::trapped || res.diagnosis == acmacs::chart::GridTest::Result::hemisphering)
                     fmt::print("{}\n", res.report(chart));
