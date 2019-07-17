@@ -10,6 +10,35 @@
 
 // ----------------------------------------------------------------------
 
+bool acmacs::chart::equal(const Titers& t1, const Titers& t2, bool verbose)
+{
+    if (t1.number_of_antigens() != t2.number_of_antigens() || t1.number_of_sera() != t2.number_of_sera() || t1.number_of_layers() != t2.number_of_layers()) {
+        if (verbose)
+            fmt::print(stderr, "WARNING: number of ag/sr or layes are different\n");
+        return false;
+    }
+
+    auto tt1 = t1.titers_existing(), tt2 = t2.titers_existing();
+    for (auto it1 = tt1.begin(), it2 = tt2.begin(); it1 != tt1.end(); ++it1, ++it2) {
+        if (it1 != it2)
+            return false;
+    }
+    if (t1.number_of_layers() > 1) {
+        for (size_t layer_no = 0; layer_no < t1.number_of_layers(); ++layer_no) {
+            auto tl1 = t1.titers_existing_from_layer(layer_no), tl2 = t2.titers_existing_from_layer(layer_no);
+            for (auto it1 = tl1.begin(), it2 = tl2.begin(); it1 != tl1.end(); ++it1, ++it2) {
+                if (it1 != it2)
+                    return false;
+            }
+        }
+    }
+
+    return true;
+
+} // acmacs::chart::equal
+
+// ----------------------------------------------------------------------
+
 void acmacs::chart::Titer::validate(std::string_view titer)
 {
     if (titer.empty())

@@ -846,6 +846,28 @@ namespace acmacs::chart
         return calculate_gradient(stress_factory(*this, mult));
     }
 
+    template <typename AgSr, typename = std::enable_if_t<std::is_same_v<AgSr, Antigens> || std::is_same_v<AgSr, Sera>>>
+        inline bool equal(const AgSr& a1, const AgSr& a2, bool verbose = false)
+    {
+        if (a1.size() != a2.size()) {
+            if (verbose)
+                fmt::print(stderr, "WARNING: number of ag/sr different: {} vs {}\n", a1.size(), a2.size());
+            return false;
+        }
+        for (auto i1 = a1.begin(), i2 = a2.begin(); i1 != a1.end(); ++i1, ++i2) {
+            if (**i1 != **i2) {
+                if (verbose)
+                    fmt::print(stderr, "WARNING: ag/sr different: {} vs {}\n", (*i1)->full_name(), (*i2)->full_name());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // returns if sets of antigens, sera are the same in both charts and titers are the same.
+    // charts may have different sets of projections and different plot specs
+    bool same_tables(const Chart& c1, const Chart& c2, bool verbose = false);
+
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------

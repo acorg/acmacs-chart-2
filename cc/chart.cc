@@ -249,6 +249,32 @@ void acmacs::chart::Chart::show_table(std::ostream& output, std::optional<size_t
 
 // ----------------------------------------------------------------------
 
+bool acmacs::chart::same_tables(const Chart& c1, const Chart& c2, bool verbose)
+{
+    if (!equal(*c1.antigens(), *c2.antigens(), verbose)) {
+        if (verbose)
+            fmt::print(stderr, "WARNING: antigen sets are different\n");
+        return false;
+    }
+
+    if (!equal(*c1.sera(), *c2.sera(), verbose)) {
+        if (verbose)
+            fmt::print(stderr, "WARNING: serum sets are different\n");
+        return false;
+    }
+
+    if (!equal(*c1.titers(), *c2.titers(), verbose)) {
+        if (verbose)
+            fmt::print(stderr, "WARNING: titers are different\n");
+        return false;
+    }
+
+    return true;
+
+} // acmacs::chart::same_tables
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::BLineage::Lineage acmacs::chart::BLineage::from(std::string aSource)
 {
     if (!aSource.empty()) {

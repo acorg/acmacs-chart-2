@@ -258,6 +258,8 @@ namespace acmacs::chart
 
     }; // class Titers
 
+    bool equal(const Titers& t1, const Titers& t2, bool verbose = false);
+
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------
