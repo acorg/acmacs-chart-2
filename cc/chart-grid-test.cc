@@ -1,8 +1,9 @@
-#include <iostream>
 #include <algorithm>
 
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/filesystem.hh"
+#include "acmacs-base/read-file.hh"
+#include "acmacs-base/string-split.hh"
 #include "acmacs-chart-2/grid-test.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
@@ -18,7 +19,8 @@ struct Options : public argv
     option<bool>   relax{*this, "relax", desc{"move trapped points and relax, test again, repeat while there are trapped points"}};
     option<size_t> projection{*this, "projection", dflt{0UL}, desc{"projection number to test"}};
     option<double> step{*this, "step", dflt{0.1}, desc{"grid step"}};
-    option<str>    point_to_test{*this, "point", dflt{"all"}, desc{"point number of name to test, \"all\" to test all"}};
+    option<str>    points_to_test{*this, "points", dflt{"all"}, desc{"comma separated list of point numbers or names to test, \"all\" to test all"}};
+    option<str>    json{*this, "json", desc{"export test results in json"}};
     option<int>    threads{*this, "threads", dflt{0}, desc{"number of threads to use for test (omp): 0 - autodetect, 1 - sequential"}};
     option<bool>   report_time{*this, "time", desc{"report time of loading chart"}};
     option<bool>   verbose{*this, "verbose"};
@@ -35,18 +37,18 @@ int main(int argc, char* const argv[])
         const auto report = do_report_time(opt.report_time);
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source, acmacs::chart::Verify::None, report)};
 
-        // std::cout << test.initial_report() << '\n';
-        if (opt.point_to_test == "all") {
+        acmacs::chart::GridTest::Results results;
+        if (opt.points_to_test == "all") {
             std::vector<size_t> projections_to_reorient;
             size_t projection_no_to_test = opt.projection;
             for (auto attempt = 1; attempt < 10; ++attempt) {
                 acmacs::chart::GridTest test(chart, projection_no_to_test, opt.step);
-                const auto results = test.test_all_parallel(opt.threads);
-                std::cout << results.report() << '\n';
+                results = test.test_all(opt.threads);
+                fmt::print("{}\n", results.report());
                 if (opt.verbose || !opt.relax) {
                     for (const auto& entry : results) {
                         if (entry)
-                            std::cout << entry.report(chart) << '\n';
+                            fmt::print("{}\n", entry.report(chart));
                     }
                 }
                 if (!opt.relax)
@@ -70,28 +72,35 @@ int main(int argc, char* const argv[])
                 chart.projections_modify()->sort();
                 acmacs::chart::export_factory(chart, opt.output, fs::path(opt.program_name()).filename(), report);
             }
-            std::cerr << chart.make_info() << '\n';
+            fmt::print(stderr, "{}\n", chart.make_info());
         }
         else {
             acmacs::chart::GridTest test(chart, opt.projection, opt.step);
             auto antigens = chart.antigens();
             acmacs::chart::Indexes points;
-            try {
-                points.insert(std::stoul(opt.point_to_test));
+            for (const auto& point_ref : acmacs::string::split(*opt.points_to_test, ",")) {
+                if (const auto point_no = string::from_chars<size_t>(point_ref); point_no != std::numeric_limits<size_t>::max()) {
+                    points.insert(point_no);
+                }
+                else {
+                    if (auto found = antigens->find_by_full_name(point_ref); found)
+                        points.insert(*found);
+                    else
+                        points = antigens->find_by_name(point_ref);
+                    if (points.empty())
+                        throw std::runtime_error(fmt::format("No points selected by {}", point_ref));
+                }
             }
-            catch (std::invalid_argument&) {
-                if (auto found = antigens->find_by_full_name(opt.point_to_test); found)
-                    points.insert(*found);
-                else
-                    points = antigens->find_by_name(opt.point_to_test);
-                if (points.empty())
-                    throw std::runtime_error(string::concat("No points selected by ", *opt.point_to_test));
-            }
-            for (auto point : points) {
-                if (const auto result = test.test_point(point); result)
-                    std::cout << result.report(chart) << '\n';
-                else if (opt.verbose)
-                    std::cout << result.report(chart) << '\n';
+            results = test.test(points);
+            fmt::print("{}\n", results.report());
+        }
+        if (opt.json) {
+            acmacs::file::write(opt.json, results.export_to_json(chart));
+        }
+        else {
+            for (const auto& res : results) {
+                if (res.diagnosis == acmacs::chart::GridTest::Result::trapped || res.diagnosis == acmacs::chart::GridTest::Result::hemisphering)
+                    fmt::print("{}\n", res.report(chart));
             }
         }
     }

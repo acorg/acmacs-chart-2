@@ -78,7 +78,7 @@ int main(int argc, char* const argv[])
             size_t projection_no_to_test = 0;
             for (auto attempt = 1; attempt < 20; ++attempt) {
                 acmacs::chart::GridTest test(chart, projection_no_to_test, opt.grid_step);
-                const auto results = test.test_all_parallel(opt.threads);
+                const auto results = test.test_all(opt.threads);
                 fmt::print("{}\n", results.report());
                 if (opt.verbose) {
                     for (const auto& entry : results) {

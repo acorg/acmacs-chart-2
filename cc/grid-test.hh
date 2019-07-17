@@ -37,23 +37,30 @@ namespace acmacs::chart
         class Results : public std::vector<Result>
         {
          public:
-            Results(size_t number_of_points, number_of_dimensions_t number_of_dimensions)
-                : std::vector<Result>(number_of_points, Result(0, number_of_dimensions))
-            {
-                size_t point_no = 0;
-                for (auto& res : *this)
-                    res.point_no = point_no++;
-            }
+            Results() = default;
+            Results(const acmacs::chart::Projection& projection);
+            Results(const std::vector<size_t>& points, const acmacs::chart::Projection& projection);
+
             std::string report() const;
+            std::string export_to_json(const Chart& chart) const;
             auto count_trapped_hemisphering() const { return std::count_if(begin(), end(), [](const auto& r) { return r.diagnosis == Result::trapped || r.diagnosis == Result::hemisphering; }); }
             number_of_dimensions_t num_dimensions() const { return front().pos.number_of_dimensions(); }
+
+          private:
+            void exclude_disconnected(const acmacs::chart::Projection& projection);
+            Result* find(size_t point_no)
+            {
+                if (const auto found = std::find_if(begin(), end(), [point_no](const auto& en) { return en.point_no == point_no; }); found != end())
+                    return &*found;
+                else
+                    return nullptr;
+            }
         };
 
         std::string point_name(size_t point_no) const;
-        Result test_point(size_t point_no);
-        void test_point(Result& result);
-        Results test_all() { return test_all_parallel(1); }          // single thread version
-        Results test_all_parallel(int threads = 0); // omp version
+        Result test(size_t point_no);
+        Results test(const std::vector<size_t>& points, int threads = 0);
+        Results test_all(int threads = 0);
         Projection make_new_projection_and_relax(const Results& results, bool verbose);
 
       private:
@@ -66,11 +73,11 @@ namespace acmacs::chart
         Stress stress_;
         static constexpr auto optimization_method_ = acmacs::chart::optimization_method::alglib_cg_pca;
 
+        void test(Result& result);
         bool antigen(size_t point_no) const { return point_no < chart_.number_of_antigens(); }
         size_t antigen_serum_no(size_t point_no) const { return antigen(point_no) ? point_no : (point_no - chart_.number_of_antigens()); }
         // acmacs::Area area_for(size_t point_no) const;
         acmacs::Area area_for(const Stress::TableDistancesForPoint& table_distances_for_point) const;
-        Results test_all_prepare();
 
     }; // class GridTest::chart
 

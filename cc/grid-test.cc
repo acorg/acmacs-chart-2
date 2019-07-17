@@ -1,5 +1,7 @@
 #include "acmacs-base/omp.hh"
 #include "acmacs-base/fmt.hh"
+#include "acmacs-base/enumerate.hh"
+#include "acmacs-base/to-json.hh"
 #include "acmacs-chart-2/grid-test.hh"
 
 // ----------------------------------------------------------------------
@@ -49,17 +51,17 @@ acmacs::Area acmacs::chart::GridTest::area_for(const Stress::TableDistancesForPo
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::GridTest::Result acmacs::chart::GridTest::test_point(size_t point_no)
+acmacs::chart::GridTest::Result acmacs::chart::GridTest::test(size_t point_no)
 {
     Result result(point_no, original_layout_.number_of_dimensions());
-    test_point(result);
+    test(result);
     return result;
 
 } // acmacs::chart::GridTest::test_point
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::GridTest::test_point(Result& result)
+void acmacs::chart::GridTest::test(Result& result)
 {
     if (result.diagnosis == Result::not_tested) {
         const auto table_distances_for_point = stress_.table_distances_for(result.point_no);
@@ -122,49 +124,37 @@ void acmacs::chart::GridTest::test_point(Result& result)
         }
     }
 
-} // acmacs::chart::GridTest::test_point
+} // acmacs::chart::GridTest::test
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all_prepare()
+acmacs::chart::GridTest::Results acmacs::chart::GridTest::test(const std::vector<size_t>& points, [[maybe_unused]] int threads)
 {
-      // std::cerr << "stress: " << stress_.value(original_layout_.data()) << '\n';
-    Results result(chart_.number_of_points(), original_layout_.number_of_dimensions()); // (acmacs::index_iterator(0UL), acmacs::index_iterator(chart_.number_of_points()));
-    for (auto unmovable : projection_->unmovable())
-        result[unmovable].diagnosis = Result::excluded;
-    for (auto disconnected : projection_->disconnected())
-        result[disconnected].diagnosis = Result::excluded;
-    result.erase(std::remove_if(result.begin(), result.end(), [](const auto& entry) { return entry.diagnosis == Result::excluded; }), result.end());
-    return result;
+    Results results(points, *projection_);
 
-} // acmacs::chart::GridTest::test_all_prepare
-
-// ----------------------------------------------------------------------
-
-// acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all()
-// {
-//     auto result = test_all_prepare();
-//     for (size_t entry_no = 0; entry_no < result.size(); ++entry_no) {
-//         test_point(result[entry_no]);
-//     }
-//     return result;
-
-// } // acmacs::chart::GridTest::test_all
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all_parallel([[maybe_unused]] int threads)
-{
-    auto result = test_all_prepare();
-
-#pragma omp parallel for default(none) shared(result) num_threads(threads <= 0 ? omp_get_max_threads() : threads) schedule(static, chart_.number_of_antigens() < 1000 ? 4 : 1)
-    for (size_t entry_no = 0; entry_no < result.size(); ++entry_no) {
-        test_point(result[entry_no]);
+#pragma omp parallel for default(none) shared(results) num_threads(threads <= 0 ? omp_get_max_threads() : threads) schedule(static, chart_.number_of_antigens() < 1000 ? 4 : 1)
+    for (size_t entry_no = 0; entry_no < results.size(); ++entry_no) {
+        test(results[entry_no]);
     }
 
-    return result;
+    return results;
 
-} // acmacs::chart::GridTest::test_all_parallel
+} // acmacs::chart::GridTest::test
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all([[maybe_unused]] int threads)
+{
+    Results results(*projection_);
+
+#pragma omp parallel for default(none) shared(results) num_threads(threads <= 0 ? omp_get_max_threads() : threads) schedule(static, chart_.number_of_antigens() < 1000 ? 4 : 1)
+    for (size_t entry_no = 0; entry_no < results.size(); ++entry_no) {
+        test(results[entry_no]);
+    }
+
+    return results;
+
+} // acmacs::chart::GridTest::test_all
 
 // ----------------------------------------------------------------------
 
@@ -191,7 +181,7 @@ std::string acmacs::chart::GridTest::Results::report() const
     size_t trapped = 0, hemi = 0;
     std::for_each(begin(), end(), [&](const auto& r) { if (r.diagnosis == Result::trapped) ++trapped; else if (r.diagnosis == Result::hemisphering) ++hemi; });
     if (trapped || hemi)
-        return "trapped:" + std::to_string(trapped) + " hemisphering:" + std::to_string(hemi);
+        return fmt::format("trapped:{} hemisphering:{}", trapped, hemi);
     else
         return "nothing found";
 
@@ -221,10 +211,10 @@ std::string acmacs::chart::GridTest::Result::report(const Chart& chart) const
     }
     std::string name;
     if (const auto num_ags = chart.number_of_antigens(); point_no < num_ags)
-        name = string::concat("[AG ", point_no, ' ', chart.antigens()->at(point_no)->full_name(), ']');
+        name = fmt::format("[AG {:5d} {}]", point_no, chart.antigens()->at(point_no)->full_name());
     else
-        name = string::concat("[SR ", point_no - num_ags, ' ', chart.sera()->at(point_no - num_ags)->full_name(), ']');
-    return string::concat(diag, ' ', name, " diff:", acmacs::to_string(contribution_diff, 4), " dist:", acmacs::to_string(distance, 4));
+        name = fmt::format("[SR {:5d} {}]", point_no - num_ags, chart.sera()->at(point_no - num_ags)->full_name());
+    return fmt::format("{} {} diff:{:.4f} dist:{:.4f}", diag, name, contribution_diff, distance);
 
 } // acmacs::chart::GridTest::Result::report
 
@@ -247,6 +237,87 @@ std::string acmacs::chart::GridTest::Result::diagnosis_str() const
     return "not_tested";
 
 } // acmacs::chart::GridTest::Result::diagnosis_str
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::GridTest::Results::Results(const acmacs::chart::Projection& projection)
+    : std::vector<Result>(projection.number_of_points(), Result(0, projection.number_of_dimensions()))
+{
+    size_t point_no = 0;
+    for (auto& res : *this)
+        res.point_no = point_no++;
+    exclude_disconnected(projection);
+
+} // acmacs::chart::GridTest::Results::Results
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::GridTest::Results::Results(const std::vector<size_t>& points, const acmacs::chart::Projection& projection)
+    : std::vector<Result>(points.size(), Result(0, projection.number_of_dimensions()))
+{
+    for (auto [index, point_no] : acmacs::enumerate(points))
+        at(index).point_no = point_no;
+    exclude_disconnected(projection);
+
+} // acmacs::chart::GridTest::Results::Results
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::GridTest::Results::exclude_disconnected(const acmacs::chart::Projection& projection)
+{
+    const auto exclude = [this](size_t point_no) {
+        if (auto* found = find(point_no); found)
+            found->diagnosis = Result::excluded;
+    };
+
+    for (auto unmovable : projection.unmovable())
+        exclude(unmovable);
+    for (auto disconnected : projection.disconnected())
+        exclude(disconnected);
+    erase(std::remove_if(begin(), end(), [](const auto& entry) { return entry.diagnosis == Result::excluded; }), end());
+
+} // acmacs::chart::GridTest::Results::exclude_disconnected
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::GridTest::Results::export_to_json(const Chart& chart) const
+{
+    const auto export_point = [&chart](const auto& en) -> to_json::object {
+        return to_json::object{
+            to_json::key_val{"point_no", en.point_no},
+            to_json::key_val{"name", en.point_no < chart.number_of_antigens() ? chart.antigen(en.point_no)->full_name() : chart.serum(en.point_no - chart.number_of_antigens())->full_name()},
+            to_json::key_val{"distance", en.distance},
+            to_json::key_val{"contribution_diff", en.contribution_diff},
+            to_json::key_val{"pos", to_json::array(en.pos.begin(), en.pos.end())},
+        };
+    };
+
+    to_json::array hemisphering, trapped, tested;
+    for (const auto& en : *this) {
+        tested << en.point_no;
+        switch (en.diagnosis) {
+          case Result::trapped:
+              trapped << export_point(en);
+              break;
+          case Result::hemisphering:
+              hemisphering << export_point(en);
+              break;
+          case Result::excluded:
+          case Result::not_tested:
+          case Result::normal:
+              break;
+        }
+    }
+
+    return fmt::format("{}\n", to_json::object{
+            to_json::key_val{" version", "grid-test-v1"},
+            to_json::key_val{"chart", chart.make_name()},
+            // to_json::key_val{"tested", std::move(tested)},
+            to_json::key_val{"hemisphering", std::move(hemisphering)},
+            to_json::key_val{"trapped", std::move(trapped)}
+        });
+
+} // acmacs::chart::GridTest::Results::export_to_json
 
 // ----------------------------------------------------------------------
 
