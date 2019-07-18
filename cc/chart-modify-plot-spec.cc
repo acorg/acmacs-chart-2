@@ -24,12 +24,12 @@ struct Options : public argv
 {
     Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
 
-    option<str> points{*this, arg_name{"points"}, desc{"comma separated list of point indexes, no spaces!"}};
-    option<str> antigens{*this, arg_name{"antigens"}, desc{"comma separated list of antigen indexes, no spaces!"}};
-    option<str> sera{*this, arg_name{"sera"}, desc{"comma separated list of serum indexes, no spaces!"}};
-    option<double> size{*this, arg_name{"size"}, desc{"change point size"}};
-    option<str> fill{*this, arg_name{"fill"}, desc{"change point fill color"}};
-    option<str> outline{*this, arg_name{"outline"}, desc{"change point outline color"}};
+    option<str> points{*this, "points", desc{"comma separated list of point indexes, no spaces!"}};
+    option<str> antigens{*this, "antigens", desc{"comma separated list of antigen indexes, no spaces!"}};
+    option<str> sera{*this, "sera", desc{"comma separated list of serum indexes, no spaces!"}};
+    option<double> size{*this, "size", desc{"change point size"}};
+    option<str> fill{*this, "fill", desc{"change point fill color"}};
+    option<str> outline{*this, "outline", desc{"change point outline color"}};
 
     argument<str> input_chart{*this, arg_name{"input-chart"}, mandatory};
     argument<str> output_chart{*this, arg_name{"output-chart"}, mandatory};
