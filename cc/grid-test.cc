@@ -311,7 +311,7 @@ std::string acmacs::chart::GridTest::Results::export_to_json(const Chart& chart)
     }
 
     return fmt::format("{}\n", to_json::object{
-            to_json::key_val{" version", "grid-test-v1"},
+            to_json::key_val{"  version", "grid-test-v1"},
             to_json::key_val{"chart", chart.make_name()},
             // to_json::key_val{"tested", std::move(tested)},
             to_json::key_val{"hemisphering", std::move(hemisphering)},
