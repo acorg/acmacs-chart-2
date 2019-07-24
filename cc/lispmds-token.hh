@@ -7,6 +7,7 @@
 #include <typeinfo>
 
 #include "acmacs-base/string.hh"
+#include "acmacs-base/fmt.hh"
 
 // ----------------------------------------------------------------------
 
@@ -74,6 +75,8 @@ namespace acmacs::lispmds
             inline string(const std::string_view& aValue) : mValue(aValue) {}
 
             inline operator std::string() const { return mValue; }
+            inline const std::string& operator*() const { return mValue; }
+            inline const std::string* operator->() const { return &mValue; }
             inline char operator[](size_t index) const { return mValue.at(index); }
             inline bool operator==(const string& s) const { return mValue == s.mValue; }
             inline bool operator!=(const string& s) const { return mValue != s.mValue; }
@@ -300,6 +303,11 @@ inline std::ostream& operator<<(std::ostream& s, const acmacs::lispmds::value& v
 {
     return s << acmacs::to_string(val);
 }
+
+template <typename T> struct fmt::formatter<T, std::enable_if_t<std::is_same_v<decltype(acmacs::to_string(std::declval<T>())), std::string>, std::string>> : fmt::formatter<std::string> {
+        template <typename FormatCtx> auto format(const T& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(acmacs::to_string(val), ctx); }
+};
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:

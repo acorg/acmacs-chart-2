@@ -7,6 +7,7 @@
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
+#include "acmacs-base/fmt.hh"
 #include "acmacs-chart-2/lispmds-import.hh"
 #include "acmacs-chart-2/lispmds-encode.hh"
 
@@ -61,32 +62,37 @@ static inline const acmacs::lispmds::value& projection_layout(const acmacs::lisp
 std::vector<double> native_column_bases(const acmacs::lispmds::value& aData)
 {
     std::vector<double> cb(number_of_sera(aData), 0);
-    for (const auto& row: std::get<acmacs::lispmds::list>(acmacs::lispmds::get(aData, 0, 3))) {
-        for (auto [sr_no, titer_v]: acmacs::enumerate(std::get<acmacs::lispmds::list>(row))) {
-            try {
-                const double titer = std::get<acmacs::lispmds::number>(titer_v);
-                if (titer > cb[sr_no])
-                    cb[sr_no] = titer;
-            }
-            catch (std::bad_variant_access&) {
-                if (const std::string titer_s = std::get<acmacs::lispmds::string>(titer_v); !titer_s.empty()) {
-                    double titer;
-                    switch (titer_s[0]) {
-                      case '<':
-                          titer = std::stod(titer_s.substr(1));
-                          if (titer > cb[sr_no])
-                              cb[sr_no] = titer;
-                          break;
-                      case '>':
-                          titer = std::stod(titer_s.substr(1)) + 1;
-                          if (titer > cb[sr_no])
-                              cb[sr_no] = titer;
-                          break;
-                      default:
-                          break;
+    for (const auto& row : std::get<acmacs::lispmds::list>(acmacs::lispmds::get(aData, 0, 3))) {
+        for (auto [sr_no, titer_v] : acmacs::enumerate(std::get<acmacs::lispmds::list>(row))) {
+            std::visit(
+                [&cb, sr_no = sr_no](auto&& titer) {
+                    using T = std::decay_t<decltype(titer)>;
+                    if constexpr (std::is_same_v<T, acmacs::lispmds::symbol>) {
+                        double titer_d;
+                        switch (titer[0]) {
+                            case '<':
+                                titer_d = std::stod(titer->substr(1));
+                                if (titer_d > cb[sr_no])
+                                    cb[sr_no] = titer_d;
+                                break;
+                            case '>':
+                                titer_d = std::stod(titer->substr(1)) + 1;
+                                if (titer_d > cb[sr_no])
+                                    cb[sr_no] = titer_d;
+                                break;
+                            default:
+                                break;
+                        }
                     }
-                }
-            }
+                    else if constexpr (std::is_same_v<T, acmacs::lispmds::number>) {
+                        const double titer_d = titer;
+                        if (titer_d > cb[sr_no])
+                            cb[sr_no] = titer_d;
+                    }
+                    else
+                        throw acmacs::lispmds::type_mismatch("Unexpected titer type: "s + typeid(T).name());
+                },
+                titer_v);
         }
     }
     return cb;
@@ -430,20 +436,21 @@ SerumP LispmdsSera::operator[](size_t aIndex) const
 
 Titer LispmdsTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
 {
-    const auto& titer_v = acmacs::lispmds::get(mData, 0, 3, aAntigenNo, aSerumNo);
-    std::string prefix;
-    double titer = 0;
-    try {
-        titer = std::get<acmacs::lispmds::number>(titer_v);
-    }
-    catch (std::bad_variant_access&) {
-        const std::string sym = std::get<acmacs::lispmds::symbol>(titer_v);
-        prefix.append(1, sym[0]);
-        if (prefix == "*")
-            return prefix;
-        titer = std::stod(sym.substr(1));
-    }
-    return prefix + acmacs::to_string(std::lround(std::exp2(titer) * 10));
+    return std::visit(
+        [](auto&& titer_x) -> Titer {
+            using T = std::decay_t<decltype(titer_x)>;
+            if constexpr (std::is_same_v<T, acmacs::lispmds::symbol>) {
+                if (titer_x[0] == '*')
+                    return std::string(1, titer_x[0]);
+                return std::string(1, titer_x[0]) + acmacs::to_string(std::lround(std::exp2(std::stod(titer_x->substr(1))) * 10));
+            }
+            else if constexpr (std::is_same_v<T, acmacs::lispmds::number>) {
+                return acmacs::to_string(std::lround(std::exp2(static_cast<double>(titer_x)) * 10));
+            }
+            else
+                throw acmacs::lispmds::type_mismatch("Unexpected titer type: "s + typeid(T).name());
+        },
+        acmacs::lispmds::get(mData, 0, 3, aAntigenNo, aSerumNo));
 
 } // LispmdsTiters::titer
 
