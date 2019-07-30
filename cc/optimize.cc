@@ -284,7 +284,7 @@ void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, Optimiser
     status.termination_report = alglib_lbfgs_optimize_termination_types[(rep.terminationtype > 0 && rep.terminationtype < 9) ? rep.terminationtype - 1 : 8];
     status.number_of_iterations = static_cast<size_t>(rep.iterationscount);
     status.number_of_stress_calculations = static_cast<size_t>(rep.nfev);
-    std::cerr << "iter: " << rep.iterationscount << " str: " << rep.nfev << '\n';
+    // std::cerr << "iter: " << rep.iterationscount << " str: " << rep.nfev << '\n';
 
 } // alglib_lbfgs_optimize
 
