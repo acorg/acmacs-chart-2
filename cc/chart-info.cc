@@ -97,7 +97,7 @@ int main(int argc, char* const argv[])
                 std::cout << '\n';
         }
         if (total_number_of_antigens > 0)
-            std::cout << "Total number of antigens: " << total_number_of_antigens << '\n';
+            std::cerr << "Total number of antigens: " << total_number_of_antigens << '\n';
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';
