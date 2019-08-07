@@ -67,8 +67,14 @@ int main(int argc, const char* const argv[])
         }
         if (opt.output_chart.has_value())
             acmacs::chart::export_factory(*result, opt.output_chart, fs::path(opt.program_name()).filename(), report);
-        if (opt.report_titers.has_value())
+        if (opt.report_titers.has_value()) {
             merge_report.titer_merge_report(opt.report_titers, *result, opt.program_name());
+        }
+        else {
+            std::cout << result->make_info() << '\n';
+            if (const auto having_too_few_numeric_titers = result->titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers.empty())
+                std::cout << "Points having too few numeric titers: " << having_too_few_numeric_titers.size() << ' ' << having_too_few_numeric_titers << '\n';
+        }
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';
