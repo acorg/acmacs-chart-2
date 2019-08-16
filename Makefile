@@ -50,6 +50,7 @@ TARGETS = \
   $(DIST)/chart-homologous-pairs \
   $(DIST)/chart-map-resolution-test \
   $(DIST)/chart-antigens-without-passages \
+  $(DIST)/chart-find-chart-with-antigens \
   $(DIST)/test-titer-iterator \
   $(DIST)/test-chart-modify \
   $(DIST)/test-chart-create-from-scratch \
