@@ -36,13 +36,28 @@ int main(int argc, char* const argv[])
 
 void process(const std::vector<std::string_view> &names, const std::vector<std::string_view> &chart_file_names)
 {
+    std::map<std::string_view, size_t, std::less<>> m_names;
+    for (const auto& name : names)
+        m_names[name] = 0;
+
     fmt::print("INFO: names: {}  files: {}\n", names.size(), chart_file_names.size());
     for (const auto &filename : chart_file_names) {
         if (!filename.empty()) {
             try {
                 auto chart = acmacs::chart::import_from_file(filename);
                 if (chart->number_of_projections()) {
-                    fmt::print("INFO: {}\n", filename);
+                    // fmt::print("INFO: {}\n", filename);
+                    size_t num_found = 0;
+                    auto antigens = chart->antigens();
+                    for (auto antigen : *antigens) {
+                        const std::string name = antigen->name();
+                        if (const auto found = m_names.find(name); found != m_names.end()) {
+                            ++num_found;
+                            ++found->second;
+                        }
+                    }
+                    if (num_found)
+                        fmt::print("INFO: {:3d} {}\n", num_found, filename);
                 }
             } catch (std::exception &err) {
                 fmt::print(stderr, "WARNING: {}: {}\n", filename, std::string(err.what()).substr(0, 200));
