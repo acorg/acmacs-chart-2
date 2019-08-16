@@ -43,7 +43,7 @@ ChartP acmacs::chart::acd1_import(const std::string_view& aData, Verify aVerify)
         return chart;
     }
     catch (rjson::parse_error&) {
-        std::cout << json << '\n';
+        // std::cout << json << '\n';
         throw;
     }
 
@@ -64,8 +64,8 @@ static inline std::pair<bool, size_t> object_numeric_key(const std::string_view&
       // skip spaces
     for (; prev > 0 && std::isspace(aInput[prev]); --prev);
     const bool numeric_key_start = aInput[prev] == ',' || aInput[prev] == '{';
-      // skip number (including fraction and exp)
-    for (++aOffset; std::isdigit(aInput[aOffset]) || aInput[aOffset] == '.' || aInput[aOffset] == '-' || aInput[aOffset] == '+' || aInput[aOffset] == 'e' || aInput[aOffset] == 'E'; ++aOffset);
+      // skip number (including fraction and exp), also handles hex numbers
+    for (++aOffset; std::isxdigit(aInput[aOffset]) || aInput[aOffset] == 'x' || aInput[aOffset] == '.' || aInput[aOffset] == '-' || aInput[aOffset] == '+' || aInput[aOffset] == 'e' || aInput[aOffset] == 'E'; ++aOffset);
     const bool numeric_key_end = aInput[aOffset] == ':';
     return {numeric_key_start && numeric_key_end, aOffset};
 }
@@ -220,10 +220,16 @@ void convert_set(std::string& aData, const std::vector<size_t>& aPerhapsSet)
             auto p = aData.begin() + static_cast<ssize_t>(offset) + 2;
             for (; *p != '"' && p < aData.end(); ++p);
             ++p;
-            if (*p == '}') {    // set
+            if (*p == '}') {    // set with one element
                   // std::cerr << "SET: " << std::string_view(aData.data() + offset, p - aData.begin() - offset + 1) << '\n';
                 aData[offset] = '[';
                 *p = ']';
+            }
+            else if (*p == ',') { // set with multiple elements
+                aData[offset] = '[';
+                for (; *p != '}' && p < aData.end(); ++p);
+                if (*p == '}')
+                    *p = ']';
             }
         }
         else if (std::isdigit(aData[offset + 1])) {

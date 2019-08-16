@@ -34,12 +34,19 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-void process(const std::vector<std::string_view>& names, const std::vector<std::string_view>& chart_file_names)
+void process(const std::vector<std::string_view> &names, const std::vector<std::string_view> &chart_file_names)
 {
-    for (const auto& filename : chart_file_names) {
-        auto chart = acmacs::chart::import_from_file(filename);
-        if (chart->number_of_projections()) {
-            fmt::print("INFO: {}\n", filename);
+    fmt::print("INFO: names: {}  files: {}\n", names.size(), chart_file_names.size());
+    for (const auto &filename : chart_file_names) {
+        if (!filename.empty()) {
+            try {
+                auto chart = acmacs::chart::import_from_file(filename);
+                if (chart->number_of_projections()) {
+                    fmt::print("INFO: {}\n", filename);
+                }
+            } catch (std::exception &err) {
+                fmt::print(stderr, "WARNING: {}: {}\n", filename, std::string(err.what()).substr(0, 200));
+            }
         }
     }
 
