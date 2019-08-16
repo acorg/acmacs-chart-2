@@ -96,7 +96,7 @@ std::string convert_to_json(const std::string_view& aData)
           case '\\':
               result.append(1, aData[input++]);
               result.append(1, aData[input]);
-              std::cerr << "WARNING: [acd1]: convert_to_json: \\ in the data\n";
+              std::cerr << "WARNING: [acd1]: convert_to_json: \\ in the data: @" << aData.substr(input - 10, 20) << "@\n";
               break;
           case 'T':
               if (input_matches(aData, input - 2, ": True")) {
