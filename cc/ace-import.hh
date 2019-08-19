@@ -105,7 +105,7 @@ namespace acmacs::chart
         SerumId serum_id() const override { return data_["I"].get_or_default(""); }
         SerumSpecies serum_species() const override { return data_["s"].get_or_default(""); }
         PointIndexList homologous_antigens() const override { return data_["h"]; }
-        void set_homologous(const std::vector<size_t>& ags) const override { const_cast<rjson::value&>(data_)["h"] = rjson::array(ags.begin(), ags.end()); }
+        void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { const_cast<rjson::value&>(data_)["h"] = rjson::array(ags.begin(), ags.end()); }
 
      private:
         const rjson::value& data_;

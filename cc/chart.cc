@@ -12,7 +12,7 @@
 // ----------------------------------------------------------------------
 
 #include "acmacs-base/global-constructors-push.hh"
-static std::regex sDate{"[12][90][0-9][0-9]-[0-2][0-9]-[0-3][0-9]"};
+static const std::regex sDate{"[12][90][0-9][0-9]-[0-2][0-9]-[0-3][0-9]"};
 #include "acmacs-base/diagnostics-pop.hh"
 
 void acmacs::chart::Date::check() const
@@ -153,11 +153,11 @@ void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, In
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Chart::set_homologous(find_homologous options, SeraP aSera) const
+void acmacs::chart::Chart::set_homologous(find_homologous options, SeraP aSera, acmacs::debug dbg) const
 {
     if (!aSera)
         aSera = sera();
-    aSera->set_homologous(options, *antigens());
+    aSera->set_homologous(options, *antigens(), dbg);
 
 } // acmacs::chart::Chart::set_homologous
 
@@ -718,6 +718,10 @@ size_t acmacs::chart::Antigens::max_full_name() const
 
 // ----------------------------------------------------------------------
 
+#include "acmacs-base/global-constructors-push.hh"
+static const std::regex sAnntotationToIgnore{"(CONC|RDE@|BOOST|BLEED|LAIV)"};
+#include "acmacs-base/diagnostics-pop.hh"
+
 bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annotations& antigen, const acmacs::chart::Annotations& serum)
 {
     std::vector<std::string_view> antigen_fixed(antigen.size());
@@ -731,7 +735,8 @@ bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annota
     std::vector<std::string_view> serum_fixed(serum.size());
     auto serum_fixed_end = serum_fixed.begin();
     for (const auto& anno : serum) {
-        if (static_cast<std::string_view>(anno).substr(0, 5) != "CONC " && anno != "PREBLEED")
+        const std::string_view annos = static_cast<std::string_view>(anno);
+        if (!std::regex_search(std::begin(annos), std::end(annos), sAnntotationToIgnore))
             *serum_fixed_end++ = anno;
     }
     serum_fixed.erase(serum_fixed_end, serum_fixed.end());
@@ -743,7 +748,7 @@ bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annota
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Sera::homologous_canditates_t acmacs::chart::Sera::find_homologous_canditates(const Antigens& aAntigens) const
+acmacs::chart::Sera::homologous_canditates_t acmacs::chart::Sera::find_homologous_canditates(const Antigens& aAntigens, acmacs::debug dbg) const
 {
     const auto match_passage = [](acmacs::virus::Passage antigen_passage, acmacs::virus::Passage serum_passage, const Serum& serum) -> bool {
         if (serum_passage.empty()) // NIID has passage type data in serum_id
@@ -761,6 +766,12 @@ acmacs::chart::Sera::homologous_canditates_t acmacs::chart::Sera::find_homologou
         if (auto ags = antigen_name_index.find(serum->name()); ags != antigen_name_index.end()) {
             for (auto ag_no : ags->second) {
                 auto antigen = aAntigens[ag_no];
+                if (dbg == debug::yes)
+                    fmt::print(stderr, "DEBUG: SR {} {} R:{} A:{} P:{} -- AG {} {} R:{} A:{} P:{} -- R_match: {} A_match:{} P_match:{}\n",
+                               sr_no, serum->name(), *serum->reassortant(), serum->annotations(), *serum->passage(),
+                               ag_no, antigen->name(), *antigen->reassortant(), antigen->annotations(), *antigen->passage(),
+                               antigen->reassortant() == serum->reassortant(), Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()),
+                               match_passage(antigen->passage(), serum->passage(), *serum));
                 if (antigen->reassortant() == serum->reassortant() && Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()) &&
                     match_passage(antigen->passage(), serum->passage(), *serum)) {
                     result[sr_no].insert(ag_no);
@@ -775,7 +786,7 @@ acmacs::chart::Sera::homologous_canditates_t acmacs::chart::Sera::find_homologou
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Sera::set_homologous(find_homologous options, const Antigens& aAntigens)
+void acmacs::chart::Sera::set_homologous(find_homologous options, const Antigens& aAntigens, acmacs::debug dbg)
 {
     const auto match_passage_strict = [](acmacs::virus::Passage antigen_passage, acmacs::virus::Passage serum_passage, const Serum& serum) -> bool {
         if (serum_passage.empty()) // NIID has passage type data in serum_id
@@ -791,11 +802,11 @@ void acmacs::chart::Sera::set_homologous(find_homologous options, const Antigens
             return antigen_passage.is_egg() == serum_passage.is_egg();
     };
 
-    const auto homologous_canditates = find_homologous_canditates(aAntigens);
+    const auto homologous_canditates = find_homologous_canditates(aAntigens, dbg);
 
     if (options == find_homologous::all) {
         for (auto [sr_no, serum] : acmacs::enumerate(*this))
-            serum->set_homologous(homologous_canditates[sr_no]);
+            serum->set_homologous(homologous_canditates[sr_no], dbg);
     }
     else {
         std::vector<std::optional<size_t>> homologous(size()); // for each serum
@@ -840,7 +851,7 @@ void acmacs::chart::Sera::set_homologous(find_homologous options, const Antigens
 
         for (auto [sr_no, serum] : acmacs::enumerate(*this))
             if (const auto homol = homologous[sr_no]; homol)
-                serum->set_homologous({*homol});
+                serum->set_homologous({*homol}, dbg);
     }
 
 } // acmacs::chart::Sera::set_homologous

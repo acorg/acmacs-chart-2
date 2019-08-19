@@ -9,6 +9,7 @@
 #include "acmacs-base/color.hh"
 #include "acmacs-base/point-style.hh"
 #include "acmacs-base/layout.hh"
+#include "acmacs-base/debug.hh"
 #include "acmacs-virus/passage.hh"
 #include "acmacs-virus/reassortant.hh"
 #include "acmacs-chart-2/base.hh"
@@ -437,7 +438,7 @@ namespace acmacs::chart
         virtual SerumId serum_id() const = 0;
         virtual SerumSpecies serum_species() const = 0;
         virtual PointIndexList homologous_antigens() const = 0;
-        virtual void set_homologous(const std::vector<size_t>&) const {}
+        virtual void set_homologous(const std::vector<size_t>&, acmacs::debug) const {}
 
         std::string full_name() const { return ::string::join(" ", {name(), reassortant(), ::string::join(" ", annotations()), serum_id()}); }
         std::string full_name_without_passage() const { return full_name(); }
@@ -611,7 +612,7 @@ namespace acmacs::chart
         virtual Indexes find_by_name(std::string_view aName) const;
         size_t max_full_name() const;
 
-        void set_homologous(find_homologous options, const Antigens& aAntigens);
+        void set_homologous(find_homologous options, const Antigens& aAntigens, acmacs::debug dbg = acmacs::debug::no);
 
         duplicates_t find_duplicates() const;
 
@@ -623,7 +624,7 @@ namespace acmacs::chart
 
         using homologous_canditate_t = Indexes;                              // indexes of antigens
         using homologous_canditates_t = std::vector<homologous_canditate_t>; // for each serum
-        homologous_canditates_t find_homologous_canditates(const Antigens& aAntigens) const;
+        homologous_canditates_t find_homologous_canditates(const Antigens& aAntigens, acmacs::debug dbg) const;
 
     }; // class Sera
 
@@ -811,7 +812,7 @@ namespace acmacs::chart
         void serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithinFold, Indexes& aOutsideFold, double aFold = 2) const; // aFold=2 for 4fold, 3 - for 8fold
         void serum_coverage(Titer aHomologousTiter, size_t aSerumNo, Indexes& aWithinFold, Indexes& aOutsideFold, double aFold = 2) const; // aFold=2 for 4fold, 3 - for 8fold
 
-        void set_homologous(find_homologous options, std::shared_ptr<Sera> aSera = nullptr) const;
+        void set_homologous(find_homologous options, std::shared_ptr<Sera> aSera = nullptr, acmacs::debug dbg = acmacs::debug::no) const;
 
         Stress make_stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const
         {

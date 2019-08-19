@@ -238,7 +238,7 @@ namespace acmacs::chart
         SerumId serum_id() const override { return serum_id_; }
         SerumSpecies serum_species() const override { return serum_species_; }
         PointIndexList homologous_antigens() const override { return homologous_antigens_; }
-        void set_homologous(const std::vector<size_t>& ags) const override { homologous_antigens_ = ags; }
+        void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { homologous_antigens_ = ags; }
 
         void name(const std::string& value) { name_ = value; }
         void passage(const acmacs::virus::Passage& value) { passage_ = value; }

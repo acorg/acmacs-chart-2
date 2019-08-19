@@ -20,6 +20,7 @@ struct Options : public argv
     option<bool> show_number_of_sera{*this, "sera", desc{"just show number of sera"}};
     option<bool> column_bases{*this, "column-bases"};
     option<bool> list_tables{*this, "list-tables"};
+    option<bool> homologous{*this, "homologous", desc{"report homologous antigens for sera"}};
     option<bool> verify{*this, "verify"};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
 
@@ -70,6 +71,10 @@ int main(int argc, char* const argv[])
             }
             if (opt.show_number_of_sera)
                 fields.push_back(std::to_string(chart->number_of_sera()));
+            if (opt.homologous) {
+                chart->set_homologous(acmacs::chart::find_homologous::all, nullptr, acmacs::debug::yes);
+                fields.emplace_back();
+            }
 
             if (!fields.empty()) {
                 std::cout << string::join(" ", fields) << '\n';
