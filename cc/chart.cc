@@ -719,7 +719,7 @@ size_t acmacs::chart::Antigens::max_full_name() const
 // ----------------------------------------------------------------------
 
 #include "acmacs-base/global-constructors-push.hh"
-static const std::regex sAnntotationToIgnore{"(CONC|RDE@|BOOST|BLEED|LAIV)"};
+static const std::regex sAnntotationToIgnore{"(CONC|RDE@|BOOST|BLEED|LAIV|^CDC$)"};
 #include "acmacs-base/diagnostics-pop.hh"
 
 bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annotations& antigen, const acmacs::chart::Annotations& serum)

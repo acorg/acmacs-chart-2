@@ -73,6 +73,12 @@ int main(int argc, char* const argv[])
                 fields.push_back(std::to_string(chart->number_of_sera()));
             if (opt.homologous) {
                 chart->set_homologous(acmacs::chart::find_homologous::all, nullptr, acmacs::debug::yes);
+                auto antigens = chart->antigens();
+                auto sera = chart->sera();
+                const auto num_digits = static_cast<int>(std::log10(sera->size())) + 1;
+                for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
+                    std::cout << "SR " << std::setw(num_digits) << sr_no << ' ' << serum->full_name() << " -- " << serum->homologous_antigens() << '\n';
+                }
                 fields.emplace_back();
             }
 
