@@ -30,7 +30,7 @@ int main(int argc, char* const argv[])
         Options opt(argc, argv);
 
         acmacs::chart::ChartModify master{acmacs::chart::import_from_file(opt.source_charts->at(0))};
-        for (const auto& chart_filename : ranges::view::drop(*opt.source_charts, 1)) {
+        for (const auto& chart_filename : ranges::views::drop(*opt.source_charts, 1)) {
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(chart_filename)};
             if (!acmacs::chart::same_tables(master, chart, true))
                 throw std::runtime_error(fmt::format("Tables of {} and {} are not the same!\n", opt.source_charts->at(0), chart_filename));
