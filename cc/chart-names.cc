@@ -54,34 +54,37 @@ int main(int argc, char* const argv[])
 
 std::string format(const acmacs::chart::Antigen& antigen, size_t antigen_no, int num_digits, std::string_view pattern)
 {
-    return fmt::format(pattern,
-                       fmt::arg("ag_sr", "AG"),
-                       fmt::arg("no0", fmt::format("{:{}d}", antigen_no, num_digits)),
-                       fmt::arg("no1", fmt::format("{:{}d}", antigen_no + 1, num_digits)),
-                       fmt::arg("name", antigen.name()),
-                       fmt::arg("full_name_with_passage", antigen.full_name_with_passage()),
-                       fmt::arg("full_name_with_fields", antigen.full_name_with_fields()),
-                       fmt::arg("serum_species", ""),
-                       fmt::arg("date", antigen.date()),
-                       fmt::arg("lab_ids", string::join(" ", antigen.lab_ids())),
-                       fmt::arg("ref", antigen.reference() ? "Ref" : ""),
-                       fmt::arg("serum_id", ""),
-                       fmt::arg("reassortant", *antigen.reassortant()),
-                       fmt::arg("passage", *antigen.passage()),
-                       fmt::arg("passage_type", antigen.passage_type()),
-                       fmt::arg("annotations", antigen.annotations()),
-                       fmt::arg("lineage", antigen.lineage()),
-                       fmt::arg("continent", antigen.continent()),
-                       fmt::arg("abbreviated_name", antigen.abbreviated_name()),
-                       fmt::arg("abbreviated_name_with_passage_type", antigen.abbreviated_name_with_passage_type()),
-                       fmt::arg("abbreviated_name_with_serum_id", antigen.abbreviated_name()),
-                       fmt::arg("abbreviated_location_with_passage_type", antigen.abbreviated_location_with_passage_type()),
-                       fmt::arg("designation", antigen.designation()),
-                       fmt::arg("name_abbreviated", antigen.name_abbreviated()),
-                       fmt::arg("name_without_subtype", antigen.name_without_subtype()),
-                       fmt::arg("location_abbreviated", antigen.location_abbreviated()),
-                       fmt::arg("abbreviated_location_year", antigen.abbreviated_location_year())
-                       );
+    return ::string::collapse_spaces(
+        fmt::format(
+            pattern,
+            fmt::arg("ag_sr", "AG"),
+            fmt::arg("no0", fmt::format("{:{}d}", antigen_no, num_digits)),
+            fmt::arg("no1", fmt::format("{:{}d}", antigen_no + 1, num_digits)),
+            fmt::arg("name", antigen.name()),
+            fmt::arg("full_name_with_passage", antigen.full_name_with_passage()),
+            fmt::arg("full_name_with_fields", antigen.full_name_with_fields()),
+            fmt::arg("serum_species", ""),
+            fmt::arg("date", antigen.date()),
+            fmt::arg("lab_ids", string::join(" ", antigen.lab_ids())),
+            fmt::arg("ref", antigen.reference() ? "Ref" : ""),
+            fmt::arg("serum_id", ""),
+            fmt::arg("reassortant", *antigen.reassortant()),
+            fmt::arg("passage", *antigen.passage()),
+            fmt::arg("passage_type", antigen.passage_type()),
+            fmt::arg("annotations", antigen.annotations()),
+            fmt::arg("lineage", antigen.lineage()),
+            fmt::arg("continent", antigen.continent()),
+            fmt::arg("abbreviated_name", antigen.abbreviated_name()),
+            fmt::arg("abbreviated_name_with_passage_type", antigen.abbreviated_name_with_passage_type()),
+            fmt::arg("abbreviated_name_with_serum_id", antigen.abbreviated_name()),
+            fmt::arg("abbreviated_location_with_passage_type", antigen.abbreviated_location_with_passage_type()),
+            fmt::arg("designation", antigen.designation()),
+            fmt::arg("name_abbreviated", antigen.name_abbreviated()),
+            fmt::arg("name_without_subtype", antigen.name_without_subtype()),
+            fmt::arg("location_abbreviated", antigen.location_abbreviated()),
+            fmt::arg("abbreviated_location_year", antigen.abbreviated_location_year())
+        )
+    );
 
 } // format
 
@@ -89,34 +92,36 @@ std::string format(const acmacs::chart::Antigen& antigen, size_t antigen_no, int
 
 std::string format(const acmacs::chart::Serum& serum, size_t serum_no, int num_digits, std::string_view pattern)
 {
-    return fmt::format(pattern,
-                       fmt::arg("ag_sr", "SR"),
-                       fmt::arg("no0", fmt::format("{:{}d}", serum_no, num_digits)),
-                       fmt::arg("no1", fmt::format("{:{}d}", serum_no + 1, num_digits)),
-                       fmt::arg("name", serum.name()),
-                       fmt::arg("full_name_with_passage", serum.full_name_with_passage()),
-                       fmt::arg("full_name_with_fields", serum.full_name_with_fields()),
-                       fmt::arg("serum_species", serum.serum_species()),
-                       fmt::arg("date", ""),
-                       fmt::arg("lab_ids", ""),
-                       fmt::arg("ref", ""),
-                       fmt::arg("serum_id", serum.serum_id()),
-                       fmt::arg("reassortant", *serum.reassortant()),
-                       fmt::arg("passage", *serum.passage()),
-                       fmt::arg("passage_type", ""),
-                       fmt::arg("annotations", serum.annotations()),
-                       fmt::arg("lineage", serum.lineage()),
-                       fmt::arg("continent", ""),
-                       fmt::arg("abbreviated_name", serum.abbreviated_name()),
-                       fmt::arg("abbreviated_name_with_passage_type", serum.abbreviated_name()),
-                       fmt::arg("abbreviated_name_with_serum_id", serum.abbreviated_name_with_serum_id()),
-                       fmt::arg("abbreviated_location_with_passage_type", serum.abbreviated_name()),
-                       fmt::arg("designation", serum.designation()),
-                       fmt::arg("name_abbreviated", serum.name_abbreviated()),
-                       fmt::arg("name_without_subtype", serum.name_without_subtype()),
-                       fmt::arg("location_abbreviated", serum.location_abbreviated()),
-                       fmt::arg("abbreviated_location_year", serum.abbreviated_location_year())
-                       );
+    return ::string::collapse_spaces(
+        fmt::format(pattern,
+                    fmt::arg("ag_sr", "SR"),
+                    fmt::arg("no0", fmt::format("{:{}d}", serum_no, num_digits)),
+                    fmt::arg("no1", fmt::format("{:{}d}", serum_no + 1, num_digits)),
+                    fmt::arg("name", serum.name()),
+                    fmt::arg("full_name_with_passage", serum.full_name_with_passage()),
+                    fmt::arg("full_name_with_fields", serum.full_name_with_fields()),
+                    fmt::arg("serum_species", serum.serum_species()),
+                    fmt::arg("date", ""),
+                    fmt::arg("lab_ids", ""),
+                    fmt::arg("ref", ""),
+                    fmt::arg("serum_id", serum.serum_id()),
+                    fmt::arg("reassortant", *serum.reassortant()),
+                    fmt::arg("passage", *serum.passage()),
+                    fmt::arg("passage_type", ""),
+                    fmt::arg("annotations", serum.annotations()),
+                    fmt::arg("lineage", serum.lineage()),
+                    fmt::arg("continent", ""),
+                    fmt::arg("abbreviated_name", serum.abbreviated_name()),
+                    fmt::arg("abbreviated_name_with_passage_type", serum.abbreviated_name()),
+                    fmt::arg("abbreviated_name_with_serum_id", serum.abbreviated_name_with_serum_id()),
+                    fmt::arg("abbreviated_location_with_passage_type", serum.abbreviated_name()),
+                    fmt::arg("designation", serum.designation()),
+                    fmt::arg("name_abbreviated", serum.name_abbreviated()),
+                    fmt::arg("name_without_subtype", serum.name_without_subtype()),
+                    fmt::arg("location_abbreviated", serum.location_abbreviated()),
+                    fmt::arg("abbreviated_location_year", serum.abbreviated_location_year())
+        )
+    );
 
 } // format
 
