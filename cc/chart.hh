@@ -453,6 +453,7 @@ namespace acmacs::chart
         std::string name_without_subtype() const;
         std::string location_abbreviated() const;
         std::string abbreviated_location_year() const;
+        std::string passage_type() const { return passage().passage_type(); }
 
         bool is_egg() const { return !reassortant().empty() || passage().is_egg(); }
         bool is_cell() const { return !is_egg(); }

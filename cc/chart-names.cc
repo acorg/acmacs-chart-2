@@ -17,7 +17,7 @@ struct Options : public argv
 
     option<bool> fields{*this, "fields", desc{"report names with fields"}};
     option<str>  format{*this, 'f', "format", dflt{"{ag_sr} {no0} {full_name_with_passage} {serum_species} [{date}] {lab_ids} {ref}"},
-                        desc{"output format, supported fields: {ag_sr} {no0} {no1} {name} {full_name_with_passage} {full_name_with_fields} {abbreviated_name} {abbreviated_name_with_passage_type} {abbreviated_location_with_passage_type} {abbreviated_name_with_serum_id} {designation} {name_abbreviated} {name_without_subtype} {location_abbreviated} {abbreviated_location_year} {serum_species} {date} {lab_ids} {ref} {serum_id} {reassortant} {passage} {passage_type} {annotations} {lineage} {continent} "}};
+                        desc{"output format, supported fields: {ag_sr} {no0} {<no0} {no1} {<no1} {name} {full_name_with_passage} {full_name_with_fields} {abbreviated_name} {abbreviated_name_with_passage_type} {abbreviated_location_with_passage_type} {abbreviated_name_with_serum_id} {designation} {name_abbreviated} {name_without_subtype} {location_abbreviated} {abbreviated_location_year} {serum_species} {date} {lab_ids} {ref} {serum_id} {reassortant} {passage} {passage_type} {annotations} {lineage} {continent} "}};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
     option<bool> verbose{*this, 'v', "verbose"};
     argument<str_array> charts{*this, arg_name{"chart"}, mandatory};
@@ -58,7 +58,9 @@ std::string format(const acmacs::chart::Antigen& antigen, size_t antigen_no, int
         pattern,
         fmt::arg("ag_sr", "AG"),
         fmt::arg("no0", fmt::format("{:{}d}", antigen_no, num_digits)),
+        fmt::arg("no0_left", fmt::format("{}", antigen_no)),
         fmt::arg("no1", fmt::format("{:{}d}", antigen_no + 1, num_digits)),
+        fmt::arg("no1_left", fmt::format("{}", antigen_no + 1)),
         fmt::arg("name", antigen.name()),
         fmt::arg("full_name_with_passage", antigen.full_name_with_passage()),
         fmt::arg("full_name_with_fields", antigen.full_name_with_fields()),
@@ -94,7 +96,9 @@ std::string format(const acmacs::chart::Serum& serum, size_t serum_no, int num_d
         pattern,
         fmt::arg("ag_sr", "SR"),
         fmt::arg("no0", fmt::format("{:{}d}", serum_no, num_digits)),
+        fmt::arg("no0_left", fmt::format("{}", serum_no)),
         fmt::arg("no1", fmt::format("{:{}d}", serum_no + 1, num_digits)),
+        fmt::arg("no1_left", fmt::format("{}", serum_no + 1)),
         fmt::arg("name", serum.name()),
         fmt::arg("full_name_with_passage", serum.full_name_with_passage()),
         fmt::arg("full_name_with_fields", serum.full_name_with_fields()),
@@ -105,7 +109,7 @@ std::string format(const acmacs::chart::Serum& serum, size_t serum_no, int num_d
         fmt::arg("serum_id", serum.serum_id()),
         fmt::arg("reassortant", *serum.reassortant()),
         fmt::arg("passage", *serum.passage()),
-        fmt::arg("passage_type", ""),
+        fmt::arg("passage_type", serum.passage_type()),
         fmt::arg("annotations", serum.annotations()),
         fmt::arg("lineage", serum.lineage()),
         fmt::arg("continent", ""),
