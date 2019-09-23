@@ -321,7 +321,7 @@ namespace acmacs::chart
     {
       public:
         enum class Compute { No, Yes };
-        enum class FixLab { no, yes };
+        enum class FixLab { no, yes, reverse };
 
         virtual ~Info() = default;
         Info() = default;

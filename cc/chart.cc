@@ -335,11 +335,17 @@ size_t acmacs::chart::Info::max_source_name() const
 
 acmacs::chart::Lab acmacs::chart::Info::fix_lab_name(Lab source, FixLab fix) const
 {
-    if (fix == FixLab::yes) {
-        if (const auto pos = source.find("NIMR"); pos != std::string::npos)
-            source = string::concat(source.substr(0, pos), "Crick", source.substr(pos + 4));
-        if (const auto pos = source.find("MELB"); pos != std::string::npos)
-            source = string::concat(source.substr(0, pos), "VIDRL", source.substr(pos + 4));
+    switch (fix) {
+        case FixLab::no:
+            break;
+        case FixLab::yes:
+            source = ::string::replace(static_cast<std::string>(source), "NIMR", "Crick");
+            source = ::string::replace(static_cast<std::string>(source), "MELB", "VIDRL");
+            break;
+        case FixLab::reverse:
+            source = ::string::replace(static_cast<std::string>(source), "Crick", "NIMR");
+            source = ::string::replace(static_cast<std::string>(source), "VIDRL", "MELB");
+            break;
     }
     return source;
 
