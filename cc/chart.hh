@@ -453,9 +453,16 @@ namespace acmacs::chart
         std::string name_without_subtype() const;
         std::string location_abbreviated() const;
         std::string abbreviated_location_year() const;
-        std::string passage_type() const { return passage().passage_type(); }
+        std::string passage_type() const { return is_egg() ? "egg" : "cell"; } // note NIID passage cannot be used
 
-        bool is_egg() const { return !reassortant().empty() || passage().is_egg(); }
+        bool is_egg() const {
+            if (!reassortant().empty())
+                return true;
+            if (!passage().empty())
+                return passage().is_egg();
+            // NIID has egg/cell/siat in serum id
+            return serum_id().find("EGG") != std::string::npos;
+        }
         bool is_cell() const { return !is_egg(); }
 
     }; // class Serum
