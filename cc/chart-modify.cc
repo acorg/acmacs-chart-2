@@ -529,15 +529,15 @@ InfoModify::InfoModify(InfoP main)
 
 // ----------------------------------------------------------------------
 
-template <typename F> static inline std::string info_modify_make_field(acmacs::chart::Info::Compute aCompute, const acmacs::chart::InfoModify& info, const std::string& field, F func)
+template <typename Field, typename Func> static inline Field info_modify_make_field(acmacs::chart::Info::Compute aCompute, const acmacs::chart::InfoModify& info, const Field& field, Func func)
 {
     if (!field.empty() || aCompute == acmacs::chart::Info::Compute::No)
         return field;
 
     std::set<std::string> composition;
     std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(info.number_of_sources()), std::inserter(composition, composition.begin()),
-                   [&info,&func](size_t index) { return std::invoke(func, *info.source(index), acmacs::chart::Info::Compute::No); });
-    return string::join("+", composition);
+                   [&info,&func](size_t index) { return static_cast<std::string>(std::invoke(func, *info.source(index), acmacs::chart::Info::Compute::No)); });
+    return Field{string::join("+", composition)};
 }
 
 Virus       InfoModify::virus(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_, &Info::virus); }

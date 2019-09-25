@@ -10,6 +10,7 @@
 #include "acmacs-base/point-style.hh"
 #include "acmacs-base/layout.hh"
 #include "acmacs-base/debug.hh"
+#include "acmacs-base/named-type.hh"
 #include "acmacs-virus/passage.hh"
 #include "acmacs-virus/reassortant.hh"
 #include "acmacs-chart-2/base.hh"
@@ -52,10 +53,10 @@ namespace acmacs::chart
 
     // ----------------------------------------------------------------------
 
-    class Virus : public detail::string_data
+    class Virus : public acmacs::named_string_t<struct chart_virus_tag_t>
     {
       public:
-        using detail::string_data::string_data;
+        using acmacs::named_string_t<struct chart_virus_tag_t>::named_string_t;
     };
 
     class VirusType : public detail::string_data
@@ -339,11 +340,11 @@ namespace acmacs::chart
         virtual Virus virus(Compute = Compute::No) const = 0;
         Virus virus_not_influenza(Compute aCompute = Compute::No) const
         {
-            const auto v = virus(aCompute);
-            if (::string::lower(v) == "influenza")
+            const auto vir = virus(aCompute);
+            if (::string::lower(*vir) == "influenza")
               return {};
             else
-              return v;
+              return vir;
         }
         virtual VirusType virus_type(Compute = Compute::Yes) const = 0;
         virtual std::string subset(Compute = Compute::No) const = 0;

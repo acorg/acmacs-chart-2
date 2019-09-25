@@ -43,7 +43,7 @@ int main(int argc, char* const argv[])
                 fields.push_back(info->lab(acmacs::chart::Info::Compute::Yes));
             if (opt.show_virus_type) {
                 const auto virus = info->virus(acmacs::chart::Info::Compute::Yes);
-                if (::string::lower(virus) == "influenza") {
+                if (::string::lower(*virus) == "influenza") {
                     const auto virus_type = info->virus_type(acmacs::chart::Info::Compute::Yes);
                     if (virus_type == "B") {
                         if (const auto lineage = chart->lineage(); !lineage.empty())
@@ -55,7 +55,7 @@ int main(int argc, char* const argv[])
                         fields.push_back(virus_type);
                 }
                 else {
-                    fields.push_back(virus);
+                    fields.push_back(*virus);
                     if (const auto virus_type = info->virus_type(acmacs::chart::Info::Compute::Yes); !virus_type.empty())
                         fields.push_back(virus_type);
                 }

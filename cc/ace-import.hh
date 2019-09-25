@@ -51,7 +51,7 @@ namespace acmacs::chart
         AceInfo(const rjson::value& aData) : data_{aData} {}
 
         std::string name(Compute aCompute = Compute::No) const override;
-        Virus       virus(Compute aCompute = Compute::No) const override { return make_field("v", "+", aCompute); }
+        Virus       virus(Compute aCompute = Compute::No) const override { return Virus{make_field("v", "+", aCompute)}; }
         VirusType   virus_type(Compute aCompute = Compute::Yes) const override { return make_field("V", "+", aCompute); }
         std::string subset(Compute aCompute = Compute::No) const override { return make_field("s", "+", aCompute); }
         Assay       assay(Compute aCompute = Compute::No) const override { return make_field("A", "+", aCompute); }

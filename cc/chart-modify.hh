@@ -150,7 +150,7 @@ namespace acmacs::chart
 
         void name(std::string value) { name_ = value; computed_name_ = value; }
         void name_append(std::string value) { name_ = ::string::join(" ", {name_, value}); computed_name_ = name_; }
-        void virus(std::string value) { virus_ = value; }
+        void virus(Virus value) { virus_ = value; }
         void virus_type(std::string value) { virus_type_ = value; }
         void subset(std::string value) { subset_ = value; }
         void assay(std::string value) { assay_ = value; }
@@ -163,7 +163,7 @@ namespace acmacs::chart
       protected:
         std::string name_;
         std::string computed_name_;
-        std::string virus_;
+        Virus virus_;
         std::string virus_type_;
         std::string subset_;
         std::string assay_;
