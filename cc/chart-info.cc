@@ -40,29 +40,29 @@ int main(int argc, char* const argv[])
 
             std::vector<std::string> fields;
             if (opt.show_lab)
-                fields.push_back(info->lab(acmacs::chart::Info::Compute::Yes));
+                fields.emplace_back(info->lab(acmacs::chart::Info::Compute::Yes));
             if (opt.show_virus_type) {
                 const auto virus = info->virus(acmacs::chart::Info::Compute::Yes);
                 if (::string::lower(*virus) == "influenza") {
                     const auto virus_type = info->virus_type(acmacs::chart::Info::Compute::Yes);
-                    if (virus_type == "B") {
+                    if (virus_type == acmacs::chart::VirusType{"B"}) {
                         if (const auto lineage = chart->lineage(); !lineage.empty())
                             fields.push_back(string::concat(virus_type, '/', string::capitalize(lineage.substr(0, 3))));
                         else
-                            fields.push_back(virus_type);
+                            fields.emplace_back(virus_type);
                     }
                     else if (!virus_type.empty())
-                        fields.push_back(virus_type);
+                        fields.emplace_back(virus_type);
                 }
                 else {
                     fields.push_back(*virus);
                     if (const auto virus_type = info->virus_type(acmacs::chart::Info::Compute::Yes); !virus_type.empty())
-                        fields.push_back(virus_type);
+                        fields.emplace_back(virus_type);
                 }
             }
             if (opt.show_assay) {
                 if (const auto assay = info->assay(acmacs::chart::Info::Compute::Yes); !assay.empty())
-                    fields.push_back(assay);
+                    fields.emplace_back(assay);
             }
             if (opt.show_number_of_antigens) {
                 const auto na = chart->number_of_antigens();

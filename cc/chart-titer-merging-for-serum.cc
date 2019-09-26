@@ -29,7 +29,7 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("chart has no layers");
         const auto max_antigen_name = static_cast<int>(chart->antigens()->max_full_name());
 
-        std::cout << "SR " << opt.serum_no << ' ' << chart->serum(opt.serum_no)->full_name() << ' ' << chart->serum(opt.serum_no)->passage() << '\n';
+        std::cout << "SR " << opt.serum_no << ' ' << chart->serum(opt.serum_no)->full_name() << ' ' << static_cast<std::string_view>(chart->serum(opt.serum_no)->passage()) << '\n';
         if (chart->number_of_projections() > 0) {
             if (auto fcb = chart->projection(0)->forced_column_bases(); fcb)
                 std::cout << "forced column basis: " << fcb->column_basis(opt.serum_no) << '\n';
@@ -55,7 +55,7 @@ int main(int argc, char* const argv[])
         std::cout << "\nall titers: " << all_titers << "\n\n";
         auto info = chart->info();
         for (size_t layer_no = 0; layer_no < titers->number_of_layers(); ++layer_no)
-            std::cout << std::setw(2) << std::right << layer_no << ' ' << info->source(layer_no)->date() << '\n';
+            std::cout << std::setw(2) << std::right << layer_no << ' ' << static_cast<std::string_view>(info->source(layer_no)->date()) << '\n';
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';

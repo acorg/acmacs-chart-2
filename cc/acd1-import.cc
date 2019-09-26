@@ -399,7 +399,7 @@ TableDate Acd1Info::date(Compute aCompute) const
             result = string::join("-", {composition.front(), composition.back()});
         }
     }
-    return result;
+    return TableDate{result};
 
 } // Acd1Info::date
 
@@ -408,22 +408,22 @@ TableDate Acd1Info::date(Compute aCompute) const
 static inline Name make_name(const rjson::value& aData)
 {
     if (auto name = aData["_name"].get_or_default(""); !name.empty())
-        return name;
+        return Name{name};
     if (auto isolation_number = aData["isolation_number"].get_or_default(""); !isolation_number.empty()) {
         std::string host = aData["host"].get_or_default("");
         if (host == "HUMAN")
             host.clear();
-        return string::join("/", {aData["virus_type"].get_or_default(""), host, aData.get("location", "name").get_or_default(""), isolation_number, aData["year"].get_or_default("")});
+        return Name{string::join("/", {aData["virus_type"].get_or_default(""), host, aData.get("location", "name").get_or_default(""), isolation_number, aData["year"].get_or_default("")})};
     }
     else if (auto raw_name = aData["raw_name"].get_or_default(""); !raw_name.empty()) {
-        return raw_name;
+        return Name{raw_name};
     }
     else {
         const std::string cdc_abbreviation = aData.get("location", "cdc_abbreviation").get_or_default("");
         std::string name = aData["name"].get_or_default("");
         if (!cdc_abbreviation.empty() && name.size() > 3 && name[2] == '-' && name[0] == cdc_abbreviation[0] && name[1] == cdc_abbreviation[1])
             name.erase(0, 3);   // old cdc name (acmacs-b?) begins with cdc_abbreviation
-        return string::join(" ", {cdc_abbreviation, name});
+        return Name{string::join(" ", {cdc_abbreviation, name})};
     }
 }
 
@@ -590,7 +590,7 @@ std::optional<size_t> Acd1Antigens::find_by_full_name(std::string_view aFullName
 void Acd1Antigens::make_name_index() const
 {
     rjson::for_each(data_, [this](const rjson::value& val, size_t index) {
-        mAntigenNameIndex[make_name(val)].push_back(index);
+        mAntigenNameIndex[*make_name(val)].push_back(index);
     });
 
 } // Acd1Antigens::make_name_index

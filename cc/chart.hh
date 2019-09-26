@@ -59,40 +59,40 @@ namespace acmacs::chart
         using acmacs::named_string_t<struct chart_virus_tag_t>::named_string_t;
     };
 
-    class VirusType : public detail::string_data
+    class VirusType : public acmacs::named_string_t<struct chart_virus_type_tag_t>
     {
       public:
-        using detail::string_data::string_data;
+        using acmacs::named_string_t<struct chart_virus_type_tag_t>::named_string_t;
     };
 
-    class Assay : public detail::string_data
+    class Assay : public acmacs::named_string_t<struct chart_assay_tag_t>
     {
       public:
-        using detail::string_data::string_data;
+        using acmacs::named_string_t<struct chart_assay_tag_t>::named_string_t;
     };
 
-    class Lab : public detail::string_data
+    class Lab : public acmacs::named_string_t<struct chart_lab_tag_t>
     {
       public:
-        using detail::string_data::string_data;
+        using acmacs::named_string_t<struct chart_lab_tag_t>::named_string_t;
     };
 
-    class RbcSpecies : public detail::string_data
+    class RbcSpecies : public acmacs::named_string_t<struct chart_rbc_species_tag_t>
     {
       public:
-        using detail::string_data::string_data;
+        using acmacs::named_string_t<struct chart_rbc_species_tag_t>::named_string_t;
     };
 
-    class TableDate : public detail::string_data
+    class TableDate : public acmacs::named_string_t<struct chart_table_date_tag_t>
     {
       public:
-        using detail::string_data::string_data;
+        using acmacs::named_string_t<struct chart_table_date_tag_t>::named_string_t;
     };
 
-    class Name : public detail::string_data
+    class Name : public acmacs::named_string_t<struct chart_name_tag_t>
     {
       public:
-        using detail::string_data::string_data;
+        using acmacs::named_string_t<struct chart_name_tag_t>::named_string_t;
 
     }; // class Name
 
@@ -173,7 +173,7 @@ namespace acmacs::chart
         bool operator==(const std::string& rhs) const { return operator==(std::string_view{rhs}); }
         bool operator!=(const std::string& rhs) const { return !operator==(rhs); }
 
-        operator std::string() const
+        operator std::string_view() const
         {
             switch (mLineage) {
                 case Victoria:
@@ -187,6 +187,8 @@ namespace acmacs::chart
             return "UNKNOWN";
 #endif
         }
+
+        operator std::string() const { return std::string{static_cast<std::string_view>(*this)}; }
 
         operator Lineage() const { return mLineage; }
 
@@ -895,6 +897,36 @@ namespace acmacs
         return result;
     }
 }
+
+// ----------------------------------------------------------------------
+
+template <> struct fmt::formatter<acmacs::chart::Name> : fmt::formatter<std::string> {
+    template <typename FormatCtx> auto format(const acmacs::chart::Name& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
+};
+
+template <> struct fmt::formatter<acmacs::chart::Virus> : fmt::formatter<std::string> {
+    template <typename FormatCtx> auto format(const acmacs::chart::Virus& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
+};
+
+template <> struct fmt::formatter<acmacs::chart::VirusType> : fmt::formatter<std::string> {
+    template <typename FormatCtx> auto format(const acmacs::chart::VirusType& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
+};
+
+template <> struct fmt::formatter<acmacs::chart::Assay> : fmt::formatter<std::string> {
+    template <typename FormatCtx> auto format(const acmacs::chart::Assay& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
+};
+
+template <> struct fmt::formatter<acmacs::chart::Lab> : fmt::formatter<std::string> {
+    template <typename FormatCtx> auto format(const acmacs::chart::Lab& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
+};
+
+template <> struct fmt::formatter<acmacs::chart::RbcSpecies> : fmt::formatter<std::string> {
+    template <typename FormatCtx> auto format(const acmacs::chart::RbcSpecies& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
+};
+
+template <> struct fmt::formatter<acmacs::chart::TableDate> : fmt::formatter<std::string> {
+    template <typename FormatCtx> auto format(const acmacs::chart::TableDate& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
+};
 
 // ----------------------------------------------------------------------
 

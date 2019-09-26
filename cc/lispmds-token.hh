@@ -8,6 +8,7 @@
 
 #include "acmacs-base/string.hh"
 #include "acmacs-base/fmt.hh"
+#include "acmacs-base/named-type.hh"
 
 // ----------------------------------------------------------------------
 
@@ -65,36 +66,23 @@ namespace acmacs::lispmds
 
     }; // class number
 
-    namespace detail
+    class string : public acmacs::named_string_t<struct lispmds_string_tag_t>
     {
-        class string
-        {
-         public:
-            inline string() = default;
-            inline string(std::string aValue) : mValue(aValue) {}
-            inline string(const std::string_view& aValue) : mValue(aValue) {}
+      public:
+        using acmacs::named_string_t<struct lispmds_string_tag_t>::named_string_t;
+    };
 
-            inline operator std::string() const { return mValue; }
-            inline const std::string& operator*() const { return mValue; }
-            inline const std::string* operator->() const { return &mValue; }
-            inline char operator[](size_t index) const { return mValue.at(index); }
-            inline bool operator==(const string& s) const { return mValue == s.mValue; }
-            inline bool operator!=(const string& s) const { return mValue != s.mValue; }
-            inline bool operator==(std::string s) const { return mValue == s; }
-            inline bool operator!=(std::string s) const { return mValue != s; }
+    class symbol : public acmacs::named_string_t<struct lispmds_symbol_tag_t>
+    {
+      public:
+        using acmacs::named_string_t<struct lispmds_symbol_tag_t>::named_string_t;
+    };
 
-         private:
-            std::string mValue;
-
-        }; // class string
-
-    } // namespace detail
-
-    class string : public detail::string { public: using detail::string::string; };
-
-    class symbol : public detail::string { public: using detail::string::string; };
-
-    class keyword : public detail::string { public: using detail::string::string; };
+    class keyword : public acmacs::named_string_t<struct lispmds_keyword_tag_t>
+    {
+      public:
+        using acmacs::named_string_t<struct lispmds_keyword_tag_t>::named_string_t;
+    };
 
     class list;
 

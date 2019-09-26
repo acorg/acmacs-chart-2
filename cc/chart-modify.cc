@@ -552,13 +552,13 @@ RbcSpecies  InfoModify::rbc_species(Compute aCompute) const { return ::info_modi
 TableDate InfoModify::date(Compute aCompute) const
 {
     if (!date_.empty() || aCompute == acmacs::chart::Info::Compute::No)
-        return date_;
+        return TableDate{date_};
     if (number_of_sources() == 0)
         return {};
     std::vector<std::string> composition{number_of_sources()};
     std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(number_of_sources()), composition.begin(), [this](size_t index) { return source(index)->date(); });
     std::sort(std::begin(composition), std::end(composition));
-    return string::join("-", {composition.front(), composition.back()});
+    return TableDate{string::join("-", {composition.front(), composition.back()})};
 
 } // InfoModify::date
 

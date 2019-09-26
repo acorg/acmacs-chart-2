@@ -75,7 +75,7 @@ std::string acmacs::chart::export_ace(const Chart& aChart, std::string aProgramN
 void export_info(rjson::value& aTarget, acmacs::chart::InfoP aInfo)
 {
     auto do_export = [](rjson::value& target, acmacs::chart::InfoP info, bool /*for_source*/) {
-        rjson::set_field_if_not_empty(target, "v", *info->virus());
+        rjson::set_field_if_not_empty(target, "v", info->virus());
         rjson::set_field_if_not_empty(target, "V", info->virus_type());
         rjson::set_field_if_not_empty(target, "A", info->assay());
         rjson::set_field_if_not_empty(target, "D", info->date());
@@ -126,7 +126,7 @@ void export_antigens(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Antig
             semantic += 'E';
 
         auto& object = aTarget.append(rjson::object{});
-        object["N"] = antigen->name();
+        object["N"] = static_cast<std::string>(antigen->name());
         rjson::set_field_if_not_empty(object, "D", antigen->date());
         rjson::set_field_if_not_empty(object, "P", antigen->passage());
         rjson::set_field_if_not_empty(object, "R", antigen->reassortant());
@@ -150,7 +150,7 @@ void export_sera(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Sera> aSe
             semantic += 'E';
 
         auto& object = aTarget.append(rjson::object{});
-        object["N"] = serum->name();
+        object["N"] = *serum->name();
         rjson::set_field_if_not_empty(object, "P", serum->passage());
         rjson::set_field_if_not_empty(object, "R", serum->reassortant());
         rjson::set_field_if_not_empty(object, "I", serum->serum_id());

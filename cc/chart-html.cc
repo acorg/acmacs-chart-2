@@ -158,7 +158,7 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
         const auto passage_type = antigen->passage_type();
         const char* has_too_few_numeric_titers_class = indexes_having_too_few_numeric_titers.contains(ag_no) ? " too-few-numeric-titers" : "";
         if (all_fields) {
-            output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << has_too_few_numeric_titers_class << "\">" << html_escape(antigen->name()) << "</td>";
+            output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << has_too_few_numeric_titers_class << "\">" << html_escape(*antigen->name()) << "</td>";
             if (antigen_fields.annotations)
                 output << "<td class=\"auto ag-annotations\">" << html_escape(annotations[ag_no]) << "</td>";
             if (antigen_fields.reassortants)

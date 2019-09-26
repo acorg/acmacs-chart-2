@@ -151,11 +151,11 @@ namespace acmacs::chart
         void name(std::string value) { name_ = value; computed_name_ = value; }
         void name_append(std::string value) { name_ = ::string::join(" ", {name_, value}); computed_name_ = name_; }
         void virus(Virus value) { virus_ = value; }
-        void virus_type(std::string value) { virus_type_ = value; }
+        void virus_type(VirusType value) { virus_type_ = value; }
         void subset(std::string value) { subset_ = value; }
-        void assay(std::string value) { assay_ = value; }
-        void lab(std::string value) { lab_ = value; }
-        void rbc_species(std::string value) { rbc_species_ = value; }
+        void assay(std::string value) { assay_ = Assay{value}; }
+        void lab(std::string value) { lab_ = Lab{value}; }
+        void rbc_species(std::string value) { rbc_species_ = RbcSpecies{value}; }
         void date(std::string value) { date_ = value; }
         void remove_sources() { sources_.clear(); }
         void add_source(InfoP source) { sources_.push_back(std::make_shared<InfoModify>(source)); }
@@ -164,11 +164,11 @@ namespace acmacs::chart
         std::string name_;
         std::string computed_name_;
         Virus virus_;
-        std::string virus_type_;
+        VirusType virus_type_;
         std::string subset_;
-        std::string assay_;
-        std::string lab_;
-        std::string rbc_species_;
+        Assay assay_;
+        Lab lab_;
+        RbcSpecies rbc_species_;
         std::string date_;
         std::vector<InfoP> sources_;
 
@@ -193,8 +193,8 @@ namespace acmacs::chart
         bool reference() const override { return reference_; }
         Continent continent() const override { return continent_; }
 
-        void name(const std::string& value) { name_ = value; }
-        void date(const std::string& value) { date_ = value; }
+        void name(const std::string& value) { name_ = Name{value}; }
+        void date(const std::string& value) { date_ = Date{value}; }
         void passage(const acmacs::virus::Passage& value) { passage_ = value; }
         void lineage(const std::string& value) { lineage_ = value; }
         void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
@@ -240,7 +240,7 @@ namespace acmacs::chart
         PointIndexList homologous_antigens() const override { return homologous_antigens_; }
         void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { homologous_antigens_ = ags; }
 
-        void name(const std::string& value) { name_ = value; }
+        void name(const std::string& value) { name_ = Name{value}; }
         void passage(const acmacs::virus::Passage& value) { passage_ = value; }
         void lineage(const std::string& value) { lineage_ = value; }
         void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }

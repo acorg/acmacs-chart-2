@@ -55,7 +55,7 @@ std::string acmacs::chart::Chart::description() const
         auto prj = (*prjs)[0];
         n += string::concat(" >=", prj->minimum_column_basis(), " ", prj->stress());
     }
-    if (info()->virus_type() == "B")
+    if (info()->virus_type() == VirusType{"B"})
         n += string::concat(' ', lineage());
     n += string::concat(" Ag:", number_of_antigens(), " Sr:", number_of_sera());
     if (const auto layers = titers()->number_of_layers(); layers > 1)
@@ -339,12 +339,12 @@ acmacs::chart::Lab acmacs::chart::Info::fix_lab_name(Lab source, FixLab fix) con
         case FixLab::no:
             break;
         case FixLab::yes:
-            source = ::string::replace(static_cast<std::string>(source), "NIMR", "Crick");
-            source = ::string::replace(static_cast<std::string>(source), "MELB", "VIDRL");
+            source = Lab{::string::replace(source, "NIMR", "Crick")};
+            source = Lab{::string::replace(source, "MELB", "VIDRL")};
             break;
         case FixLab::reverse:
-            source = ::string::replace(static_cast<std::string>(source), "Crick", "NIMR");
-            source = ::string::replace(static_cast<std::string>(source), "VIDRL", "MELB");
+            source = Lab{::string::replace(source, "Crick", "NIMR")};
+            source = Lab{::string::replace(source, "VIDRL", "MELB")};
             break;
     }
     return source;
@@ -449,7 +449,7 @@ std::string acmacs::chart::Projections::make_info(size_t max_number_of_projectio
 
 std::string acmacs::chart::Antigen::full_name_with_fields() const
 {
-    std::string r = name();
+    std::string r{name()};
     if (const auto value = reassortant(); !value.empty())
         r += " reassortant=\"" + *value + '"';
     if (const auto value = ::string::join(" ", annotations()); !value.empty())
@@ -472,7 +472,7 @@ std::string acmacs::chart::Antigen::full_name_with_fields() const
 
 std::string acmacs::chart::Serum::full_name_with_fields() const
 {
-    std::string r = name();
+    std::string r{name()};
     if (const auto value = reassortant(); !value.empty())
         r += " reassortant=\"" + *value + '"';
     if (const auto value = ::string::join(" ", annotations()); !value.empty())
@@ -492,7 +492,7 @@ std::string acmacs::chart::Serum::full_name_with_fields() const
 // ----------------------------------------------------------------------
 
 // std::string name_abbreviated(std::string aName);
-static inline std::string name_abbreviated(std::string aName)
+static inline std::string name_abbreviated(std::string_view aName)
 {
     try {
         std::string virus_type, host, location, isolation, year, passage, extra;
@@ -500,7 +500,7 @@ static inline std::string name_abbreviated(std::string aName)
         return string::join("/", {get_locdb().abbreviation(location), isolation, year.substr(2)});
     }
     catch (virus_name::Unrecognized&) {
-        return aName;
+        return std::string{aName};
     }
 
 } // name_abbreviated
@@ -515,7 +515,7 @@ std::string acmacs::chart::Antigen::name_abbreviated() const
 
 // ----------------------------------------------------------------------
 
-static inline std::string name_without_subtype(std::string aName)
+static inline std::string name_without_subtype(std::string_view aName)
 {
     try {
         std::string virus_type, host, location, isolation, year, passage, extra;
@@ -525,7 +525,7 @@ static inline std::string name_without_subtype(std::string aName)
         return string::join("/", {virus_type, host, location, isolation, year});
     }
     catch (virus_name::Unrecognized&) {
-        return aName;
+        return std::string{aName};
     }
 }
 
@@ -547,7 +547,7 @@ std::string acmacs::chart::Antigen::location_abbreviated() const
 
 // ----------------------------------------------------------------------
 
-static inline std::string abbreviated_location_year(std::string aName)
+static inline std::string abbreviated_location_year(std::string_view aName)
 {
     try {
         std::string virus_type, host, location, isolation, year, passage, extra;
@@ -555,7 +555,7 @@ static inline std::string abbreviated_location_year(std::string aName)
         return string::join("/", {get_locdb().abbreviation(location), year.substr(2, 2)});
     }
     catch (virus_name::Unrecognized&) {
-        return aName;
+        return std::string{aName};
     }
 }
 
@@ -601,7 +601,7 @@ std::string acmacs::chart::Serum::abbreviated_location_year() const
 
 // ----------------------------------------------------------------------
 
-static inline bool not_in_country(std::string aName, std::string aCountry)
+static inline bool not_in_country(std::string_view aName, std::string aCountry)
 {
     try {
         return get_locdb().country(virus_name::location(aName)) != aCountry;
@@ -616,7 +616,7 @@ static inline bool not_in_country(std::string aName, std::string aCountry)
 
 // ----------------------------------------------------------------------
 
-static inline bool not_in_continent(std::string aName, std::string aContinent)
+static inline bool not_in_continent(std::string_view aName, std::string aContinent)
 {
     try {
         return get_locdb().continent(virus_name::location(aName)) != aContinent;
@@ -659,9 +659,9 @@ acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string_view aN
         if (const auto first_name = (*begin())->name(); first_name.size() > 2) {
         // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix (for A and B)
             if ((aName[0] == 'A' && aName[1] == '/' && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos) || (aName[0] == 'B' && aName[1] == '/'))
-                indexes = find(string::concat(first_name.substr(0, first_name.find('/')), aName.substr(1)));
+                indexes = find(string::concat(first_name->substr(0, first_name.find('/')), aName.substr(1)));
             else if (aName[1] != '/' && aName[1] != '(')
-                indexes = find(string::concat(first_name.substr(0, first_name.find('/') + 1), aName));
+                indexes = find(string::concat(first_name->substr(0, first_name.find('/') + 1), aName));
         }
     }
     return indexes;
@@ -763,13 +763,13 @@ acmacs::chart::Sera::homologous_canditates_t acmacs::chart::Sera::find_homologou
             return antigen_passage.is_egg() == serum_passage.is_egg();
     };
 
-    std::map<std::string, std::vector<size_t>> antigen_name_index;
+    std::map<std::string, std::vector<size_t>, std::less<>> antigen_name_index;
     for (auto [ag_no, antigen] : acmacs::enumerate(aAntigens))
         antigen_name_index.emplace(antigen->name(), std::vector<size_t>{}).first->second.push_back(ag_no);
 
     acmacs::chart::Sera::homologous_canditates_t result(size());
     for (auto [sr_no, serum] : acmacs::enumerate(*this)) {
-        if (auto ags = antigen_name_index.find(serum->name()); ags != antigen_name_index.end()) {
+        if (auto ags = antigen_name_index.find(*serum->name()); ags != antigen_name_index.end()) {
             for (auto ag_no : ags->second) {
                 auto antigen = aAntigens[ag_no];
                 if (dbg == debug::yes)

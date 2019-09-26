@@ -57,7 +57,7 @@ void process(const std::vector<std::string_view>& names, const std::vector<std::
                     size_t num_found = 0;
                     auto antigens = chart->antigens();
                     for (auto antigen : *antigens) {
-                        const std::string name = antigen->name();
+                        const std::string name{antigen->name()};
                         if (const auto found = m_names.find(name); found != m_names.end()) {
                             ++num_found;
                             ++found->second;

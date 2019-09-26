@@ -437,14 +437,14 @@ template <typename ... Args> void make_antigen_mod(mod_type mt, radius_type rt, 
 void report_json(std::ostream& output, const acmacs::chart::Chart& chart, const std::vector<SerumData>& sera_data)
 {
       // const auto assay_tag = string::replace(chart.info()->assay(), "FOCUS REDUCTION", "FRA", " ", "_");
-    const std::string assay_tag = chart.info()->assay() == "HI" ? "HI" : "NEUT";
+    const std::string assay_tag = *chart.info()->assay() == "HI" ? "HI" : "NEUT";
     const auto lab = chart.info()->lab(acmacs::chart::Info::Compute::Yes);
-    const auto lab_assay_tag = lab + '_' + assay_tag + '.';
+    const auto lab_assay_tag = *lab + '_' + assay_tag + '.';
 
     // const char* mod_pre = "        {\"N\": \"clades_light\", \"size\": 8},\n";
 
     output << "{ \"_\":\"-*- js-indent-level: 2 -*-\",\n\n";
-    output << "  \"?? " << lab << ' ' << assay_tag << "\": false,\n\n";
+    output << "  \"?? " << *lab << ' ' << assay_tag << "\": false,\n\n";
 
     output << "  \"?? ==== COVERAGE LIST ======================================================================\": false,\n";
     output << "  \"serum_coverage_mods\": {\n\n";

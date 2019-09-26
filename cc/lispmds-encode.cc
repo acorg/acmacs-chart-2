@@ -24,13 +24,13 @@ static std::string sEncodedSignature_table_name_uc_v1{"@A"};
 
 #pragma GCC diagnostic pop
 
-inline bool strain_name_encoded(const std::string& name)
+inline bool strain_name_encoded(std::string_view name)
 {
     auto eqc = [](std::string_view tail) { return tail == sEncodedSignature_strain_name_lc || tail == sEncodedSignature_strain_name_uc || tail == sEncodedSignature_strain_name_lc_v1 || tail == sEncodedSignature_strain_name_uc_v1; };
     return name.size() > 2 && eqc(std::string_view(name.data() + name.size() - 2, 2));
 }
 
-inline bool table_name_encoded(const std::string& name)
+inline bool table_name_encoded(std::string_view name)
 {
     auto eqc = [](std::string_view tail) { return tail == sEncodedSignature_table_name_lc || tail == sEncodedSignature_table_name_uc || tail == sEncodedSignature_table_name_lc_v1 || tail == sEncodedSignature_table_name_uc_v1; };
     return name.size() > 2 && eqc(std::string_view(name.data() + name.size() - 2, 2));
@@ -60,7 +60,7 @@ static inline std::string append_signature(std::string aSource, acmacs::chart::l
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::lispmds_encode(std::string aName, lispmds_encoding_signature signature)
+std::string acmacs::chart::lispmds_encode(std::string_view aName, lispmds_encoding_signature signature)
 {
     std::string result;
     bool encoded = false;
@@ -128,7 +128,7 @@ std::string acmacs::chart::lispmds_encode(std::string aName, lispmds_encoding_si
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::lispmds_table_name_encode(std::string name)
+std::string acmacs::chart::lispmds_table_name_encode(std::string_view name)
 {
       // lispmds does not like / in the table name
       // it interprets / as being part of a file name when we doing procrustes (Blake 2018-06-11)
@@ -168,7 +168,7 @@ std::string acmacs::chart::lispmds_serum_name_encode(const Name& aName, const ac
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::lispmds_decode(std::string aName)
+std::string acmacs::chart::lispmds_decode(std::string_view aName)
 {
     if (strain_name_encoded(aName) || table_name_encoded(aName)) {
         std::string result;
@@ -188,7 +188,7 @@ std::string acmacs::chart::lispmds_decode(std::string aName)
                   break;
               case '%':
                   if (std::isxdigit(aName[pos + 1]) && std::isxdigit(aName[pos + 2])) {
-                      result.append(1, static_cast<char>(std::stoul(aName.substr(pos + 1, 2), nullptr, 16)));
+                      result.append(1, static_cast<char>(std::stoul(aName.substr(pos + 1, 2), 16)));
                       pos += 2;
                   }
                   else
@@ -197,7 +197,7 @@ std::string acmacs::chart::lispmds_decode(std::string aName)
               case 'A':
                   if (last_was_space && aName[pos + 1] == 'H') {
                       std::smatch flu_a_match;
-                      if (const std::string text(aName, pos); std::regex_match(text, flu_a_match, sFluASubtype)) {
+                      if (const std::string text(std::string{aName}, pos); std::regex_match(text, flu_a_match, sFluASubtype)) {
                           result.append("A(H").append(flu_a_match.str(1)).append(1, ')');
                           pos += static_cast<size_t>(flu_a_match.length(1)) + 1;
                       }
@@ -216,13 +216,13 @@ std::string acmacs::chart::lispmds_decode(std::string aName)
         return result;
     }
     else
-        return aName;
+        return std::string{aName};
 
 } // acmacs::chart::lispmds_decode
 
 // ----------------------------------------------------------------------
 
-static inline std::vector<size_t> find_sep(std::string source, bool v1)
+static inline std::vector<size_t> find_sep(std::string_view source, bool v1)
 {
     std::vector<size_t> sep_pos;
     for (size_t pos = 0; pos < (source.size() - 2); ++pos) {
@@ -252,7 +252,7 @@ static inline std::string fix_passage_date(std::string source)
     return source;
 }
 
-void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName, acmacs::virus::Reassortant& aReassortant, acmacs::virus::Passage& aPassage, Annotations& aAnnotations)
+void acmacs::chart::lispmds_antigen_name_decode(std::string_view aSource, Name& aName, acmacs::virus::Reassortant& aReassortant, acmacs::virus::Passage& aPassage, Annotations& aAnnotations)
 {
     if (strain_name_encoded(aSource)) {
         const bool v1 = std::tolower(aSource.back()) == 'a';
@@ -260,7 +260,7 @@ void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName
         const std::string stage1 = lispmds_decode(aSource);
         auto sep_pos = find_sep(stage1, v1);
         if (!sep_pos.empty()) {
-            aName = stage1.substr(0, sep_pos[0]);
+            aName = Name{stage1.substr(0, sep_pos[0])};
             for (size_t sep_no = 0; sep_no < sep_pos.size(); ++sep_no) {
                 const size_t chunk_len = (sep_no + 1) < sep_pos.size() ? (sep_pos[sep_no + 1] - sep_pos[sep_no] - sep_len) : std::string::npos;
                 switch (std::tolower(stage1[sep_pos[sep_no] + 1])) {
@@ -277,16 +277,16 @@ void acmacs::chart::lispmds_antigen_name_decode(std::string aSource, Name& aName
             }
         }
         else
-            aName = stage1;
+            aName = Name{stage1};
     }
     else
-        aName = aSource;
+        aName = Name{aSource};
 
 } // acmacs::chart::lispmds_antigen_name_decode
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::lispmds_serum_name_decode(std::string aSource, Name& aName, acmacs::virus::Reassortant& aReassortant, Annotations& aAnnotations, SerumId& aSerumId)
+void acmacs::chart::lispmds_serum_name_decode(std::string_view aSource, Name& aName, acmacs::virus::Reassortant& aReassortant, Annotations& aAnnotations, SerumId& aSerumId)
 {
     if (strain_name_encoded(aSource)) {
         const bool v1 = std::tolower(aSource.back()) == 'a';
@@ -294,7 +294,7 @@ void acmacs::chart::lispmds_serum_name_decode(std::string aSource, Name& aName, 
         const std::string stage1 = lispmds_decode(aSource);
         auto sep_pos = find_sep(stage1, v1);
         if (!sep_pos.empty()) {
-            aName = stage1.substr(0, sep_pos[0]);
+            aName = Name{stage1.substr(0, sep_pos[0])};
             for (size_t sep_no = 0; sep_no < sep_pos.size(); ++sep_no) {
                 const size_t chunk_len = (sep_no + 1) < sep_pos.size() ? (sep_pos[sep_no + 1] - sep_pos[sep_no] - sep_len) : std::string::npos;
                 switch (std::tolower(stage1[sep_pos[sep_no] + 1])) {
@@ -311,10 +311,10 @@ void acmacs::chart::lispmds_serum_name_decode(std::string aSource, Name& aName, 
             }
         }
         else
-            aName = stage1;
+            aName = Name{stage1};
     }
     else
-        aName = aSource;
+        aName = Name{aSource};
 
 } // acmacs::chart::lispmds_serum_name_decode
 
