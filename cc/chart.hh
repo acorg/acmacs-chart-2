@@ -69,6 +69,8 @@ namespace acmacs::chart
     {
       public:
         using acmacs::named_string_t<struct chart_assay_tag_t>::named_string_t;
+
+        std::string hi_or_neut() const { return (empty() || get() == "HI") ? "hi" : "neut"; }
     };
 
     class Lab : public acmacs::named_string_t<struct chart_lab_tag_t>
