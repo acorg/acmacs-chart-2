@@ -17,8 +17,8 @@ static const std::regex sDate{"[12][90][0-9][0-9]-[0-2][0-9]-[0-3][0-9]"};
 
 void acmacs::chart::Date::check() const
 {
-    if (!empty() && !std::regex_match(*this, sDate))
-        throw invalid_data{"invalid date (YYYY-MM-DD expected): " + *this};
+    if (!empty() && !std::regex_match(std::begin(this->get()), std::end(this->get()), sDate))
+        throw invalid_data{fmt::format("invalid date (YYYY-MM-DD expected): {}", *this)};
 
 } // acmacs::chart::Date::check
 
@@ -457,7 +457,7 @@ std::string acmacs::chart::Antigen::full_name_with_fields() const
     if (const auto value = passage(); !value.empty())
         r += " passage=\"" + *value + "\" ptype=" + value.passage_type();
     if (const auto value = date(); !value.empty())
-        r += " date=" + value;
+        r += " date=" + *value;
     if (const auto value = lineage(); value != BLineage::Unknown)
         r += " lineage=" + static_cast<std::string>(value);
     if (reference())
@@ -478,11 +478,11 @@ std::string acmacs::chart::Serum::full_name_with_fields() const
     if (const auto value = ::string::join(" ", annotations()); !value.empty())
         r += " annotations=\"" + value + '"';
     if (const auto value = serum_id(); !value.empty())
-        r += " serum_id=\"" + value + '"';
+        r += " serum_id=\"" + *value + '"';
     if (const auto value = passage(); !value.empty())
         r += " passage=\"" + *value + "\" ptype=" + value.passage_type();
     if (const auto value = serum_species(); !value.empty())
-        r += " serum_species=\"" + value + '"';
+        r += " serum_species=\"" + *value + '"';
     if (const auto value = lineage(); value != BLineage::Unknown)
         r += " lineage=" + static_cast<std::string>(value);
     return r;

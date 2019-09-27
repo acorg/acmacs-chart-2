@@ -676,14 +676,14 @@ void SerumModify::update_with(SerumP main)
         lineage_ = main->lineage();
     }
     else if (main->lineage() != BLineage::Unknown && lineage_ != main->lineage()) {
-        std::cerr << "WARNING: merged serum lineages " << lineage_ << " vs. " << main->lineage() << '\n';
+        std::cerr << fmt::format("WARNING: merged serum lineages {} vs. {}\n", lineage_, main->lineage());
     }
 
     if (serum_species_.empty()) {
         serum_species_ = main->serum_species();
     }
     else if (!main->serum_species().empty() && serum_species_ != main->serum_species()) {
-        std::cerr << "WARNING: merged serum serum_speciess " << serum_species_ << " vs. " << main->serum_species() << '\n';
+        std::cerr << fmt::format("WARNING: merged serum serum_speciess {} vs. {}\n", serum_species_, main->serum_species());
     }
 
 } // SerumModify::update_with

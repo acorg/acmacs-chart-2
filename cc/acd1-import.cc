@@ -558,10 +558,10 @@ BLineage Acd1Serum::lineage() const
 SerumId Acd1Serum::serum_id() const
 {
     if (const auto& s_dict = data_["serum_id"]; !s_dict.is_null()) {
-        return s_dict["serum_id"];
+        return SerumId{s_dict["serum_id"]};
     }
     else if (auto p_str = data_["serum_id"].get_or_default(""); !p_str.empty()) {
-        return p_str;
+        return SerumId{p_str};
     }
     else
         return {};

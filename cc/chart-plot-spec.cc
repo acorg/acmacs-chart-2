@@ -98,8 +98,8 @@ void print_plot_spec(std::string_view chart_filename)
         serum_fields["reassortant"].emplace_back(serum->reassortant());
         serum_fields["annotations"].push_back(serum->annotations().join());
         serum_fields["passage"].emplace_back(serum->passage());
-        serum_fields["serum_id"].push_back(serum->serum_id());
-        serum_fields["serum_species"].push_back(serum->serum_species());
+        serum_fields["serum_id"].emplace_back(serum->serum_id());
+        serum_fields["serum_species"].emplace_back(serum->serum_species());
         auto style = plot_spec->style(point_no);
         serum_fields["fill_color"].push_back(style.fill->to_string());
         serum_fields["outline_color"].push_back(style.outline->to_string());

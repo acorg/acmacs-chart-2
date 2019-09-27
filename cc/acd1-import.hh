@@ -84,7 +84,7 @@ namespace acmacs::chart
         Acd1Antigen(const rjson::value& aData) : data_{aData} {}
 
         Name name() const override;
-        Date date() const override { return data_["date"].get_or_default(""); }
+        Date date() const override { return Date{data_["date"].get_or_default("")}; }
         acmacs::virus::Passage passage() const override;
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override;
@@ -111,7 +111,7 @@ namespace acmacs::chart
         acmacs::virus::Reassortant reassortant() const override;
         Annotations annotations() const override;
         SerumId serum_id() const override;
-        SerumSpecies serum_species() const override { return data_["serum_species"].get_or_default(""); }
+        SerumSpecies serum_species() const override { return SerumSpecies{data_["serum_species"].get_or_default("")}; }
         PointIndexList homologous_antigens() const override { return data_["*homologous"]; }
         void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { const_cast<rjson::value&>(data_)["*homologous"] = rjson::array(ags.begin(), ags.end()); }
 

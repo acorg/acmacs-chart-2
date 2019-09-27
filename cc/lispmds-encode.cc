@@ -302,7 +302,7 @@ void acmacs::chart::lispmds_serum_name_decode(std::string_view aSource, Name& aN
                       aReassortant = acmacs::virus::Reassortant{stage1.substr(sep_pos[sep_no] + sep_len, chunk_len)};
                       break;
                   case 'i':
-                      aSerumId = stage1.substr(sep_pos[sep_no] + sep_len, chunk_len);
+                      aSerumId = SerumId{stage1.substr(sep_pos[sep_no] + sep_len, chunk_len)};
                       break;
                   case 'a':
                       aAnnotations.push_back(stage1.substr(sep_pos[sep_no] + sep_len, chunk_len));

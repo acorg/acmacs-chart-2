@@ -347,7 +347,7 @@ std::vector<size_t> serum_rows(std::ostream& output, const acmacs::chart::Chart&
 
         // serum_ids
         const auto show_serum_ids = [&output](size_t sr_no, const auto& serum, bool group_begin) {
-            output << "<td class=\"sr-id " << "sr-" << sr_no << (group_begin ? " sr-group-begin" : "") << "\">" << html_escape(serum.serum_id()) << "</td>";
+            output << "<td class=\"sr-id " << "sr-" << sr_no << (group_begin ? " sr-group-begin" : "") << "\">" << html_escape(*serum.serum_id()) << "</td>";
         };
 
         show_row(show_serum_ids);

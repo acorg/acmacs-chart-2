@@ -66,7 +66,7 @@ std::shared_ptr<acmacs::chart::ChartNew> import_from_file(std::string_view filen
         sera->at(serum_no).name(serum_name);
     if (serum_ids.size() == serum_names.size()) {
         for (auto [serum_no, serum_id] : acmacs::enumerate(serum_ids))
-            sera->at(serum_no).serum_id(serum_id);
+            sera->at(serum_no).serum_id(acmacs::chart::SerumId{serum_id});
     }
     auto antigens = chart->antigens_modify();
     auto titers = chart->titers_modify();

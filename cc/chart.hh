@@ -98,28 +98,30 @@ namespace acmacs::chart
 
     }; // class Name
 
-    class Date : public detail::string_data
+    class Date : public acmacs::named_string_t<struct chart_date_tag_t>
     {
       public:
-        Date() = default;
-        Date(const Date&) = default;
-        Date(const std::string& source) : detail::string_data(source) { check(); }
-        Date(std::string&& source) : detail::string_data(std::move(source)) { check(); }
-        Date(std::string_view source) : detail::string_data(source) { check(); }
-        Date& operator=(const Date&) = default;
-        Date& operator=(Date&&) = default;
-        Date& operator=(const std::string& source)
-        {
-            detail::string_data::operator=(source);
-            check();
-            return *this;
-        }
-        Date& operator=(std::string_view source)
-        {
-            detail::string_data::operator=(source);
-            check();
-            return *this;
-        }
+        using acmacs::named_string_t<struct chart_date_tag_t>::named_string_t;
+
+        // Date() = default;
+        // Date(const Date&) = default;
+        // Date(const std::string& source) : detail::string_data(source) { check(); }
+        // Date(std::string&& source) : detail::string_data(std::move(source)) { check(); }
+        // Date(std::string_view source) : detail::string_data(source) { check(); }
+        // Date& operator=(const Date&) = default;
+        // Date& operator=(Date&&) = default;
+        // Date& operator=(const std::string& source)
+        // {
+        //     detail::string_data::operator=(source);
+        //     check();
+        //     return *this;
+        // }
+        // Date& operator=(std::string_view source)
+        // {
+        //     detail::string_data::operator=(source);
+        //     check();
+        //     return *this;
+        // }
 
         bool within_range(std::string_view first_date, std::string_view after_last_date) const
         {
@@ -201,10 +203,10 @@ namespace acmacs::chart
 
     }; // class BLineage
 
-    class Continent : public detail::string_data
+    class Continent : public acmacs::named_string_t<struct chart_continent_tag_t>
     {
       public:
-        using detail::string_data::string_data;
+        using acmacs::named_string_t<struct chart_continent_tag_t>::named_string_t;
 
     }; // class Continent
 
@@ -247,17 +249,17 @@ namespace acmacs::chart
 
     }; // class Clades
 
-    class SerumId : public detail::string_data
+    class SerumId : public acmacs::named_string_t<struct chart_SerumId_tag_t>
     {
       public:
-        using detail::string_data::string_data;
+        using acmacs::named_string_t<struct chart_SerumId_tag_t>::named_string_t;
 
     }; // class SerumId
 
-    class SerumSpecies : public detail::string_data
+    class SerumSpecies : public acmacs::named_string_t<struct chart_SerumSpecies_tag_t>
     {
       public:
-        using detail::string_data::string_data;
+        using acmacs::named_string_t<struct chart_SerumSpecies_tag_t>::named_string_t;
 
     }; // class SerumSpecies
 
@@ -416,7 +418,7 @@ namespace acmacs::chart
     {
         out << ag.full_name();
         if (const auto date = ag.date(); !date.empty())
-            out << " [" << date << ']';
+            out << fmt::format(" [{}]", date);
         if (const auto lab_ids = ag.lab_ids(); !lab_ids.empty())
             out << ' ' << lab_ids;
         if (const auto lineage = ag.lineage(); lineage != BLineage::Unknown)
@@ -478,7 +480,7 @@ namespace acmacs::chart
         if (const auto lineage = sr.lineage(); lineage != BLineage::Unknown)
             out << ' ' << static_cast<std::string>(lineage);
         if (const auto serum_species = sr.serum_species(); !serum_species.empty())
-            out << ' ' << serum_species;
+            out << ' ' << *serum_species;
         return out;
     }
 
@@ -928,6 +930,22 @@ template <> struct fmt::formatter<acmacs::chart::RbcSpecies> : fmt::formatter<st
 
 template <> struct fmt::formatter<acmacs::chart::TableDate> : fmt::formatter<std::string> {
     template <typename FormatCtx> auto format(const acmacs::chart::TableDate& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
+};
+
+template <> struct fmt::formatter<acmacs::chart::Date> : fmt::formatter<std::string> {
+    template <typename FormatCtx> auto format(const acmacs::chart::Date& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
+};
+
+template <> struct fmt::formatter<acmacs::chart::Continent> : fmt::formatter<std::string> {
+    template <typename FormatCtx> auto format(const acmacs::chart::Continent& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
+};
+
+template <> struct fmt::formatter<acmacs::chart::SerumId> : fmt::formatter<std::string> {
+    template <typename FormatCtx> auto format(const acmacs::chart::SerumId& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
+};
+
+template <> struct fmt::formatter<acmacs::chart::SerumSpecies> : fmt::formatter<std::string> {
+    template <typename FormatCtx> auto format(const acmacs::chart::SerumSpecies& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
 };
 
 // ----------------------------------------------------------------------

@@ -202,7 +202,7 @@ namespace acmacs::chart
         void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
         void add_clade(const std::string& clade) { clades_.add(clade); }
         void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
-        template <typename S> void continent(S&& value) { continent_ = std::forward<S>(value); }
+        template <typename S> void continent(S&& value) { continent_ = Continent{std::forward<S>(value)}; }
         void set_continent();
 
         void replace_with(AntigenP main);
@@ -244,8 +244,8 @@ namespace acmacs::chart
         void passage(const acmacs::virus::Passage& value) { passage_ = value; }
         void lineage(const std::string& value) { lineage_ = value; }
         void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
-        void serum_id(const std::string& value) { serum_id_ = value; }
-        void serum_species(const std::string& value) { serum_species_ = value; }
+        void serum_id(const SerumId& value) { serum_id_ = value; }
+        void serum_species(const SerumSpecies& value) { serum_species_ = value; }
         void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
         void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
         void set_continent() {}

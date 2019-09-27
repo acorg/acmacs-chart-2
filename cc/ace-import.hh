@@ -76,7 +76,7 @@ namespace acmacs::chart
         AceAntigen(const rjson::value& aData) : data_{aData} {}
 
         Name name() const override { return Name{data_["N"]}; }
-        Date date() const override { return data_["D"].get_or_default(""); }
+        Date date() const override { return Date{data_["D"].get_or_default("")}; }
         acmacs::virus::Passage passage() const override { return acmacs::virus::Passage{data_["P"].get_or_default("")}; }
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override { return acmacs::virus::Reassortant{data_["R"].get_or_default("")}; }
@@ -102,8 +102,8 @@ namespace acmacs::chart
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override { return acmacs::virus::Reassortant{data_["R"].get_or_default("")}; }
         Annotations annotations() const override { return data_["a"]; }
-        SerumId serum_id() const override { return data_["I"].get_or_default(""); }
-        SerumSpecies serum_species() const override { return data_["s"].get_or_default(""); }
+        SerumId serum_id() const override { return SerumId{data_["I"].get_or_default("")}; }
+        SerumSpecies serum_species() const override { return SerumSpecies{data_["s"].get_or_default("")}; }
         PointIndexList homologous_antigens() const override { return data_["h"]; }
         void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { const_cast<rjson::value&>(data_)["h"] = rjson::array(ags.begin(), ags.end()); }
 
