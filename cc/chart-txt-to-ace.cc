@@ -75,7 +75,7 @@ std::shared_ptr<acmacs::chart::ChartNew> import_from_file(std::string_view filen
             if (f_no == 0)
                 antigens->at(antigen_no).name(field);
             else
-                titers->titer(antigen_no, f_no - 1, field);
+                titers->titer(antigen_no, f_no - 1, acmacs::chart::Titer{field});
         }
     }
     return chart;

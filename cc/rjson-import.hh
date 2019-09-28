@@ -58,7 +58,7 @@ namespace acmacs::chart
         Titer titer(size_t aAntigenNo, size_t aSerumNo) const override
         {
             if (const auto& list = data_[keys_.list]; !list.is_null())
-                return list[aAntigenNo][aSerumNo];
+                return Titer{list[aAntigenNo][aSerumNo]};
             else
                 return titer_in_d(data_[keys_.dict], aAntigenNo, aSerumNo);
         }
@@ -143,7 +143,7 @@ namespace acmacs::chart
         {
             if (const auto& row = aSource[aAntigenNo]; !row.is_null())
                 if (const auto& titer = row[aSerumNo]; !titer.is_null())
-                    return titer;
+                    return Titer{titer};
             return {};
         }
 

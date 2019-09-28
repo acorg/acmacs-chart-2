@@ -5,7 +5,7 @@
 
 #include "acmacs-base/rjson-forward.hh"
 #include "acmacs-base/string.hh"
-#include "acmacs-chart-2/base.hh"
+#include "acmacs-base/named-type.hh"
 #include "acmacs-chart-2/column-bases.hh"
 
 // ----------------------------------------------------------------------
@@ -17,22 +17,20 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-    class Titer : public detail::string_data
+    class Titer : public acmacs::named_string_t<struct chart_Titer_tag_t>
     {
      public:
         enum Type { Invalid, Regular, DontCare, LessThan, MoreThan, Dodgy };
 
-        using detail::string_data::string_data;
-        Titer() : detail::string_data::string_data("*") {}
-        Titer(char typ, size_t value) : detail::string_data::string_data(typ + std::to_string(value)) {}
-        Titer& operator=(std::string source) { validate(source); detail::string_data::operator=(source); return *this; }
-        Titer& operator=(std::string_view source) { validate(source); detail::string_data::operator=(source); return *this; }
+        using acmacs::named_string_t<struct chart_Titer_tag_t>::named_string_t;
+        Titer() : acmacs::named_string_t<struct chart_Titer_tag_t>("*") {}
+        Titer(char typ, size_t value) : acmacs::named_string_t<struct chart_Titer_tag_t>(typ + std::to_string(value)) {}
 
         Type type() const
         {
             if (empty())
                 return Invalid;
-            switch (front()) {
+            switch (get().front()) {
                 case '*':
                     return DontCare;
                 case '<':
@@ -68,7 +66,7 @@ namespace acmacs::chart
         Titer multiplied_by(double value) const; // multiplied_by(2) returns 80 for 40 and <80 for <40, * for *
 
           // static inline Titer from_logged(double aLogged, std::string aPrefix = "") { return aPrefix + std::to_string(std::lround(std::pow(2.0, aLogged) * 10.0)); }
-        static inline Titer from_logged(double aLogged, const char* aPrefix = "") { return aPrefix + std::to_string(std::lround(std::exp2(aLogged) * 10.0)); }
+        static inline Titer from_logged(double aLogged, const char* aPrefix = "") { return Titer{aPrefix + std::to_string(std::lround(std::exp2(aLogged) * 10.0))}; }
 
         static void validate(std::string_view titer);
 
@@ -78,7 +76,7 @@ namespace acmacs::chart
 
     inline double Titer::logged() const
     {
-        constexpr auto log_titer = [](std::string source) -> double { return std::log2(std::stod(source) / 10.0); };
+        constexpr auto log_titer = [](std::string_view source) -> double { return std::log2(std::stod(std::string{source}) / 10.0); };
 
         switch (type()) {
             case Regular:
@@ -86,7 +84,7 @@ namespace acmacs::chart
             case LessThan:
             case MoreThan:
             case Dodgy:
-                return log_titer(substr(1));
+                return log_titer(get().substr(1));
             case DontCare:
             case Invalid:
                 throw invalid_titer(*this);
@@ -152,7 +150,7 @@ namespace acmacs::chart
         std::shared_ptr<TiterIterator::TiterGetter> getter_;
     };
 
-    inline std::ostream& operator<<(std::ostream& s, const TiterIterator::Data& data) { return s << data.antigen << ':' << data.serum << ':' << data.titer; }
+    inline std::ostream& operator<<(std::ostream& s, const TiterIterator::Data& data) { return s << data.antigen << ':' << data.serum << ':' << *data.titer; }
 
 // ----------------------------------------------------------------------
 
@@ -263,6 +261,10 @@ namespace acmacs::chart
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------
+
+template <> struct fmt::formatter<acmacs::chart::Titer> : fmt::formatter<std::string> {
+    template <typename FormatCtx> auto format(const acmacs::chart::Titer& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
+};
 
 namespace acmacs
 {

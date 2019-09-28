@@ -43,16 +43,20 @@ int main(int argc, char* const argv[])
             if (std::any_of(acmacs::index_iterator(0UL), acmacs::index_iterator(titers->number_of_layers()),
                             [&titers, antigen_no, serum_no = *opt.serum_no](size_t layer_no) { return !titers->titer_of_layer(layer_no, antigen_no, serum_no).is_dont_care(); })) {
                 std::cout << std::setw(4) << std::right << antigen_no << ' ' << std::setw(max_antigen_name) << std::left << chart->antigen(antigen_no)->full_name()
-                          << std::setw(6) << std::right << titers->titer(antigen_no, opt.serum_no);
+                          << std::setw(6) << std::right << *titers->titer(antigen_no, opt.serum_no);
                 for (size_t layer_no = 0; layer_no < titers->number_of_layers(); ++layer_no) {
                     const auto titer = titers->titer_of_layer(layer_no, antigen_no, opt.serum_no);
-                    std::cout << std::setw(6) << std::right << titer << ' ';
+                    std::cout << std::setw(6) << std::right << *titer << ' ';
                     all_titers.insert(titer);
                 }
                 std::cout << '\n';
             }
         }
-        std::cout << "\nall titers: " << all_titers << "\n\n";
+        std::cout << "\nall titers:";
+        for (auto titer : all_titers)
+            std::cout << ' ' << *titer;
+        std::cout << "\n\n";
+
         auto info = chart->info();
         for (size_t layer_no = 0; layer_no < titers->number_of_layers(); ++layer_no)
             std::cout << std::setw(2) << std::right << layer_no << ' ' << static_cast<std::string_view>(info->source(layer_no)->date()) << '\n';

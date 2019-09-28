@@ -136,7 +136,7 @@ void report_text(const acmacs::chart::Chart& chart, const std::vector<SerumData>
         if (!serum_data.antigens.empty()) {
             std::cout << "   titer theor empir\n";
             for (const auto& antigen_data : serum_data.antigens) {
-                std::cout << "  " << std::setw(6) << std::right << antigen_data.titer;
+                std::cout << "  " << std::setw(6) << std::right << *antigen_data.titer;
                 if (antigen_data.theoretical)
                     std::cout << ' ' << std::setw(5) << std::fixed << std::setprecision(2) << antigen_data.theoretical.radius();
                 else
@@ -271,7 +271,7 @@ inline void make_serum_info(std::ostream& output, const SerumData& serum_data)
            << "    \"?? SR " << serum_data.serum_no << ' ' << serum_data.serum->full_name_with_passage() << "\": false,\n";
     if (!serum_data.antigens.empty()) {
         for (const auto& antigen_data : serum_data.antigens) {
-            output << "    \"??   titer:" << std::setw(5) << std::right << antigen_data.titer << " theor:";
+            output << "    \"??   titer:" << std::setw(5) << std::right << *antigen_data.titer << " theor:";
             if (antigen_data.valid_theoretical())
                 output << std::setw(4) << std::fixed << std::setprecision(2) << std::left << antigen_data.theoretical.radius();
             else
@@ -338,7 +338,7 @@ template <mod_type mt, radius_type rt, time_type tt, std::enable_if_t<tt==time_t
 {
     output << "        {\"serum_name\": \"" << serum_data.serum->full_name_with_passage() << "\", \"serum_no\": " << serum_data.serum_no
            << ", \"antigen_name\": \"" << antigen_data.antigen->full_name_with_passage() << "\", \"antigen_no\": " << antigen_data.antigen_no
-           << ", \"titer\": \"" << antigen_data.titer
+           << ", \"titer\": \"" << *antigen_data.titer
            << "\", \"theoretical\": " << std::setprecision(2) << std::fixed << antigen_data.theoretical.radius()
            << ", \"empirical\": " << std::setprecision(2) << std::fixed << antigen_data.empirical.radius()
            << ", \"N\": \"comment\", \"type\": \"data\"},\n";

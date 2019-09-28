@@ -81,8 +81,8 @@ int main(int argc, char* const argv[])
                     const auto titer_orig = charts[layer_no]->titers()->titer(antigen_map[ag_no], serum_map[sr_no]);
                     if (titer != titer_orig) {
                         std::cerr << "ERROR: titer mismatch:\n"
-                                  << titer << " result: " << ag_no << ' ' << result->antigens()->at(ag_no)->full_name() << ' ' << sr_no << ' ' << result->sera()->at(sr_no)->full_name() << '\n'
-                                  << titer_orig << " orig chart " << layer_no << ' ' << antigen_map[ag_no] << ' ' << charts[layer_no]->antigens()->at(antigen_map[ag_no])->full_name() << ' '
+                                  << *titer << " result: " << ag_no << ' ' << result->antigens()->at(ag_no)->full_name() << ' ' << sr_no << ' ' << result->sera()->at(sr_no)->full_name() << '\n'
+                                  << *titer_orig << " orig chart " << layer_no << ' ' << antigen_map[ag_no] << ' ' << charts[layer_no]->antigens()->at(antigen_map[ag_no])->full_name() << ' '
                                   << serum_map[sr_no] << ' ' << charts[layer_no]->sera()->at(serum_map[sr_no])->full_name() << "\n";
                         assert(titer == titer_orig);
                     }

@@ -125,10 +125,10 @@ std::string acmacs::chart::Chart::lineage() const
 void acmacs::chart::Chart::serum_coverage(Titer aHomologousTiter, size_t aSerumNo, Indexes& aWithinFold, Indexes& aOutsideFold, double aFold) const
 {
     if (!aHomologousTiter.is_regular())
-        throw serum_coverage_error("cannot handle non-regular homologous titer: " + aHomologousTiter);
+        throw serum_coverage_error(fmt::format("cannot handle non-regular homologous titer: {}", aHomologousTiter));
     const double titer_threshold = aHomologousTiter.logged() - aFold;
     if (titer_threshold <= 0)
-        throw serum_coverage_error("homologous titer is too low: " + aHomologousTiter);
+        throw serum_coverage_error(fmt::format("homologous titer is too low: {}", aHomologousTiter));
     auto tts = titers();
     for (size_t ag_no = 0; ag_no < number_of_antigens(); ++ag_no) {
         const Titer titer = tts->titer(ag_no, aSerumNo);
@@ -237,7 +237,7 @@ void acmacs::chart::Chart::show_table(std::ostream& output, std::optional<size_t
     for (auto ag_no : antigen_indexes) {
         output << std::setw(max_ag_name + 2) << std::left << ags->at(ag_no)->full_name();
         for (auto sr_no : serum_indexes)
-            output << std::setw(7) << std::right << tt->titer(ag_no, sr_no);
+            output << std::setw(7) << std::right << *tt->titer(ag_no, sr_no);
         output << '\n';
     }
     output << '\n';

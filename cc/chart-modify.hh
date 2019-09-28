@@ -371,7 +371,7 @@ namespace acmacs::chart
         bool modifiable() const noexcept { return layers_.empty(); }
         void modifiable_check() const { if (!modifiable()) throw titers_cannot_be_modified{}; }
 
-        void titer(size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter);
+        void titer(size_t aAntigenNo, size_t aSerumNo, const Titer& aTiter);
         void dontcare_for_antigen(size_t aAntigenNo);
         void dontcare_for_serum(size_t aSerumNo);
         void multiply_by_for_antigen(size_t aAntigenNo, double multiply_by);
@@ -390,7 +390,7 @@ namespace acmacs::chart
         std::vector<size_t> layers_with_antigen(size_t aAntigenNo) const override;
         void remove_layers();
         void create_layers(size_t number_of_layers, size_t number_of_antigens);
-        void titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const std::string& aTiter);
+        void titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const Titer& aTiter);
         std::unique_ptr<titer_merge_report> set_from_layers(ChartModify& chart);
 
         static std::string titer_merge_report_brief(titer_merge data);
@@ -407,8 +407,8 @@ namespace acmacs::chart
         static Titer find_titer_for_serum(const sparse_row_t& aRow, size_t aSerumNo);
         static Titer titer_in_sparse_t(const sparse_t& aSparse, size_t aAntigenNo, size_t aSerumNo);
 
-        void set_titer(dense_t& titers, size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter) { titers[aAntigenNo * number_of_sera_ + aSerumNo] = aTiter; }
-        void set_titer(sparse_t& titers, size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter);
+        void set_titer(dense_t& titers, size_t aAntigenNo, size_t aSerumNo, const Titer& aTiter) { titers[aAntigenNo * number_of_sera_ + aSerumNo] = aTiter; }
+        void set_titer(sparse_t& titers, size_t aAntigenNo, size_t aSerumNo, const Titer& aTiter);
 
         enum class more_than_thresholded {adjust_to_next, to_dont_care};
 

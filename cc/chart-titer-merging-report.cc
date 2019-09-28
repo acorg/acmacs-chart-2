@@ -53,7 +53,7 @@ TiterMerger::Type TiterMerger::merge()
     if (mTiters.empty()) {
         mType = DontCare;
         if (mMerged != "*")
-            throw std::runtime_error("Invalid pre-merged titer: " + mMerged + " for sources: " + acmacs::to_string(mTiters) + ", must be: *");
+            throw std::runtime_error(fmt::format("Invalid pre-merged titer: {} for sources: {}, must be: *", mMerged, acmacs::to_string(mTiters)));
     }
     else {
         size_t num_less = 0, num_more = 0;
@@ -66,7 +66,7 @@ TiterMerger::Type TiterMerger::merge()
               case acmacs::chart::Titer::Invalid:
               case acmacs::chart::Titer::DontCare:
               case acmacs::chart::Titer::Dodgy:
-                  throw std::runtime_error("Invalid titer: " + titer);
+                  throw std::runtime_error(fmt::format("Invalid titer: {}", titer));
               case acmacs::chart::Titer::Regular:
                   regular.push_back(lgd);
                   break;
@@ -83,7 +83,7 @@ TiterMerger::Type TiterMerger::merge()
         if (num_less && num_more) {
             mType = ThresholdedBoth;
             if (mMerged != "*")
-                throw std::runtime_error("Invalid pre-merged titer: " + mMerged + " for sources: " + acmacs::to_string(mTiters) + ", must be: *");
+                throw std::runtime_error(fmt::format("Invalid pre-merged titer: {}  for sources: {}, must be: *", mMerged, acmacs::to_string(mTiters)));
         }
         else if (num_less == mTiters.size()) {
             mType = ThresholdedOnly;
@@ -97,7 +97,7 @@ TiterMerger::Type TiterMerger::merge()
             const auto value = more_than_handling_ == MoreThanAdjust ? acmacs::chart::Titer::from_logged(logged.max() - 1, ">") : acmacs::chart::Titer("*");
             if (value != mMerged)
                   // throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
-                std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
+                std::cerr << fmt::format("WARNING: Unexpected merged titer: {} for sources: {}, expected: {}\n", value, mTiters, mMerged);
         }
         else {
             const auto sd = acmacs::statistics::standard_deviation(logged.begin(), logged.end());
@@ -105,7 +105,7 @@ TiterMerger::Type TiterMerger::merge()
                 mType = SDTooBig;
                 // std::cerr << "SDTooBig: " << sd << ": " << mMerged << " <-- " << mTiters << '\n';
                 if (mMerged != "*")
-                    throw std::runtime_error("Invalid pre-merged titer: " + mMerged + " for sources: " + acmacs::to_string(mTiters) + ", must be: * (because SD is " + std::to_string(sd.population_sd()) + " > " + std::to_string(sd_threshold_) + ")");
+                    throw std::runtime_error(fmt::format("Invalid pre-merged titer: {} for sources: {}, must be: * (because SD is {} > {})", mMerged, acmacs::to_string(mTiters), std::to_string(sd.population_sd()), std::to_string(sd_threshold_)));
             }
             else if (num_less) {
                 if (const auto regular_max = regular.max(), thresholded_max = thresholded.max(); thresholded_max > regular_max) {
@@ -119,14 +119,14 @@ TiterMerger::Type TiterMerger::merge()
                     const auto value = acmacs::chart::Titer::from_logged(thresholded_to_go, "<");
                     if (value != mMerged)
                         // throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
-                        std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
+                        std::cerr << fmt::format("WARNING: Unexpected merged titer: {} for sources: {}, expected: {}\n", value, mTiters, mMerged);
                 }
                 else {
                     mType = Thresholded;
                     const auto value = acmacs::chart::Titer::from_logged(regular_max + 1, "<");
                     if (value != mMerged)
                         // throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
-                        std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
+                        std::cerr << fmt::format("WARNING: Unexpected merged titer: {} for sources: {}, expected: {}\n", value, mTiters, mMerged);
                 }
             }
             else if (num_more) {
@@ -141,21 +141,21 @@ TiterMerger::Type TiterMerger::merge()
                     auto value = acmacs::chart::Titer::from_logged(thresholded_to_go, ">");
                     if (value != mMerged)
                           // throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
-                        std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
+                        std::cerr << fmt::format("WARNING: Unexpected merged titer: {} for sources: {}, expected: {}\n", value, mTiters, mMerged);
                 }
                 else {
                     mType = Thresholded;
                     const auto value = acmacs::chart::Titer::from_logged(regular_min - 1, ">");
                     if (value != mMerged)
                           // throw std::runtime_error("Unexpected merged titer: " + acmacs::to_string(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
-                        std::cerr << "WARNING: Unexpected merged titer: " << value << " for sources: " << mTiters << ", expected: " << mMerged << '\n';
+                        std::cerr << fmt::format("WARNING: Unexpected merged titer: {} for sources: {}, expected: {}\n", value, mTiters, mMerged);
                 }
             }
             else {
                 mType = Regular;
                 const auto value = acmacs::chart::Titer::from_logged(sd.mean());
                 if (value != mMerged)
-                    throw std::runtime_error("Unexpected merged titer: " + static_cast<std::string>(value) + " for sources: " + acmacs::to_string(mTiters) + ", expected: " + acmacs::to_string(mMerged));
+                    throw std::runtime_error(fmt::format("Unexpected merged titer: {} for sources: {}, expected: {}", value, mTiters, mMerged));
             }
         }
     }

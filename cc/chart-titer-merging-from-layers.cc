@@ -39,11 +39,11 @@ int main(int argc, char* const argv[])
         std::cout << "INFO: AG " << std::setw(4) << std::right << *opt.antigen_no << ' ' << antigens->at(opt.antigen_no)->full_name() << '\n';
         std::cout << "INFO: SR " << std::setw(4) << std::right << *opt.serum_no << ' ' << sera->at(opt.serum_no)->full_name() << '\n';
         std::cout << "INFO: Layers: " << titers->number_of_layers() << '\n';
-        std::cout << "INFO: Merged: " << titers->titer(opt.antigen_no, opt.serum_no) << '\n';
+        std::cout << "INFO: Merged: " << *titers->titer(opt.antigen_no, opt.serum_no) << '\n';
         std::cout << "INFO: In layers:\n"; // << titers->titers_for_layers(antigen_no, serum_no) << '\n';
         for (auto layer_no : acmacs::range(titers->number_of_layers())) {
             if (const auto titer = titers->titer_of_layer(layer_no, opt.antigen_no, opt.serum_no); !titer.is_dont_care()) {
-                std::cout << std::setw(4) << std::right << layer_no << ' ' << std::setw(10) << std::left << static_cast<std::string_view>(info->source(layer_no)->date()) << titer << '\n';
+                std::cout << std::setw(4) << std::right << layer_no << ' ' << std::setw(10) << std::left << static_cast<std::string_view>(info->source(layer_no)->date()) << *titer << '\n';
             }
         }
     }

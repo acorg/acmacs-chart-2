@@ -176,7 +176,7 @@ void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers>
         for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no)
             aLayer.append(rjson::object{});
         for (; first != last; ++first)
-            aLayer[first->antigen][first->serum] = first->titer;
+            aLayer[first->antigen][first->serum] = *first->titer;
     };
 
     // --------------------------------------------------
@@ -207,7 +207,7 @@ void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers>
             for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
                 auto& row = list.append(rjson::array{});
                 for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no) {
-                    row.append(aTiters->titer(ag_no, sr_no));
+                    row.append(*aTiters->titer(ag_no, sr_no));
                 }
             }
         }

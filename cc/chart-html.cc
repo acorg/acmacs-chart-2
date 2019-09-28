@@ -183,7 +183,7 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
             bool group_begin = true;
             for (auto sr_no : group.second) {
                 output << "<td class=\"titer titer-pos-middle sr-" << sr_no << ' ' << make_titer_class(titers_of_antigen[sr_no]) << (group_begin ? " sr-group-begin" : "") << "\">"
-                       << html_escape(titers_of_antigen[sr_no]) << "</td>";
+                       << html_escape(*titers_of_antigen[sr_no]) << "</td>";
                 group_begin = false;
             }
         }
@@ -191,7 +191,7 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
             bool group_begin = true;
             for (auto sr_no : sera_rest) {
                 output << "<td class=\"titer titer-pos-middle sr-" << sr_no << ' ' << make_titer_class(titers_of_antigen[sr_no]) << (group_begin ? " sr-group-begin" : "") << "\">"
-                       << html_escape(titers_of_antigen[sr_no]) << "</td>";
+                       << html_escape(*titers_of_antigen[sr_no]) << "</td>";
                 group_begin = false;
             }
         }

@@ -154,7 +154,7 @@ void merge_titers(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart
     size_t target_layer_no = 0;
     auto copy_layers = [&target_layer_no, &titers](size_t source_layers, const auto& source_titers, const acmacs::chart::MergeReport::index_mapping_t& antigen_target,
                                                    const acmacs::chart::MergeReport::index_mapping_t& serum_target) {
-        auto assign = [&titers, &target_layer_no](size_t ag_no, size_t sr_no, std::string titer) { titers->titer(ag_no, sr_no, target_layer_no, titer); };
+        auto assign = [&titers, &target_layer_no](size_t ag_no, size_t sr_no, const acmacs::chart::Titer& titer) { titers->titer(ag_no, sr_no, target_layer_no, titer); };
         auto copy_titer = [&assign, &antigen_target, &serum_target](const auto& titer_iterator) {
             for (auto titer_ref : titer_iterator) {
                 if (auto ag_no = antigen_target.find(titer_ref.antigen), sr_no = serum_target.find(titer_ref.serum); ag_no != antigen_target.end() && sr_no != serum_target.end())
@@ -402,15 +402,13 @@ void acmacs::chart::MergeReport::titer_merge_diagnostics(std::ostream& output, c
             output << std::setw(max_field_size + 2) << std::left << chart.info()->source(layer_no)->name_non_empty();
             for (auto sr_no : sera) {
                 auto titer = tt->titer_of_layer(layer_no, ag_no, sr_no);
-                if (titer == "*")
-                    titer.clear();
-                output << std::setw(7) << std::right << titer;
+                output << std::setw(7) << std::right << (titer == "*" ? "" : *titer);
             }
             output << '\n';
         }
         output << std::setw(max_field_size + 2) << std::left << "Merge";
         for (auto sr_no : sera)
-            output << std::setw(7) << std::right << tt->titer(ag_no, sr_no);
+            output << std::setw(7) << std::right << *tt->titer(ag_no, sr_no);
         output << '\n';
 
         output << std::setw(max_field_size + 2) << std::left << "Report (see below)";

@@ -441,11 +441,11 @@ Titer LispmdsTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
             using T = std::decay_t<decltype(titer_x)>;
             if constexpr (std::is_same_v<T, acmacs::lispmds::symbol>) {
                 if (titer_x[0] == '*')
-                    return std::string(1, titer_x[0]);
-                return std::string(1, titer_x[0]) + acmacs::to_string(std::lround(std::exp2(std::stod(titer_x->substr(1))) * 10));
+                    return Titer{std::string(1, titer_x[0])};
+                return Titer{std::string(1, titer_x[0]) + acmacs::to_string(std::lround(std::exp2(std::stod(titer_x->substr(1))) * 10))};
             }
             else if constexpr (std::is_same_v<T, acmacs::lispmds::number>) {
-                return acmacs::to_string(std::lround(std::exp2(static_cast<double>(titer_x)) * 10));
+                return Titer{acmacs::to_string(std::lround(std::exp2(static_cast<double>(titer_x)) * 10))};
             }
             else
                 throw acmacs::lispmds::type_mismatch("Unexpected titer type: "s + typeid(T).name());

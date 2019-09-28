@@ -737,9 +737,9 @@ TitersModify::TitersModify(TitersP main)
                     using target_t = std::remove_reference_t<decltype(target[ag_no])>;
                     using value_type = typename target_t::value_type;
                     if (source_row.is_object())
-                        rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::object::value_type& kv) -> value_type { return {std::stoul(kv.first), kv.second}; });
+                        rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::object::value_type& kv) -> value_type { return {std::stoul(kv.first), acmacs::chart::Titer{kv.second}}; });
                     else if (source_row.is_array())
-                        rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::value& titer, size_t serum_no) -> value_type { return {serum_no, titer}; });
+                        rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::value& titer, size_t serum_no) -> value_type { return {serum_no, acmacs::chart::Titer{titer}}; });
                     else
                         throw invalid_data{string::concat("invalid layer ", ag_no, " type: ", source_row.actual_type())};
                 });
@@ -869,7 +869,7 @@ void TitersModify::create_layers(size_t number_of_layers, size_t number_of_antig
 
 // ----------------------------------------------------------------------
 
-void TitersModify::set_titer(sparse_t& titers, size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter)
+void TitersModify::set_titer(sparse_t& titers, size_t aAntigenNo, size_t aSerumNo, const acmacs::chart::Titer& aTiter)
 {
     auto& row = titers[aAntigenNo];
     if (row.empty()) {
@@ -886,7 +886,7 @@ void TitersModify::set_titer(sparse_t& titers, size_t aAntigenNo, size_t aSerumN
 
 // ----------------------------------------------------------------------
 
-void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const std::string& aTiter)
+void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const acmacs::chart::Titer& aTiter)
 {
     set_titer(layers_.at(aLayerNo), aAntigenNo, aSerumNo, aTiter);
     layer_titer_modified_ = true;
@@ -1159,7 +1159,7 @@ size_t TitersModify::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
-void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, const std::string& aTiter)
+void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, const acmacs::chart::Titer& aTiter)
 {
     modifiable_check();
     std::visit([aAntigenNo,aSerumNo,&aTiter,this](auto& titers) { this->set_titer(titers, aAntigenNo, aSerumNo, aTiter); }, titers_);

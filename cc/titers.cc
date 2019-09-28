@@ -95,11 +95,11 @@ std::string acmacs::chart::Titer::logged_as_string() const
       case Regular:
           return acmacs::to_string(logged());
       case DontCare:
-          return *this;
+          return std::string{get()};
       case LessThan:
       case MoreThan:
       case Dodgy:
-          return front() + acmacs::to_string(logged());
+          return get().front() + acmacs::to_string(logged());
     }
     throw invalid_titer(*this); // for gcc 7.2
 
@@ -136,11 +136,11 @@ size_t acmacs::chart::Titer::value_for_sorting() const
       case Regular:
           return std::stoul(*this);
       case LessThan:
-          return std::stoul(substr(1)) - 1;
+          return std::stoul(get().substr(1)) - 1;
       case MoreThan:
-          return std::stoul(substr(1)) + 1;
+          return std::stoul(get().substr(1)) + 1;
       case Dodgy:
-          return std::stoul(substr(1));
+          return std::stoul(get().substr(1));
     }
     return 0;
 
@@ -155,11 +155,11 @@ size_t acmacs::chart::Titer::value() const
       case DontCare:
           return 0;
       case Regular:
-          return std::stoul(*this);
+          return std::stoul(get());
       case LessThan:
       case MoreThan:
       case Dodgy:
-          return std::stoul(substr(1));
+          return std::stoul(get().substr(1));
     }
     return 0;
 
@@ -176,11 +176,11 @@ size_t acmacs::chart::Titer::value_with_thresholded() const
       case Regular:
           return std::stoul(*this);
       case LessThan:
-          return std::stoul(substr(1)) / 2;
+          return std::stoul(get().substr(1)) / 2;
       case MoreThan:
-          return std::stoul(substr(1)) * 2;
+          return std::stoul(get().substr(1)) * 2;
       case Dodgy:
-          return std::stoul(substr(1));
+          return std::stoul(get().substr(1));
     }
     return 0;
 
@@ -196,11 +196,11 @@ acmacs::chart::Titer acmacs::chart::Titer::multiplied_by(double value) const // 
       case DontCare:
           return *this;
       case Regular:
-          return std::to_string(std::lround(std::stoul(*this) * value));
+          return Titer{std::to_string(std::lround(std::stoul(get()) * value))};
       case LessThan:
       case MoreThan:
       case Dodgy:
-          return front() + std::to_string(std::lround(std::stoul(substr(1)) * value));
+          return Titer{get().front() + std::to_string(std::lround(std::stoul(get().substr(1)) * value))};
     }
     return Titer{};
 

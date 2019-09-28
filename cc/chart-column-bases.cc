@@ -35,7 +35,7 @@ int main(int argc, char* const argv[])
             std::cout << "INFO: SR " << std::setw(4) << std::right << serum_no << ' ' << sera->at(serum_no)->full_name() << '\n';
             for (auto antigen_no : acmacs::range(antigens->size())) {
                 if (const auto titer = titers->titer(antigen_no, serum_no); !titer.is_dont_care())
-                    std::cout << std::setw(6) << std::right << titer;
+                    std::cout << std::setw(6) << std::right << *titer;
             }
             const auto cb = column_bases->column_basis(serum_no);
             std::cout << '\n' << "  const column basis: " << cb << " --> " << std::lround(std::exp2(cb) * 10) << '\n' << '\n';

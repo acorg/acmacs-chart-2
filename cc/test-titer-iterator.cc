@@ -31,11 +31,11 @@ int main(int argc, char* const argv[])
                 size_t non_dont_care_titers = 0;
                 for (const auto& titer_data : titers->titers_existing()) {
                     if (titer_data.titer != titers->titer(titer_data.antigen, titer_data.serum))
-                        throw std::runtime_error("titer mistmatch for " + std::to_string(titer_data.antigen) + ':' + std::to_string(titer_data.serum) + ": " + titer_data.titer + " vs. " + titers->titer(titer_data.antigen, titer_data.serum));
+                        throw std::runtime_error(fmt::format("titer mistmatch for {}:{}: {} vs. {}", titer_data.antigen, titer_data.serum, titer_data.titer, titers->titer(titer_data.antigen, titer_data.serum)));
                     ++non_dont_care_titers;
                 }
                 if (non_dont_care_titers != titers->number_of_non_dont_cares())
-                    throw std::runtime_error("number_of_non_dont_cares mistmatch: " + std::to_string(non_dont_care_titers) + " vs. " + std::to_string(titers->number_of_non_dont_cares()));
+                    throw std::runtime_error(fmt::format("number_of_non_dont_cares mistmatch: {} vs. {}", non_dont_care_titers, titers->number_of_non_dont_cares()));
             }
         }
     }

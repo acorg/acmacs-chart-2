@@ -73,9 +73,9 @@ class TiterDistance
 inline std::ostream& operator << (std::ostream& out, const TiterDistance& td)
 {
     if (td)
-        return out << "t:" << td.titer << " s:" << td.similarity << " f:" << td.final_similarity << " d:" << td.distance << std::endl;
+        return out << "t:" << *td.titer << " s:" << td.similarity << " f:" << td.final_similarity << " d:" << td.distance << '\n';
     else
-        return out << "dont-care" << std::endl;
+        return out << "dont-care" << '\n';
 }
 
 // ----------------------------------------------------------------------
