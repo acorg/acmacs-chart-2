@@ -15,28 +15,6 @@ namespace acmacs::chart
 {
     namespace detail
     {
-        // class string_data : public std::string
-        // {
-        //  public:
-        //     string_data() = default;
-        //     string_data(const std::string& src) : std::string(src) {}
-        //     string_data(std::string&& src) : std::string(std::move(src)) {}
-        //     string_data(std::string_view src) : std::string(src) {}
-        //     string_data(const char* src) : std::string(src) {}
-        //     string_data(const rjson::value& aSrc) : std::string(aSrc) {}
-        //     string_data(const string_data&) = default;
-        //     string_data(string_data&&) = default;
-        //     using std::string::operator=;
-        //     string_data& operator=(const string_data&) = default;
-        //     string_data& operator=(string_data&&) = default;
-        //     int compare(const string_data& other) const { return ::string::compare(*this, other); }
-
-        // }; // class string_data
-
-        // inline bool operator==(const string_data& left, const char* right) { return ::string::compare(left, right) == 0; }
-        // inline bool operator!=(const string_data& left, const char* right) { return !operator==(left, right); }
-
-// ----------------------------------------------------------------------
 
         template <typename T> class T_list_data
         {
@@ -107,43 +85,43 @@ namespace acmacs::chart
         //     std::transform(aSrc.begin(), aSrc.end(), mData.begin(), [](const auto& src) -> std::string { return src.str(); });
         // }
 
-        class string_list_data : public T_list_data<std::string>
-        {
-         public:
-            using T_list_data<std::string>::T_list_data;
+        // class string_list_data : public T_list_data<std::string>
+        // {
+        //  public:
+        //     using T_list_data<std::string>::T_list_data;
 
-            std::string join() const { return ::string::join(" ", begin(), end()); }
-            size_t total_length() const { return std::accumulate(begin(), end(), size_t{0}, [](size_t sum, const auto& element) { return sum + element.size(); }); }
-            void push_back(const std::string& val) { if (!val.empty()) T_list_data<std::string>::push_back(val); }
-            void push_back(std::string&& val) { if (!val.empty()) T_list_data<std::string>::push_back(std::move(val)); }
-            bool exist(const std::string& val) const { return std::find(begin(), end(), val) != end(); }
-            void add(const std::string& val) { if (!exist(val)) push_back(val); }
-            void remove(const std::string& val) { if (auto found = std::find(begin(), end(), val); found != end()) erase(found); }
+        //     std::string join() const { return ::string::join(" ", begin(), end()); }
+        //     size_t total_length() const { return std::accumulate(begin(), end(), size_t{0}, [](size_t sum, const auto& element) { return sum + element.size(); }); }
+        //     void push_back(const std::string& val) { if (!val.empty()) T_list_data<std::string>::push_back(val); }
+        //     void push_back(std::string&& val) { if (!val.empty()) T_list_data<std::string>::push_back(std::move(val)); }
+        //     bool exist(const std::string& val) const { return std::find(begin(), end(), val) != end(); }
+        //     void add(const std::string& val) { if (!exist(val)) push_back(val); }
+        //     void remove(const std::string& val) { if (auto found = std::find(begin(), end(), val); found != end()) erase(found); }
 
-            void merge_in(const string_list_data& another)
-                {
-                    for (const auto& val : another)
-                        add(val);
-                }
+        //     void merge_in(const string_list_data& another)
+        //         {
+        //             for (const auto& val : another)
+        //                 add(val);
+        //         }
 
-        }; // class string_list_data
+        // }; // class string_list_data
 
         using double_list_data = T_list_data<double>;
 
-        class index_list_data : public T_list_data<size_t>
-        {
-         public:
-            using T_list_data<size_t>::T_list_data;
+        // class index_list_data : public T_list_data<size_t>
+        // {
+        //  public:
+        //     using T_list_data<size_t>::T_list_data;
 
-            // void remove_indexes(const Indexes& to_remove, size_t base_index = 0)
-            //     {
-            //         for (const auto index : to_remove) {
-            //             if (const auto found = std::find(begin(), end(), index + base_index); found != end())
-            //                 erase(found);
-            //         }
-            //     }
+        //     // void remove_indexes(const Indexes& to_remove, size_t base_index = 0)
+        //     //     {
+        //     //         for (const auto index : to_remove) {
+        //     //             if (const auto found = std::find(begin(), end(), index + base_index); found != end())
+        //     //                 erase(found);
+        //     //         }
+        //     //     }
 
-        }; // class index_list_data
+        // }; // class index_list_data
 
 // ----------------------------------------------------------------------
 
@@ -187,8 +165,6 @@ namespace acmacs::chart
 
 namespace acmacs
 {
-    // inline std::string to_string(const acmacs::chart::detail::string_data& value) { return value; }
-
     template <typename T> inline std::string to_string(const acmacs::chart::detail::T_list_data<T>& value) { return to_string(value.data()); }
 
     namespace chart::detail

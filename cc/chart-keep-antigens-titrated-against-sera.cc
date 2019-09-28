@@ -37,7 +37,7 @@ int main(int argc, char* const argv[])
             auto titers = chart.titers();
             acmacs::ReverseSortedIndexes antigens_to_keep;
             for (auto serum_index : sera_titrated_against) {
-                antigens_to_keep.add(titers->having_titers_with(serum_index + chart.number_of_antigens()));
+                antigens_to_keep.add(*titers->having_titers_with(serum_index + chart.number_of_antigens()));
             }
             std::cout << "INFO: antigens_to_keep: " << antigens_to_keep.size() << ' ' << antigens_to_keep << '\n';
             acmacs::ReverseSortedIndexes antigens_to_remove(chart.number_of_antigens());

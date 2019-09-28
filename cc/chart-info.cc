@@ -87,8 +87,8 @@ int main(int argc, char* const argv[])
             }
             else {
                 std::cout << chart->make_info() << '\n';
-                if (const auto having_too_few_numeric_titers = chart->titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers.empty())
-                    std::cout << "Points having too few numeric titers: " << having_too_few_numeric_titers.size() << ' ' << having_too_few_numeric_titers << '\n';
+                if (const auto having_too_few_numeric_titers = chart->titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers->empty())
+                    std::cout << "Points having too few numeric titers: " << having_too_few_numeric_titers->size() << ' ' << having_too_few_numeric_titers << '\n';
                 if (opt.column_bases) {
                     // Timeit ti("column bases computing ");
                     auto cb = chart->computed_column_bases(acmacs::chart::MinimumColumnBasis{});

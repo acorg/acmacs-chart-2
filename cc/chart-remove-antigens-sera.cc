@@ -35,10 +35,10 @@ int main(int argc, char* const argv[])
         if (opt.remove_egg) {
             auto ag_egg = chart.antigens()->all_indexes();
             chart.antigens()->filter_egg(ag_egg);
-            antigens_to_remove.add(ag_egg.data());
+            antigens_to_remove.add(*ag_egg);
             auto sr_egg = chart.sera()->all_indexes();
             chart.sera()->filter_egg(sr_egg);
-            sera_to_remove.add(sr_egg.data());
+            sera_to_remove.add(*sr_egg);
         }
         if (opt.remove_projections)
             chart.projections_modify()->remove_all();

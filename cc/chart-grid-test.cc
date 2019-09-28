@@ -88,11 +88,11 @@ int main(int argc, char* const argv[])
                         points.insert(*found);
                     else
                         points = antigens->find_by_name(point_ref);
-                    if (points.empty())
+                    if (points->empty())
                         throw std::runtime_error(fmt::format("No points selected by {}", point_ref));
                 }
             }
-            results = test.test(points);
+            results = test.test(*points);
             fmt::print("{}\n", results.report());
         }
         if (opt.json)

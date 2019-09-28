@@ -138,7 +138,7 @@ void acmacs::chart::Chart::serum_coverage(Titer aHomologousTiter, size_t aSerumN
         else if (value >= 0 && value < titer_threshold)
             aOutsideFold.insert(ag_no);
     }
-    if (aWithinFold.empty())
+    if (aWithinFold->empty())
         throw serum_coverage_error("no antigens within 4fold from homologous titer (for serum coverage)"); // BUG? at least homologous antigen must be there!
 
 } // acmacs::chart::Chart::serum_coverage
@@ -217,15 +217,15 @@ void acmacs::chart::Chart::show_table(std::ostream& output, std::optional<size_t
         std::tie(antigen_indexes, serum_indexes) = tt->antigens_sera_of_layer(*layer_no);
     }
     else {
-        antigen_indexes = filled_with_indexes(ags->size());
-        serum_indexes = filled_with_indexes(srs->size());
+        antigen_indexes = PointIndexList{filled_with_indexes(ags->size())};
+        serum_indexes = PointIndexList{filled_with_indexes(srs->size())};
     }
 
     const auto max_ag_name = static_cast<int>(ags->max_full_name());
 
     output << std::setw(max_ag_name + 6) << std::right << ' ' << "Serum full names are under the table\n";
     output << std::setw(max_ag_name) << ' ';
-    for (auto sr_ind : acmacs::range(serum_indexes.size()))
+    for (auto sr_ind : acmacs::range(serum_indexes->size()))
         output << std::setw(7) << std::right << sr_label(sr_ind);
     output << '\n';
 
@@ -655,7 +655,7 @@ acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string_view aN
     };
 
     Indexes indexes = find(aName);
-    if (indexes.empty() && aName.size() > 2) {
+    if (indexes->empty() && aName.size() > 2) {
         if (const auto first_name = (*begin())->name(); first_name.size() > 2) {
         // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix (for A and B)
             if ((aName[0] == 'A' && aName[1] == '/' && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos) || (aName[0] == 'B' && aName[1] == '/'))
@@ -730,7 +730,7 @@ static const std::regex sAnntotationToIgnore{"(CONC|RDE@|BOOST|BLEED|LAIV|^CDC$)
 
 bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annotations& antigen, const acmacs::chart::Annotations& serum)
 {
-    std::vector<std::string_view> antigen_fixed(antigen.size());
+    std::vector<std::string_view> antigen_fixed(antigen->size());
     auto antigen_fixed_end = antigen_fixed.begin();
     for (const auto& anno : antigen) {
         *antigen_fixed_end++ = anno;
@@ -738,7 +738,7 @@ bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annota
     antigen_fixed.erase(antigen_fixed_end, antigen_fixed.end());
     std::sort(antigen_fixed.begin(), antigen_fixed.end());
 
-    std::vector<std::string_view> serum_fixed(serum.size());
+    std::vector<std::string_view> serum_fixed(serum->size());
     auto serum_fixed_end = serum_fixed.begin();
     for (const auto& anno : serum) {
         const std::string_view annos = static_cast<std::string_view>(anno);
@@ -812,7 +812,7 @@ void acmacs::chart::Sera::set_homologous(find_homologous options, const Antigens
 
     if (options == find_homologous::all) {
         for (auto [sr_no, serum] : acmacs::enumerate(*this))
-            serum->set_homologous(homologous_canditates[sr_no], dbg);
+            serum->set_homologous(*homologous_canditates[sr_no], dbg);
     }
     else {
         std::vector<std::optional<size_t>> homologous(size()); // for each serum

@@ -1,27 +1,22 @@
 #pragma once
 
-#include "acmacs-chart-2/base.hh"
+#include "acmacs-base/named-type.hh"
+#include "acmacs-base/rjson.hh"
 
 // ----------------------------------------------------------------------
 
 namespace acmacs::chart
 {
       // sorted list of indexes
-    class PointIndexList : private detail::index_list_data
+    class PointIndexList : public acmacs::named_vector_t<size_t, struct chart_PointIndexList_tag_t>
     {
      public:
-        using difference_type = detail::index_list_data::difference_type;
-        using detail::index_list_data::index_list_data;
-        using detail::index_list_data::operator==;
-        using detail::index_list_data::operator[];
-        using detail::index_list_data::data;
-        using detail::index_list_data::empty;
-        using detail::index_list_data::size;
-        using detail::index_list_data::erase;
-        using detail::index_list_data::clear;
-        using detail::index_list_data::begin;
-        using detail::index_list_data::end;
-        using detail::index_list_data::front;
+        using difference_type = std::vector<size_t>::difference_type;
+        using base_t = acmacs::named_vector_t<size_t, struct chart_PointIndexList_tag_t>;
+
+        using base_t::named_vector_t;
+        PointIndexList(const rjson::value& src) : base_t::named_vector_t(src.size()) { rjson::copy(src, begin()); }
+        template <typename Iter> PointIndexList(Iter first, Iter last, std::function<size_t (const typename Iter::value_type&)> convert) : base_t::named_vector_t(static_cast<size_t>(last - first)) { std::transform(first, last, begin(), convert); }
 
         bool contains(size_t val) const
             {
@@ -32,13 +27,13 @@ namespace acmacs::chart
         void insert(size_t val)
             {
                 if (const auto found = std::lower_bound(begin(), end(), val); found == end() || *found != val)
-                    data().insert(found, val);
+                    get().insert(found, val);
             }
 
         void erase_except(size_t val)
             {
                 const auto present = contains(val);
-                clear();
+                get().clear();
                 if (present)
                     insert(val);
             }
@@ -49,15 +44,13 @@ namespace acmacs::chart
                     insert(no);
             }
 
-        using detail::index_list_data::operator const std::vector<size_t>&;
-
     }; // class PointIndexList
 
 } // namespace acmacs::chart
 
 namespace acmacs
 {
-    inline std::string to_string(const acmacs::chart::PointIndexList& indexes) { return to_string(indexes.data()); }
+    inline std::string to_string(const acmacs::chart::PointIndexList& indexes) { return to_string(*indexes); }
 
 } // namespace acmacs
 

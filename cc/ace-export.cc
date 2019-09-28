@@ -295,11 +295,11 @@ void export_projections(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Pr
         }
         rjson::set_field_if_not_default(target, "d", projection->dodgy_titer_is_regular() == acmacs::chart::dodgy_titer_is_regular::yes, false);
         rjson::set_field_if_not_default(target, "e", projection->stress_diff_to_stop(), 0.0);
-        if (const auto unmovable = projection->unmovable(); ! unmovable.empty())
+        if (const auto unmovable = projection->unmovable(); ! unmovable->empty())
             target["U"] = rjson::array(unmovable.begin(), unmovable.end());
-        if (const auto disconnected = projection->disconnected(); ! disconnected.empty())
+        if (const auto disconnected = projection->disconnected(); ! disconnected->empty())
             target["D"] = rjson::array(disconnected.begin(), disconnected.end());
-        if (const auto unmovable_in_the_last_dimension = projection->unmovable_in_the_last_dimension(); ! unmovable_in_the_last_dimension.empty())
+        if (const auto unmovable_in_the_last_dimension = projection->unmovable_in_the_last_dimension(); ! unmovable_in_the_last_dimension->empty())
             target["u"] = rjson::array(unmovable_in_the_last_dimension.begin(), unmovable_in_the_last_dimension.end());
         if (const auto avidity_adjusts = projection->avidity_adjusts(); ! avidity_adjusts.empty())
             target["f"] = rjson::array(avidity_adjusts.begin(), avidity_adjusts.end());
@@ -316,7 +316,7 @@ void export_plot_spec(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Plot
 {
     if (aTarget.is_null())
         aTarget = rjson::object{};
-    if (const auto drawing_order = aPlotSpec->drawing_order(); ! drawing_order.empty())
+    if (const auto drawing_order = aPlotSpec->drawing_order(); ! drawing_order->empty())
         aTarget["d"] = rjson::array(drawing_order.begin(), drawing_order.end());
     if (const auto color = aPlotSpec->error_line_positive_color(); color != RED)
         aTarget["E"] = rjson::object{{"c", color.to_string()}};

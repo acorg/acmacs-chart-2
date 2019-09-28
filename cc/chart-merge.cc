@@ -72,8 +72,8 @@ int main(int argc, const char* const argv[])
         }
         else {
             std::cout << result->make_info() << '\n';
-            if (const auto having_too_few_numeric_titers = result->titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers.empty())
-                std::cout << "Points having too few numeric titers: " << having_too_few_numeric_titers.size() << ' ' << having_too_few_numeric_titers << '\n';
+            if (const auto having_too_few_numeric_titers = result->titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers->empty())
+                std::cout << "Points having too few numeric titers: " << having_too_few_numeric_titers->size() << ' ' << having_too_few_numeric_titers << '\n';
         }
     }
     catch (std::exception& err) {

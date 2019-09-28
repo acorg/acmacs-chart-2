@@ -275,7 +275,7 @@ void acmacs::chart::rjson_import::update(const rjson::value& data, const std::st
 acmacs::chart::PointIndexList acmacs::chart::RjsonProjection::disconnected() const
 {
     auto result = make_disconnected();
-    if (result.empty()) {
+    if (result->empty()) {
           // infer disconnected from empty rows in layout
         auto lt = layout();
         for (size_t p_no = 0; p_no < lt->number_of_points(); ++p_no) {

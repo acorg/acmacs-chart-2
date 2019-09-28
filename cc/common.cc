@@ -48,7 +48,7 @@ class CommonAntigensSera::Impl
         AntigenEntry& operator=(AntigenEntry&&) = default;
 
         std::string full_name() const { return ::string::join(" ", {name, reassortant, ::string::join(" ", annotations), passage}); }
-        size_t full_name_length() const { return name.size() + reassortant.size() + annotations.total_length() + passage.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations.size(); }
+        size_t full_name_length() const { return name.size() + reassortant.size() + annotations.total_length() + passage.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size(); }
         bool operator<(const AntigenEntry& rhs) const { return compare(*this, rhs) < 0; }
 
         static int compare(const AntigenEntry& lhs, const AntigenEntry& rhs)
@@ -70,7 +70,7 @@ class CommonAntigensSera::Impl
         SerumEntry& operator=(SerumEntry&&) = default;
 
         std::string full_name() const { return ::string::join(" ", {name, reassortant, ::string::join(" ", annotations), serum_id, passage}); }
-        size_t full_name_length() const { return name.size() + reassortant.size() + annotations.total_length() + serum_id.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations.size() + passage.size() + (passage.empty() ? 0 : 1); }
+        size_t full_name_length() const { return name.size() + reassortant.size() + annotations.total_length() + serum_id.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size() + passage.size() + (passage.empty() ? 0 : 1); }
         bool operator<(const SerumEntry& rhs) const { return compare(*this, rhs) < 0; }
 
         static int compare(const SerumEntry& lhs, const SerumEntry& rhs)

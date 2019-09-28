@@ -203,29 +203,37 @@ namespace acmacs::chart
         return s;
     }
 
-    class LabIds : public detail::string_list_data
+    class LabIds : public acmacs::named_vector_t<std::string, struct chart_LabIds_tag_t>
     {
       public:
-        using detail::string_list_data::string_list_data;
+        using acmacs::named_vector_t<std::string, struct chart_LabIds_tag_t>::named_vector_t;
+
+        LabIds(const rjson::value& src) : acmacs::named_vector_t<std::string, struct chart_LabIds_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
+
+        std::string join() const { return ::string::join(" ", begin(), end()); }
 
     }; // class LabIds
 
-    class Annotations : public detail::string_list_data
+    class Annotations : public acmacs::named_vector_t<std::string, struct chart_Annotations_tag_t>
     {
       public:
-        using detail::string_list_data::string_list_data;
+        using acmacs::named_vector_t<std::string, struct chart_Annotations_tag_t>::named_vector_t;
+        Annotations(const rjson::value& src) : acmacs::named_vector_t<std::string, struct chart_Annotations_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
 
-        bool distinct() const { return exist("DISTINCT"); }
+        bool distinct() const { return exists("DISTINCT"); }
+        std::string join() const { return ::string::join(" ", begin(), end()); }
+        size_t total_length() const { return std::accumulate(begin(), end(), size_t{0}, [](size_t sum, const auto& element) { return sum + element.size(); }); }
 
         // returns if annotations of antigen and serum matches (e.g. ignores CONC for serum), used for homologous pairs finding
         static bool match_antigen_serum(const Annotations& antigen, const Annotations& serum);
 
     }; // class Annotations
 
-    class Clades : public detail::string_list_data
+    class Clades : public acmacs::named_vector_t<std::string, struct chart_Clades_tag_t>
     {
       public:
-        using detail::string_list_data::string_list_data;
+        using acmacs::named_vector_t<std::string, struct chart_Clades_tag_t>::named_vector_t;
+        Clades(const rjson::value& src) : acmacs::named_vector_t<std::string, struct chart_Clades_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
 
     }; // class Clades
 
@@ -243,10 +251,11 @@ namespace acmacs::chart
 
     }; // class SerumSpecies
 
-    class DrawingOrder : public detail::index_list_data
+    class DrawingOrder : public acmacs::named_vector_t<size_t, struct chart_DrawingOrder_tag_t>
     {
       public:
-        using detail::index_list_data::index_list_data;
+        using acmacs::named_vector_t<size_t, struct chart_DrawingOrder_tag_t>::named_vector_t;
+        DrawingOrder(const rjson::value& src) : acmacs::named_vector_t<size_t, struct chart_DrawingOrder_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
 
         size_t index_of(size_t aValue) const { return static_cast<size_t>(std::find(begin(), end(), aValue) - begin()); }
 
@@ -274,8 +283,8 @@ namespace acmacs::chart
 
         void fill_if_empty(size_t aSize)
         {
-            if (empty())
-                acmacs::fill_with_indexes(data(), aSize);
+            if (get().empty())
+                acmacs::fill_with_indexes(get(), aSize);
         }
 
         void insert(size_t before)
@@ -291,8 +300,9 @@ namespace acmacs::chart
         {
             for (const auto index : to_remove) {
                 const auto real_index = index + base_index;
-                if (const auto found = std::find(begin(), end(), real_index); found != end())
-                    erase(found);
+                remove(real_index);
+                // if (const auto found = std::find(begin(), end(), real_index); found != end())
+                //     erase(found);
                 std::for_each(begin(), end(), [real_index](size_t& point_no) {
                     if (point_no > real_index)
                         --point_no;
@@ -399,8 +409,8 @@ namespace acmacs::chart
         out << ag.full_name();
         if (const auto date = ag.date(); !date.empty())
             out << fmt::format(" [{}]", date);
-        if (const auto lab_ids = ag.lab_ids(); !lab_ids.empty())
-            out << ' ' << lab_ids;
+        if (const auto lab_ids = ag.lab_ids(); !lab_ids->empty())
+            out << ' ' << *lab_ids;
         if (const auto lineage = ag.lineage(); lineage != BLineage::Unknown)
             out << ' ' << static_cast<std::string>(lineage);
         return out;
@@ -482,7 +492,7 @@ namespace acmacs::chart
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
 
-        Indexes all_indexes() const { return acmacs::filled_with_indexes(size()); }
+        Indexes all_indexes() const { return Indexes{acmacs::filled_with_indexes(size())}; }
         Indexes reference_indexes() const
         {
             return make_indexes([](const Antigen& ag) { return ag.reference(); });
@@ -553,7 +563,7 @@ namespace acmacs::chart
 
         void remove(Indexes& aIndexes, std::function<bool(const Antigen&)> aFilter) const
         {
-            aIndexes.erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
+            aIndexes.get().erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
         }
 
     }; // class Antigens
@@ -574,7 +584,7 @@ namespace acmacs::chart
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
 
-        Indexes all_indexes() const { return acmacs::filled_with_indexes(size()); }
+        Indexes all_indexes() const { return Indexes{acmacs::filled_with_indexes(size())}; }
 
         void filter_serum_id(Indexes& aIndexes, std::string aSerumId) const
         {
@@ -614,7 +624,7 @@ namespace acmacs::chart
       private:
         void remove(Indexes& aIndexes, std::function<bool(const Serum&)> aFilter) const
         {
-            aIndexes.erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
+            aIndexes.get().erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
         }
 
         using homologous_canditate_t = Indexes;                              // indexes of antigens

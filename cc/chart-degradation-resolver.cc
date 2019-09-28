@@ -28,7 +28,7 @@ struct SplitData
         : serum_line(projection)
         {
             auto antigens_relative_to_line = serum_line.antigens_relative_to_line(projection);
-            if (antigens_relative_to_line.negative.size() < antigens_relative_to_line.positive.size()) {
+            if (antigens_relative_to_line.negative->size() < antigens_relative_to_line.positive->size()) {
                 good_side = acmacs::LineSide::side::positive;
                 on_the_wrong_side = std::move(antigens_relative_to_line.negative);
             }
@@ -130,7 +130,7 @@ acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line
         new_projection->randomize_layout(split_data.on_the_wrong_side, randomizer);
         new_projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
         const SplitData new_split_data(*new_projection);
-        const auto on_the_wrong_side = new_split_data.on_the_wrong_side.size();
+        const auto on_the_wrong_side = new_split_data.on_the_wrong_side->size();
         if (!result || on_the_wrong_side < wrong_side || (on_the_wrong_side == wrong_side && new_projection->stress() < result->stress())) {
             result = new_projection;
             result->comment("resolver random, wrong_side:" + std::to_string(on_the_wrong_side));
@@ -166,8 +166,8 @@ acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line
         new_projection->randomize_layout(split_data.on_the_wrong_side, randomizer);
         new_projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
         const SplitData new_split_data(*new_projection);
-        new_projection->comment("resolver random, wrong_side:" + std::to_string(new_split_data.on_the_wrong_side.size()));
-        results[attempt] = {new_projection, new_split_data.on_the_wrong_side.size()};
+        new_projection->comment("resolver random, wrong_side:" + std::to_string(new_split_data.on_the_wrong_side->size()));
+        results[attempt] = {new_projection, new_split_data.on_the_wrong_side->size()};
     }
 
     auto result = std::get<acmacs::chart::ProjectionModifyP>(*std::min_element(results.begin(), results.end(), entry_compare));
@@ -190,10 +190,10 @@ acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line
         acmacs::chart::ProjectionModifyP new_projection = chart.projections_modify()->new_by_cloning(*original_projection, false);
         auto randomizer = acmacs::chart::randomizer_border_with_current_layout_area(*new_projection, 1.0, {split_data.serum_line.line(), split_data.good_side});
         new_projection->randomize_layout(split_data.on_the_wrong_side, randomizer);
-        new_projection->comment("resolver " + sublevel_path + " wrong-side:" + std::to_string(split_data.on_the_wrong_side.size()));
+        new_projection->comment("resolver " + sublevel_path + " wrong-side:" + std::to_string(split_data.on_the_wrong_side->size()));
         new_projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
         const auto procrustes_data = new_projection->orient_to(*original_projection);
-        std::cerr << level << ' ' << sublevel_path << " wrong-side: " << split_data.on_the_wrong_side.size() << "  rms: " << procrustes_data.rms << '\n';
+        std::cerr << level << ' ' << sublevel_path << " wrong-side: " << split_data.on_the_wrong_side->size() << "  rms: " << procrustes_data.rms << '\n';
 
         if (procrustes_data.rms > options.rms_threshold && level < options.max_levels_in_randomization_descent) {
             std::cerr << new_projection->make_info() << '\n';
@@ -225,7 +225,7 @@ acmacs::chart::ProjectionModifyP flip_relax(acmacs::chart::ChartModify& chart, a
 
     // flip bad side antigens to good side
     auto flipped = chart.projections_modify()->new_by_cloning(*original_projection);
-    flipped->comment("flipped " + std::to_string(split_data.on_the_wrong_side.size()) + " antigens");
+    flipped->comment("flipped " + std::to_string(split_data.on_the_wrong_side->size()) + " antigens");
     auto layout = flipped->layout();
     for (auto index : split_data.on_the_wrong_side)
         flipped->move_point(index, split_data.serum_line.line().flip_over(layout->get(index), 1.0));
@@ -236,8 +236,8 @@ acmacs::chart::ProjectionModifyP flip_relax(acmacs::chart::ChartModify& chart, a
     relax_from_flipped->orient_to(*original_projection);
 
     const SplitData new_split_data(*relax_from_flipped);
-    relax_from_flipped->comment(relax_from_flipped->comment() + ", relaxed, wrong_side:" +std::to_string(new_split_data.on_the_wrong_side.size()));
-    std::cerr << "wrong_side: " << std::setw(3) << new_split_data.on_the_wrong_side.size() << "  stress: " << relax_from_flipped->stress() << " line-sera-sd: " << new_split_data.serum_line.standard_deviation() << '\n';
+    relax_from_flipped->comment(relax_from_flipped->comment() + ", relaxed, wrong_side:" +std::to_string(new_split_data.on_the_wrong_side->size()));
+    std::cerr << "wrong_side: " << std::setw(3) << new_split_data.on_the_wrong_side->size() << "  stress: " << relax_from_flipped->stress() << " line-sera-sd: " << new_split_data.serum_line.standard_deviation() << '\n';
     return relax_from_flipped;
 
 } // flip_relax

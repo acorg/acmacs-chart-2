@@ -218,7 +218,7 @@ std::vector<double> acmacs::chart::Stress::gradient(const acmacs::Layout& aLayou
 
 void acmacs::chart::Stress::gradient(const double* first, const double* last, double* gradient_first) const
 {
-    if (parameters_.unmovable.empty() && parameters_.unmovable_in_the_last_dimension.empty())
+    if (parameters_.unmovable->empty() && parameters_.unmovable_in_the_last_dimension->empty())
         gradient_plain(first, last, gradient_first);
     else
         gradient_with_unmovable(first, last, gradient_first);

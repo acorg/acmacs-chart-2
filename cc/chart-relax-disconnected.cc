@@ -50,9 +50,9 @@ int main(int argc, char* const argv[])
                 source_projection = chart.projection_modify(args["--projection"]);
             }
             auto disconnected = source_projection->disconnected();
-            if (disconnected.empty())
+            if (disconnected->empty())
                 throw std::runtime_error("projection has no disconnected points");
-            std::cout << "INFO: disconnected points: (" << disconnected.size() << ')' << disconnected << '\n';
+            std::cout << "INFO: disconnected points: (" << disconnected->size() << ')' << disconnected << '\n';
 
             const size_t number_of_attempts = args["-n"];
             for (size_t attempt = 1; attempt <= number_of_attempts; ++attempt) {

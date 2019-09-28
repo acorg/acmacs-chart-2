@@ -297,7 +297,7 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
     std::transform(projections.begin(), projections.end(), projections.begin(), [start_num_dim, minimum_column_basis, &disconnect_points, pp = projections_modify()](const auto&) {
         auto projection = pp->new_from_scratch(start_num_dim, minimum_column_basis);
-        if (!disconnect_points.empty())
+        if (!disconnect_points->empty())
             projection->set_disconnected(disconnect_points);
         return projection;
     });
@@ -359,7 +359,7 @@ void ChartModify::relax_incremetal(size_t source_projection_no, number_of_optimi
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
     std::transform(projections.begin(), projections.end(), projections.begin(), [&disconnect_points, &source_projection, pp = projections_modify()](const auto&) {
         auto projection = pp->new_by_cloning(*source_projection);
-        if (!disconnect_points.empty())
+        if (!disconnect_points->empty())
             projection->set_disconnected(disconnect_points);
         return projection;
     });
@@ -1660,7 +1660,7 @@ void ProjectionModifyNew::connect(const PointIndexList& to_connect)
         const auto found = std::find(disconnected_.begin(), disconnected_.end(), point_no);
         if (found == disconnected_.end())
             throw invalid_data{"Point was not disconnected: " + std::to_string(point_no) + ": cannot connect it"};
-        disconnected_.erase(found);
+        disconnected_.get().erase(found);
     }
 
 } // ProjectionModifyNew::connect

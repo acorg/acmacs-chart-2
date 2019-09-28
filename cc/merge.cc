@@ -218,7 +218,7 @@ void merge_projections_incremental(acmacs::chart::ChartModifyP result, const acm
     result_projection->transformation(projection1->transformation());
     if (const auto result_disconnected =
             map_disconnected(projection1->disconnected(), chart1.number_of_antigens(), result->number_of_antigens(), report.antigens_primary_target, report.sera_primary_target);
-        !result_disconnected.empty()) {
+        !result_disconnected->empty()) {
         result_projection->set_disconnected(result_disconnected);
     }
 }
@@ -272,7 +272,7 @@ void merge_projections_overlay(acmacs::chart::ChartModifyP result, const acmacs:
     if (auto result_disconnected1 =
             map_disconnected(projection1->disconnected(), chart1.number_of_antigens(), result->number_of_antigens(), report.antigens_primary_target, report.sera_primary_target),
         result_disconnected2 = map_disconnected(projection2->disconnected(), chart2.number_of_antigens(), result->number_of_antigens(), report.antigens_secondary_target, report.sera_secondary_target);
-        !result_disconnected1.empty() || !result_disconnected2.empty()) {
+        !result_disconnected1->empty() || !result_disconnected2->empty()) {
         result_disconnected1.extend(result_disconnected2);
         result_projection->set_disconnected(result_disconnected1);
     }
@@ -282,7 +282,7 @@ void merge_projections_overlay(acmacs::chart::ChartModifyP result, const acmacs:
 
 acmacs::chart::PointIndexList map_disconnected(const acmacs::chart::PointIndexList& source, size_t source_number_of_antigens, size_t target_number_of_antigens, const acmacs::chart::MergeReport::index_mapping_t& antigen_mapping, const acmacs::chart::MergeReport::index_mapping_t& sera_mapping)
 {
-    if (source.empty())
+    if (source->empty())
         return source;
 
     acmacs::chart::PointIndexList result_disconnected;
@@ -354,7 +354,7 @@ void acmacs::chart::MergeReport::titer_merge_report(std::ostream& output, const 
     output << "\n\n";
 
     output << hr << "                                   DIAGNOSTICS\n         (common titers, and how they merged, and the individual tables)\n" << hr;
-    titer_merge_diagnostics(output, chart, filled_with_indexes(chart.antigens()->size()), filled_with_indexes(chart.sera()->size()), max_field);
+    titer_merge_diagnostics(output, chart, PointIndexList{filled_with_indexes(chart.antigens()->size())}, PointIndexList{filled_with_indexes(chart.sera()->size())}, max_field);
 
     for (auto layer_no : acmacs::range(chart.titers()->number_of_layers())) {
         output << hr << chart.info()->source(layer_no)->name_non_empty() << '\n';

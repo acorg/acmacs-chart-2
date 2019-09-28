@@ -199,8 +199,8 @@ namespace acmacs::chart
         void lineage(const std::string& value) { lineage_ = value; }
         void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
         void reference(bool value) { reference_ = value; }
-        void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
-        void add_clade(const std::string& clade) { clades_.add(clade); }
+        void add_annotation(const std::string& annotation) { annotations_.insert_if_not_present(annotation); }
+        void add_clade(const std::string& clade) { clades_.insert_if_not_present(clade); }
         void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
         template <typename S> void continent(S&& value) { continent_ = Continent{std::forward<S>(value)}; }
         void set_continent();
@@ -238,7 +238,7 @@ namespace acmacs::chart
         SerumId serum_id() const override { return serum_id_; }
         SerumSpecies serum_species() const override { return serum_species_; }
         PointIndexList homologous_antigens() const override { return homologous_antigens_; }
-        void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { homologous_antigens_ = ags; }
+        void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { homologous_antigens_ = PointIndexList{ags}; }
 
         void name(const std::string& value) { name_ = Name{value}; }
         void passage(const acmacs::virus::Passage& value) { passage_ = value; }
@@ -246,7 +246,7 @@ namespace acmacs::chart
         void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
         void serum_id(const SerumId& value) { serum_id_ = value; }
         void serum_species(const SerumSpecies& value) { serum_species_ = value; }
-        void add_annotation(const std::string& annotation) { annotations_.add(annotation); }
+        void add_annotation(const std::string& annotation) { annotations_.insert_if_not_present(annotation); }
         void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
         void set_continent() {}
 

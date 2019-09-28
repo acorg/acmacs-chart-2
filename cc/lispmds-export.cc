@@ -27,7 +27,7 @@ std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, st
     const auto disconnected = aChart.projections()->empty() ? PointIndexList{} : (*aChart.projections())[0]->disconnected();
 
     std::string result = ";; MDS configuration file (version 0.6).\n;; Created by AD " + aProgramName + " on " + acmacs::time_format() + "\n";
-    if (!disconnected.empty())
+    if (!disconnected->empty())
         result += ";; Disconnected points (excluded): " + acmacs::to_string(disconnected) + '\n';
     result += '\n';
     result += R"((MAKE-MASTER-MDS-WINDOW
@@ -42,7 +42,7 @@ std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, st
         auto projection = (*projections)[0];
         result.append("  :MDS-DIMENSIONS '" + acmacs::to_string(projection->layout()->number_of_dimensions()) + '\n');
         result.append("  :MOVEABLE-COORDS 'ALL\n  :UNMOVEABLE-COORDS '");
-        if (auto unmovable = projection->unmovable(); !unmovable.empty()) {
+        if (auto unmovable = projection->unmovable(); !unmovable->empty()) {
             result
                     .append(1, '(')
                     .append(string::join(" ", unmovable.begin(), unmovable.end(), [](auto index) -> std::string { return acmacs::to_string(index); }))
@@ -251,7 +251,7 @@ std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_
         }
     }
     else {
-        for (size_t point_no = 0; point_no < (number_of_antigens + number_of_sera - disconnected.size()); ++point_no)
+        for (size_t point_no = 0; point_no < (number_of_antigens + number_of_sera - disconnected->size()); ++point_no)
             result.append(" 0");
     }
 

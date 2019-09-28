@@ -16,7 +16,7 @@ acmacs::chart::SerumCircle::SerumCircle(size_t antigen_no, size_t serum_no, doub
 // ----------------------------------------------------------------------
 
 acmacs::chart::SerumCircle::SerumCircle(const PointIndexList& antigens, size_t serum_no, double column_basis, const Titers& titers, double fold)
-    : serum_no_{serum_no}, fold_{fold}, column_basis_{column_basis}, per_antigen_(antigens.size())
+    : serum_no_{serum_no}, fold_{fold}, column_basis_{column_basis}, per_antigen_(antigens->size())
 {
     std::transform(std::begin(antigens), std::end(antigens), per_antigen_.begin(), [serum_no,&titers](size_t ag_no) {
         return detail::SerumCirclePerAntigen(ag_no, titers.titer(ag_no, serum_no));
@@ -27,7 +27,7 @@ acmacs::chart::SerumCircle::SerumCircle(const PointIndexList& antigens, size_t s
 // ----------------------------------------------------------------------
 
 acmacs::chart::SerumCircle::SerumCircle(const PointIndexList& antigens, size_t serum_no, double column_basis, Titer homologous_titer, double fold)
-    : serum_no_{serum_no}, fold_{fold}, column_basis_{column_basis}, per_antigen_(antigens.size())
+    : serum_no_{serum_no}, fold_{fold}, column_basis_{column_basis}, per_antigen_(antigens->size())
 {
     std::transform(std::begin(antigens), std::end(antigens), per_antigen_.begin(), [&homologous_titer](size_t ag_no) {
         return detail::SerumCirclePerAntigen(ag_no, homologous_titer);

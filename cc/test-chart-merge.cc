@@ -89,8 +89,8 @@ int main(int argc, char* const argv[])
                 }
             }
         }
-        assert(antigens_visited.size() == result->number_of_antigens());
-        assert(sera_visited.size() == result->number_of_sera());
+        assert(antigens_visited->size() == result->number_of_antigens());
+        assert(sera_visited->size() == result->number_of_sera());
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';
