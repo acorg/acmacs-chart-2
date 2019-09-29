@@ -11,6 +11,7 @@ namespace acmacs::chart
     {
      public:
         using acmacs::named_vector_t<double, struct chart_AvidityAdjusts_tag_t>::named_vector_t;
+        AvidityAdjusts(const rjson::value& src) : acmacs::named_vector_t<double, struct chart_AvidityAdjusts_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
 
         constexpr inline bool empty() const
         {

@@ -15,7 +15,7 @@ trap on_exit EXIT
 
 function failed
 {
-    echo FAILED: "$@" >&2
+    echo ERROR: FAILED: "$@" >&2
     exit 1
 }
 
