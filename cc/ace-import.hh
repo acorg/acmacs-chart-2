@@ -190,7 +190,7 @@ namespace acmacs::chart
         double stress_diff_to_stop() const override { return data()["d"].get_or_default(0.0); }
         PointIndexList unmovable() const override { return data()["U"]; }
         PointIndexList unmovable_in_the_last_dimension() const override { return data()["u"]; }
-        AvidityAdjusts avidity_adjusts() const override { return data()["f"]; }
+        AvidityAdjusts avidity_adjusts() const override { return AvidityAdjusts{data()["f"]}; }
 
      protected:
         PointIndexList make_disconnected() const override { return data()["D"]; }

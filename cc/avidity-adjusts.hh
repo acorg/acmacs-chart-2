@@ -1,19 +1,20 @@
 #pragma once
 
-#include "acmacs-chart-2/base.hh"
+#include "acmacs-base/named-type.hh"
+#include "acmacs-base/float.hh"
 
 // ----------------------------------------------------------------------
 
 namespace acmacs::chart
 {
-    class AvidityAdjusts : public detail::double_list_data
+    class AvidityAdjusts : public acmacs::named_vector_t<double, struct chart_AvidityAdjusts_tag_t>
     {
      public:
-        using detail::double_list_data::double_list_data;
+        using acmacs::named_vector_t<double, struct chart_AvidityAdjusts_tag_t>::named_vector_t;
 
         constexpr inline bool empty() const
         {
-            return detail::double_list_data::empty() || std::all_of(begin(), end(), [](double val) -> bool { return float_equal(val, 1.0); });
+            return get().empty() || std::all_of(begin(), end(), [](double val) -> bool { return float_equal(val, 1.0); });
         }
 
         std::vector<double> logged(size_t number_of_points) const

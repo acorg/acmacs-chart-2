@@ -13,7 +13,6 @@
 #include "acmacs-base/named-type.hh"
 #include "acmacs-virus/passage.hh"
 #include "acmacs-virus/reassortant.hh"
-#include "acmacs-chart-2/base.hh"
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/optimize.hh"
@@ -488,7 +487,7 @@ namespace acmacs::chart
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Antigen> operator[](size_t aIndex) const = 0;
         std::shared_ptr<Antigen> at(size_t aIndex) const { return operator[](aIndex); }
-        using iterator = detail::iterator<Antigens, std::shared_ptr<Antigen>>;
+        using iterator = acmacs::iterator<Antigens, std::shared_ptr<Antigen>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
 
@@ -580,7 +579,7 @@ namespace acmacs::chart
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Serum> operator[](size_t aIndex) const = 0;
         std::shared_ptr<Serum> at(size_t aIndex) const { return operator[](aIndex); }
-        using iterator = detail::iterator<Sera, std::shared_ptr<Serum>>;
+        using iterator = acmacs::iterator<Sera, std::shared_ptr<Serum>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
 
@@ -708,7 +707,7 @@ namespace acmacs::chart
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Projection> operator[](size_t aIndex) const = 0;
         virtual std::shared_ptr<Projection> best() const { return operator[](0); }
-        using iterator = detail::iterator<Projections, std::shared_ptr<Projection>>;
+        using iterator = acmacs::iterator<Projections, std::shared_ptr<Projection>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
         // virtual size_t projection_no(const Projection* projection) const;
