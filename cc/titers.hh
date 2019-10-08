@@ -262,10 +262,6 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<acmacs::chart::Titer> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::Titer& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
-};
-
 namespace acmacs
 {
     inline std::string to_string(const acmacs::chart::TiterIterator::Data& data)

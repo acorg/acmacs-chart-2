@@ -893,52 +893,6 @@ namespace acmacs
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<acmacs::chart::Name> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::Name& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
-};
-
-template <> struct fmt::formatter<acmacs::chart::Virus> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::Virus& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
-};
-
-template <> struct fmt::formatter<acmacs::chart::VirusType> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::VirusType& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
-};
-
-template <> struct fmt::formatter<acmacs::chart::Assay> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::Assay& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
-};
-
-template <> struct fmt::formatter<acmacs::chart::Lab> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::Lab& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
-};
-
-template <> struct fmt::formatter<acmacs::chart::RbcSpecies> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::RbcSpecies& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
-};
-
-template <> struct fmt::formatter<acmacs::chart::TableDate> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::TableDate& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
-};
-
-template <> struct fmt::formatter<acmacs::chart::Date> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::Date& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
-};
-
-template <> struct fmt::formatter<acmacs::chart::Continent> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::Continent& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
-};
-
-template <> struct fmt::formatter<acmacs::chart::SerumId> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::SerumId& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
-};
-
-template <> struct fmt::formatter<acmacs::chart::SerumSpecies> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::SerumSpecies& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(val.get(), ctx); }
-};
-
-// ----------------------------------------------------------------------
-
 #ifndef __clang__
 
 template <> struct std::iterator_traits<acmacs::chart::Antigens::iterator>

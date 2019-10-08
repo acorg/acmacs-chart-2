@@ -107,24 +107,9 @@ namespace acmacs
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<acmacs::chart::MinimumColumnBasis> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::MinimumColumnBasis& mcb, FormatCtx& ctx) { return fmt::formatter<std::string>::format(static_cast<std::string>(mcb), ctx); }
-};
-
 template <> struct fmt::formatter<acmacs::chart::ColumnBases> : fmt::formatter<std::string> {
     template <typename FormatCtx> auto format(const acmacs::chart::ColumnBases& cb, FormatCtx& ctx) { return fmt::formatter<std::string>::format(acmacs::to_string(cb), ctx); }
 };
-
-
-
-// namespace acmacs::chart
-// {
-//     inline std::ostream& operator<<(std::ostream& out, const ColumnBases& cb)
-//     {
-//         return out << acmacs::to_string(cb);
-//     }
-// }
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:
