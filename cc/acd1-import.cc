@@ -507,7 +507,7 @@ LabIds Acd1Antigen::lab_ids() const
     if (data_["lab_id"].is_array())
         rjson::transform(data_["lab_id"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val[0]) + '#' + static_cast<std::string>(val[1]); });
     else
-        rjson::transform(data_["lab_id"], std::back_inserter(result), [](const std::string& key, const rjson::value& val) -> std::string { return string::concat(key, '#', static_cast<std::string_view>(val)); });
+        rjson::transform(data_["lab_id"], std::back_inserter(result), [](const std::string& key, const rjson::value& val) -> std::string { return string::concat(key, '#', val.to_string_view()); });
     return result;
 
 } // Acd1Antigen::lab_ids
@@ -732,7 +732,7 @@ Color Acd1PlotSpec::error_line_positive_color() const
 {
     if (const auto& color = data_.get("error_line_positive", "color"); !color.is_null()) {
         if (color.is_string())
-            return Color(static_cast<std::string_view>(color));
+            return Color(color.to_string_view());
         if (color.is_number())
             return Color(static_cast<size_t>(color));
     }
@@ -746,7 +746,7 @@ Color Acd1PlotSpec::error_line_negative_color() const
 {
     if (const auto& color = data_.get("error_line_negative", "color"); !color.is_null()) {
         if (color.is_string())
-            return Color(static_cast<std::string_view>(color));
+            return Color(color.to_string_view());
         if (color.is_number())
             return Color(static_cast<size_t>(color));
     }

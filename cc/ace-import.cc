@@ -264,7 +264,7 @@ std::optional<size_t> AceAntigens::find_by_full_name(std::string_view aFullName)
 
 void AceAntigens::make_name_index() const
 {
-    rjson::for_each(data_, [this](const rjson::value& val, size_t index) { mAntigenNameIndex[static_cast<std::string_view>(val["N"])].push_back(index); });
+    rjson::for_each(data_, [this](const rjson::value& val, size_t index) { mAntigenNameIndex[val["N"].to_string_view()].push_back(index); });
 
 } // AceAntigens::make_name_index
 
@@ -317,7 +317,7 @@ acmacs::Transformation AceProjection::transformation() const
 Color AcePlotSpec::error_line_positive_color() const
 {
     if (const auto& color = data_.get("E", "c"); !color.is_null())
-        return Color(static_cast<std::string_view>(color));
+        return Color(color.to_string_view());
     else
         return "red";
 
@@ -328,7 +328,7 @@ Color AcePlotSpec::error_line_positive_color() const
 Color AcePlotSpec::error_line_negative_color() const
 {
     if (const auto& color = data_.get("e", "c"); !color.is_null())
-        return Color(static_cast<std::string_view>(color));
+        return Color(color.to_string_view());
     else
         return "blue";
 
@@ -400,10 +400,10 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointN
                       result.shown = static_cast<bool>(field_value);
                       break;
                   case 'F':
-                      result.fill = Color(static_cast<std::string_view>(field_value));
+                      result.fill = Color(field_value.to_string_view());
                       break;
                   case 'O':
-                      result.outline = Color(static_cast<std::string_view>(field_value));
+                      result.outline = Color(field_value.to_string_view());
                       break;
                   case 'o':
                       result.outline_width = Pixels{static_cast<double>(field_value)};
@@ -453,7 +453,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
                       label_style.size = Pixels{static_cast<double>(field_value) * acmacs::chart::ace::LabelScale};
                       break;
                   case 'c':
-                      label_style.color = Color(static_cast<std::string_view>(field_value));
+                      label_style.color = Color(field_value.to_string_view());
                       break;
                   case 'r':
                       label_style.rotation = Rotation{static_cast<double>(field_value)};
