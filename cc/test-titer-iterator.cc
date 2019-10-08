@@ -31,7 +31,7 @@ int main(int argc, char* const argv[])
                 size_t non_dont_care_titers = 0;
                 for (const auto& titer_data : titers->titers_existing()) {
                     if (titer_data.titer != titers->titer(titer_data.antigen, titer_data.serum))
-                        throw std::runtime_error(fmt::format("titer mistmatch for {}:{}: {} vs. {}", titer_data.antigen, titer_data.serum, titer_data.titer, titers->titer(titer_data.antigen, titer_data.serum)));
+                        throw std::runtime_error(fmt::format("titer mistmatch for {}:{}: {} vs. {}", titer_data.antigen, titer_data.serum, *titer_data.titer, *titers->titer(titer_data.antigen, titer_data.serum)));
                     ++non_dont_care_titers;
                 }
                 if (non_dont_care_titers != titers->number_of_non_dont_cares())

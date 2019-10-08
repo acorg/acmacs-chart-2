@@ -41,7 +41,7 @@ int main(int argc, char* const argv[])
             for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
                 fmt::print("{:3d} {: <{}s} ", ag_no, antigen->full_name(), max_antigen_name);
                 for (auto serum_no : acmacs::range(sera->size()))
-                    fmt::print("{: >{}s}", titers->titer(ag_no, serum_no), column_width);
+                    fmt::print("{: >{}s}", *titers->titer(ag_no, serum_no), column_width);
                 fmt::print("\n");
             }
 

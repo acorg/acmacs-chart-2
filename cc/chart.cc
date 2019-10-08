@@ -18,7 +18,7 @@ static const std::regex sDate{"[12][90][0-9][0-9]-[0-2][0-9]-[0-3][0-9]"};
 void acmacs::chart::Date::check() const
 {
     if (!empty() && !std::regex_match(std::begin(this->get()), std::end(this->get()), sDate))
-        throw invalid_data{fmt::format("invalid date (YYYY-MM-DD expected): {}", *this)};
+        throw invalid_data{fmt::format("invalid date (YYYY-MM-DD expected): {}", **this)};
 
 } // acmacs::chart::Date::check
 
@@ -125,10 +125,10 @@ std::string acmacs::chart::Chart::lineage() const
 void acmacs::chart::Chart::serum_coverage(Titer aHomologousTiter, size_t aSerumNo, Indexes& aWithinFold, Indexes& aOutsideFold, double aFold) const
 {
     if (!aHomologousTiter.is_regular())
-        throw serum_coverage_error(fmt::format("cannot handle non-regular homologous titer: {}", aHomologousTiter));
+        throw serum_coverage_error(fmt::format("cannot handle non-regular homologous titer: {}", *aHomologousTiter));
     const double titer_threshold = aHomologousTiter.logged() - aFold;
     if (titer_threshold <= 0)
-        throw serum_coverage_error(fmt::format("homologous titer is too low: {}", aHomologousTiter));
+        throw serum_coverage_error(fmt::format("homologous titer is too low: {}", *aHomologousTiter));
     auto tts = titers();
     for (size_t ag_no = 0; ag_no < number_of_antigens(); ++ag_no) {
         const Titer titer = tts->titer(ag_no, aSerumNo);
@@ -774,8 +774,8 @@ acmacs::chart::Sera::homologous_canditates_t acmacs::chart::Sera::find_homologou
                 auto antigen = aAntigens[ag_no];
                 if (dbg == debug::yes)
                     fmt::print(stderr, "DEBUG: SR {} {} R:{} A:{} P:{} -- AG {} {} R:{} A:{} P:{} -- R_match: {} A_match:{} P_match:{}\n",
-                               sr_no, serum->name(), *serum->reassortant(), serum->annotations(), *serum->passage(),
-                               ag_no, antigen->name(), *antigen->reassortant(), antigen->annotations(), *antigen->passage(),
+                               sr_no, *serum->name(), *serum->reassortant(), serum->annotations(), *serum->passage(),
+                               ag_no, *antigen->name(), *antigen->reassortant(), antigen->annotations(), *antigen->passage(),
                                antigen->reassortant() == serum->reassortant(), Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()),
                                match_passage(antigen->passage(), serum->passage(), *serum));
                 if (antigen->reassortant() == serum->reassortant() && Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()) &&

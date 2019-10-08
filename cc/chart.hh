@@ -407,7 +407,7 @@ namespace acmacs::chart
     {
         out << ag.full_name();
         if (const auto date = ag.date(); !date.empty())
-            out << fmt::format(" [{}]", date);
+            out << fmt::format(" [{}]", *date);
         if (const auto lab_ids = ag.lab_ids(); !lab_ids->empty())
             out << ' ' << *lab_ids;
         if (const auto lineage = ag.lineage(); lineage != BLineage::Unknown)

@@ -602,7 +602,7 @@ void AntigenModify::update_with(AntigenP main)
         date_ = main->date();
     }
     else if (!main->date().empty() && date_ != main->date()) {
-        fmt::print(stderr, "WARNING: merged antigen dates {} vs. {}\n", date_, main->date());
+        fmt::print(stderr, "WARNING: merged antigen dates {} vs. {}\n", *date_, *main->date());
     }
 
     if (lineage_ == BLineage::Unknown) {
@@ -628,10 +628,10 @@ void AntigenModify::set_continent()
                 continent(locdb.continent(::virus_name::location(name())));
             }
             catch (std::exception& err) {
-                fmt::print(stderr, "WARNING: cannot figure out continent for \"{}\": {}\n", name(), err.what());
+                fmt::print(stderr, "WARNING: cannot figure out continent for \"{}\": {}\n", *name(), err.what());
             }
             catch (...) {
-                fmt::print(stderr, "WARNING: cannot figure out continent for \"{}\": unknown exception\n", name());
+                fmt::print(stderr, "WARNING: cannot figure out continent for \"{}\": unknown exception\n", *name());
             }
         }
     }
@@ -683,7 +683,7 @@ void SerumModify::update_with(SerumP main)
         serum_species_ = main->serum_species();
     }
     else if (!main->serum_species().empty() && serum_species_ != main->serum_species()) {
-        std::cerr << fmt::format("WARNING: merged serum serum_speciess {} vs. {}\n", serum_species_, main->serum_species());
+        std::cerr << fmt::format("WARNING: merged serum serum_speciess {} vs. {}\n", *serum_species_, *main->serum_species());
     }
 
 } // SerumModify::update_with
