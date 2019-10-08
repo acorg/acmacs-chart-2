@@ -13,7 +13,7 @@ namespace acmacs::chart
         using acmacs::named_vector_t<double, struct chart_AvidityAdjusts_tag_t>::named_vector_t;
         AvidityAdjusts(const rjson::value& src) : acmacs::named_vector_t<double, struct chart_AvidityAdjusts_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
 
-        constexpr inline bool empty() const
+        inline bool empty() const
         {
             return get().empty() || std::all_of(begin(), end(), [](double val) -> bool { return float_equal(val, 1.0); });
         }
