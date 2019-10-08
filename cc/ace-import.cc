@@ -264,7 +264,7 @@ std::optional<size_t> AceAntigens::find_by_full_name(std::string_view aFullName)
 
 void AceAntigens::make_name_index() const
 {
-    rjson::for_each(data_, [this](const rjson::value& val, size_t index) { mAntigenNameIndex[val["N"]].push_back(index); });
+    rjson::for_each(data_, [this](const rjson::value& val, size_t index) { mAntigenNameIndex[static_cast<std::string_view>(val["N"])].push_back(index); });
 
 } // AceAntigens::make_name_index
 
