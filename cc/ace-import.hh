@@ -166,7 +166,7 @@ namespace acmacs::chart
         AceColumnBases(const rjson::value& data) : data_{data} {}
         AceColumnBases(const rjson::value& data, MinimumColumnBasis minimum_column_basis) : data_{data}, minimum_column_basis_{minimum_column_basis} {}
 
-        double column_basis(size_t aSerumNo) const override { return minimum_column_basis_.apply(data_[aSerumNo]); }
+        double column_basis(size_t aSerumNo) const override { return minimum_column_basis_.apply(static_cast<double>(data_[aSerumNo])); }
         size_t size() const override { return data_.size(); }
 
      private:

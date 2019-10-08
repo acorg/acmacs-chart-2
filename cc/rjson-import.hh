@@ -168,7 +168,7 @@ namespace acmacs::chart
         std::optional<double> stored_stress() const override
         {
             if (const auto& stress = data_[keys_.stress]; !stress.is_null())
-                return stress;
+                return static_cast<double>(stress);
             else
                 return {};
         }

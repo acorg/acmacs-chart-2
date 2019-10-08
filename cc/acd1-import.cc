@@ -644,7 +644,7 @@ acmacs::Transformation Acd1Projection::transformation() const
 {
     acmacs::Transformation result(number_of_dimensions());
     if (const auto& array = data()["transformation"]; !array.empty()) {
-        result.set(array[0][0], array[0][1], array[1][0], array[1][1]);
+        result.set(static_cast<double>(array[0][0]), static_cast<double>(array[0][1]), static_cast<double>(array[1][0]), static_cast<double>(array[1][1]));
     }
     return result;
 
@@ -706,9 +706,9 @@ AvidityAdjusts Acd1Projection::avidity_adjusts() const
         const rjson::value& sera = titer_multipliers["sera"];
         AvidityAdjusts aa(antigens.size() + sera.size());
         for (size_t ag_no = 0; ag_no < antigens.size(); ++ag_no)
-            aa[ag_no] = antigens[ag_no];
+            aa[ag_no] = static_cast<double>(antigens[ag_no]);
         for (size_t sr_no = 0; sr_no < sera.size(); ++sr_no)
-            aa[sr_no + antigens.size()] = sera[sr_no];
+            aa[sr_no + antigens.size()] = static_cast<double>(sera[sr_no]);
         return aa;
     }
     else
@@ -721,7 +721,7 @@ AvidityAdjusts Acd1Projection::avidity_adjusts() const
 DrawingOrder Acd1PlotSpec::drawing_order() const
 {
     DrawingOrder result;
-    rjson::for_each(data_["drawing_order"], [&result](const rjson::value& do1) { rjson::transform(do1, std::back_inserter(result), [](const rjson::value& val) -> size_t { return val; }); });
+    rjson::for_each(data_["drawing_order"], [&result](const rjson::value& do1) { rjson::transform(do1, std::back_inserter(result), [](const rjson::value& val) -> size_t { return static_cast<size_t>(val); }); });
     return result;
 
 } // Acd1PlotSpec::drawing_order
@@ -760,7 +760,7 @@ acmacs::PointStyle Acd1PlotSpec::style(size_t aPointNo) const
 {
     try {
         const rjson::value& indices = data_["points"];
-        const size_t style_no = indices[aPointNo];
+        const size_t style_no{indices[aPointNo]};
         return extract(data_["styles"][style_no], aPointNo, style_no);
     }
     catch (std::exception& /*err*/) {
@@ -778,7 +778,7 @@ std::vector<acmacs::PointStyle> Acd1PlotSpec::all_styles() const
         std::vector<acmacs::PointStyle> result(indices.size());
         for (auto [point_no, target]: acmacs::enumerate(result)) {
             try {
-                const size_t style_no = indices[point_no];
+                const size_t style_no{indices[point_no]};
                 target = extract(data_["styles"][style_no], point_no, style_no);
             }
             catch (std::exception& err) {
@@ -821,23 +821,23 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                 else if (field_name == "outline_color")
                     result.outline = Color(static_cast<size_t>(field_value));
                 else if (field_name == "outline_width")
-                    result.outline_width = Pixels{field_value};
+                    result.outline_width = Pixels{static_cast<double>(field_value)};
                 else if (field_name == "line_width") // acmacs-b3
-                    result.outline_width = Pixels{field_value};
+                    result.outline_width = Pixels{static_cast<double>(field_value)};
                 else if (field_name == "shape")
                     result.shape = static_cast<std::string>(field_value);
                 else if (field_name == "size")
                     result.size = Pixels{static_cast<double>(field_value) * PointScale};
                 else if (field_name == "rotation")
-                    result.rotation = Rotation{field_value};
+                    result.rotation = Rotation{static_cast<double>(field_value)};
                 else if (field_name == "aspect")
-                    result.aspect = Aspect{field_value};
+                    result.aspect = Aspect{static_cast<double>(field_value)};
                 else if (field_name == "show_label")
                     result.label.shown = static_cast<bool>(field_value);
                 else if (field_name == "label_position_x")
-                    result.label.offset.set().x(field_value);
+                    result.label.offset.set().x(static_cast<double>(field_value));
                 else if (field_name == "label_position_y")
-                    result.label.offset.set().y(field_value);
+                    result.label.offset.set().y(static_cast<double>(field_value));
                 else if (field_name == "label")
                     result.label_text = static_cast<std::string>(field_value);
                 else if (field_name == "label_size")
@@ -845,7 +845,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                 else if (field_name == "label_color")
                     result.label.color = Color(static_cast<size_t>(field_value));
                 else if (field_name == "label_rotation")
-                    result.label.rotation = Rotation{field_value};
+                    result.label.rotation = Rotation{static_cast<double>(field_value)};
                 else if (field_name == "label_font_face")
                     result.label.style.font_family = static_cast<std::string>(field_value);
                 else if (field_name == "label_font_slant")

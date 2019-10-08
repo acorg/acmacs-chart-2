@@ -340,7 +340,7 @@ acmacs::PointStyle AcePlotSpec::style(size_t aPointNo) const
 {
     const auto& indices = data_["p"];
     try {
-        const size_t style_no = indices[aPointNo];
+        const size_t style_no{indices[aPointNo]};
         // std::cerr << "style " << aPointNo << ' ' << style_no << ' ' << data_["P"][style_no].to_json() << '\n';
         return extract(data_["P"][style_no], aPointNo, style_no);
     }
@@ -359,7 +359,7 @@ std::vector<acmacs::PointStyle> AcePlotSpec::all_styles() const
         std::vector<acmacs::PointStyle> result(indices.size());
         for (auto [point_no, target]: acmacs::enumerate(result)) {
             try {
-                const size_t style_no = indices[point_no];
+                const size_t style_no{indices[point_no]};
                 target = extract(data_["P"][style_no], point_no, style_no);
             }
             catch (std::exception& err) {
@@ -406,16 +406,16 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointN
                       result.outline = Color(static_cast<std::string_view>(field_value));
                       break;
                   case 'o':
-                      result.outline_width = Pixels{field_value};
+                      result.outline_width = Pixels{static_cast<double>(field_value)};
                       break;
                   case 's':
                       result.size = Pixels{static_cast<double>(field_value) * acmacs::chart::ace::PointScale};
                       break;
                   case 'r':
-                      result.rotation = Rotation{field_value};
+                      result.rotation = Rotation{static_cast<double>(field_value)};
                       break;
                   case 'a':
-                      result.aspect = Aspect{field_value};
+                      result.aspect = Aspect{static_cast<double>(field_value)};
                       break;
                   case 'S':
                       result.shape = static_cast<std::string>(field_value);
@@ -447,7 +447,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
                       label_style.shown = static_cast<bool>(field_value);
                       break;
                   case 'p':
-                      label_style.offset = acmacs::Offset{field_value[0], field_value[1]};
+                      label_style.offset = acmacs::Offset{static_cast<double>(field_value[0]), static_cast<double>(field_value[1])};
                       break;
                   case 's':
                       label_style.size = Pixels{static_cast<double>(field_value) * acmacs::chart::ace::LabelScale};
@@ -456,10 +456,10 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
                       label_style.color = Color(static_cast<std::string_view>(field_value));
                       break;
                   case 'r':
-                      label_style.rotation = Rotation{field_value};
+                      label_style.rotation = Rotation{static_cast<double>(field_value)};
                       break;
                   case 'i':
-                      label_style.interline = field_value;
+                      label_style.interline = static_cast<double>(field_value);
                       break;
                   case 'f':
                       label_style.style.font_family = static_cast<std::string>(field_value);
