@@ -476,8 +476,8 @@ static inline acmacs::virus::Reassortant make_reassortant(const rjson::value& aD
         const auto& complete = r_dict["complete"];
         const auto& incomplete = r_dict["incomplete"];
         std::vector<std::string> composition;
-        rjson::transform(complete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val); }); // cannot use rjson::copy here
-        rjson::transform(incomplete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val); }); // cannot use rjson::copy here
+        rjson::transform(complete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return val.to<std::string>(); }); // cannot use rjson::copy here
+        rjson::transform(incomplete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return val.to<std::string>(); }); // cannot use rjson::copy here
         return acmacs::virus::Reassortant{string::join(" ", composition)};
     }
     else if (auto r_str = aData["reassortant"].get_or_default(""); !r_str.empty()) {
@@ -505,9 +505,9 @@ LabIds Acd1Antigen::lab_ids() const
 {
     LabIds result;
     if (data_["lab_id"].is_array())
-        rjson::transform(data_["lab_id"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val[0]) + '#' + static_cast<std::string>(val[1]); });
+        rjson::transform(data_["lab_id"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return val[0].to<std::string>() + '#' + val[1].to<std::string>(); });
     else
-        rjson::transform(data_["lab_id"], std::back_inserter(result), [](const std::string& key, const rjson::value& val) -> std::string { return string::concat(key, '#', val.to_string_view()); });
+        rjson::transform(data_["lab_id"], std::back_inserter(result), [](const std::string& key, const rjson::value& val) -> std::string { return string::concat(key, '#', val.to<std::string_view>()); });
     return result;
 
 } // Acd1Antigen::lab_ids
@@ -522,8 +522,8 @@ static inline Annotations make_annotations(const rjson::value& aData)
         result.push_back("DISTINCT");
     result.push_back(aData["extra"].get_or_default(""));
     result.push_back(aData["EXTRA"].get_or_default(""));
-    rjson::transform(aData["annotations"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val); }); // cannot use rjson::copy here
-    rjson::transform(aData["mutations"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return static_cast<std::string>(val); }); // cannot use rjson::copy here
+    rjson::transform(aData["annotations"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return val.to<std::string>(); }); // cannot use rjson::copy here
+    rjson::transform(aData["mutations"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return val.to<std::string>(); }); // cannot use rjson::copy here
     return result;
 }
 
@@ -558,7 +558,7 @@ BLineage Acd1Serum::lineage() const
 SerumId Acd1Serum::serum_id() const
 {
     if (const auto& s_dict = data_["serum_id"]; !s_dict.is_null()) {
-        return SerumId{s_dict["serum_id"]};
+        return SerumId{s_dict["serum_id"].to<std::string_view>()};
     }
     else if (auto p_str = data_["serum_id"].get_or_default(""); !p_str.empty()) {
         return SerumId{p_str};
@@ -644,7 +644,7 @@ acmacs::Transformation Acd1Projection::transformation() const
 {
     acmacs::Transformation result(number_of_dimensions());
     if (const auto& array = data()["transformation"]; !array.empty()) {
-        result.set(static_cast<double>(array[0][0]), static_cast<double>(array[0][1]), static_cast<double>(array[1][0]), static_cast<double>(array[1][1]));
+        result.set(array[0][0].to<double>(), array[0][1].to<double>(), array[1][0].to<double>(), array[1][1].to<double>());
     }
     return result;
 
@@ -657,11 +657,11 @@ PointIndexList Acd1Projection::make_attributes(size_t aAttr) const
     PointIndexList result;
     if (const rjson::value& attrs = data().get("stress_evaluator_parameters", "antigens_sera_attributes"); !attrs.is_null()) {
         rjson::for_each(attrs["antigens"], [&result, aAttr](const rjson::value& val, size_t index) {
-            if (static_cast<size_t>(val) == aAttr)
+            if (val.to<size_t>() == aAttr)
                 result.insert(index);
         });
         rjson::for_each(attrs["sera"], [&result, aAttr,number_of_antigens=attrs["antigens"].size()](const rjson::value& val, size_t index) {
-            if (static_cast<size_t>(val) == aAttr)
+            if (val.to<size_t>() == aAttr)
                 result.insert(index + number_of_antigens);
         });
     }
@@ -706,9 +706,9 @@ AvidityAdjusts Acd1Projection::avidity_adjusts() const
         const rjson::value& sera = titer_multipliers["sera"];
         AvidityAdjusts aa(antigens.size() + sera.size());
         for (size_t ag_no = 0; ag_no < antigens.size(); ++ag_no)
-            aa[ag_no] = static_cast<double>(antigens[ag_no]);
+            aa[ag_no] = antigens[ag_no].to<double>();
         for (size_t sr_no = 0; sr_no < sera.size(); ++sr_no)
-            aa[sr_no + antigens.size()] = static_cast<double>(sera[sr_no]);
+            aa[sr_no + antigens.size()] = sera[sr_no].to<double>();
         return aa;
     }
     else
@@ -721,7 +721,7 @@ AvidityAdjusts Acd1Projection::avidity_adjusts() const
 DrawingOrder Acd1PlotSpec::drawing_order() const
 {
     DrawingOrder result;
-    rjson::for_each(data_["drawing_order"], [&result](const rjson::value& do1) { rjson::transform(do1, std::back_inserter(result), [](const rjson::value& val) -> size_t { return static_cast<size_t>(val); }); });
+    rjson::for_each(data_["drawing_order"], [&result](const rjson::value& do1) { rjson::transform(do1, std::back_inserter(result), [](const rjson::value& val) -> size_t { return val.to<size_t>(); }); });
     return result;
 
 } // Acd1PlotSpec::drawing_order
@@ -732,9 +732,9 @@ Color Acd1PlotSpec::error_line_positive_color() const
 {
     if (const auto& color = data_.get("error_line_positive", "color"); !color.is_null()) {
         if (color.is_string())
-            return Color(color.to_string_view());
+            return Color(color.to<std::string_view>());
         if (color.is_number())
-            return Color(static_cast<size_t>(color));
+            return Color(color.to<size_t>());
     }
     return "red";
 
@@ -746,9 +746,9 @@ Color Acd1PlotSpec::error_line_negative_color() const
 {
     if (const auto& color = data_.get("error_line_negative", "color"); !color.is_null()) {
         if (color.is_string())
-            return Color(color.to_string_view());
+            return Color(color.to<std::string_view>());
         if (color.is_number())
-            return Color(static_cast<size_t>(color));
+            return Color(color.to<size_t>());
     }
     return "blue";
 
@@ -760,7 +760,7 @@ acmacs::PointStyle Acd1PlotSpec::style(size_t aPointNo) const
 {
     try {
         const rjson::value& indices = data_["points"];
-        const size_t style_no{indices[aPointNo]};
+        const size_t style_no{indices[aPointNo].to<size_t>()};
         return extract(data_["styles"][style_no], aPointNo, style_no);
     }
     catch (std::exception& /*err*/) {
@@ -778,7 +778,7 @@ std::vector<acmacs::PointStyle> Acd1PlotSpec::all_styles() const
         std::vector<acmacs::PointStyle> result(indices.size());
         for (auto [point_no, target]: acmacs::enumerate(result)) {
             try {
-                const size_t style_no{indices[point_no]};
+                const size_t style_no{indices[point_no].to<size_t>()};
                 target = extract(data_["styles"][style_no], point_no, style_no);
             }
             catch (std::exception& err) {
@@ -815,43 +815,43 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
         if (!field_name.empty()) {
             try {
                 if (field_name == "shown")
-                    result.shown = static_cast<bool>(field_value);
+                    result.shown = field_value.to<bool>();
                 else if (field_name == "fill_color")
-                    result.fill = Color(static_cast<size_t>(field_value));
+                    result.fill = Color(field_value.to<size_t>());
                 else if (field_name == "outline_color")
-                    result.outline = Color(static_cast<size_t>(field_value));
+                    result.outline = Color(field_value.to<size_t>());
                 else if (field_name == "outline_width")
-                    result.outline_width = Pixels{static_cast<double>(field_value)};
+                    result.outline_width = Pixels{field_value.to<double>()};
                 else if (field_name == "line_width") // acmacs-b3
-                    result.outline_width = Pixels{static_cast<double>(field_value)};
+                    result.outline_width = Pixels{field_value.to<double>()};
                 else if (field_name == "shape")
-                    result.shape = static_cast<std::string>(field_value);
+                    result.shape = field_value.to<std::string>();
                 else if (field_name == "size")
-                    result.size = Pixels{static_cast<double>(field_value) * PointScale};
+                    result.size = Pixels{field_value.to<double>() * PointScale};
                 else if (field_name == "rotation")
-                    result.rotation = Rotation{static_cast<double>(field_value)};
+                    result.rotation = Rotation{field_value.to<double>()};
                 else if (field_name == "aspect")
-                    result.aspect = Aspect{static_cast<double>(field_value)};
+                    result.aspect = Aspect{field_value.to<double>()};
                 else if (field_name == "show_label")
-                    result.label.shown = static_cast<bool>(field_value);
+                    result.label.shown = field_value.to<bool>();
                 else if (field_name == "label_position_x")
-                    result.label.offset.set().x(static_cast<double>(field_value));
+                    result.label.offset.set().x(field_value.to<double>());
                 else if (field_name == "label_position_y")
-                    result.label.offset.set().y(static_cast<double>(field_value));
+                    result.label.offset.set().y(field_value.to<double>());
                 else if (field_name == "label")
-                    result.label_text = static_cast<std::string>(field_value);
+                    result.label_text = field_value.to<std::string>();
                 else if (field_name == "label_size")
-                    result.label.size = Pixels{static_cast<double>(field_value) * LabelScale};
+                    result.label.size = Pixels{field_value.to<double>() * LabelScale};
                 else if (field_name == "label_color")
-                    result.label.color = Color(static_cast<size_t>(field_value));
+                    result.label.color = Color(field_value.to<size_t>());
                 else if (field_name == "label_rotation")
-                    result.label.rotation = Rotation{static_cast<double>(field_value)};
+                    result.label.rotation = Rotation{field_value.to<double>()};
                 else if (field_name == "label_font_face")
-                    result.label.style.font_family = static_cast<std::string>(field_value);
+                    result.label.style.font_family = field_value.to<std::string>();
                 else if (field_name == "label_font_slant")
-                    result.label.style.slant = static_cast<std::string>(field_value);
+                    result.label.style.slant = field_value.to<std::string>();
                 else if (field_name == "label_font_weight")
-                    result.label.style.weight = static_cast<std::string>(field_value);
+                    result.label.style.weight = field_value.to<std::string>();
             }
             catch (std::exception& err) {
                 std::cerr << "WARNING: [acd1]: point " << aPointNo << " style " << aStyleNo << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << rjson::to_string(field_value)

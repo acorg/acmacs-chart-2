@@ -166,7 +166,7 @@ namespace acmacs::chart
         std::optional<MinimumColumnBasis> minimum_column_basis() const
             {
                 if (const auto& mcb = data()["minimum_column_basis"]; !mcb.is_null())
-                    return static_cast<std::string>(mcb);
+                    return mcb.to<std::string>();
                 return {};
             }
 
@@ -183,7 +183,7 @@ namespace acmacs::chart
         Acd1ColumnBases(const rjson::value& data) : data_{data} {}
         Acd1ColumnBases(const rjson::value& data, MinimumColumnBasis minimum_column_basis) : data_{data}, minimum_column_basis_{minimum_column_basis} {}
 
-        double column_basis(size_t aSerumNo) const override { return minimum_column_basis_.apply(static_cast<double>(data_[aSerumNo])); }
+        double column_basis(size_t aSerumNo) const override { return minimum_column_basis_.apply(data_[aSerumNo].to<double>()); }
         size_t size() const override { return data_.size(); }
 
      private:
@@ -217,7 +217,7 @@ namespace acmacs::chart
             {
                 if (const auto& sep = data()["stress_evaluator_parameters"]; !sep.is_null()) {
                     if (const auto& mcb = sep["minimum_column_basis"]; !mcb.is_null())
-                        return static_cast<std::string>(mcb);
+                        return mcb.to<std::string>();
                 }
                 if (const auto mcb = dynamic_cast<Acd1Titers&>(*chart().titers()).minimum_column_basis(); mcb)
                     return *mcb;

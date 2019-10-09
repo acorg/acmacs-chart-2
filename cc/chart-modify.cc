@@ -737,9 +737,9 @@ TitersModify::TitersModify(TitersP main)
                     using target_t = std::remove_reference_t<decltype(target[ag_no])>;
                     using value_type = typename target_t::value_type;
                     if (source_row.is_object())
-                        rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::object::value_type& kv) -> value_type { return {std::stoul(kv.first), acmacs::chart::Titer{kv.second}}; });
+                        rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::object::value_type& kv) -> value_type { return {std::stoul(kv.first), acmacs::chart::Titer{kv.second.to<std::string_view>()}}; });
                     else if (source_row.is_array())
-                        rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::value& titer, size_t serum_no) -> value_type { return {serum_no, acmacs::chart::Titer{titer}}; });
+                        rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::value& titer, size_t serum_no) -> value_type { return {serum_no, acmacs::chart::Titer{titer.to<std::string_view>()}}; });
                     else
                         throw invalid_data{string::concat("invalid layer ", ag_no, " type: ", source_row.actual_type())};
                 });

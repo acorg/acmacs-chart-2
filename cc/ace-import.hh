@@ -75,7 +75,7 @@ namespace acmacs::chart
       public:
         AceAntigen(const rjson::value& aData) : data_{aData} {}
 
-        Name name() const override { return Name{data_["N"]}; }
+        Name name() const override { return Name{data_["N"].to<std::string_view>()}; }
         Date date() const override { return Date{data_["D"].get_or_default("")}; }
         acmacs::virus::Passage passage() const override { return acmacs::virus::Passage{data_["P"].get_or_default("")}; }
         BLineage lineage() const override;
@@ -97,7 +97,7 @@ namespace acmacs::chart
       public:
         AceSerum(const rjson::value& aData) : data_{aData} {}
 
-        Name name() const override { return Name{data_["N"]}; }
+        Name name() const override { return Name{data_["N"].to<std::string_view>()}; }
         acmacs::virus::Passage passage() const override { return acmacs::virus::Passage{data_["P"].get_or_default("")}; }
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override { return acmacs::virus::Reassortant{data_["R"].get_or_default("")}; }
@@ -166,7 +166,7 @@ namespace acmacs::chart
         AceColumnBases(const rjson::value& data) : data_{data} {}
         AceColumnBases(const rjson::value& data, MinimumColumnBasis minimum_column_basis) : data_{data}, minimum_column_basis_{minimum_column_basis} {}
 
-        double column_basis(size_t aSerumNo) const override { return minimum_column_basis_.apply(static_cast<double>(data_[aSerumNo])); }
+        double column_basis(size_t aSerumNo) const override { return minimum_column_basis_.apply(data_[aSerumNo].to<double>()); }
         size_t size() const override { return data_.size(); }
 
      private:

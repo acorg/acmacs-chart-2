@@ -58,7 +58,7 @@ namespace acmacs::chart
         Titer titer(size_t aAntigenNo, size_t aSerumNo) const override
         {
             if (const auto& list = data_[keys_.list]; !list.is_null())
-                return Titer{list[aAntigenNo][aSerumNo]};
+                return Titer{list[aAntigenNo][aSerumNo].to<std::string_view>()};
             else
                 return titer_in_d(data_[keys_.dict], aAntigenNo, aSerumNo);
         }
@@ -143,7 +143,7 @@ namespace acmacs::chart
         {
             if (const auto& row = aSource[aAntigenNo]; !row.is_null())
                 if (const auto& titer = row[aSerumNo]; !titer.is_null())
-                    return Titer{titer};
+                    return Titer{titer.to<std::string_view>()};
             return {};
         }
 
@@ -168,7 +168,7 @@ namespace acmacs::chart
         std::optional<double> stored_stress() const override
         {
             if (const auto& stress = data_[keys_.stress]; !stress.is_null())
-                return static_cast<double>(stress);
+                return stress.to<double>();
             else
                 return {};
         }
@@ -182,7 +182,7 @@ namespace acmacs::chart
         std::string comment() const override
         {
             if (const auto& comment = data_[keys_.comment]; !comment.is_null())
-                return static_cast<std::string>(comment);
+                return comment.to<std::string>();
             else
                 return {};
         }

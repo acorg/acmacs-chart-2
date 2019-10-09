@@ -264,7 +264,7 @@ std::optional<size_t> AceAntigens::find_by_full_name(std::string_view aFullName)
 
 void AceAntigens::make_name_index() const
 {
-    rjson::for_each(data_, [this](const rjson::value& val, size_t index) { mAntigenNameIndex[val["N"].to_string_view()].push_back(index); });
+    rjson::for_each(data_, [this](const rjson::value& val, size_t index) { mAntigenNameIndex[val["N"].to<std::string_view>()].push_back(index); });
 
 } // AceAntigens::make_name_index
 
@@ -317,7 +317,7 @@ acmacs::Transformation AceProjection::transformation() const
 Color AcePlotSpec::error_line_positive_color() const
 {
     if (const auto& color = data_.get("E", "c"); !color.is_null())
-        return Color(color.to_string_view());
+        return Color(color.to<std::string_view>());
     else
         return "red";
 
@@ -328,7 +328,7 @@ Color AcePlotSpec::error_line_positive_color() const
 Color AcePlotSpec::error_line_negative_color() const
 {
     if (const auto& color = data_.get("e", "c"); !color.is_null())
-        return Color(color.to_string_view());
+        return Color(color.to<std::string_view>());
     else
         return "blue";
 
@@ -340,7 +340,7 @@ acmacs::PointStyle AcePlotSpec::style(size_t aPointNo) const
 {
     const auto& indices = data_["p"];
     try {
-        const size_t style_no{indices[aPointNo]};
+        const size_t style_no{indices[aPointNo].to<size_t>()};
         // std::cerr << "style " << aPointNo << ' ' << style_no << ' ' << data_["P"][style_no].to_json() << '\n';
         return extract(data_["P"][style_no], aPointNo, style_no);
     }
@@ -359,7 +359,7 @@ std::vector<acmacs::PointStyle> AcePlotSpec::all_styles() const
         std::vector<acmacs::PointStyle> result(indices.size());
         for (auto [point_no, target]: acmacs::enumerate(result)) {
             try {
-                const size_t style_no{indices[point_no]};
+                const size_t style_no{indices[point_no].to<size_t>()};
                 target = extract(data_["P"][style_no], point_no, style_no);
             }
             catch (std::exception& err) {
@@ -397,28 +397,28 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointN
             try {
                 switch (field_name[0]) {
                   case '+':
-                      result.shown = static_cast<bool>(field_value);
+                      result.shown = field_value.to<bool>();
                       break;
                   case 'F':
-                      result.fill = Color(field_value.to_string_view());
+                      result.fill = Color(field_value.to<std::string_view>());
                       break;
                   case 'O':
-                      result.outline = Color(field_value.to_string_view());
+                      result.outline = Color(field_value.to<std::string_view>());
                       break;
                   case 'o':
-                      result.outline_width = Pixels{static_cast<double>(field_value)};
+                      result.outline_width = Pixels{field_value.to<double>()};
                       break;
                   case 's':
-                      result.size = Pixels{static_cast<double>(field_value) * acmacs::chart::ace::PointScale};
+                      result.size = Pixels{field_value.to<double>() * acmacs::chart::ace::PointScale};
                       break;
                   case 'r':
-                      result.rotation = Rotation{static_cast<double>(field_value)};
+                      result.rotation = Rotation{field_value.to<double>()};
                       break;
                   case 'a':
-                      result.aspect = Aspect{static_cast<double>(field_value)};
+                      result.aspect = Aspect{field_value.to<double>()};
                       break;
                   case 'S':
-                      result.shape = static_cast<std::string>(field_value);
+                      result.shape = field_value.to<std::string>();
                       break;
                   case 'l':
                       this->label_style(result, field_value);
@@ -444,34 +444,34 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
                 auto& label_style = aStyle.label;
                 switch (field_name[0]) {
                   case '+':
-                      label_style.shown = static_cast<bool>(field_value);
+                      label_style.shown = field_value.to<bool>();
                       break;
                   case 'p':
-                      label_style.offset = acmacs::Offset{static_cast<double>(field_value[0]), static_cast<double>(field_value[1])};
+                      label_style.offset = acmacs::Offset{field_value[0].to<double>(), field_value[1].to<double>()};
                       break;
                   case 's':
-                      label_style.size = Pixels{static_cast<double>(field_value) * acmacs::chart::ace::LabelScale};
+                      label_style.size = Pixels{field_value.to<double>() * acmacs::chart::ace::LabelScale};
                       break;
                   case 'c':
-                      label_style.color = Color(field_value.to_string_view());
+                      label_style.color = Color(field_value.to<std::string_view>());
                       break;
                   case 'r':
-                      label_style.rotation = Rotation{static_cast<double>(field_value)};
+                      label_style.rotation = Rotation{field_value.to<double>()};
                       break;
                   case 'i':
-                      label_style.interline = static_cast<double>(field_value);
+                      label_style.interline = field_value.to<double>();
                       break;
                   case 'f':
-                      label_style.style.font_family = static_cast<std::string>(field_value);
+                      label_style.style.font_family = field_value.to<std::string>();
                       break;
                   case 'S':
-                      label_style.style.slant = static_cast<std::string>(field_value);
+                      label_style.style.slant = field_value.to<std::string>();
                       break;
                   case 'W':
-                      label_style.style.weight = static_cast<std::string>(field_value);
+                      label_style.style.weight = field_value.to<std::string>();
                       break;
                   case 't':
-                      aStyle.label_text = static_cast<std::string>(field_value);
+                      aStyle.label_text = field_value.to<std::string>();
                       break;
                 }
             }

@@ -32,7 +32,7 @@ std::vector<acmacs::chart::Titer> acmacs::chart::RjsonTiters::titers_for_layers(
     rjson::for_each(layers, [&result, aAntigenNo, aSerumNo, inc](const rjson::value& layer) {
         if (const auto& for_ag = layer[aAntigenNo]; !for_ag.empty()) {
             if (const auto& titer = for_ag[aSerumNo]; !titer.is_null())
-                result.emplace_back(titer);
+                result.emplace_back(titer.to<std::string_view>());
             else if (inc == include_dotcare::yes)
                 result.push_back({});
         }
@@ -70,7 +70,7 @@ size_t acmacs::chart::RjsonTiters::number_of_non_dont_cares() const
     if (const auto& list = data_[keys_.list]; !list.is_null()) {
         rjson::for_each(list, [&result](const rjson::value& row) {
             rjson::for_each(row, [&result](const rjson::value& titer) {
-                if (!Titer(titer).is_dont_care())
+                if (!Titer(titer.to<std::string_view>()).is_dont_care())
                     ++result;
             });
         });
@@ -116,7 +116,7 @@ namespace
         {
             data.antigen = 0;
             data.serum = 0;
-            data.titer = acmacs::chart::Titer{titer(data)};
+            data.titer = acmacs::chart::Titer{titer(data).to<std::string_view>()};
             if (!valid(data.titer))
                 next(data);
         }
@@ -130,7 +130,7 @@ namespace
                     data.serum = 0;
                 }
                 if (data.antigen < number_of_rows()) {
-                    data.titer = acmacs::chart::Titer{titer(data)};
+                    data.titer = acmacs::chart::Titer{titer(data).to<std::string_view>()};
                     if (valid(data.titer))
                         break;
                 }
@@ -169,7 +169,7 @@ namespace
             }
             else {
                 data.serum = *serum_;
-                data.titer = acmacs::chart::Titer{titer(data)};
+                data.titer = acmacs::chart::Titer{titer(data).to<std::string_view>()};
             }
         }
 
@@ -183,7 +183,7 @@ namespace
             std::sort(sera_.begin(), sera_.end());
             serum_ = sera_.begin();
             data.serum = *serum_;
-            data.titer = acmacs::chart::Titer{titer(data)};
+            data.titer = acmacs::chart::Titer{titer(data).to<std::string_view>()};
         }
     };
 } // namespace
@@ -217,7 +217,7 @@ acmacs::chart::rjson_import::Layout::Layout(const rjson::value& aData)
     auto coord = Vec::begin();
     rjson::for_each(aData, [&coord,num_dim=number_of_dimensions()](const rjson::value& point) {
         if (point.size() == *num_dim)
-            rjson::transform(point, coord, [](const rjson::value& coordinate) -> double { return static_cast<double>(coordinate); });
+            rjson::transform(point, coord, [](const rjson::value& coordinate) -> double { return coordinate.to<double>(); });
         else if (!point.empty())
             throw invalid_data("rjson_import::Layout: point has invalid number of coordinates: " + std::to_string(point.size()) + ", expected 0 or " + acmacs::to_string(num_dim));
         coord += static_cast<decltype(coord)::difference_type>(*num_dim);
@@ -236,7 +236,7 @@ static void update_list(const rjson::value& data, acmacs::chart::TableDistances&
             for (auto serum_no : acmacs::range(row.size())) {
                 const auto p2 = serum_no + data.size();
                 if (!parameters.disconnected.contains(p2)) {
-                    table_distances.update(acmacs::chart::Titer{row[serum_no]}, p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);
+                    table_distances.update(acmacs::chart::Titer{row[serum_no].to<std::string_view>()}, p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);
                 }
             }
         }
@@ -253,7 +253,7 @@ static void update_dict(const rjson::value& data, acmacs::chart::TableDistances&
                 const auto serum_no = std::stoul(field_name);
                 const auto p2 = serum_no + num_antigens;
                 if (!parameters.disconnected.contains(p2))
-                    table_distances.update(acmacs::chart::Titer{field_value}, p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);
+                    table_distances.update(acmacs::chart::Titer{field_value.to<std::string_view>()}, p1, p2, column_bases.column_basis(serum_no), logged_adjusts[p1] + logged_adjusts[p2], parameters.mult);
             });
         }
     }
