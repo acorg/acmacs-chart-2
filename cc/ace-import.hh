@@ -30,7 +30,7 @@ namespace acmacs::chart
         void verify_data(Verify aVerify) const;
 
           // to obtain extension fields (e.g. group_sets, gui data)
-        const rjson::value& extension_field(std::string field_name) const override;
+        const rjson::value& extension_field(std::string_view field_name) const override;
         const rjson::value& extension_fields() const override;
 
      private:

@@ -333,7 +333,7 @@ bool LispmdsAntigen::reference() const
             return false;
         const auto name = antigen_name(mData, mIndex);
         const auto& val_l = std::get<acmacs::lispmds::list>(val);
-        return std::find_if(val_l.begin(), val_l.end(), [&name](const auto& ev) -> bool { return std::get<acmacs::lispmds::symbol>(ev) == name; }) != val_l.end();
+        return std::find_if(val_l.begin(), val_l.end(), [&name](const auto& ev) -> bool { return std::get<acmacs::lispmds::symbol>(ev) == acmacs::lispmds::symbol{name}; }) != val_l.end();
     }
     catch (acmacs::lispmds::keyword_no_found&) {
         return false;
@@ -799,7 +799,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, size_t aPointNo
                                   : static_cast<std::string>(std::get<acmacs::lispmds::symbol>(acmacs::lispmds::get(mData, 0, 2, aPointNo - number_of_antigens(mData)))) + "-SR";
     const auto& plot_spec = std::get<acmacs::lispmds::list>(acmacs::lispmds::get(mData, ":PLOT-SPEC"));
     for (const auto& pstyle : plot_spec) {
-        if (std::get<acmacs::lispmds::symbol>(acmacs::lispmds::get(pstyle, 0)) == name) {
+        if (std::get<acmacs::lispmds::symbol>(acmacs::lispmds::get(pstyle, 0)) == acmacs::lispmds::symbol{name}) {
             extract_style(aTarget, std::get<acmacs::lispmds::list>(pstyle));
             break;
         }
@@ -838,14 +838,14 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
     }
 
     try {
-        if (const auto label_color = std::get<acmacs::lispmds::string>(aSource[":NC"]); label_color != "{}")
+        if (const auto label_color = std::get<acmacs::lispmds::string>(aSource[":NC"]); label_color != acmacs::lispmds::string{"{}"})
             aTarget.label.color = Color(*label_color);
     }
     catch (std::exception&) {
     }
 
     try {
-        if (const auto fill_color = std::get<acmacs::lispmds::string>(aSource[":CO"]); fill_color != "{}")
+        if (const auto fill_color = std::get<acmacs::lispmds::string>(aSource[":CO"]); fill_color != acmacs::lispmds::string{"{}"})
             aTarget.fill = Color(*fill_color);
         else
             aTarget.fill = TRANSPARENT;
@@ -854,7 +854,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
     }
 
     try {
-        if (const auto outline_color = std::get<acmacs::lispmds::string>(aSource[":OC"]); outline_color != "{}")
+        if (const auto outline_color = std::get<acmacs::lispmds::string>(aSource[":OC"]); outline_color != acmacs::lispmds::string{"{}"})
             aTarget.outline = Color(*outline_color);
         else
             aTarget.outline = TRANSPARENT;

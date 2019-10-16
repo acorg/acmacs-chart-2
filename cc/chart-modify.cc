@@ -193,7 +193,7 @@ const rjson::value& ChartModify::extension_fields() const
 
 // ----------------------------------------------------------------------
 
-const rjson::value& ChartModify::extension_field(std::string field_name) const
+const rjson::value& ChartModify::extension_field(std::string_view field_name) const
 {
     if (extensions_.is_null() && main_)
         return main_->extension_field(field_name);

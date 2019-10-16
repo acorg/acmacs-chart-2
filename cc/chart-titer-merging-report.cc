@@ -52,7 +52,7 @@ TiterMerger::Type TiterMerger::merge()
 {
     if (mTiters.empty()) {
         mType = DontCare;
-        if (mMerged != "*")
+        if (!mMerged.is_dont_care())
             throw std::runtime_error(fmt::format("Invalid pre-merged titer: {} for sources: {}, must be: *", *mMerged, acmacs::to_string(mTiters)));
     }
     else {
@@ -82,7 +82,7 @@ TiterMerger::Type TiterMerger::merge()
         }
         if (num_less && num_more) {
             mType = ThresholdedBoth;
-            if (mMerged != "*")
+            if (!mMerged.is_dont_care())
                 throw std::runtime_error(fmt::format("Invalid pre-merged titer: {}  for sources: {}, must be: *", *mMerged, acmacs::to_string(mTiters)));
         }
         else if (num_less == mTiters.size()) {
@@ -104,7 +104,7 @@ TiterMerger::Type TiterMerger::merge()
             if (sd.population_sd() > sd_threshold_) {
                 mType = SDTooBig;
                 // std::cerr << "SDTooBig: " << sd << ": " << mMerged << " <-- " << mTiters << '\n';
-                if (mMerged != "*")
+                if (!mMerged.is_dont_care())
                     throw std::runtime_error(fmt::format("Invalid pre-merged titer: {} for sources: {}, must be: * (because SD is {} > {})", *mMerged, acmacs::to_string(mTiters), std::to_string(sd.population_sd()), std::to_string(sd_threshold_)));
             }
             else if (num_less) {

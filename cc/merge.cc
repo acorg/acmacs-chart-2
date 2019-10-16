@@ -402,7 +402,7 @@ void acmacs::chart::MergeReport::titer_merge_diagnostics(std::ostream& output, c
             output << std::setw(max_field_size + 2) << std::left << chart.info()->source(layer_no)->name_non_empty();
             for (auto sr_no : sera) {
                 auto titer = tt->titer_of_layer(layer_no, ag_no, sr_no);
-                output << std::setw(7) << std::right << (titer == "*" ? "" : *titer);
+                output << std::setw(7) << std::right << (titer.is_dont_care() ? "" : *titer);
             }
             output << '\n';
         }

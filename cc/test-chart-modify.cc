@@ -155,7 +155,7 @@ void test_modify_titers(acmacs::chart::ChartP chart, const argc_argv& args, repo
         if (auto found = std::find_if(test_data.begin(), test_data.end(), [ag_no=ti_source->antigen, sr_no=ti_source->serum](const auto& entry) { return ag_no == entry.ag_no && sr_no == entry.sr_no; }); found != test_data.end()) {
             if (ti_source->titer == ti_modified->titer)
                 throw std::runtime_error("test_modify_titers: unexpected titer match: [" + acmacs::to_string(*ti_source) + "] vs. [" + acmacs::to_string(*ti_modified) + ']');
-            if (ti_modified->titer != found->titer)
+            if (ti_modified->titer != acmacs::chart::Titer{found->titer})
                 throw std::runtime_error("titer mismatch: [" + std::string(found->titer) + "] vs. [" + acmacs::to_string(*ti_modified) + ']');
         }
         else if (ti_source->titer != ti_modified->titer)

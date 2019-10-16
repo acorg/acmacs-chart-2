@@ -55,7 +55,7 @@ namespace acmacs::chart
         ColumnBasesP forced_column_bases(MinimumColumnBasis aMinimumColumnBasis) const override;
         ProjectionsP projections() const override;
         PlotSpecP plot_spec() const override;
-        const rjson::value& extension_field(std::string field_name) const override;
+        const rjson::value& extension_field(std::string_view field_name) const override;
         const rjson::value& extension_fields() const override;
 
         bool is_merge() const override { return main_ ? main_->is_merge() : false; }
@@ -193,15 +193,15 @@ namespace acmacs::chart
         bool reference() const override { return reference_; }
         Continent continent() const override { return continent_; }
 
-        void name(const std::string& value) { name_ = Name{value}; }
-        void date(const std::string& value) { date_ = Date{value}; }
+        void name(std::string_view value) { name_ = Name{value}; }
+        void date(std::string_view value) { date_ = Date{value}; }
         void passage(const acmacs::virus::Passage& value) { passage_ = value; }
-        void lineage(const std::string& value) { lineage_ = value; }
+        void lineage(std::string_view value) { lineage_ = value; }
         void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
         void reference(bool value) { reference_ = value; }
-        void add_annotation(const std::string& annotation) { annotations_.insert_if_not_present(annotation); }
-        void add_clade(const std::string& clade) { clades_.insert_if_not_present(clade); }
-        void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
+        void add_annotation(std::string_view annotation) { annotations_.insert_if_not_present(std::string{annotation}); }
+        void add_clade(std::string_view clade) { clades_.insert_if_not_present(std::string{clade}); }
+        void remove_annotation(std::string_view annotation) { annotations_.remove(std::string{annotation}); }
         template <typename S> void continent(S&& value) { continent_ = Continent{std::forward<S>(value)}; }
         void set_continent();
 
@@ -240,14 +240,14 @@ namespace acmacs::chart
         PointIndexList homologous_antigens() const override { return homologous_antigens_; }
         void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { homologous_antigens_ = PointIndexList{ags}; }
 
-        void name(const std::string& value) { name_ = Name{value}; }
+        void name(std::string_view value) { name_ = Name{value}; }
         void passage(const acmacs::virus::Passage& value) { passage_ = value; }
-        void lineage(const std::string& value) { lineage_ = value; }
+        void lineage(std::string_view value) { lineage_ = value; }
         void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
         void serum_id(const SerumId& value) { serum_id_ = value; }
         void serum_species(const SerumSpecies& value) { serum_species_ = value; }
-        void add_annotation(const std::string& annotation) { annotations_.insert_if_not_present(annotation); }
-        void remove_annotation(const std::string& annotation) { annotations_.remove(annotation); }
+        void add_annotation(std::string_view annotation) { annotations_.insert_if_not_present(std::string{annotation}); }
+        void remove_annotation(std::string_view annotation) { annotations_.remove(std::string{annotation}); }
         void set_continent() {}
 
         void replace_with(SerumP main);

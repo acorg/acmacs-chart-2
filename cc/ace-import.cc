@@ -105,7 +105,7 @@ SeraP AceChart::sera() const
 
 // ----------------------------------------------------------------------
 
-const rjson::value& AceChart::extension_field(std::string field_name) const
+const rjson::value& AceChart::extension_field(std::string_view field_name) const
 {
     return data_.get("c", "x", field_name);
 

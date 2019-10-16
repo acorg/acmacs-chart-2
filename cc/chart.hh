@@ -28,17 +28,17 @@ namespace acmacs::chart
     class invalid_data : public std::runtime_error
     {
       public:
-        invalid_data(std::string msg) : std::runtime_error("invalid_data: " + msg) {}
+        invalid_data(std::string_view msg) : std::runtime_error{fmt::format("invalid_data: {}", msg)} {}
     };
     class chart_is_read_only : public std::runtime_error
     {
       public:
-        chart_is_read_only(std::string msg) : std::runtime_error("chart_is_read_only: " + msg) {}
+        chart_is_read_only(std::string_view msg) : std::runtime_error{fmt::format("chart_is_read_only: ", msg)} {}
     };
     class serum_coverage_error : public std::runtime_error
     {
       public:
-        serum_coverage_error(std::string msg) : std::runtime_error("serum_coverage: " + msg) {}
+        serum_coverage_error(std::string_view msg) : std::runtime_error{fmt::format("serum_coverage: ", msg)} {}
     };
 
     enum class find_homologous {
@@ -119,15 +119,16 @@ namespace acmacs::chart
         BLineage() = default;
         BLineage(Lineage lineage) : mLineage{lineage} {}
         BLineage(const BLineage&) = default;
-        BLineage(std::string lineage) : mLineage{from(lineage)} {}
-        BLineage(char lineage) : mLineage{from({lineage})} {}
+        BLineage(std::string_view lineage) : mLineage{from(lineage)} {}
+        BLineage(const std::string& lineage) : BLineage{std::string_view{lineage}} {}
+        BLineage(char lineage) : mLineage{from(lineage)} {}
         BLineage& operator=(Lineage lineage)
         {
             mLineage = lineage;
             return *this;
         }
         BLineage& operator=(const BLineage&) = default;
-        BLineage& operator=(std::string lineage)
+        BLineage& operator=(std::string_view lineage)
         {
             mLineage = from(lineage);
             return *this;
@@ -178,7 +179,8 @@ namespace acmacs::chart
       private:
         Lineage mLineage{Unknown};
 
-        static Lineage from(std::string aSource);
+        static Lineage from(std::string_view aSource);
+        static Lineage from(char aSource);
 
     }; // class BLineage
 
@@ -533,8 +535,8 @@ namespace acmacs::chart
         {
             remove(aIndexes, [=](const auto& entry) -> bool { return !entry.date().within_range(first_date, after_last_date); });
         }
-        void filter_country(Indexes& aIndexes, std::string aCountry) const;
-        void filter_continent(Indexes& aIndexes, std::string aContinent) const;
+        void filter_country(Indexes& aIndexes, std::string_view aCountry) const;
+        void filter_continent(Indexes& aIndexes, std::string_view aContinent) const;
         void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const
         {
             remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); });
@@ -585,12 +587,12 @@ namespace acmacs::chart
 
         Indexes all_indexes() const { return Indexes{acmacs::filled_with_indexes(size())}; }
 
-        void filter_serum_id(Indexes& aIndexes, std::string aSerumId) const
+        void filter_serum_id(Indexes& aIndexes, std::string_view aSerumId) const
         {
-            remove(aIndexes, [&aSerumId](const auto& entry) -> bool { return entry.serum_id() != aSerumId; });
+            remove(aIndexes, [&aSerumId](const auto& entry) -> bool { return entry.serum_id() != SerumId{aSerumId}; });
         }
-        void filter_country(Indexes& aIndexes, std::string aCountry) const;
-        void filter_continent(Indexes& aIndexes, std::string aContinent) const;
+        void filter_country(Indexes& aIndexes, std::string_view aCountry) const;
+        void filter_continent(Indexes& aIndexes, std::string_view aContinent) const;
         void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const
         {
             remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); });
@@ -769,7 +771,7 @@ namespace acmacs::chart
         size_t number_of_points() const { return number_of_antigens() + number_of_sera(); }
         virtual size_t number_of_projections() const { return projections()->size(); }
 
-        virtual const rjson::value& extension_field(std::string /*field_name*/) const { return rjson::ConstNull; }
+        virtual const rjson::value& extension_field(std::string_view /*field_name*/) const { return rjson::ConstNull; }
         virtual const rjson::value& extension_fields() const { return rjson::ConstNull; }
 
         std::shared_ptr<Antigen> antigen(size_t aAntigenNo) const { return antigens()->operator[](aAntigenNo); }

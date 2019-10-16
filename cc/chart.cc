@@ -275,17 +275,23 @@ bool acmacs::chart::same_tables(const Chart& c1, const Chart& c2, bool verbose)
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::BLineage::Lineage acmacs::chart::BLineage::from(std::string aSource)
+acmacs::chart::BLineage::Lineage acmacs::chart::BLineage::from(char aSource)
 {
-    if (!aSource.empty()) {
-        switch (aSource[0]) {
-          case 'Y':
-              return Yamagata;
-          case 'V':
-              return Victoria;
-        }
+    switch (aSource) {
+        case 'Y':
+            return Yamagata;
+        case 'V':
+            return Victoria;
     }
     return Unknown;
+
+} // acmacs::chart::BLineage::from
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::BLineage::Lineage acmacs::chart::BLineage::from(std::string_view aSource)
+{
+    return aSource.empty() ? Unknown : from(aSource[0]);
 
 } // acmacs::chart::BLineage::from
 
@@ -601,7 +607,7 @@ std::string acmacs::chart::Serum::abbreviated_location_year() const
 
 // ----------------------------------------------------------------------
 
-static inline bool not_in_country(std::string_view aName, std::string aCountry)
+static inline bool not_in_country(std::string_view aName, std::string_view aCountry)
 {
     try {
         return get_locdb().country(virus_name::location(aName)) != aCountry;
@@ -616,7 +622,7 @@ static inline bool not_in_country(std::string_view aName, std::string aCountry)
 
 // ----------------------------------------------------------------------
 
-static inline bool not_in_continent(std::string_view aName, std::string aContinent)
+static inline bool not_in_continent(std::string_view aName, std::string_view aContinent)
 {
     try {
         return get_locdb().continent(virus_name::location(aName)) != aContinent;
@@ -648,7 +654,7 @@ acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string_view aN
     auto find = [this](auto name) -> Indexes {
         Indexes indexes;
         for (auto iter = this->begin(); iter != this->end(); ++iter) {
-            if ((*iter)->name() == name)
+            if ((*iter)->name() == Name{name})
                 indexes.insert(iter.index());
         }
         return indexes;
@@ -697,7 +703,7 @@ acmacs::chart::duplicates_t acmacs::chart::Antigens::find_duplicates() const
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Antigens::filter_country(Indexes& aIndexes, std::string aCountry) const
+void acmacs::chart::Antigens::filter_country(Indexes& aIndexes, std::string_view aCountry) const
 {
     remove(aIndexes, [aCountry](const auto& entry) { return not_in_country(entry.name(), aCountry); });
 
@@ -705,7 +711,7 @@ void acmacs::chart::Antigens::filter_country(Indexes& aIndexes, std::string aCou
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Antigens::filter_continent(Indexes& aIndexes, std::string aContinent) const
+void acmacs::chart::Antigens::filter_continent(Indexes& aIndexes, std::string_view aContinent) const
 {
     remove(aIndexes, [aContinent](const auto& entry) { return not_in_continent(entry.name(), aContinent); });
 
@@ -897,7 +903,7 @@ acmacs::chart::duplicates_t acmacs::chart::Sera::find_duplicates() const
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Sera::filter_country(Indexes& aIndexes, std::string aCountry) const
+void acmacs::chart::Sera::filter_country(Indexes& aIndexes, std::string_view aCountry) const
 {
     remove(aIndexes, [aCountry](const auto& entry) { return not_in_country(entry.name(), aCountry); });
 
@@ -905,7 +911,7 @@ void acmacs::chart::Sera::filter_country(Indexes& aIndexes, std::string aCountry
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Sera::filter_continent(Indexes& aIndexes, std::string aContinent) const
+void acmacs::chart::Sera::filter_continent(Indexes& aIndexes, std::string_view aContinent) const
 {
     remove(aIndexes, [aContinent](const auto& entry) { return not_in_continent(entry.name(), aContinent); });
 
