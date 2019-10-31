@@ -143,19 +143,25 @@ namespace acmacs::chart
         // bool operator==(const std::string& rhs) const { return operator==(std::string_view{rhs}); }
         // bool operator!=(const std::string& rhs) const { return !operator==(rhs); }
 
-        operator acmacs::virus::lineage_t() const
+        std::string to_string() const
         {
+            using namespace std::string_literals;
             switch (mLineage) {
                 case Victoria:
-                    return acmacs::virus::lineage_t{"VICTORIA"};
+                    return "VICTORIA"s;
                 case Yamagata:
-                    return acmacs::virus::lineage_t{"YAMAGATA"};
+                    return "YAMAGATA"s;
                 case Unknown:
                     return {};
             }
 #ifndef __clang__
-            return acmacs::virus::lineage_t{"UNKNOWN"};
+            return "UNKNOWN"s;
 #endif
+        }
+
+        operator acmacs::virus::lineage_t() const
+        {
+            return acmacs::virus::lineage_t{to_string()};
         }
 
         // operator std::string() const { return std::string{static_cast<std::string_view>(*this)}; }
