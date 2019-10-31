@@ -11,8 +11,7 @@
 #include "acmacs-base/layout.hh"
 #include "acmacs-base/debug.hh"
 #include "acmacs-base/named-type.hh"
-#include "acmacs-virus/passage.hh"
-#include "acmacs-virus/reassortant.hh"
+#include "acmacs-virus/virus-name.hh"
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/optimize.hh"
@@ -58,12 +57,6 @@ namespace acmacs::chart
         using acmacs::named_string_t<struct chart_virus_tag_t>::named_string_t;
     };
 
-    class VirusType : public acmacs::named_string_t<struct chart_virus_type_tag_t>
-    {
-      public:
-        using acmacs::named_string_t<struct chart_virus_type_tag_t>::named_string_t;
-    };
-
     class Assay : public acmacs::named_string_t<struct chart_assay_tag_t>
     {
       public:
@@ -89,13 +82,6 @@ namespace acmacs::chart
       public:
         using acmacs::named_string_t<struct chart_table_date_tag_t>::named_string_t;
     };
-
-    class Name : public acmacs::named_string_t<struct chart_name_tag_t>
-    {
-      public:
-        using acmacs::named_string_t<struct chart_name_tag_t>::named_string_t;
-
-    }; // class Name
 
     class Date : public acmacs::named_string_t<struct chart_date_tag_t>
     {
@@ -343,7 +329,7 @@ namespace acmacs::chart
             else
               return vir;
         }
-        virtual VirusType virus_type(Compute = Compute::Yes) const = 0;
+        virtual acmacs::virus::type_subtype_t virus_type(Compute = Compute::Yes) const = 0;
         virtual std::string subset(Compute = Compute::No) const = 0;
         virtual Assay assay(Compute = Compute::No) const = 0;
         virtual Lab lab(Compute = Compute::No, FixLab fix = FixLab::yes) const = 0;
@@ -369,7 +355,7 @@ namespace acmacs::chart
         bool operator==(const Antigen& rhs) const { return full_name() == rhs.full_name(); }
         bool operator!=(const Antigen& rhs) const { return !operator==(rhs); }
 
-        virtual Name name() const = 0;
+        virtual acmacs::virus::name_t name() const = 0;
         virtual Date date() const = 0;
         virtual acmacs::virus::Passage passage() const = 0;
         virtual BLineage lineage() const = 0;
@@ -428,7 +414,7 @@ namespace acmacs::chart
         bool operator==(const Serum& rhs) const { return full_name() == rhs.full_name(); }
         bool operator!=(const Serum& rhs) const { return !operator==(rhs); }
 
-        virtual Name name() const = 0;
+        virtual acmacs::virus::name_t name() const = 0;
         virtual acmacs::virus::Passage passage() const = 0;
         virtual BLineage lineage() const = 0;
         virtual acmacs::virus::Reassortant reassortant() const = 0;

@@ -139,7 +139,7 @@ namespace acmacs::chart
 
         std::string name(Compute aCompute = Compute::No) const override { return aCompute == Compute::No ? name_ : computed_name_; }
         Virus       virus(Compute aCompute = Compute::No) const override;
-        VirusType   virus_type(Compute aCompute = Compute::Yes) const override;
+        acmacs::virus::type_subtype_t   virus_type(Compute aCompute = Compute::Yes) const override;
         std::string subset(Compute aCompute = Compute::No) const override;
         Assay       assay(Compute aCompute = Compute::No) const override;
         Lab         lab(Compute aCompute = Compute::No, FixLab fix = FixLab::yes) const override;
@@ -151,7 +151,7 @@ namespace acmacs::chart
         void name(std::string value) { name_ = value; computed_name_ = value; }
         void name_append(std::string value) { name_ = ::string::join(" ", {name_, value}); computed_name_ = name_; }
         void virus(Virus value) { virus_ = value; }
-        void virus_type(VirusType value) { virus_type_ = value; }
+        void virus_type(acmacs::virus::type_subtype_t value) { virus_type_ = value; }
         void subset(std::string value) { subset_ = value; }
         void assay(std::string value) { assay_ = Assay{value}; }
         void lab(std::string value) { lab_ = Lab{value}; }
@@ -164,7 +164,7 @@ namespace acmacs::chart
         std::string name_;
         std::string computed_name_;
         Virus virus_;
-        VirusType virus_type_;
+        acmacs::virus::type_subtype_t virus_type_;
         std::string subset_;
         Assay assay_;
         Lab lab_;
@@ -182,7 +182,7 @@ namespace acmacs::chart
         explicit AntigenModify() = default;
         explicit AntigenModify(AntigenP main);
 
-        Name name() const override { return name_; }
+        acmacs::virus::name_t name() const override { return name_; }
         Date date() const override { return date_; }
         acmacs::virus::Passage passage() const override { return passage_; }
         BLineage lineage() const override { return lineage_; }
@@ -193,7 +193,7 @@ namespace acmacs::chart
         bool reference() const override { return reference_; }
         Continent continent() const override { return continent_; }
 
-        void name(std::string_view value) { name_ = Name{value}; }
+        void name(std::string_view value) { name_ = acmacs::virus::name_t{value}; }
         void date(std::string_view value) { date_ = Date{value}; }
         void passage(const acmacs::virus::Passage& value) { passage_ = value; }
         void lineage(std::string_view value) { lineage_ = value; }
@@ -209,7 +209,7 @@ namespace acmacs::chart
         void update_with(AntigenP main);
 
      private:
-        Name name_;
+        acmacs::virus::name_t name_;
         Date date_;
         acmacs::virus::Passage passage_;
         BLineage lineage_;
@@ -230,7 +230,7 @@ namespace acmacs::chart
         explicit SerumModify() = default;
         explicit SerumModify(SerumP main);
 
-        Name name() const override { return name_; }
+        acmacs::virus::name_t name() const override { return name_; }
         acmacs::virus::Passage passage() const override { return passage_; }
         BLineage lineage() const override { return lineage_; }
         acmacs::virus::Reassortant reassortant() const override { return reassortant_; }
@@ -240,7 +240,7 @@ namespace acmacs::chart
         PointIndexList homologous_antigens() const override { return homologous_antigens_; }
         void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { homologous_antigens_ = PointIndexList{ags}; }
 
-        void name(std::string_view value) { name_ = Name{value}; }
+        void name(std::string_view value) { name_ = acmacs::virus::name_t{value}; }
         void passage(const acmacs::virus::Passage& value) { passage_ = value; }
         void lineage(std::string_view value) { lineage_ = value; }
         void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
@@ -254,7 +254,7 @@ namespace acmacs::chart
         void update_with(SerumP main);
 
      private:
-        Name name_;
+        acmacs::virus::name_t name_;
         acmacs::virus::Passage passage_;
         BLineage lineage_;
         acmacs::virus::Reassortant reassortant_;

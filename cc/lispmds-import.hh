@@ -58,7 +58,7 @@ namespace acmacs::chart
 
         std::string name(Compute aCompute = Compute::No) const override;
         Virus       virus(Compute = Compute::No) const override { return {}; }
-        VirusType   virus_type(Compute = Compute::No) const override { return {}; }
+        acmacs::virus::type_subtype_t   virus_type(Compute = Compute::No) const override { return {}; }
         std::string subset(Compute = Compute::No) const override { return {}; }
         Assay       assay(Compute = Compute::No) const override { return {}; }
         Lab         lab(Compute = Compute::No, FixLab = FixLab::yes) const override { return {}; }
@@ -79,7 +79,7 @@ namespace acmacs::chart
       public:
         LispmdsAntigen(const acmacs::lispmds::value& aData, size_t aIndex) : mData{aData}, mIndex{aIndex} {}
 
-        Name name() const override;
+        acmacs::virus::name_t name() const override;
         Date date() const override { return {}; }
         acmacs::virus::Passage passage() const override;
         BLineage lineage() const override { return {}; }
@@ -102,7 +102,7 @@ namespace acmacs::chart
       public:
         LispmdsSerum(const acmacs::lispmds::value& aData, size_t aIndex) : mData{aData}, mIndex{aIndex} {}
 
-        Name name() const override;
+        acmacs::virus::name_t name() const override;
         acmacs::virus::Passage passage() const override { return {}; }
         BLineage lineage() const override { return {}; }
         acmacs::virus::Reassortant reassortant() const override;

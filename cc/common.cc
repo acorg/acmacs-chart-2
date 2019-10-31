@@ -34,7 +34,7 @@ class CommonAntigensSera::Impl
         static bool less(const CoreEntry& lhs, const CoreEntry& rhs) { return compare(lhs, rhs) < 0; }
 
         size_t index;
-        Name name;
+        acmacs::virus::name_t name;
         acmacs::virus::Reassortant reassortant;
         Annotations annotations;
 

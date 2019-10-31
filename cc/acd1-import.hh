@@ -60,7 +60,7 @@ namespace acmacs::chart
 
         std::string name(Compute aCompute = Compute::No) const override;
         Virus       virus(Compute aCompute = Compute::No) const override { return Virus{make_field("virus", "+", aCompute)}; }
-        VirusType   virus_type(Compute aCompute = Compute::Yes) const override { return VirusType{make_field("virus_type", "+", aCompute)}; }
+        acmacs::virus::type_subtype_t   virus_type(Compute aCompute = Compute::Yes) const override { return acmacs::virus::type_subtype_t{make_field("virus_type", "+", aCompute)}; }
         std::string subset(Compute aCompute = Compute::No) const override { return make_field("virus_subset", "+", aCompute); }
         Assay       assay(Compute aCompute = Compute::No) const override { return Assay{make_field("assay", "+", aCompute)}; }
         Lab         lab(Compute aCompute = Compute::No, FixLab fix = FixLab::yes) const override { return fix_lab_name(Lab{make_field("lab", "+", aCompute)}, fix); }
@@ -83,7 +83,7 @@ namespace acmacs::chart
       public:
         Acd1Antigen(const rjson::value& aData) : data_{aData} {}
 
-        Name name() const override;
+        acmacs::virus::name_t name() const override;
         Date date() const override { return Date{data_["date"].get_or_default("")}; }
         acmacs::virus::Passage passage() const override;
         BLineage lineage() const override;
@@ -105,7 +105,7 @@ namespace acmacs::chart
       public:
         Acd1Serum(const rjson::value& aData) : data_{aData} {}
 
-        Name name() const override;
+        acmacs::virus::name_t name() const override;
         acmacs::virus::Passage passage() const override;
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override;

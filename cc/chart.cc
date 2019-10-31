@@ -55,7 +55,7 @@ std::string acmacs::chart::Chart::description() const
         auto prj = (*prjs)[0];
         n += string::concat(" >=", prj->minimum_column_basis(), " ", prj->stress());
     }
-    if (info()->virus_type() == VirusType{"B"})
+    if (info()->virus_type() == acmacs::virus::type_subtype_t{"B"})
         n += string::concat(' ', lineage());
     n += string::concat(" Ag:", number_of_antigens(), " Sr:", number_of_sera());
     if (const auto layers = titers()->number_of_layers(); layers > 1)
@@ -654,7 +654,7 @@ acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string_view aN
     auto find = [this](auto name) -> Indexes {
         Indexes indexes;
         for (auto iter = this->begin(); iter != this->end(); ++iter) {
-            if ((*iter)->name() == Name{name})
+            if ((*iter)->name() == acmacs::virus::name_t{name})
                 indexes.insert(iter.index());
         }
         return indexes;

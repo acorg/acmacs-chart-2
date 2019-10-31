@@ -273,9 +273,9 @@ static inline std::string antigen_name(const acmacs::lispmds::value& aData, size
 
 // ----------------------------------------------------------------------
 
-Name LispmdsAntigen::name() const
+acmacs::virus::name_t LispmdsAntigen::name() const
 {
-    Name name;
+    acmacs::virus::name_t name;
     acmacs::virus::Reassortant reassortant;
     acmacs::virus::Passage passage;
     Annotations annotations;
@@ -288,7 +288,7 @@ Name LispmdsAntigen::name() const
 
 acmacs::virus::Passage LispmdsAntigen::passage() const
 {
-    Name name;
+    acmacs::virus::name_t name;
     acmacs::virus::Reassortant reassortant;
     acmacs::virus::Passage passage;
     Annotations annotations;
@@ -301,7 +301,7 @@ acmacs::virus::Passage LispmdsAntigen::passage() const
 
 acmacs::virus::Reassortant LispmdsAntigen::reassortant() const
 {
-    Name name;
+    acmacs::virus::name_t name;
     acmacs::virus::Reassortant reassortant;
     acmacs::virus::Passage passage;
     Annotations annotations;
@@ -314,7 +314,7 @@ acmacs::virus::Reassortant LispmdsAntigen::reassortant() const
 
 Annotations LispmdsAntigen::annotations() const
 {
-    Name name;
+    acmacs::virus::name_t name;
     acmacs::virus::Reassortant reassortant;
     acmacs::virus::Passage passage;
     Annotations annotations;
@@ -350,9 +350,9 @@ static inline std::string serum_name(const acmacs::lispmds::value& aData, size_t
 
 // ----------------------------------------------------------------------
 
-Name LispmdsSerum::name() const
+acmacs::virus::name_t LispmdsSerum::name() const
 {
-    Name name;
+    acmacs::virus::name_t name;
     acmacs::virus::Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
@@ -365,7 +365,7 @@ Name LispmdsSerum::name() const
 
 acmacs::virus::Reassortant LispmdsSerum::reassortant() const
 {
-    Name name;
+    acmacs::virus::name_t name;
     acmacs::virus::Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
@@ -378,7 +378,7 @@ acmacs::virus::Reassortant LispmdsSerum::reassortant() const
 
 Annotations LispmdsSerum::annotations() const
 {
-    Name name;
+    acmacs::virus::name_t name;
     acmacs::virus::Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
@@ -391,7 +391,7 @@ Annotations LispmdsSerum::annotations() const
 
 SerumId LispmdsSerum::serum_id() const
 {
-    Name name;
+    acmacs::virus::name_t name;
     acmacs::virus::Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;

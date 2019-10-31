@@ -541,7 +541,7 @@ template <typename Field, typename Func> static inline Field info_modify_make_fi
 }
 
 Virus       InfoModify::virus(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_, &Info::virus); }
-VirusType   InfoModify::virus_type(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_type_, &Info::virus_type); }
+acmacs::virus::type_subtype_t   InfoModify::virus_type(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_type_, &Info::virus_type); }
 std::string InfoModify::subset(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, subset_, &Info::subset); }
 Assay       InfoModify::assay(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, assay_, &Info::assay); }
 Lab         InfoModify::lab(Compute aCompute, FixLab fix) const { return ::info_modify_make_field(aCompute, *this, lab_, [fix](const auto& inf, auto compute) { return inf.lab(compute, fix); }); }

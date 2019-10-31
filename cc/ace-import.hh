@@ -52,7 +52,7 @@ namespace acmacs::chart
 
         std::string name(Compute aCompute = Compute::No) const override;
         Virus       virus(Compute aCompute = Compute::No) const override { return Virus{make_field("v", "+", aCompute)}; }
-        VirusType   virus_type(Compute aCompute = Compute::Yes) const override { return VirusType{make_field("V", "+", aCompute)}; }
+        acmacs::virus::type_subtype_t   virus_type(Compute aCompute = Compute::Yes) const override { return acmacs::virus::type_subtype_t{make_field("V", "+", aCompute)}; }
         std::string subset(Compute aCompute = Compute::No) const override { return make_field("s", "+", aCompute); }
         Assay       assay(Compute aCompute = Compute::No) const override { return Assay{make_field("A", "+", aCompute)}; }
         Lab         lab(Compute aCompute = Compute::No, FixLab fix = FixLab::yes) const override { return Lab{fix_lab_name(Lab{make_field("l", "+", aCompute)}, fix)}; }
@@ -75,7 +75,7 @@ namespace acmacs::chart
       public:
         AceAntigen(const rjson::value& aData) : data_{aData} {}
 
-        Name name() const override { return Name{data_["N"].to<std::string_view>()}; }
+        acmacs::virus::name_t name() const override { return acmacs::virus::name_t{data_["N"].to<std::string_view>()}; }
         Date date() const override { return Date{data_["D"].get_or_default("")}; }
         acmacs::virus::Passage passage() const override { return acmacs::virus::Passage{data_["P"].get_or_default("")}; }
         BLineage lineage() const override;
@@ -97,7 +97,7 @@ namespace acmacs::chart
       public:
         AceSerum(const rjson::value& aData) : data_{aData} {}
 
-        Name name() const override { return Name{data_["N"].to<std::string_view>()}; }
+        acmacs::virus::name_t name() const override { return acmacs::virus::name_t{data_["N"].to<std::string_view>()}; }
         acmacs::virus::Passage passage() const override { return acmacs::virus::Passage{data_["P"].get_or_default("")}; }
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override { return acmacs::virus::Reassortant{data_["R"].get_or_default("")}; }

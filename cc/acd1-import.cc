@@ -405,35 +405,35 @@ TableDate Acd1Info::date(Compute aCompute) const
 
 // ----------------------------------------------------------------------
 
-static inline Name make_name(const rjson::value& aData)
+static inline acmacs::virus::name_t make_name(const rjson::value& aData)
 {
     if (auto name = aData["_name"].get_or_default(""); !name.empty())
-        return Name{name};
+        return acmacs::virus::name_t{name};
     if (auto isolation_number = aData["isolation_number"].get_or_default(""); !isolation_number.empty()) {
         std::string host = aData["host"].get_or_default("");
         if (host == "HUMAN")
             host.clear();
-        return Name{string::join("/", {aData["virus_type"].get_or_default(""), host, aData.get("location", "name").get_or_default(""), isolation_number, aData["year"].get_or_default("")})};
+        return acmacs::virus::name_t{string::join("/", {aData["virus_type"].get_or_default(""), host, aData.get("location", "name").get_or_default(""), isolation_number, aData["year"].get_or_default("")})};
     }
     else if (auto raw_name = aData["raw_name"].get_or_default(""); !raw_name.empty()) {
-        return Name{raw_name};
+        return acmacs::virus::name_t{raw_name};
     }
     else {
         const std::string cdc_abbreviation = aData.get("location", "cdc_abbreviation").get_or_default("");
         std::string name = aData["name"].get_or_default("");
         if (!cdc_abbreviation.empty() && name.size() > 3 && name[2] == '-' && name[0] == cdc_abbreviation[0] && name[1] == cdc_abbreviation[1])
             name.erase(0, 3);   // old cdc name (acmacs-b?) begins with cdc_abbreviation
-        return Name{string::join(" ", {cdc_abbreviation, name})};
+        return acmacs::virus::name_t{string::join(" ", {cdc_abbreviation, name})};
     }
 }
 
-Name Acd1Antigen::name() const
+acmacs::virus::name_t Acd1Antigen::name() const
 {
     return make_name(data_);
 
 } // Acd1Antigen::name
 
-Name Acd1Serum::name() const
+acmacs::virus::name_t Acd1Serum::name() const
 {
     return make_name(data_);
 

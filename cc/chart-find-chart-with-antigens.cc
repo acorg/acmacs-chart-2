@@ -76,7 +76,7 @@ void process(const std::vector<std::string_view>& names, const std::vector<std::
     if (chart_file_names.size() > 1) {
         for (auto [name, count] : m_names) {
             if (count == 0)
-                fmt::print(stderr, "WARNING: Name not found: {}\n", name);
+                fmt::print(stderr, "WARNING: name not found: \"{}\"\n", name);
         }
     }
 

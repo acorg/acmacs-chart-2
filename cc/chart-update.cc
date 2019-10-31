@@ -31,7 +31,7 @@ int main(int argc, char* const argv[])
             if (args["--name"])
                 chart.info_modify()->name(std::string(args["--name"]));
             if (args["--virus-type"])
-                chart.info_modify()->virus_type(acmacs::chart::VirusType{std::string(args["--virus-type"])});
+                chart.info_modify()->virus_type(acmacs::virus::type_subtype_t{std::string(args["--virus-type"])});
             std::cout << chart.make_info() << '\n';
             if (args.number_of_arguments() > 1)
                 acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);
