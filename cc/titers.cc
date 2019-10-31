@@ -39,7 +39,7 @@ bool acmacs::chart::equal(const Titers& t1, const Titers& t2, bool verbose)
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Titer::validate(std::string_view titer)
+std::string_view acmacs::chart::Titer::validate(std::string_view titer)
 {
     if (titer.empty())
         throw invalid_titer(titer);
@@ -63,6 +63,7 @@ void acmacs::chart::Titer::validate(std::string_view titer)
           just_digits(titer);
           break;
     }
+    return titer;
 
 } // acmacs::chart::Titer::validate
 

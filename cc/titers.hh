@@ -22,9 +22,10 @@ namespace acmacs::chart
      public:
         enum Type { Invalid, Regular, DontCare, LessThan, MoreThan, Dodgy };
 
-        using acmacs::named_string_t<struct chart_Titer_tag_t>::named_string_t;
-        Titer() : acmacs::named_string_t<struct chart_Titer_tag_t>("*") {}
-        Titer(char typ, size_t value) : acmacs::named_string_t<struct chart_Titer_tag_t>(typ + std::to_string(value)) {}
+        using base_t = acmacs::named_string_t<struct chart_Titer_tag_t>;
+        Titer() : base_t("*") {}
+        Titer(char typ, size_t value) : base_t(typ + std::to_string(value)) {}
+        Titer(std::string_view source) : base_t(validate(source)) {}
 
         Type type() const
         {
@@ -68,7 +69,7 @@ namespace acmacs::chart
           // static inline Titer from_logged(double aLogged, std::string aPrefix = "") { return aPrefix + std::to_string(std::lround(std::pow(2.0, aLogged) * 10.0)); }
         static inline Titer from_logged(double aLogged, const char* aPrefix = "") { return Titer{aPrefix + std::to_string(std::lround(std::exp2(aLogged) * 10.0))}; }
 
-        static void validate(std::string_view titer);
+        static std::string_view validate(std::string_view titer);
 
     }; // class Titer
 
