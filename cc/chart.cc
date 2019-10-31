@@ -100,7 +100,7 @@ double acmacs::chart::Chart::column_basis(size_t serum_no, size_t projection_no)
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::Chart::lineage() const
+acmacs::virus::lineage_t acmacs::chart::Chart::lineage() const
 {
     std::map<BLineage, size_t> lineages;
     auto ags = antigens();
@@ -465,7 +465,7 @@ std::string acmacs::chart::Antigen::full_name_with_fields() const
     if (const auto value = date(); !value.empty())
         r += " date=" + *value;
     if (const auto value = lineage(); value != BLineage::Unknown)
-        r += " lineage=" + static_cast<std::string>(value);
+        r += fmt::format(" lineage={}", value);
     if (reference())
         r += " reference";
     if (const auto value = ::string::join(" ", lab_ids()); !value.empty())
@@ -490,7 +490,7 @@ std::string acmacs::chart::Serum::full_name_with_fields() const
     if (const auto value = serum_species(); !value.empty())
         r += " serum_species=\"" + *value + '"';
     if (const auto value = lineage(); value != BLineage::Unknown)
-        r += " lineage=" + static_cast<std::string>(value);
+        r += fmt::format(" lineage={}", value);
     return r;
 
 } // acmacs::chart::Serum::full_name_with_fields

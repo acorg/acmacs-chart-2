@@ -47,7 +47,7 @@ int main(int argc, char* const argv[])
                     const auto virus_type = info->virus_type(acmacs::chart::Info::Compute::Yes);
                     if (virus_type == acmacs::virus::type_subtype_t{"B"}) {
                         if (const auto lineage = chart->lineage(); !lineage.empty())
-                            fields.push_back(string::concat(virus_type, '/', string::capitalize(lineage.substr(0, 3))));
+                            fields.push_back(string::concat(virus_type, '/', string::capitalize(lineage->substr(0, 3))));
                         else
                             fields.emplace_back(virus_type);
                     }

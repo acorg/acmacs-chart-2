@@ -140,25 +140,25 @@ namespace acmacs::chart
         }
 
         bool operator!=(std::string_view rhs) const { return !operator==(rhs); }
-        bool operator==(const std::string& rhs) const { return operator==(std::string_view{rhs}); }
-        bool operator!=(const std::string& rhs) const { return !operator==(rhs); }
+        // bool operator==(const std::string& rhs) const { return operator==(std::string_view{rhs}); }
+        // bool operator!=(const std::string& rhs) const { return !operator==(rhs); }
 
-        operator std::string_view() const
+        operator acmacs::virus::lineage_t() const
         {
             switch (mLineage) {
                 case Victoria:
-                    return "VICTORIA";
+                    return acmacs::virus::lineage_t{"VICTORIA"};
                 case Yamagata:
-                    return "YAMAGATA";
+                    return acmacs::virus::lineage_t{"YAMAGATA"};
                 case Unknown:
-                    return "";
+                    return {};
             }
 #ifndef __clang__
-            return "UNKNOWN";
+            return acmacs::virus::lineage_t{"UNKNOWN"};
 #endif
         }
 
-        operator std::string() const { return std::string{static_cast<std::string_view>(*this)}; }
+        // operator std::string() const { return std::string{static_cast<std::string_view>(*this)}; }
 
         operator Lineage() const { return mLineage; }
 
@@ -182,7 +182,7 @@ namespace acmacs::chart
         switch (static_cast<BLineage::Lineage>(lineage)) {
             case BLineage::Victoria:
             case BLineage::Yamagata:
-                s << static_cast<std::string>(lineage);
+                s << fmt::format("{}", lineage);
                 break;
             case BLineage::Unknown:
                 break;
@@ -399,7 +399,7 @@ namespace acmacs::chart
         if (const auto lab_ids = ag.lab_ids(); !lab_ids->empty())
             out << ' ' << *lab_ids;
         if (const auto lineage = ag.lineage(); lineage != BLineage::Unknown)
-            out << ' ' << static_cast<std::string>(lineage);
+            out << fmt::format(" {}", lineage);
         return out;
     }
 
@@ -455,7 +455,7 @@ namespace acmacs::chart
     {
         out << sr.full_name();
         if (const auto lineage = sr.lineage(); lineage != BLineage::Unknown)
-            out << ' ' << static_cast<std::string>(lineage);
+            out << fmt::format(" {}", lineage);
         if (const auto serum_species = sr.serum_species(); !serum_species.empty())
             out << ' ' << *serum_species;
         return out;
@@ -762,7 +762,7 @@ namespace acmacs::chart
 
         std::shared_ptr<Antigen> antigen(size_t aAntigenNo) const { return antigens()->operator[](aAntigenNo); }
         std::shared_ptr<Serum> serum(size_t aSerumNo) const { return sera()->operator[](aSerumNo); }
-        std::string lineage() const;
+        acmacs::virus::lineage_t lineage() const;
 
         std::string make_info(size_t max_number_of_projections_to_show = 20) const;
         std::string make_name(std::optional<size_t> aProjectionNo = {}) const;

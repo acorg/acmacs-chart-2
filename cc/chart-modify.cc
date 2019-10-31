@@ -609,7 +609,7 @@ void AntigenModify::update_with(AntigenP main)
         lineage_ = main->lineage();
     }
     else if (main->lineage() != BLineage::Unknown && lineage_ != main->lineage()) {
-        fmt::print(stderr, "WARNING: merged antigen lineages {} vs. {}\n", static_cast<std::string>(lineage_), static_cast<std::string>(main->lineage()));
+        fmt::print(stderr, "WARNING: merged antigen lineages {} vs. {}\n", lineage_, main->lineage());
     }
     lab_ids_.merge_in(main->lab_ids());
     clades_.merge_in(main->clades());
