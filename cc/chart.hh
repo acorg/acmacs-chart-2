@@ -337,9 +337,9 @@ namespace acmacs::chart
         }
         virtual acmacs::virus::type_subtype_t virus_type(Compute = Compute::Yes) const = 0;
         virtual std::string subset(Compute = Compute::No) const = 0;
-        virtual Assay assay(Compute = Compute::No) const = 0;
-        virtual Lab lab(Compute = Compute::No, FixLab fix = FixLab::yes) const = 0;
-        virtual RbcSpecies rbc_species(Compute = Compute::No) const = 0;
+        virtual Assay assay(Compute = Compute::Yes) const = 0;
+        virtual Lab lab(Compute = Compute::Yes, FixLab fix = FixLab::yes) const = 0;
+        virtual RbcSpecies rbc_species(Compute = Compute::Yes) const = 0;
         virtual TableDate date(Compute aCompute = Compute::No) const = 0;
         virtual size_t number_of_sources() const = 0;
         virtual std::shared_ptr<Info> source(size_t aSourceNo) const = 0;
