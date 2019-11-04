@@ -387,6 +387,7 @@ namespace acmacs::chart
 
         std::string name_abbreviated() const;
         std::string name_without_subtype() const;
+        std::string location() const;
         std::string location_abbreviated() const;
         std::string abbreviated_location_year() const;
         std::string passage_type() const { return passage().passage_type(); }
@@ -441,6 +442,7 @@ namespace acmacs::chart
 
         std::string name_abbreviated() const;
         std::string name_without_subtype() const;
+        std::string location() const;
         std::string location_abbreviated() const;
         std::string abbreviated_location_year() const;
         std::string passage_type() const { return is_egg() ? "egg" : "cell"; } // note NIID passage cannot be used

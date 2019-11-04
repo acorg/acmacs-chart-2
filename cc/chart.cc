@@ -545,6 +545,19 @@ std::string acmacs::chart::Antigen::name_without_subtype() const
 
 // ----------------------------------------------------------------------
 
+std::string acmacs::chart::Antigen::location() const
+{
+    try {
+        return ::virus_name::location(name());
+    }
+    catch (virus_name::Unrecognized&) {
+        return "*no-location-extracted*";
+    }
+
+} // acmacs::chart::Antigen::location
+
+// ----------------------------------------------------------------------
+
 std::string acmacs::chart::Antigen::location_abbreviated() const
 {
     try {
@@ -593,6 +606,19 @@ std::string acmacs::chart::Serum::name_without_subtype() const
     return ::name_without_subtype(name());
 
 } // acmacs::chart::Serum::name_abbreviated
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::Serum::location() const
+{
+    try {
+        return ::virus_name::location(name());
+    }
+    catch (virus_name::Unrecognized&) {
+        return "*no-location-extracted*";
+    }
+
+} // acmacs::chart::Serum::location
 
 // ----------------------------------------------------------------------
 
