@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "acmacs-base/argc-argv.hh"
-#include "acmacs-base/filesystem.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
@@ -54,7 +53,7 @@ int main(int argc, char* const argv[])
             projections1->sort();
             std::cout << chart1.make_info() << '\n';
 
-            acmacs::chart::export_factory(chart1, args[2], fs::path(args.program()).filename(), report);
+            acmacs::chart::export_factory(chart1, args[2], args.program(), report);
         }
     }
     catch (std::exception& err) {

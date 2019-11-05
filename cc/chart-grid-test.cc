@@ -1,7 +1,6 @@
 #include <algorithm>
 
 #include "acmacs-base/argv.hh"
-#include "acmacs-base/filesystem.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/string-split.hh"
 #include "acmacs-chart-2/grid-test.hh"
@@ -71,7 +70,7 @@ int main(int argc, char* const argv[])
                     }
                 }
                 chart.projections_modify()->sort();
-                acmacs::chart::export_factory(chart, opt.output, fs::path(opt.program_name()).filename(), report);
+                acmacs::chart::export_factory(chart, opt.output, opt.program_name(), report);
             }
             fmt::print(stderr, "{}\n", chart.make_info());
         }

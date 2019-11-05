@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "acmacs-base/argc-argv.hh"
-#include "acmacs-base/filesystem.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/factory-export.hh"
@@ -34,7 +33,7 @@ int main(int argc, char* const argv[])
                 chart.info_modify()->virus_type(acmacs::virus::type_subtype_t{std::string(args["--virus-type"])});
             std::cout << chart.make_info() << '\n';
             if (args.number_of_arguments() > 1)
-                acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);
+                acmacs::chart::export_factory(chart, args[1], args.program(), report);
         }
     }
     catch (std::exception& err) {

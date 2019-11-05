@@ -19,11 +19,11 @@ static void export_style(rjson::value& target_styles, const acmacs::PointStyle& 
 
 // ----------------------------------------------------------------------
 
-rjson::value acmacs::chart::export_ace_to_rjson(const Chart& aChart, std::string aProgramName)
+rjson::value acmacs::chart::export_ace_to_rjson(const Chart& aChart, std::string_view aProgramName)
 {
     rjson::value ace{rjson::object{{
                 {"  version", "acmacs-ace-v1"},
-                {"?created", "AD " + aProgramName + " on " + acmacs::time_format()},
+                {"?created", fmt::format("AD {} on {}", aProgramName, acmacs::time_format())},
                 {"c", rjson::object{{
                             {"i", rjson::object{}},
                             {"a", rjson::array{}},
@@ -60,7 +60,7 @@ rjson::value acmacs::chart::export_ace_to_rjson(const Chart& aChart, std::string
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::export_ace(const Chart& aChart, std::string aProgramName, size_t aIndent)
+std::string acmacs::chart::export_ace(const Chart& aChart, std::string_view aProgramName, size_t aIndent)
 {
     const auto ace = export_ace_to_rjson(aChart, aProgramName);
     if (aIndent)

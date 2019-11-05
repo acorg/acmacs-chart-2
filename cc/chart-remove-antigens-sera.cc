@@ -3,7 +3,6 @@
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
-#include "acmacs-base/filesystem.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -46,7 +45,7 @@ int main(int argc, char* const argv[])
             chart.remove_antigens(antigens_to_remove);
         if (!sera_to_remove.empty())
             chart.remove_sera(sera_to_remove);
-        acmacs::chart::export_factory(chart, *opt.output, fs::path(opt.program_name()).filename());
+        acmacs::chart::export_factory(chart, *opt.output, opt.program_name());
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';

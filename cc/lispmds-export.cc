@@ -22,11 +22,11 @@ static std::string point_shape(const acmacs::PointShape& aShape);
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, std::string aProgramName)
+std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, std::string_view aProgramName)
 {
     const auto disconnected = aChart.projections()->empty() ? PointIndexList{} : (*aChart.projections())[0]->disconnected();
 
-    std::string result = ";; MDS configuration file (version 0.6).\n;; Created by AD " + aProgramName + " on " + acmacs::time_format() + "\n";
+    auto result = fmt::format(";; MDS configuration file (version 0.6).\n;; Created by AD {} on {}\n", aProgramName, acmacs::time_format());
     if (!disconnected->empty())
         result += ";; Disconnected points (excluded): " + acmacs::to_string(disconnected) + '\n';
     result += '\n';

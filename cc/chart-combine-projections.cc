@@ -2,7 +2,6 @@
 
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/range-v3.hh"
-#include "acmacs-base/filesystem.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -43,7 +42,7 @@ int main(int argc, char* const argv[])
         fmt::print("{}\n", master.make_info());
         master.projections_modify()->keep_just(*opt.keep_projections);
         if (opt.output_chart.has_value())
-            acmacs::chart::export_factory(master, opt.output_chart, fs::path(opt.program_name()).filename());
+            acmacs::chart::export_factory(master, opt.output_chart, opt.program_name());
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';

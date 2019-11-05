@@ -2,7 +2,6 @@
 #include <algorithm>
 
 #include "acmacs-base/argv.hh"
-#include "acmacs-base/filesystem.hh"
 #include "acmacs-base/string-split.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
@@ -75,7 +74,7 @@ int main(int argc, char* const argv[])
                 plot_spec->outline(point_no, Color(opt.outline));
         }
 
-        acmacs::chart::export_factory(chart_modify, opt.output_chart, fs::path(opt.program_name()).filename());
+        acmacs::chart::export_factory(chart_modify, opt.output_chart, opt.program_name());
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';

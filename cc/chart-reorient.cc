@@ -2,7 +2,6 @@
 
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/range.hh"
-#include "acmacs-base/filesystem.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -49,7 +48,7 @@ int main(int argc, char* const argv[])
                 std::cout << "transformation: " << acmacs::to_string(procrustes_data.transformation) << '\n';
                 std::cout << "rms: " << acmacs::to_string(procrustes_data.rms) << "\n\n";
             }
-            acmacs::chart::export_factory(to_reorient, opt.output, fs::path(opt.program_name()).filename(), report);
+            acmacs::chart::export_factory(to_reorient, opt.output, opt.program_name(), report);
         }
         else {
             std::cerr << "ERROR: no common antigens/sera\n";

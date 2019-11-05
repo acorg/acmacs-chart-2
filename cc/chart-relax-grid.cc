@@ -1,7 +1,6 @@
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
-#include "acmacs-base/filesystem.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/fmt.hh"
 #include "acmacs-chart-2/factory-import.hh"
@@ -111,7 +110,7 @@ int main(int argc, char* const argv[])
 
         fmt::print("{}\n", chart.make_info());
         if (opt.output_chart.has_value())
-            acmacs::chart::export_factory(chart, opt.output_chart, fs::path(opt.program_name()).filename(), report);
+            acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name(), report);
     }
     catch (std::exception& err) {
         fmt::print(stderr, "ERROR: {}\n", err);

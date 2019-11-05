@@ -2,7 +2,6 @@
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/range.hh"
-#include "acmacs-base/filesystem.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -45,7 +44,7 @@ int main(int argc, char* const argv[])
                     std::cout << "rms: " << acmacs::to_string(procrustes_data.rms) << "\n\n";
                 }
             }
-            acmacs::chart::export_factory(to_reorient, args[1], fs::path(args.program()).filename(), report);
+            acmacs::chart::export_factory(to_reorient, args[1], args.program(), report);
         }
     }
     catch (std::exception& err) {

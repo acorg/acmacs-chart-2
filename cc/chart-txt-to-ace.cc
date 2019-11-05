@@ -30,7 +30,7 @@ int main(int argc, char* const argv[])
     try {
         Options opt(argc, argv);
         auto chart = import_from_file(opt.input_table);
-        acmacs::chart::export_factory(*chart, opt.output_chart, fs::path(opt.program_name()).filename());
+        acmacs::chart::export_factory(*chart, opt.output_chart, opt.program_name());
 
         std::cout << chart->make_info() << '\n';
         auto antigens = chart->antigens();

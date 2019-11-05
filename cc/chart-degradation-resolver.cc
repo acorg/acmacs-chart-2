@@ -80,7 +80,7 @@ int main(int argc, char* const argv[])
             // const double rms_threshold = args["--rms-threshold"];
             const auto report = do_report_time(args["--time"]);
             fs::path output_filename(args[1]);
-            auto intermediate_filename = [&output_filename](size_t step) {
+            auto intermediate_filename = [&output_filename](size_t step) -> std::string {
                 fs::path fn{output_filename};
                 return fn.replace_extension(".i" + std::to_string(step) + ".ace");
             };
@@ -104,7 +104,7 @@ int main(int argc, char* const argv[])
             }
 
             chart.projections_modify()->sort();
-            acmacs::chart::export_factory(chart, intermediate_filename(3), fs::path(args.program()).filename(), report);
+            acmacs::chart::export_factory(chart, intermediate_filename(3), args.program(), report);
 
             std::cout << chart.make_info() << '\n';
         }

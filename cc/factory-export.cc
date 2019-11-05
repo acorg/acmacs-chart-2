@@ -1,13 +1,12 @@
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/timeit.hh"
-#include "acmacs-base/filesystem.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/ace-export.hh"
 #include "acmacs-chart-2/lispmds-export.hh"
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::export_factory(const Chart& aChart, acmacs::chart::export_format aFormat, std::string aProgramName, report_time aReport)
+std::string acmacs::chart::export_factory(const Chart& aChart, acmacs::chart::export_format aFormat, std::string_view aProgramName, report_time aReport)
 {
     Timeit ti("exporting chart: ", aReport);
     switch (aFormat) {
@@ -22,9 +21,9 @@ std::string acmacs::chart::export_factory(const Chart& aChart, acmacs::chart::ex
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::export_factory(const Chart& aChart, std::string aFilename, std::string aProgramName, report_time aReport)
+void acmacs::chart::export_factory(const Chart& aChart, std::string_view aFilename, std::string_view aProgramName, report_time aReport)
 {
-    Timeit ti("writing chart to " + aFilename + ": ", aReport);
+    Timeit ti(fmt::format("writing chart to {}: ", aFilename), aReport);
     auto force_compression = acmacs::file::force_compression::no;
     std::string data;
     if (fs::path(aFilename).extension() == ".ace") {
@@ -44,12 +43,12 @@ void acmacs::chart::export_factory(const Chart& aChart, std::string aFilename, s
         data = export_factory(aChart, export_format::save, aProgramName, report_time::no);
     }
     else
-        throw import_error{"[acmacs::chart::export_factory]: cannot infer export format from extension of " + aFilename};
+        throw import_error{fmt::format("[acmacs::chart::export_factory]: cannot infer export format from extension of {}", aFilename)};
 
     if (data.empty())
-        throw export_error("No data to write to " + aFilename);
+        throw export_error{fmt::format("No data to write to {}", aFilename)};
 
-    Timeit ti_file("writing " + aFilename + ": ", aReport);
+    Timeit ti_file(fmt::format("writing {}: ", aFilename), aReport);
     acmacs::file::write(aFilename, data, force_compression);
 
 } // acmacs::chart::export_factory

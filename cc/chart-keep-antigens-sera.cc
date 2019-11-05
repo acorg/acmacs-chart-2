@@ -3,7 +3,6 @@
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
-#include "acmacs-base/filesystem.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -48,7 +47,7 @@ int main(int argc, char* const argv[])
                 std::cout << "INFO: sera_to_remove: " << sera_to_remove.size() << ' ' << sera_to_remove << '\n';
                 chart.remove_sera(sera_to_remove);
             }
-            acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);
+            acmacs::chart::export_factory(chart, args[1], args.program(), report);
         }
     }
     catch (std::exception& err) {

@@ -3,7 +3,6 @@
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
-#include "acmacs-base/filesystem.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
@@ -53,7 +52,7 @@ int main(int argc, char* const argv[])
                 projections->keep_just(keep_projections);
             std::cout << chart.make_info() << '\n';
             if (args.number_of_arguments() > 1)
-                acmacs::chart::export_factory(chart, args[1], fs::path(args.program()).filename(), report);
+                acmacs::chart::export_factory(chart, args[1], args.program(), report);
         }
     }
     catch (std::exception& err) {

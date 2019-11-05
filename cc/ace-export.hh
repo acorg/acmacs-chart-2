@@ -10,8 +10,8 @@ namespace acmacs::chart
 {
     class Chart;
 
-    rjson::value export_ace_to_rjson(const Chart& aChart, std::string aProgramName);
-    std::string export_ace(const Chart& aChart, std::string aProgramName, size_t aIndent);
+    rjson::value export_ace_to_rjson(const Chart& aChart, std::string_view aProgramName);
+    std::string export_ace(const Chart& aChart, std::string_view aProgramName, size_t aIndent);
 
     template <typename DF> std::string export_layout(const Chart& aChart, size_t aProjectionNo = 0);
     extern template std::string export_layout<acmacs::DataFormatterSpaceSeparated>(const Chart& aChart, size_t aProjectionNo);
