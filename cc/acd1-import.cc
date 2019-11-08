@@ -520,8 +520,10 @@ static inline Annotations make_annotations(const rjson::value& aData)
       // mutations, extra, distinct, annotations, control_duplicate
     if (aData["distinct"].get_or_default(false) || aData["DISTINCT"].get_or_default(false) || !aData["control_duplicate"].get_or_default("").empty() || !aData["CONTROL_DUPLICATE"].get_or_default("").empty())
         result.push_back("DISTINCT");
-    result.push_back(aData["extra"].get_or_default(""));
-    result.push_back(aData["EXTRA"].get_or_default(""));
+    if (const auto& extra = aData["extra"]; !extra.empty())
+        result.push_back(extra.to<std::string>());
+    if (const auto& extra = aData["EXTRA"]; !extra.empty())
+        result.push_back(extra.to<std::string>());
     rjson::transform(aData["annotations"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return val.to<std::string>(); }); // cannot use rjson::copy here
     rjson::transform(aData["mutations"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return val.to<std::string>(); }); // cannot use rjson::copy here
     return result;
