@@ -1,6 +1,4 @@
-#include <iostream>
-
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
 #include "acmacs-chart-2/procrustes.hh"
@@ -8,53 +6,50 @@
 
 // ----------------------------------------------------------------------
 
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<size_t>    p1{*this, 'p', "p1", dflt{0UL}, desc{"projection number of the first chart"}};
+    option<size_t>    p2{*this, 'r', "p2", dflt{0UL}, desc{"projection number of the second chart"}};
+    option<str>       subset{*this, "subset", dflt{"all"}, desc{"all, antigens, sera"}};
+    option<str>       match{*this, "match", dflt{"auto"}, desc{"match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""}};
+    option<bool>      scaling{*this, "scaling", desc{"use scaling"}};
+    option<bool>      verbose{*this, 'v', "verbose", desc{"show detailied matching data"}};
+
+    argument<str>     chart1{*this, arg_name{"chart"}, mandatory};
+    argument<str>     chart2{*this, arg_name{"secondary-chart"}};
+};
+
 int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {
-                {"--match", "auto", "match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""},
-                {"--subset", "all", "subset: \"all\", \"antigens\", \"sera\""},
-                {"--scaling", false, "use scaling"},
-                {"-p", 0, "primary projection no"},
-                {"-r", 0, "secondary projection no"},
-                {"--time", false, "test speed"},
-                {"--verbose", false},
-                {"-h", false},
-                {"--help", false},
-                {"-v", false},
-                        });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() < 1) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file> [<chart-file>]\n" << args.usage_options() << '\n';
-            exit_code = 1;
+        Options opt(argc, argv);
+        const auto match_level = acmacs::chart::CommonAntigensSera::match_level(opt.match);
+        auto chart1 = acmacs::chart::import_from_file(opt.chart1);
+        auto chart2 = opt.chart2 ? acmacs::chart::import_from_file(opt.chart2) : chart1;
+        acmacs::chart::CommonAntigensSera common(*chart1, *chart2, match_level, opt.verbose ? acmacs::debug::yes : acmacs::debug::no);
+        if (opt.subset == "antigens")
+            common.antigens_only();
+        else if (opt.subset == "sera")
+            common.sera_only();
+        else if (opt.subset != "all")
+            fmt::print(stderr, "WARNING: unrecognized --subset argument, \"all\" assumed\n");
+        if (common) {
+            auto procrustes_data = acmacs::chart::procrustes(*chart1->projection(opt.p1), *chart2->projection(opt.p2), common.points(),
+                                                             opt.scaling ? acmacs::chart::procrustes_scaling_t::yes : acmacs::chart::procrustes_scaling_t::no);
+            fmt::print("common antigens: {} sera: {}\n", common.common_antigens(), common.common_sera());
+            fmt::print("transformation: {}\nrms: {}\n", procrustes_data.transformation, procrustes_data.rms);
+            // common.report();
         }
         else {
-            const auto report = do_report_time(args["--time"]);
-            const auto match_level = acmacs::chart::CommonAntigensSera::match_level(args["--match"]);
-            auto chart1 = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
-            auto chart2 = (args.number_of_arguments() > 1 && std::string(args[0]) != args[1]) ? acmacs::chart::import_from_file(args[1], acmacs::chart::Verify::None, report) : chart1;
-            acmacs::chart::CommonAntigensSera common(*chart1, *chart2, match_level);
-            if (args["--subset"] == "antigens")
-                common.antigens_only();
-            else if (args["--subset"] == "sera")
-                common.sera_only();
-            else if (args["--subset"] != "all")
-                std::cerr << "WARNING: unrecognized --subset argument, \"all\" assumed\n";
-            if (common) {
-                auto procrustes_data = acmacs::chart::procrustes(*chart1->projection(args["-p"]), *chart2->projection(args["-r"]), common.points(), args["--scaling"] ? acmacs::chart::procrustes_scaling_t::yes : acmacs::chart::procrustes_scaling_t::no);
-                std::cout << "common antigens: " << common.common_antigens() << " sera: " << common.common_sera() << '\n';
-                  // std::cout << "common points:" << common.points() << '\n';
-                std::cout << "transformation: " << acmacs::to_string(procrustes_data.transformation) << '\n';
-                std::cout << "rms: " << acmacs::to_string(procrustes_data.rms) << '\n';
-                  // common.report();
-            }
-            else {
-                std::cerr << "ERROR: no common antigens/sera\n";
-            }
+            fmt::print(stderr, "ERROR no common antigens/sera\n");
         }
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        fmt::print(stderr, "ERROR {}\n", err);
         exit_code = 2;
     }
     return exit_code;
