@@ -3,6 +3,7 @@
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/string.hh"
+#include "acmacs-base/counter.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -20,6 +21,7 @@ struct Options : public argv
     option<bool> show_number_of_sera{*this, "sera", desc{"just show number of sera"}};
     option<bool> column_bases{*this, "column-bases"};
     option<bool> list_tables{*this, "list-tables"};
+    option<bool> dates{*this, "dates", desc{"show isolation dates stats"}};
     option<bool> homologous{*this, "homologous", desc{"report homologous antigens for sera"}};
     option<bool> verify{*this, "verify"};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
@@ -102,6 +104,18 @@ int main(int argc, char* const argv[])
                     std::cout << "\nTables:\n";
                     for (auto src_no : acmacs::range(info->number_of_sources()))
                         std::cout << std::setw(3) << src_no << ' ' << info->source(src_no)->make_name() << '\n';
+                }
+                if (opt.dates) {
+                    acmacs::Counter<std::string> dates;
+                    auto antigens = chart->antigens();
+                    for (const auto antigen : *antigens) {
+                        if (const auto date = antigen->date(); !date.empty())
+                            dates.count(date->substr(0, 7));
+                        else
+                            dates.count(date);
+                    }
+                    for (const auto& [date, count] : dates.counter())
+                        fmt::print("{} {:4d}\n", date, count);
                 }
             }
             if (file_no < (opt.charts->size() - 1))
