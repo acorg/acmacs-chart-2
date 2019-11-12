@@ -125,7 +125,7 @@ int main(int argc, char* const argv[])
             std::cerr << "Total number of antigens: " << total_number_of_antigens << '\n';
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        fmt::print(stderr, "ERROR: {}\n", err);
         exit_code = 2;
     }
     return exit_code;

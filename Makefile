@@ -52,6 +52,7 @@ TARGETS = \
   $(DIST)/chart-map-resolution-test \
   $(DIST)/chart-antigens-without-passages \
   $(DIST)/chart-find-chart-with-antigens \
+  $(DIST)/chart-time-series-for-country \
   $(DIST)/test-titer-iterator \
   $(DIST)/test-chart-modify \
   $(DIST)/test-chart-create-from-scratch \
