@@ -19,7 +19,7 @@ struct Options : public argv
 
     option<bool> fields{*this, "fields", desc{"report names with fields"}};
     option<str>  format{*this, 'f', "format", dflt{"{ag_sr} {no0} {full_name_with_passage} {serum_species} [{date}] {lab_ids} {ref}"},
-                        desc{"output format, supported fields: {ag_sr} {no0} {<no0} {no1} {<no1} {name} {full_name_with_passage} {full_name_with_fields} {abbreviated_name} {abbreviated_name_with_passage_type} {abbreviated_location_with_passage_type} {abbreviated_name_with_serum_id} {designation} {name_abbreviated} {name_without_subtype} {location} {location_abbreviated} {country} {continent} {abbreviated_location_year} {serum_species} {date} {lab_ids} {ref} {serum_id} {reassortant} {passage} {passage_type} {annotations} {lineage} {continent} {sera_with_titrations} "}};
+                        desc{"\n          supported fields:\n            {ag_sr} {no0} {<no0} {no1} {<no1}\n            {name} {full_name_with_passage} {full_name_with_fields} {abbreviated_name}\n            {abbreviated_name_with_passage_type} {abbreviated_location_with_passage_type}\n            {abbreviated_name_with_serum_id} {designation} {name_abbreviated} {name_without_subtype}\n            {abbreviated_location_year} {location_abbreviated}\n            {location} {country} {continent} {latitude} {longitude}\n            {serum_id} {serum_species} {sera_with_titrations}\n            {ref} {date} {lab_ids} {reassortant} {passage} {passage_type} {annotations} {lineage}"}};
     option<str>  antigens{*this, 'a', "antigens", desc{"comma separated list of antigens (zero based indexes) to report for them only"}};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
     option<bool> verbose{*this, 'v', "verbose"};
@@ -83,7 +83,6 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Antig
         fmt::arg("passage_type", antigen.passage_type()),
         fmt::arg("annotations", antigen.annotations()),
         fmt::arg("lineage", antigen.lineage()),
-        fmt::arg("continent", *antigen.continent()),
         fmt::arg("abbreviated_name", antigen.abbreviated_name()),
         fmt::arg("abbreviated_name_with_passage_type", antigen.abbreviated_name_with_passage_type()),
         fmt::arg("abbreviated_name_with_serum_id", antigen.abbreviated_name()),
@@ -93,8 +92,10 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Antig
         fmt::arg("name_without_subtype", antigen.name_without_subtype()),
         fmt::arg("location", antigen.location()),
         fmt::arg("location_abbreviated", antigen.location_abbreviated()),
-        fmt::arg("country", get_locdb().country(antigen.location())),
-        fmt::arg("continent", get_locdb().continent(antigen.location())),
+        fmt::arg("country", get_locdb().country(antigen.location(), "*unknown*")),
+        fmt::arg("continent", get_locdb().continent(antigen.location(), "*unknown*")),
+        fmt::arg("latitude", get_locdb().latitude(antigen.location())),
+        fmt::arg("longitude", get_locdb().longitude(antigen.location())),
         fmt::arg("abbreviated_location_year", antigen.abbreviated_location_year()),
         fmt::arg("sera_with_titrations", chart.titers()->having_titers_with(antigen_no))
     );
@@ -126,7 +127,6 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Serum
         fmt::arg("passage_type", serum.passage_type()),
         fmt::arg("annotations", serum.annotations()),
         fmt::arg("lineage", serum.lineage()),
-        fmt::arg("continent", ""),
         fmt::arg("abbreviated_name", serum.abbreviated_name()),
         fmt::arg("abbreviated_name_with_passage_type", serum.abbreviated_name()),
         fmt::arg("abbreviated_name_with_serum_id", serum.abbreviated_name_with_serum_id()),
@@ -136,8 +136,10 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Serum
         fmt::arg("name_without_subtype", serum.name_without_subtype()),
         fmt::arg("location", serum.location()),
         fmt::arg("location_abbreviated", serum.location_abbreviated()),
-        fmt::arg("country", get_locdb().country(serum.location())),
-        fmt::arg("continent", get_locdb().continent(serum.location())),
+        fmt::arg("country", get_locdb().country(serum.location(), "*unknown*")),
+        fmt::arg("continent", get_locdb().continent(serum.location(), "*unknown*")),
+        fmt::arg("latitude", get_locdb().latitude(serum.location())),
+        fmt::arg("longitude", get_locdb().longitude(serum.location())),
         fmt::arg("abbreviated_location_year", serum.abbreviated_location_year()),
         fmt::arg("sera_with_titrations", chart.titers()->having_titers_with(serum_no + chart.number_of_antigens()))
     );
