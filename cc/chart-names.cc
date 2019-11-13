@@ -60,8 +60,26 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
+inline std::tuple<std::string_view, std::string_view, Latitude, Longitude> location_data(std::string_view location)
+{
+    try {
+        const auto& locdb = get_locdb();
+        const auto data = locdb.find(location);
+        const auto country = data.country();
+        return {country, locdb.continent_of_country(country), data.latitude(), data.longitude()};
+    }
+    catch (std::exception&) {
+        const std::string_view unknown{"*unknown*"};
+        return {unknown, unknown, 360.0, 360.0};
+    }
+}
+
+// ----------------------------------------------------------------------
+
 std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Antigen& antigen, size_t antigen_no, int num_digits, std::string_view pattern)
 {
+    const auto [country, continent, latitude, longitude] = location_data(antigen.location());
+
     return fmt::format(
         pattern,
         fmt::arg("ag_sr", "AG"),
@@ -92,10 +110,10 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Antig
         fmt::arg("name_without_subtype", antigen.name_without_subtype()),
         fmt::arg("location", antigen.location()),
         fmt::arg("location_abbreviated", antigen.location_abbreviated()),
-        fmt::arg("country", get_locdb().country(antigen.location(), "*unknown*")),
-        fmt::arg("continent", get_locdb().continent(antigen.location(), "*unknown*")),
-        fmt::arg("latitude", get_locdb().latitude(antigen.location())),
-        fmt::arg("longitude", get_locdb().longitude(antigen.location())),
+        fmt::arg("country", country),
+        fmt::arg("continent", continent),
+        fmt::arg("latitude", latitude),
+        fmt::arg("longitude", longitude),
         fmt::arg("abbreviated_location_year", antigen.abbreviated_location_year()),
         fmt::arg("sera_with_titrations", chart.titers()->having_titers_with(antigen_no))
     );
@@ -106,6 +124,8 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Antig
 
 std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Serum& serum, size_t serum_no, int num_digits, std::string_view pattern)
 {
+    const auto [country, continent, latitude, longitude] = location_data(serum.location());
+
     return fmt::format(
         pattern,
         fmt::arg("ag_sr", "SR"),
@@ -136,10 +156,10 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Serum
         fmt::arg("name_without_subtype", serum.name_without_subtype()),
         fmt::arg("location", serum.location()),
         fmt::arg("location_abbreviated", serum.location_abbreviated()),
-        fmt::arg("country", get_locdb().country(serum.location(), "*unknown*")),
-        fmt::arg("continent", get_locdb().continent(serum.location(), "*unknown*")),
-        fmt::arg("latitude", get_locdb().latitude(serum.location())),
-        fmt::arg("longitude", get_locdb().longitude(serum.location())),
+        fmt::arg("country", country),
+        fmt::arg("continent", continent),
+        fmt::arg("latitude", latitude),
+        fmt::arg("longitude", longitude),
         fmt::arg("abbreviated_location_year", serum.abbreviated_location_year()),
         fmt::arg("sera_with_titrations", chart.titers()->having_titers_with(serum_no + chart.number_of_antigens()))
     );
