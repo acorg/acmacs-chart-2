@@ -6,6 +6,7 @@ TARGETS = \
   $(DIST)/chart-info \
   $(DIST)/chart-names \
   $(DIST)/chart-countries \
+  $(DIST)/chart-locations \
   $(DIST)/chart-dates-range \
   $(DIST)/chart-table \
   $(DIST)/chart-plot-spec \
