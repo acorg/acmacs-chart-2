@@ -60,17 +60,17 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-inline std::tuple<std::string_view, std::string_view, Latitude, Longitude> location_data(std::string_view location)
+inline std::tuple<std::string, std::string, std::string, Latitude, Longitude> location_data(std::string_view location)
 {
     try {
         const auto& locdb = get_locdb();
         const auto data = locdb.find(location);
         const auto country = data.country();
-        return {country, locdb.continent_of_country(country), data.latitude(), data.longitude()};
+        return {std::move(data.location_name), std::string{country}, std::string{locdb.continent_of_country(country)}, data.latitude(), data.longitude()};
     }
     catch (std::exception&) {
-        const std::string_view unknown{"*unknown*"};
-        return {unknown, unknown, 360.0, 360.0};
+        const std::string unknown{"*unknown*"};
+        return {std::string{location}, unknown, unknown, 360.0, 360.0};
     }
 }
 
@@ -78,7 +78,7 @@ inline std::tuple<std::string_view, std::string_view, Latitude, Longitude> locat
 
 std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Antigen& antigen, size_t antigen_no, int num_digits, std::string_view pattern)
 {
-    const auto [country, continent, latitude, longitude] = location_data(antigen.location());
+    const auto [location_name, country, continent, latitude, longitude] = location_data(antigen.location());
 
     return fmt::format(
         pattern,
@@ -108,7 +108,7 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Antig
         fmt::arg("designation", antigen.designation()),
         fmt::arg("name_abbreviated", antigen.name_abbreviated()),
         fmt::arg("name_without_subtype", antigen.name_without_subtype()),
-        fmt::arg("location", antigen.location()),
+        fmt::arg("location", location_name),
         fmt::arg("location_abbreviated", antigen.location_abbreviated()),
         fmt::arg("country", country),
         fmt::arg("continent", continent),
@@ -124,7 +124,7 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Antig
 
 std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Serum& serum, size_t serum_no, int num_digits, std::string_view pattern)
 {
-    const auto [country, continent, latitude, longitude] = location_data(serum.location());
+    const auto [location_name, country, continent, latitude, longitude] = location_data(serum.location());
 
     return fmt::format(
         pattern,
@@ -154,7 +154,7 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Serum
         fmt::arg("designation", serum.designation()),
         fmt::arg("name_abbreviated", serum.name_abbreviated()),
         fmt::arg("name_without_subtype", serum.name_without_subtype()),
-        fmt::arg("location", serum.location()),
+        fmt::arg("location", location_name),
         fmt::arg("location_abbreviated", serum.location_abbreviated()),
         fmt::arg("country", country),
         fmt::arg("continent", continent),
