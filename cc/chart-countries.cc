@@ -11,6 +11,7 @@ struct Options : public argv
     Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
 
     option<bool> test_only{*this, 't', "test-only", desc{"test antigens only"}};
+    option<bool> continents{*this, "continents", desc{"print continent for each country"}};
     argument<str_array> charts{*this, arg_name{"chart"}, mandatory};
 };
 
@@ -31,8 +32,12 @@ int main(int argc, char* const argv[])
                 }
             }
         }
-        for (const auto& country : countries)
-            fmt::print("{}\n", country);
+        for (const auto& country : countries) {
+            if (opt.continents)
+                fmt::print("{:40s} {}\n", country, locdb.continent_of_country(country));
+            else
+                fmt::print("{}\n", country);
+        }
     }
     catch (std::exception& err) {
         fmt::print(stderr, "ERROR: {}\n", err);
