@@ -44,6 +44,7 @@ TARGETS = \
   $(DIST)/chart-keep-antigens-sera \
   $(DIST)/chart-keep-antigens-titrated-against-sera \
   $(DIST)/chart-serum-titers-check \
+  $(DIST)/chart-sera-in-tables \
   $(DIST)/chart-column-bases \
   $(DIST)/chart-list-antigens-without-titers \
   $(DIST)/chart-remove-layers \
