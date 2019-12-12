@@ -33,7 +33,7 @@ namespace acmacs::chart
 
     }; // class Chart
 
-    inline bool is_lispmds(const std::string_view& aData)
+    inline bool is_lispmds(std::string_view aData)
     {
         if (aData.size() < 100)
             return false;
@@ -47,7 +47,7 @@ namespace acmacs::chart
         return true;
     }
 
-    ChartP lispmds_import(const std::string_view& aData, Verify aVerify);
+    ChartP lispmds_import(std::string_view aData, Verify aVerify);
 
 // ----------------------------------------------------------------------
 

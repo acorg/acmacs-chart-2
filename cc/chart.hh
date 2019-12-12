@@ -106,7 +106,7 @@ namespace acmacs::chart
         BLineage(Lineage lineage) : mLineage{lineage} {}
         BLineage(const BLineage&) = default;
         BLineage(std::string_view lineage) : mLineage{from(lineage)} {}
-        BLineage(const std::string& lineage) : BLineage{std::string_view{lineage}} {}
+        // BLineage(const std::string& lineage) : BLineage{std::string_view{lineage}} {}
         BLineage(char lineage) : mLineage{from(lineage)} {}
         BLineage& operator=(Lineage lineage)
         {
@@ -140,8 +140,6 @@ namespace acmacs::chart
         }
 
         bool operator!=(std::string_view rhs) const { return !operator==(rhs); }
-        // bool operator==(const std::string& rhs) const { return operator==(std::string_view{rhs}); }
-        // bool operator!=(const std::string& rhs) const { return !operator==(rhs); }
 
         std::string to_string() const
         {
@@ -163,8 +161,6 @@ namespace acmacs::chart
         {
             return acmacs::virus::lineage_t{to_string()};
         }
-
-        // operator std::string() const { return std::string{static_cast<std::string_view>(*this)}; }
 
         operator Lineage() const { return mLineage; }
 

@@ -36,7 +36,7 @@ namespace acmacs::chart
 
     }; // class Acd1Chart
 
-    inline bool is_acd1(const std::string_view& aData)
+    inline bool is_acd1(std::string_view aData)
     {
         if (aData.size() < 100)
             return false;
@@ -49,7 +49,7 @@ namespace acmacs::chart
         return true;
     }
 
-    ChartP acd1_import(const std::string_view& aData, Verify aVerify);
+    ChartP acd1_import(std::string_view aData, Verify aVerify);
 
 // ----------------------------------------------------------------------
 

@@ -149,7 +149,7 @@ std::pair<std::shared_ptr<acmacs::chart::ColumnBases>, acmacs::chart::MinimumCol
 
 // ----------------------------------------------------------------------
 
-ChartP acmacs::chart::lispmds_import(const std::string_view& aData, Verify aVerify)
+ChartP acmacs::chart::lispmds_import(std::string_view aData, Verify aVerify)
 {
     // try {
         auto chart = std::make_shared<LispmdsChart>(acmacs::lispmds::parse_string(aData));

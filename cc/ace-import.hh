@@ -40,8 +40,8 @@ namespace acmacs::chart
 
     }; // class AceChart
 
-    bool is_ace(const std::string_view& aData);
-    ChartP ace_import(const std::string_view& aData, Verify aVerify);
+    bool is_ace(std::string_view aData);
+    ChartP ace_import(std::string_view aData, Verify aVerify);
 
 // ----------------------------------------------------------------------
 

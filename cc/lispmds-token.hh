@@ -54,7 +54,7 @@ namespace acmacs::lispmds
                     }
                 }
             }
-        inline number(const std::string_view& aValue) : number(std::string{aValue}) {}
+        inline number(std::string_view aValue) : number(std::string{aValue}) {}
 
         inline operator double() const { return std::stod(mValue); }
         inline operator float() const { return std::stof(mValue); }
@@ -227,7 +227,7 @@ namespace acmacs::lispmds
 
 // ----------------------------------------------------------------------
 
-    value parse_string(const std::string_view& aData);
+    value parse_string(std::string_view aData);
 
 } // namespace acmacs::lispmds
 

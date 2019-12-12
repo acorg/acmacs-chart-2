@@ -44,7 +44,7 @@ namespace acmacs::chart::rjson_import
 
 // ----------------------------------------------------------------------
 
-    void update(const rjson::value& data, const std::string& list_key, const std::string& dict_key, TableDistances& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
+    void update(const rjson::value& data, std::string_view list_key, const std::string& dict_key, TableDistances& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points);
 
 } // namespace acmacs::chart::rjson
 

@@ -249,7 +249,7 @@ static void update_dict(const rjson::value& data, acmacs::chart::TableDistances&
     const auto logged_adjusts = parameters.avidity_adjusts.logged(number_of_points);
     for (auto p1 : acmacs::range(data.size())) {
         if (!parameters.disconnected.contains(p1)) {
-            rjson::for_each(data[p1], [num_antigens=data.size(),p1,&parameters,&table_distances,&column_bases,&logged_adjusts](const std::string& field_name, const rjson::value& field_value) {
+            rjson::for_each(data[p1], [num_antigens=data.size(),p1,&parameters,&table_distances,&column_bases,&logged_adjusts](std::string_view field_name, const rjson::value& field_value) {
                 const auto serum_no = std::stoul(field_name);
                 const auto p2 = serum_no + num_antigens;
                 if (!parameters.disconnected.contains(p2))
@@ -260,7 +260,7 @@ static void update_dict(const rjson::value& data, acmacs::chart::TableDistances&
 
 } // update_dict
 
-void acmacs::chart::rjson_import::update(const rjson::value& data, const std::string& list_key, const std::string& dict_key, TableDistances& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points)
+void acmacs::chart::rjson_import::update(const rjson::value& data, std::string_view list_key, const std::string& dict_key, TableDistances& table_distances, const ColumnBases& column_bases, const StressParameters& parameters, size_t number_of_points)
 {
     table_distances.dodgy_is_regular(parameters.dodgy_titer_is_regular);
     if (const auto& list = data[list_key]; !list.is_null())

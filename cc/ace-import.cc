@@ -29,7 +29,7 @@ const acmacs::chart::RjsonProjection::Keys acmacs::chart::AceProjection::s_keys_
 
 // ----------------------------------------------------------------------
 
-bool acmacs::chart::is_ace(const std::string_view& aData)
+bool acmacs::chart::is_ace(std::string_view aData)
 {
     return aData.size() > 35 && aData.front() == '{' && aData.find("\"acmacs-ace-v1\"") != std::string_view::npos;
 
@@ -37,7 +37,7 @@ bool acmacs::chart::is_ace(const std::string_view& aData)
 
 // ----------------------------------------------------------------------
 
-ChartP acmacs::chart::ace_import(const std::string_view& aData, Verify aVerify)
+ChartP acmacs::chart::ace_import(std::string_view aData, Verify aVerify)
 {
     auto chart = std::make_shared<AceChart>(rjson::parse_string(aData));
     chart->verify_data(aVerify);
@@ -221,13 +221,13 @@ TableDate AceInfo::date(Compute aCompute) const
 
 BLineage AceAntigen::lineage() const
 {
-    return data_["L"].get_or_default("");
+    return BLineage{data_["L"].get_or_default("")};
 
 } // AceAntigen::lineage
 
 BLineage AceSerum::lineage() const
 {
-    return data_["L"].get_or_default("");
+    return BLineage{data_["L"].get_or_default("")};
 
 } // AceSerum::lineage
 
@@ -392,7 +392,7 @@ size_t AcePlotSpec::number_of_points() const
 acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointNo, size_t aStyleNo) const
 {
     acmacs::PointStyle result;
-    rjson::for_each(aSrc, [&result,aPointNo,aStyleNo,this](const std::string& field_name, const rjson::value& field_value) {
+    rjson::for_each(aSrc, [&result,aPointNo,aStyleNo,this](std::string_view field_name, const rjson::value& field_value) {
         if (!field_name.empty()) {
             try {
                 switch (field_name[0]) {
@@ -438,7 +438,7 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointN
 
 void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aData) const
 {
-    rjson::for_each(aData, [&aStyle](const std::string& field_name, const rjson::value& field_value) {
+    rjson::for_each(aData, [&aStyle](std::string_view field_name, const rjson::value& field_value) {
         if (!field_name.empty()) {
             try {
                 auto& label_style = aStyle.label;

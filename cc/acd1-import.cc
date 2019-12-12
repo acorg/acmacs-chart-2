@@ -16,7 +16,7 @@ using namespace acmacs::chart;
 constexpr const double PointScale = 5.0;
 constexpr const double LabelScale = 10.0;
 
-static std::string convert_to_json(const std::string_view& aData);
+static std::string convert_to_json(std::string_view aData);
 static void convert_set(std::string& aData, const std::vector<size_t>& aPerhapsSet);
 
 // ----------------------------------------------------------------------
@@ -34,7 +34,7 @@ const acmacs::chart::RjsonProjection::Keys acmacs::chart::Acd1Projection::s_keys
 
 // ----------------------------------------------------------------------
 
-ChartP acmacs::chart::acd1_import(const std::string_view& aData, Verify aVerify)
+ChartP acmacs::chart::acd1_import(std::string_view aData, Verify aVerify)
 {
     const std::string json = convert_to_json(aData);
     try {
@@ -51,14 +51,14 @@ ChartP acmacs::chart::acd1_import(const std::string_view& aData, Verify aVerify)
 
 // ----------------------------------------------------------------------
 
-static inline bool input_matches(const std::string_view& aInput, size_t aOffset, const std::string_view& aExpected)
+static inline bool input_matches(std::string_view aInput, size_t aOffset, std::string_view aExpected)
 {
       // aOffset can be "negative" (overflow), ignore that case
     return aOffset < aInput.size() && aInput.substr(aOffset, aExpected.size()) == aExpected;
 }
 
 // returns [it is a numeric key, end of digits pos]
-static inline std::pair<bool, size_t> object_numeric_key(const std::string_view& aInput, size_t aOffset)
+static inline std::pair<bool, size_t> object_numeric_key(std::string_view aInput, size_t aOffset)
 {
     size_t prev = aOffset - 1;
       // skip spaces
@@ -70,7 +70,7 @@ static inline std::pair<bool, size_t> object_numeric_key(const std::string_view&
     return {numeric_key_start && numeric_key_end, aOffset};
 }
 
-std::string convert_to_json(const std::string_view& aData)
+std::string convert_to_json(std::string_view aData)
 {
     // Timeit ti("converting acd1 (" + std::to_string(aData.size()) + " bytes) to json: ");
     std::string result;
@@ -507,7 +507,7 @@ LabIds Acd1Antigen::lab_ids() const
     if (data_["lab_id"].is_array())
         rjson::transform(data_["lab_id"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return val[0].to<std::string>() + '#' + val[1].to<std::string>(); });
     else
-        rjson::transform(data_["lab_id"], std::back_inserter(result), [](const std::string& key, const rjson::value& val) -> std::string { return string::concat(key, '#', val.to<std::string_view>()); });
+        rjson::transform(data_["lab_id"], std::back_inserter(result), [](std::string_view key, const rjson::value& val) -> std::string { return string::concat(key, '#', val.to<std::string_view>()); });
     return result;
 
 } // Acd1Antigen::lab_ids
@@ -545,13 +545,13 @@ Annotations Acd1Serum::annotations() const
 
 BLineage Acd1Antigen::lineage() const
 {
-    return data_["lineage"].get_or_default("");
+    return BLineage{data_["lineage"].get_or_default("")};
 
 } // Acd1Antigen::lineage
 
 BLineage Acd1Serum::lineage() const
 {
-    return data_["lineage"].get_or_default("");
+    return BLineage{data_["lineage"].get_or_default("")};
 
 } // Acd1Serum::lineage
 
@@ -813,7 +813,7 @@ size_t Acd1PlotSpec::number_of_points() const
 acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPointNo, size_t aStyleNo) const
 {
     acmacs::PointStyle result;
-    rjson::for_each(aSrc, [&result, aPointNo, aStyleNo](const std::string& field_name, const rjson::value& field_value) {
+    rjson::for_each(aSrc, [&result, aPointNo, aStyleNo](std::string_view field_name, const rjson::value& field_value) {
         if (!field_name.empty()) {
             try {
                 if (field_name == "shown")

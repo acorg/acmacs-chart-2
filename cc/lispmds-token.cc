@@ -13,7 +13,7 @@ using namespace std::string_literals;
 class Tokenizer
 {
  public:
-    inline Tokenizer(const std::string_view& aData) : mData{aData} {}
+    inline Tokenizer(std::string_view aData) : mData{aData} {}
 
     enum Token : char { End = 'E', Symbol = '\'', Keyword = ':', Number = 'N', String = 'S', OpenList = '(', CloseList = ')'};
 
@@ -21,7 +21,7 @@ class Tokenizer
 
     Result next();
 
-    static acmacs::lispmds::value to_value(Token token, const std::string_view& aText);
+    static acmacs::lispmds::value to_value(Token token, std::string_view aText);
 
  private:
     std::string_view mData;
@@ -38,7 +38,7 @@ class Tokenizer
 
 // ----------------------------------------------------------------------
 
-acmacs::lispmds::value acmacs::lispmds::parse_string(const std::string_view& aData)
+acmacs::lispmds::value acmacs::lispmds::parse_string(std::string_view aData)
 {
     Tokenizer tokenizer(aData);
     if (tokenizer.next().first != Tokenizer::OpenList)
@@ -84,7 +84,7 @@ acmacs::lispmds::value acmacs::lispmds::parse_string(const std::string_view& aDa
 
 // ----------------------------------------------------------------------
 
-acmacs::lispmds::value Tokenizer::to_value(Tokenizer::Token token, const std::string_view& aText)
+acmacs::lispmds::value Tokenizer::to_value(Tokenizer::Token token, std::string_view aText)
 {
     switch (token) {
       case End:
