@@ -19,7 +19,7 @@ struct Options : public argv
 
     option<str>  output_chart{*this, 'o', "output", dflt{""}, desc{"output chart"}};
     option<str>  match{*this, "match", dflt{"auto"}, desc{"match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""}};
-    option<str>  merge_type{*this, 'm', "merge-type", dflt{"simple"}, desc{"merge type: \"incremental\", \"overlay\", \"simple\""}};
+    option<str>  merge_type{*this, 'm', "merge-type", dflt{"simple"}, desc{"merge type: \"type1\"..\"type5\", \"incremental\" (type2), \"overlay\" (type3), \"simple\" (type1)"}};
     option<bool> duplicates_distinct{*this, "duplicates-distinct", desc{"make duplicates distinct"}};
     option<str>  report_titers{*this, "report", desc{"titer merge report"}};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
@@ -34,11 +34,15 @@ int main(int argc, const char* const argv[])
         Options opt(argc, argv);
         const auto report = do_report_time(opt.report_time);
         acmacs::chart::MergeSettings settings;
-        if (opt.merge_type == "incremental")
-            settings.projection_merge = acmacs::chart::projection_merge_t::incremental;
-        else if (opt.merge_type == "overlay")
-            settings.projection_merge = acmacs::chart::projection_merge_t::overlay;
-        else if (opt.merge_type != "simple")
+        if (opt.merge_type == "incremental" || opt.merge_type == "type2")
+            settings.projection_merge = acmacs::chart::projection_merge_t::type2;
+        else if (opt.merge_type == "overlay" || opt.merge_type == "type3")
+            settings.projection_merge = acmacs::chart::projection_merge_t::type3;
+        else if (opt.merge_type == "type4")
+            settings.projection_merge = acmacs::chart::projection_merge_t::type4;
+        else if (opt.merge_type == "type5")
+            settings.projection_merge = acmacs::chart::projection_merge_t::type5;
+        else if (opt.merge_type != "simple" && opt.merge_type != "type1")
             throw std::runtime_error(string::concat("unrecognized --merge-type value: ", opt.merge_type.get()));
         if (opt.source_charts->size() < 2)
             throw std::runtime_error("too few source charts specified");

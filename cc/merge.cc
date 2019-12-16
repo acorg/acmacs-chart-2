@@ -13,8 +13,8 @@
 static void merge_info(acmacs::chart::ChartModify& target, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2);
 static void merge_titers(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
 static void merge_plot_spec(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, const acmacs::chart::MergeReport& report);
-static void merge_projections_incremental(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
-static void merge_projections_overlay(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
+static void merge_projections_type2(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
+static void merge_projections_type3(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
 static void copy_layout(const acmacs::Layout& source, acmacs::Layout& target, size_t source_number_of_antigens, size_t target_number_of_antigens);
 static acmacs::chart::PointIndexList map_disconnected(const acmacs::chart::PointIndexList& source, size_t source_number_of_antigens, size_t target_number_of_antigens, const acmacs::chart::MergeReport::index_mapping_t& antigen_mapping, const acmacs::chart::MergeReport::index_mapping_t& sera_mapping);
 
@@ -125,16 +125,34 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
 
     if (chart1.number_of_projections()) {
         switch (settings.projection_merge) {
-            case projection_merge_t::none:
+            case projection_merge_t::type1:
                 break; // no projections in the merge
-            case projection_merge_t::incremental:
-                merge_projections_incremental(result, chart1, chart2, report);
+            case projection_merge_t::type2:
+                merge_projections_type2(result, chart1, chart2, report);
                 break;
-            case projection_merge_t::overlay:
+            case projection_merge_t::type3:
                 if (chart2.number_of_projections() == 0)
-                    throw merge_error{"cannot perform overlay merge: secondary chart has no projections"};
-                merge_projections_overlay(result, chart1, chart2, report);
+                    throw merge_error{"cannot perform type3 merge: secondary chart has no projections"};
+                merge_projections_type3(result, chart1, chart2, report);
                 break;
+            case projection_merge_t::type4:
+                if (chart2.number_of_projections() == 0)
+                    throw merge_error{"cannot perform type4 merge: secondary chart has no projections"};
+                merge_projections_type3(result, chart1, chart2, report);
+                // {
+                //     list_of_the_fixed_points;
+                //     result->relax_with_unmovable_points(list_of_the_fixed_points);
+                // }
+                break;
+            // case projection_merge_t::type5:
+            //     if (chart2.number_of_projections() == 0)
+            //         throw merge_error{"cannot perform type5 merge: secondary chart has no projections"};
+            //     merge_projections_type5(result, chart1, chart2, report);
+            //     {
+            //         list_of_the_fixed_points;
+            //         result->relax_with_unmovable_points(list_of_the_fixed_points);
+            //     }
+            //     break;
         }
     }
 
@@ -203,7 +221,7 @@ void merge_plot_spec(acmacs::chart::ChartModifyP result, const acmacs::chart::Ch
 
 // ----------------------------------------------------------------------
 
-void merge_projections_incremental(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& /*chart2*/, acmacs::chart::MergeReport& report)
+void merge_projections_type2(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& /*chart2*/, acmacs::chart::MergeReport& report)
 {
     // copy best projection of chart1, set coords of non-common points of chart2 to NaN
     // std::cout << "INFO: incremental merge\n";
@@ -225,9 +243,9 @@ void merge_projections_incremental(acmacs::chart::ChartModifyP result, const acm
 
 // ----------------------------------------------------------------------
 
-void merge_projections_overlay(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report)
+void merge_projections_type3(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report)
 {
-      // std::cout << "INFO: overlay merge\n";
+      // std::cout << "INFO: type3 merge\n";
     auto projection1 = chart1.projection(0);
     if (!projection1->avidity_adjusts().empty())
         throw acmacs::chart::merge_error{"chart1 projection has avidity_adjusts"};
