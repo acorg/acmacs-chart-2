@@ -1,4 +1,4 @@
-# Time-stamp: <2019-12-17 12:08:59 eu>
+# Time-stamp: <2019-12-17 15:43:39 eu>
 * Introduction
 People have different opinions on what are "overlay", "fzozen"
 etc. merges and what was really implemented in lispmds, also their
@@ -15,7 +15,7 @@ merge has no projections.
 Tables are merged. The best projection of the first chart is
 copied. Projections of the second chart are ignored. Coordinates of
 non-commong points of the second chart are set to NaN. The merge has
-just one projection. If the first chart has not projections, error is
+just one projection. If the first chart has no projections, error is
 raised. Resulting projection in not relaxed.
 
 relax_incremental() can be used to relax the merge.

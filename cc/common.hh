@@ -3,7 +3,6 @@
 #include <memory>
 #include <optional>
 #include <vector>
-#include <iostream>
 
 #include "acmacs-base/debug.hh"
 #include "acmacs-chart-2/point-index-list.hh"
@@ -67,12 +66,24 @@ namespace acmacs::chart
 
     }; // class CommonAntigensSera
 
-    inline std::ostream& operator << (std::ostream& out, const CommonAntigensSera::common_t& common)
-    {
-        return out << '{' << common.primary << ',' << common.secondary << '}';
-    }
+    // inline std::ostream& operator << (std::ostream& out, const CommonAntigensSera::common_t& common)
+    // {
+    //     return out << '{' << common.primary << ',' << common.secondary << '}';
+    // }
 
 } // namespace acmacs::chart
+
+// ----------------------------------------------------------------------
+
+template <> struct fmt::formatter<acmacs::chart::CommonAntigensSera::common_t>
+{
+    template <typename ParseContext> constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
+
+    template <typename FormatContext> auto format(const acmacs::chart::CommonAntigensSera::common_t& common, FormatContext& ctx)
+    {
+        return format_to(ctx.out(), "{{{},{}}}", common.primary, common.secondary);
+    }
+};
 
 /// ----------------------------------------------------------------------
 /// Local Variables:
