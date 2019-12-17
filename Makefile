@@ -62,6 +62,7 @@ TARGETS = \
   $(DIST)/test-chart-create-from-scratch \
   $(DIST)/test-chart-from-text \
   $(DIST)/test-chart-merge \
+  $(DIST)/test-chart-merge-types-2-5 \
   $(DIST)/test-get-titers \
   $(DIST)/test-clone-projection \
   $(DIST)/test-chart-clone \
