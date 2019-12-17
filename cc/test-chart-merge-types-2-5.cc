@@ -3,7 +3,6 @@
 #include "acmacs-base/argv.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/merge.hh"
-#include "acmacs-chart-2/common.hh"
 
 // ----------------------------------------------------------------------
 
@@ -51,7 +50,13 @@ void test_merge_2(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart
 
     assert(merged_chart->number_of_projections() == 1);
 
-    //
+    auto merge_layout = merged_chart->projection(0)->layout();
+    auto layout1 = chart1.projection(0)->layout();
+    // primary layout must be copied
+    for (const auto& [index1, index_merge_common] : merge_report.antigens_primary_target) {
+        assert((*layout1)[index1] == (*merge_layout)[index_merge_common.index]);
+    }
+
 } // test_merge_2
 
 // ----------------------------------------------------------------------
