@@ -145,7 +145,7 @@ void test_merge_3(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart
 
 void test_merge_4(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::CommonAntigensSera::match_level_t match_level)
 {
-    fmt::print(stderr, "DEBUG: test_merge_4\n");
+    // fmt::print(stderr, "DEBUG: test_merge_4\n");
 
     using namespace acmacs::chart;
     auto [merged3_chart, merge3_report] = merge(chart1, chart2, MergeSettings(match_level, projection_merge_t::type3));
@@ -192,14 +192,36 @@ void test_merge_4(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart
 
 void test_merge_5(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::CommonAntigensSera::match_level_t match_level)
 {
-    fmt::print(stderr, "DEBUG: test_merge_5\n");
+    // fmt::print(stderr, "DEBUG: test_merge_5\n");
 
     using namespace acmacs::chart;
-    const MergeSettings settings(match_level, projection_merge_t::type5);
-    auto [merged_chart, merge_report] = merge(chart1, chart2, settings);
+    auto [merged3_chart, merge3_report] = merge(chart1, chart2, MergeSettings(match_level, projection_merge_t::type3));
+    auto [merged5_chart, merge5_report] = merge(chart1, chart2, MergeSettings(match_level, projection_merge_t::type5));
 
-    // assert(merged_chart->number_of_projections() == 1);
+    assert(merged5_chart->number_of_projections() == 1);
 
+    auto layout1 = chart1.projection(0)->layout();
+    auto merge3_layout = merged3_chart->projection(0)->layout();
+    auto merge5_layout = merged5_chart->projection(0)->layout();
+    const auto merge_num_antigens = merged5_chart->number_of_antigens();
+    const auto chart1_num_antigens = chart1.number_of_antigens();
+
+    // fmt::print(stderr, "DEBUG: chart1 {:.8f}\n", *layout1);
+    // fmt::print(stderr, "DEBUG: merge3 {:.8f}\n", *merge3_layout);
+    // fmt::print(stderr, "DEBUG: merge5 {:.8f}\n", *merge5_layout);
+
+    // coordinates of points of the first chart (including common) must be the same in layout1, merged3_chart and merged5_chart
+    for (const auto& [index1, index_merge_common] : merge5_report.antigens_primary_target) {
+        // fmt::print(stderr, "DEBUG: AG {} {} {} {} {} {}\n", index1, index_merge_common.index, index_merge_common.common, layout1->at(index1), merge3_layout->at(index_merge_common.index), merge5_layout->at(index_merge_common.index));
+        assert(layout1->at(index1) == merge5_layout->at(index_merge_common.index));
+        if (!index_merge_common.common)
+            assert(merge3_layout->at(index_merge_common.index) == merge5_layout->at(index_merge_common.index));
+    }
+    for (const auto& [index1, index_merge_common] : merge5_report.sera_primary_target) {
+        assert(layout1->at(index1 + chart1_num_antigens) == merge5_layout->at(index_merge_common.index + merge_num_antigens));
+        if (!index_merge_common.common)
+            assert(merge3_layout->at(index_merge_common.index + merge_num_antigens) == merge5_layout->at(index_merge_common.index + merge_num_antigens));
+    }
 
 } // test_merge_5
 

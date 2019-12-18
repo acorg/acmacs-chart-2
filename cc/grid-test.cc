@@ -83,7 +83,7 @@ void acmacs::chart::GridTest::test(Result& result)
         auto hemisphering_contribution = target_contribution + hemisphering_stress_threshold_rough;
         const auto area = area_for(table_distances_for_point);
         for (auto it = area.begin(grid_step_), last = area.end(); it != last; ++it) {
-            layout[result.point_no] = *it;
+            layout.update(result.point_no, *it);
             const auto contribution = stress_.contribution(result.point_no, table_distances_for_point, layout.data());
             if (contribution < best_contribution) {
                 best_contribution = contribution;
@@ -95,7 +95,7 @@ void acmacs::chart::GridTest::test(Result& result)
             }
         }
         if (best_coord.exists()) {
-            layout[result.point_no] = best_coord;
+            layout.update(result.point_no, best_coord);
             const auto status = acmacs::chart::optimize(optimization_method_, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
             result.pos = layout.at(result.point_no);
             result.distance = distance(original_pos, result.pos);
@@ -104,7 +104,7 @@ void acmacs::chart::GridTest::test(Result& result)
         }
         else if (hemisphering_coord.exists()) {
             // relax to find real contribution
-            layout[result.point_no] = hemisphering_coord;
+            layout.update(result.point_no, hemisphering_coord);
             auto status = acmacs::chart::optimize(optimization_method_, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
             result.pos = layout.at(result.point_no);
             result.distance = distance(original_pos, result.pos);
@@ -165,7 +165,7 @@ acmacs::chart::GridTest::Projection acmacs::chart::GridTest::make_new_projection
     auto layout = projection->layout_modified();
     for (const auto& result : results) {
         if (result && result.contribution_diff < 0) {
-            (*layout)[result.point_no] = result.pos;
+            layout->update(result.point_no, result.pos);
         }
     }
     const auto status = acmacs::chart::optimize(optimization_method_, stress_, layout->data(), layout->data() + layout->size(), acmacs::chart::optimization_precision::fine);

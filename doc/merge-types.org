@@ -1,4 +1,4 @@
-# Time-stamp: <2019-12-17 15:43:39 eu>
+# Time-stamp: <2019-12-18 14:44:42 eu>
 * Introduction
 People have different opinions on what are "overlay", "fzozen"
 etc. merges and what was really implemented in lispmds, also their
@@ -36,7 +36,7 @@ i.e. points found only in the second chart are allowed to move.
 * Merge type 5
 Tables are merged. The best projection of the second chart orieneted
 to the best projection of the first chart using procrustes.
-Coordinates of the all points of the first chart and coordinates of
+Coordinates of all points of the first chart and coordinates of
 the non-common points of the second chart are copied to the resulting
 layout from their source layouts. Then the points of the first chart
 (including common points) are fixed and the merge is relaxed,

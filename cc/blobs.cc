@@ -25,7 +25,7 @@ void acmacs::chart::Blobs::calculate(const acmacs::Layout& layout, const Stress&
     const auto initial_stress = stress.value(layout_for_blobs);
     for (size_t point_no = 0; point_no < layout_for_blobs.number_of_points(); ++point_no) {
         calculate_for_point(point_no, layout_for_blobs, stress, initial_stress);
-        layout_for_blobs[point_no] = layout[point_no];
+        layout_for_blobs.update(point_no, layout[point_no]);
     }
 
 } // acmacs::chart::Blobs::calculate
@@ -40,7 +40,7 @@ void acmacs::chart::Blobs::calculate(const acmacs::Layout& layout, const PointIn
     const auto initial_stress = stress.value(layout_for_blobs);
     for (size_t point_no : points) {
         calculate_for_point(point_no, layout_for_blobs, stress, initial_stress);
-        layout_for_blobs[point_no] = layout[point_no];
+        layout_for_blobs.update(point_no, layout[point_no]);
     }
 
 } // acmacs::chart::Blobs::calculate

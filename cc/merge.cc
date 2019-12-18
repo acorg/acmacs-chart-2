@@ -10,12 +10,15 @@
 // ----------------------------------------------------------------------
 
 static void merge_info(acmacs::chart::ChartModify& target, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2);
-static void merge_titers(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
-static void merge_plot_spec(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, const acmacs::chart::MergeReport& report);
-static void merge_projections_type2(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
-static void merge_projections_type3(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
+static void merge_titers(acmacs::chart::ChartModify& result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
+static void merge_plot_spec(acmacs::chart::ChartModify& result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, const acmacs::chart::MergeReport& report);
+static void merge_projections_type2(acmacs::chart::ChartModify& result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
+static void merge_projections_type3(acmacs::chart::ChartModify& result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
+static void merge_projections_type5(acmacs::chart::ChartModify& result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
 static void copy_layout(const acmacs::Layout& source, acmacs::Layout& target, size_t source_number_of_antigens, size_t target_number_of_antigens);
 static acmacs::chart::DisconnectedPoints map_disconnected(const acmacs::chart::DisconnectedPoints& source, size_t source_number_of_antigens, size_t target_number_of_antigens, const acmacs::chart::MergeReport::index_mapping_t& antigen_mapping, const acmacs::chart::MergeReport::index_mapping_t& sera_mapping);
+static void check_projection_before_merging(const acmacs::chart::Projection& projection);
+static void check_projections_before_merging(const acmacs::chart::Projection& projection1, const acmacs::chart::Projection& projection2);
 
 // ----------------------------------------------------------------------
 
@@ -80,6 +83,18 @@ static const auto merge_antigens_sera = [](auto& target, const auto& source, con
 
 std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart::merge(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, const MergeSettings& settings)
 {
+    const auto relax_type4_type5 = [](const MergeReport& report, ChartModify& chart) {
+        UnmovablePoints unmovable_points;
+        // set unmovable for all points of chart1 including common ones
+        for (const auto& [index1, index_merge_common] : report.antigens_primary_target)
+            unmovable_points.insert(index_merge_common.index);
+        for (const auto& [index1, index_merge_common] : report.sera_primary_target)
+            unmovable_points.insert(index_merge_common.index + chart.number_of_antigens());
+        auto projection = chart.projection_modify(0);
+        projection->set_unmovable(unmovable_points);
+        projection->relax(optimization_options{});
+    };
+
     // --------------------------------------------------
 
     if (const auto dup1a = chart1.antigens()->find_duplicates(), dup1s = chart1.sera()->find_duplicates(); !dup1a.empty() || !dup1s.empty()) {
@@ -120,46 +135,33 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
         throw merge_error{err_message}; // ::string::concat("Merge ", result->description(), " has duplicates among antigens or sera: ", to_string(rda), ' ' , to_string(rds))};
     }
 
-    merge_titers(result, chart1, chart2, report);
-    merge_plot_spec(result, chart1, chart2, report);
+    merge_titers(*result, chart1, chart2, report);
+    merge_plot_spec(*result, chart1, chart2, report);
 
     if (chart1.number_of_projections()) {
         switch (settings.projection_merge) {
             case projection_merge_t::type1:
                 break; // no projections in the merge
             case projection_merge_t::type2:
-                merge_projections_type2(result, chart1, chart2, report);
+                merge_projections_type2(*result, chart1, chart2, report);
                 break;
             case projection_merge_t::type3:
                 if (chart2.number_of_projections() == 0)
                     throw merge_error{"cannot perform type3 merge: secondary chart has no projections"};
-                merge_projections_type3(result, chart1, chart2, report);
+                merge_projections_type3(*result, chart1, chart2, report);
                 break;
             case projection_merge_t::type4:
                 if (chart2.number_of_projections() == 0)
                     throw merge_error{"cannot perform type4 merge: secondary chart has no projections"};
-                merge_projections_type3(result, chart1, chart2, report);
-                {
-                    UnmovablePoints unmovable_points;
-                    // set unmovable for all points of chart1 including common ones
-                    for (const auto& [index1, index_merge_common] : report.antigens_primary_target)
-                        unmovable_points.insert(index_merge_common.index);
-                    for (const auto& [index1, index_merge_common] : report.sera_primary_target)
-                        unmovable_points.insert(index_merge_common.index + result->number_of_antigens());
-                    auto projection = result->projection_modify(0);
-                    projection->set_unmovable(unmovable_points);
-                    projection->relax(optimization_options{});
-                }
+                merge_projections_type3(*result, chart1, chart2, report);
+                relax_type4_type5(report, *result);
                 break;
-            // case projection_merge_t::type5:
-            //     if (chart2.number_of_projections() == 0)
-            //         throw merge_error{"cannot perform type5 merge: secondary chart has no projections"};
-            //     merge_projections_type5(result, chart1, chart2, report);
-            //     {
-            //         list_of_the_fixed_points;
-            //         result->relax_with_unmovable_points(list_of_the_fixed_points);
-            //     }
-            //     break;
+            case projection_merge_t::type5:
+                if (chart2.number_of_projections() == 0)
+                    throw merge_error{"cannot perform type5 merge: secondary chart has no projections"};
+                merge_projections_type5(*result, chart1, chart2, report);
+                relax_type4_type5(report, *result);
+                break;
         }
     }
 
@@ -169,12 +171,12 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
 
 // ----------------------------------------------------------------------
 
-void merge_titers(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report)
+void merge_titers(acmacs::chart::ChartModify& result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report)
 {
-    auto titers = result->titers_modify();
+    auto titers = result.titers_modify();
     auto titers1 = chart1.titers(), titers2 = chart2.titers();
     auto layers1 = titers1->number_of_layers(), layers2 = titers2->number_of_layers();
-    titers->create_layers((layers1 ? layers1 : 1) + (layers2 ? layers2 : 1), result->antigens()->size());
+    titers->create_layers((layers1 ? layers1 : 1) + (layers2 ? layers2 : 1), result.number_of_antigens());
 
     size_t target_layer_no = 0;
     auto copy_layers = [&target_layer_no, &titers](size_t source_layers, const auto& source_titers, const acmacs::chart::MergeReport::index_mapping_t& antigen_target,
@@ -198,16 +200,16 @@ void merge_titers(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart
     };
     copy_layers(layers1, *titers1, report.antigens_primary_target, report.sera_primary_target);
     copy_layers(layers2, *titers2, report.antigens_secondary_target, report.sera_secondary_target);
-    report.titer_report = titers->set_from_layers(*result);
+    report.titer_report = titers->set_from_layers(result);
 }
 
 // ----------------------------------------------------------------------
 
-void merge_plot_spec(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, const acmacs::chart::MergeReport& report)
+void merge_plot_spec(acmacs::chart::ChartModify& result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, const acmacs::chart::MergeReport& report)
 {
     auto plot_spec1 = chart1.plot_spec();
     auto plot_spec2 = chart2.plot_spec();
-    auto result_plot_spec = result->plot_spec_modify();
+    auto result_plot_spec = result.plot_spec_modify();
     for (size_t ag_no = 0; ag_no < chart1.number_of_antigens(); ++ag_no)
         result_plot_spec->modify(ag_no, plot_spec1->style(ag_no));
     for (size_t sr_no = 0; sr_no < chart1.number_of_sera(); ++sr_no)
@@ -228,21 +230,40 @@ void merge_plot_spec(acmacs::chart::ChartModifyP result, const acmacs::chart::Ch
 
 // ----------------------------------------------------------------------
 
-void merge_projections_type2(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& /*chart2*/, acmacs::chart::MergeReport& report)
+void check_projection_before_merging(const acmacs::chart::Projection& projection)
+{
+    if (!projection.avidity_adjusts().empty())
+        throw acmacs::chart::merge_error{"projection has avidity_adjusts"};
+}
+
+// ----------------------------------------------------------------------
+
+void check_projections_before_merging(const acmacs::chart::Projection& projection1, const acmacs::chart::Projection& projection2)
+{
+    check_projection_before_merging(projection1);
+    check_projection_before_merging(projection2);
+    if (projection1.number_of_dimensions() != projection2.number_of_dimensions())
+        throw acmacs::chart::merge_error{"projections have different number of dimensions"};
+    if (projection1.minimum_column_basis() != projection2.minimum_column_basis())
+        throw acmacs::chart::merge_error{"projections have different minimum column bases"};
+}
+
+// ----------------------------------------------------------------------
+
+void merge_projections_type2(acmacs::chart::ChartModify& result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& /*chart2*/, acmacs::chart::MergeReport& report)
 {
     // copy best projection of chart1, set coords of non-common points of chart2 to NaN
     // std::cout << "INFO: incremental merge\n";
     auto projection1 = chart1.projection(0);
-    if (!projection1->avidity_adjusts().empty())
-        throw acmacs::chart::merge_error{"chart1 projection has avidity_adjusts"};
-    auto result_projection = result->projections_modify()->new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
+    check_projection_before_merging(*projection1);
+    auto result_projection = result.projections_modify()->new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
     auto layout1 = projection1->layout();
     auto result_layout = result_projection->layout_modified();
-    copy_layout(*layout1, *result_layout, chart1.number_of_antigens(), result->number_of_antigens());
+    copy_layout(*layout1, *result_layout, chart1.number_of_antigens(), result.number_of_antigens());
 
     result_projection->transformation(projection1->transformation());
     if (const auto result_disconnected =
-            map_disconnected(projection1->disconnected(), chart1.number_of_antigens(), result->number_of_antigens(), report.antigens_primary_target, report.sera_primary_target);
+            map_disconnected(projection1->disconnected(), chart1.number_of_antigens(), result.number_of_antigens(), report.antigens_primary_target, report.sera_primary_target);
         !result_disconnected->empty()) {
         result_projection->set_disconnected(result_disconnected);
     }
@@ -250,19 +271,63 @@ void merge_projections_type2(acmacs::chart::ChartModifyP result, const acmacs::c
 
 // ----------------------------------------------------------------------
 
-void merge_projections_type3(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report)
+// The best projection of the second chart orieneted to the best
+// projection of the first chart using procrustes. Coordinates of the
+// non-common points are copied to the resulting layout from their
+// source layouts. Coordinates of each common point are set to the
+// middle between coordinates of that point in the source projections.
+
+void merge_projections_type3(acmacs::chart::ChartModify& result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report)
 {
-      // std::cout << "INFO: type3 merge\n";
     auto projection1 = chart1.projection(0);
-    if (!projection1->avidity_adjusts().empty())
-        throw acmacs::chart::merge_error{"chart1 projection has avidity_adjusts"};
     auto projection2 = chart2.projection(0);
-    if (!projection2->avidity_adjusts().empty())
-        throw acmacs::chart::merge_error{"chart2 projection has avidity_adjusts"};
-    if (projection1->number_of_dimensions() != projection2->number_of_dimensions())
-        throw acmacs::chart::merge_error{"projections have different number of dimensions"};
-    if (projection1->minimum_column_basis() != projection2->minimum_column_basis())
-        throw acmacs::chart::merge_error{"projections have different minimum column bases"};
+    check_projections_before_merging(*projection1, *projection2);
+
+    // re-orinet layout2 to layout1 using procrustes
+    const auto procrustes_data = procrustes(*projection1, *projection2, report.common.points(acmacs::chart::CommonAntigensSera::subset::all), acmacs::chart::procrustes_scaling_t::no);
+    auto layout1 = projection1->transformed_layout();
+    const auto transformation2 = procrustes_data.transformation.transformation();
+    // std::cout << "INFO: transformation for the secondary layout: " << transformation2 << '\n';
+    auto layout2 = projection2->layout()->transform(transformation2);
+
+    auto result_projection = result.projections_modify()->new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
+    auto result_layout = result_projection->layout_modified();
+    copy_layout(*layout1, *result_layout, chart1.number_of_antigens(), result.number_of_antigens());
+
+    for (const auto& [index2, merge] : report.antigens_secondary_target) {
+        if (merge.common)
+            result_layout->update(merge.index, acmacs::middle(layout2->at(index2), result_layout->at(merge.index)));
+        else
+            result_layout->update(merge.index, layout2->at(index2));
+    }
+    for (const auto& [index2, merge] : report.sera_secondary_target) {
+        if (merge.common)
+            result_layout->update(merge.index + result.number_of_antigens(), acmacs::middle(layout2->at(index2 + chart2.number_of_antigens()), result_layout->at(merge.index + result.number_of_antigens())));
+        else
+            result_layout->update(merge.index + result.number_of_antigens(), layout2->at(index2 + chart2.number_of_antigens()));
+    }
+
+    if (auto result_disconnected1 = map_disconnected(projection1->disconnected(), chart1.number_of_antigens(), result.number_of_antigens(), report.antigens_primary_target, report.sera_primary_target),
+        result_disconnected2 = map_disconnected(projection2->disconnected(), chart2.number_of_antigens(), result.number_of_antigens(), report.antigens_secondary_target, report.sera_secondary_target);
+        !result_disconnected1->empty() || !result_disconnected2->empty()) {
+        result_disconnected1.extend(result_disconnected2);
+        result_projection->set_disconnected(result_disconnected1);
+    }
+}
+
+// ----------------------------------------------------------------------
+
+// The best projection of the second chart orieneted to the best
+// projection of the first chart using procrustes. Coordinates of the
+// all points of the first chart and coordinates of the non-common
+// points of the second chart are copied to the resulting layout from
+// their source layouts.
+
+void merge_projections_type5(acmacs::chart::ChartModify& result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report)
+{
+    auto projection1 = chart1.projection(0);
+    auto projection2 = chart2.projection(0);
+    check_projections_before_merging(*projection1, *projection2);
 
     // re-orinet layout2 to layout1 using procrustes
     const auto procrustes_data = procrustes(*projection1, *projection2, report.common.points(acmacs::chart::CommonAntigensSera::subset::all), acmacs::chart::procrustes_scaling_t::no);
@@ -271,37 +336,27 @@ void merge_projections_type3(acmacs::chart::ChartModifyP result, const acmacs::c
       // std::cout << "INFO: transformation for the secondary layout: " << transformation2 << '\n';
     auto layout2 = projection2->layout()->transform(transformation2);
 
-    auto result_projection = result->projections_modify()->new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
+    auto result_projection = result.projections_modify()->new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
     auto result_layout = result_projection->layout_modified();
-    copy_layout(*layout1, *result_layout, chart1.number_of_antigens(), result->number_of_antigens());
+    copy_layout(*layout1, *result_layout, chart1.number_of_antigens(), result.number_of_antigens());
 
-    for (size_t ag_no = 0; ag_no < chart2.number_of_antigens(); ++ag_no) {
-        if (auto found = report.antigens_secondary_target.find(ag_no); found != report.antigens_secondary_target.end()) {
-            auto coord2 = layout2->at(ag_no);
-            if (found->second.common)
-                (*result_layout)[found->second.index] = acmacs::middle(coord2, result_layout->at(found->second.index));
-            else
-                (*result_layout)[found->second.index] = coord2;
-        }
+    for (const auto& [index2, merge] : report.antigens_secondary_target) {
+        if (!merge.common)
+            result_layout->update(merge.index, layout2->at(index2));
     }
-    for (size_t sr_no = 0; sr_no < chart2.number_of_sera(); ++sr_no) {
-        if (auto found = report.sera_secondary_target.find(sr_no); found != report.sera_secondary_target.end()) {
-            auto coord2 = (*layout2)[sr_no + chart2.number_of_antigens()];
-            if (found->second.common)
-                (*result_layout)[found->second.index + result->number_of_antigens()] = acmacs::middle(coord2, result_layout->at(found->second.index + result->number_of_antigens()));
-            else
-                (*result_layout)[found->second.index + result->number_of_antigens()] = coord2;
-        }
+    for (const auto& [index2, merge] : report.sera_secondary_target) {
+        if (!merge.common)
+            result_layout->update(merge.index + result.number_of_antigens(), layout2->at(index2 + chart2.number_of_antigens()));
     }
 
-    if (auto result_disconnected1 =
-            map_disconnected(projection1->disconnected(), chart1.number_of_antigens(), result->number_of_antigens(), report.antigens_primary_target, report.sera_primary_target),
-        result_disconnected2 = map_disconnected(projection2->disconnected(), chart2.number_of_antigens(), result->number_of_antigens(), report.antigens_secondary_target, report.sera_secondary_target);
+    if (auto result_disconnected1 = map_disconnected(projection1->disconnected(), chart1.number_of_antigens(), result.number_of_antigens(), report.antigens_primary_target, report.sera_primary_target),
+        result_disconnected2 = map_disconnected(projection2->disconnected(), chart2.number_of_antigens(), result.number_of_antigens(), report.antigens_secondary_target, report.sera_secondary_target);
         !result_disconnected1->empty() || !result_disconnected2->empty()) {
         result_disconnected1.extend(result_disconnected2);
         result_projection->set_disconnected(result_disconnected1);
     }
-}
+
+} // merge_projections_type5
 
 // ----------------------------------------------------------------------
 
@@ -330,9 +385,9 @@ acmacs::chart::DisconnectedPoints map_disconnected(const acmacs::chart::Disconne
 void copy_layout(const acmacs::Layout& source, acmacs::Layout& target, size_t source_number_of_antigens, size_t target_number_of_antigens)
 {
     for (size_t ag_no = 0; ag_no < source_number_of_antigens; ++ag_no)
-        target[ag_no] = source[ag_no];
+        target.update(ag_no, source[ag_no]);
     for (size_t sr_no = 0; sr_no < (source.number_of_points() - source_number_of_antigens); ++sr_no)
-        target[sr_no + target_number_of_antigens] = source[sr_no + source_number_of_antigens];
+        target.update(sr_no + target_number_of_antigens, source[sr_no + source_number_of_antigens]);
 }
 
 // ----------------------------------------------------------------------

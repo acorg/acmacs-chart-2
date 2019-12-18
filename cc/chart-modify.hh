@@ -449,7 +449,7 @@ namespace acmacs::chart
         std::string comment() const override { return comment_; }
 
         std::optional<double> stored_stress() const override { return stress_; }
-        void move_point(size_t aPointNo, const PointCoordinates& aCoordinates) { modify(); (*layout_)[aPointNo] = aCoordinates; transformed_layout_.reset(); }
+        void move_point(size_t aPointNo, const PointCoordinates& aCoordinates) { modify(); layout_->update(aPointNo, aCoordinates); transformed_layout_.reset(); }
         void rotate_radians(double aAngle) { modify(); transformation_.rotate(aAngle); transformed_layout_.reset(); }
         void rotate_degrees(double aAngle) { rotate_radians(aAngle * M_PI / 180.0); }
         void flip(double aX, double aY) { modify(); transformation_.flip(aX, aY); transformed_layout_.reset(); }

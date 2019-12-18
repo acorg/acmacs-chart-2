@@ -401,7 +401,7 @@ double acmacs::chart::Projection::stress(acmacs::chart::RecalculateStress recalc
 double acmacs::chart::Projection::stress_with_moved_point(size_t point_no, const PointCoordinates& move_to) const
 {
     acmacs::Layout new_layout(*layout());
-    new_layout[point_no] = move_to;
+    new_layout.update(point_no, move_to);
     return stress_factory(*this, multiply_antigen_titer_until_column_adjust::yes).value(new_layout);
 
 } // acmacs::chart::Projection::stress_with_moved_point
