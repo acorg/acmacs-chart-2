@@ -51,6 +51,8 @@ int main(int argc, char* const argv[])
 
 void test_merge_2(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::CommonAntigensSera::match_level_t match_level)
 {
+    // fmt::print(stderr, "DEBUG: test_merge_2\n");
+
     using namespace acmacs::chart;
     const MergeSettings settings(match_level, projection_merge_t::type2);
     auto [merged_chart, merge_report] = merge(chart1, chart2, settings);
@@ -95,9 +97,13 @@ void test_merge_2(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart
 
 void test_merge_3(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::CommonAntigensSera::match_level_t match_level)
 {
+    // fmt::print(stderr, "DEBUG: test_merge_3\n");
+
     using namespace acmacs::chart;
     const MergeSettings settings(match_level, projection_merge_t::type3);
     auto [merged_chart, merge_report] = merge(chart1, chart2, settings);
+
+    // export_factory(*merged_chart, "/d/m3-3.ace", "test-chart-merge-types-2-5");
 
     assert(merged_chart->number_of_projections() == 1);
 
@@ -117,7 +123,7 @@ void test_merge_3(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart
     // non-common points of the first layout must be copied
     for (const auto& [index1, index_merge_common] : merge_report.antigens_primary_target) {
         if (!index_merge_common.common) {
-            fmt::print(stderr, "DEBUG: {} {} {} {} {} {}\n", index_merge_common.common, index1, (*layout1)[index1], index_merge_common.index, (*merge_layout)[index_merge_common.index], (*layout1)[index1] == (*merge_layout)[index_merge_common.index]);
+            // fmt::print(stderr, "DEBUG: {} {} {} {} {} {}\n", index_merge_common.common, index1, (*layout1)[index1], index_merge_common.index, (*merge_layout)[index_merge_common.index], (*layout1)[index1] == (*merge_layout)[index_merge_common.index]);
             assert((*layout1)[index1] == (*merge_layout)[index_merge_common.index]);
         }
     }
@@ -139,6 +145,8 @@ void test_merge_3(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart
 
 void test_merge_4(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::CommonAntigensSera::match_level_t match_level)
 {
+    fmt::print(stderr, "DEBUG: test_merge_4\n");
+
     using namespace acmacs::chart;
     auto [merged3_chart, merge3_report] = merge(chart1, chart2, MergeSettings(match_level, projection_merge_t::type3));
     auto [merged4_chart, merge4_report] = merge(chart1, chart2, MergeSettings(match_level, projection_merge_t::type4));
@@ -173,6 +181,8 @@ void test_merge_4(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart
 
 void test_merge_5(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::CommonAntigensSera::match_level_t match_level)
 {
+    fmt::print(stderr, "DEBUG: test_merge_5\n");
+
     using namespace acmacs::chart;
     const MergeSettings settings(match_level, projection_merge_t::type5);
     auto [merged_chart, merge_report] = merge(chart1, chart2, settings);

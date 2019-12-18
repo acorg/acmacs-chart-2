@@ -564,57 +564,57 @@ TableDate InfoModify::date(Compute aCompute) const
 
 // ----------------------------------------------------------------------
 
-AntigenModify::AntigenModify(AntigenP main)
+AntigenModify::AntigenModify(const Antigen& main)
     :
-    name_{main->name()},
-    date_{main->date()},
-    passage_{main->passage()},
-    lineage_{main->lineage()},
-    reassortant_{main->reassortant()},
-    annotations_{main->annotations()},
-    lab_ids_{main->lab_ids()},
-    clades_{main->clades()},
-    reference_{main->reference()}
+    name_{main.name()},
+    date_{main.date()},
+    passage_{main.passage()},
+    lineage_{main.lineage()},
+    reassortant_{main.reassortant()},
+    annotations_{main.annotations()},
+    lab_ids_{main.lab_ids()},
+    clades_{main.clades()},
+    reference_{main.reference()}
 {
 } // AntigenModify::AntigenModify
 
 // ----------------------------------------------------------------------
 
-void AntigenModify::replace_with(AntigenP main)
+void AntigenModify::replace_with(const Antigen& main)
 {
-    name_ = main->name();
-    date_ = main->date();
-    passage_ = main->passage();
-    lineage_ = main->lineage();
-    reassortant_ = main->reassortant();
-    annotations_ = main->annotations();
-    lab_ids_ = main->lab_ids();
-    clades_ = main->clades();
-    reference_ = main->reference();
+    name_ = main.name();
+    date_ = main.date();
+    passage_ = main.passage();
+    lineage_ = main.lineage();
+    reassortant_ = main.reassortant();
+    annotations_ = main.annotations();
+    lab_ids_ = main.lab_ids();
+    clades_ = main.clades();
+    reference_ = main.reference();
 
 } // AntigenModify::replace_with
 
 // ----------------------------------------------------------------------
 
-void AntigenModify::update_with(AntigenP main)
+void AntigenModify::update_with(const Antigen& main)
 {
     if (date_.empty()) {
-        date_ = main->date();
+        date_ = main.date();
     }
-    else if (!main->date().empty() && date_ != main->date()) {
-        fmt::print(stderr, "WARNING: merged antigen dates {} vs. {}\n", *date_, *main->date());
+    else if (!main.date().empty() && date_ != main.date()) {
+        fmt::print(stderr, "WARNING: merged antigen dates {} vs. {}\n", *date_, *main.date());
     }
 
     if (lineage_ == BLineage::Unknown) {
-        lineage_ = main->lineage();
+        lineage_ = main.lineage();
     }
-    else if (main->lineage() != BLineage::Unknown && lineage_ != main->lineage()) {
-        fmt::print(stderr, "WARNING: merged antigen lineages {} vs. {}\n", lineage_, main->lineage());
+    else if (main.lineage() != BLineage::Unknown && lineage_ != main.lineage()) {
+        fmt::print(stderr, "WARNING: merged antigen lineages {} vs. {}\n", lineage_, main.lineage());
     }
-    lab_ids_.merge_in(main->lab_ids());
-    clades_.merge_in(main->clades());
+    lab_ids_.merge_in(main.lab_ids());
+    clades_.merge_in(main.clades());
 
-    reference_ |= main->reference();
+    reference_ |= main.reference();
 
 } // AntigenModify::update_with
 
@@ -640,50 +640,50 @@ void AntigenModify::set_continent()
 
 // ----------------------------------------------------------------------
 
-SerumModify::SerumModify(SerumP main)
+SerumModify::SerumModify(const Serum& main)
     :
-    name_{main->name()},
-    passage_{main->passage()},
-    lineage_{main->lineage()},
-    reassortant_{main->reassortant()},
-    annotations_{main->annotations()},
-    serum_id_{main->serum_id()},
-    serum_species_{main->serum_species()},
-    homologous_antigens_{main->homologous_antigens()}
+    name_{main.name()},
+    passage_{main.passage()},
+    lineage_{main.lineage()},
+    reassortant_{main.reassortant()},
+    annotations_{main.annotations()},
+    serum_id_{main.serum_id()},
+    serum_species_{main.serum_species()},
+    homologous_antigens_{main.homologous_antigens()}
 {
 } // SerumModify::SerumModify
 
 // ----------------------------------------------------------------------
 
-void SerumModify::replace_with(SerumP main)
+void SerumModify::replace_with(const Serum& main)
 {
-    name_ = main->name();
-    passage_ = main->passage();
-    lineage_ = main->lineage();
-    reassortant_ = main->reassortant();
-    annotations_ = main->annotations();
-    serum_id_ = main->serum_id();
-    serum_species_ = main->serum_species();
-    // homologous_antigens_ = main->homologous_antigens();
+    name_ = main.name();
+    passage_ = main.passage();
+    lineage_ = main.lineage();
+    reassortant_ = main.reassortant();
+    annotations_ = main.annotations();
+    serum_id_ = main.serum_id();
+    serum_species_ = main.serum_species();
+    // homologous_antigens_ = main.homologous_antigens();
 
 } // SerumModify::replace_with
 
 // ----------------------------------------------------------------------
 
-void SerumModify::update_with(SerumP main)
+void SerumModify::update_with(const Serum& main)
 {
     if (lineage_ == BLineage::Unknown) {
-        lineage_ = main->lineage();
+        lineage_ = main.lineage();
     }
-    else if (main->lineage() != BLineage::Unknown && lineage_ != main->lineage()) {
-        std::cerr << fmt::format("WARNING: merged serum lineages {} vs. {}\n", lineage_, main->lineage());
+    else if (main.lineage() != BLineage::Unknown && lineage_ != main.lineage()) {
+        std::cerr << fmt::format("WARNING: merged serum lineages {} vs. {}\n", lineage_, main.lineage());
     }
 
     if (serum_species_.empty()) {
-        serum_species_ = main->serum_species();
+        serum_species_ = main.serum_species();
     }
-    else if (!main->serum_species().empty() && serum_species_ != main->serum_species()) {
-        std::cerr << fmt::format("WARNING: merged serum serum_speciess {} vs. {}\n", *serum_species_, *main->serum_species());
+    else if (!main.serum_species().empty() && serum_species_ != main.serum_species()) {
+        std::cerr << fmt::format("WARNING: merged serum serum_speciess {} vs. {}\n", *serum_species_, *main.serum_species());
     }
 
 } // SerumModify::update_with

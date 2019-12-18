@@ -1,9 +1,8 @@
 #include <sstream>
 
-#include "acmacs-base/stream.hh"
+// #include "acmacs-base/stream.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/date.hh"
-#include "acmacs-base/fmt.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/merge.hh"
 #include "acmacs-chart-2/procrustes.hh"
@@ -29,18 +28,15 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
         auto src1 = primary.antigens();
         for (size_t no1 = 0; no1 < src1->size(); ++no1) {
             if (!remove_distinct || !src1->at(no1)->distinct())
-                antigens_primary_target[no1] = target_antigens++;
+                antigens_primary_target.emplace_or_replace(no1, target_index_common_t{target_antigens++, common.antigen_secondary_by_primary(no1).has_value()});
         }
         auto src2 = secondary.antigens();
         for (size_t no2 = 0; no2 < src2->size(); ++no2) {
             if (!remove_distinct || !src2->at(no2)->distinct()) {
-                if (const auto no1 = common.antigen_primary_by_secondary(no2); no1) {
-                    auto& en = antigens_primary_target.at(*no1);
-                    en.common = true;
-                    antigens_secondary_target[no2] = en;
-                }
+                if (const auto no1 = common.antigen_primary_by_secondary(no2); no1)
+                    antigens_secondary_target.emplace_or_replace(no2, antigens_primary_target.at(*no1));
                 else
-                    antigens_secondary_target[no2] = target_antigens++;
+                    antigens_secondary_target.emplace_or_replace(no2, target_index_common_t{target_antigens++, false});
             }
         }
     }
@@ -49,16 +45,13 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
     {
         auto src1 = primary.sera();
         for (size_t no1 = 0; no1 < src1->size(); ++no1)
-            sera_primary_target[no1] = target_sera++;
+            sera_primary_target.emplace_or_replace(no1, target_index_common_t{target_sera++, common.serum_secondary_by_primary(no1).has_value()});
         auto src2 = secondary.sera();
         for (size_t no2 = 0; no2 < src2->size(); ++no2) {
-            if (const auto no1 = common.serum_primary_by_secondary(no2); no1) {
-                auto& en = sera_primary_target.at(*no1);
-                en.common = true;
-                sera_secondary_target[no2] = en;
-            }
+            if (const auto no1 = common.serum_primary_by_secondary(no2); no1)
+                sera_secondary_target.emplace_or_replace(no2, sera_primary_target.at(*no1));
             else
-                sera_secondary_target[no2] = target_sera++;
+                sera_secondary_target.emplace_or_replace(no2, target_index_common_t{target_sera++, false});
         }
     }
 
@@ -71,13 +64,14 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
 
 // ----------------------------------------------------------------------
 
-static const auto merge_antigens_sera = [](auto& target, const auto& source, const acmacs::chart::MergeReport::index_mapping_t& to_target) {
+static const auto merge_antigens_sera = [](auto& target, const auto& source, const acmacs::chart::MergeReport::index_mapping_t& to_target, bool always_replace) {
     for (size_t no = 0; no < source.size(); ++no) {
         if (const auto entry = to_target.find(no); entry != to_target.end()) {
-            if (entry->second.common)
-                target.at(entry->second.index).update_with(source.at(no));
+            if (!always_replace && entry->second.common)
+                target.at(entry->second.index).update_with(*source.at(no));
             else
-                target.at(entry->second.index).replace_with(source.at(no));
+                target.at(entry->second.index).replace_with(*source.at(no));
+            // fmt::print(stderr, "DEBUG: merge_antigens_sera {} {} <- {} {}\n", entry->second.index, target.at(entry->second.index).full_name(), no, source.at(no)->full_name());
         }
     }
 };
@@ -101,10 +95,10 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
     merge_info(*result, chart1, chart2);
     auto result_antigens = result->antigens_modify();
     auto result_sera = result->sera_modify();
-    merge_antigens_sera(*result_antigens, *chart1.antigens(), report.antigens_primary_target);
-    merge_antigens_sera(*result_antigens, *chart2.antigens(), report.antigens_secondary_target);
-    merge_antigens_sera(*result_sera, *chart1.sera(), report.sera_primary_target);
-    merge_antigens_sera(*result_sera, *chart2.sera(), report.sera_secondary_target);
+    merge_antigens_sera(*result_antigens, *chart1.antigens(), report.antigens_primary_target, true);
+    merge_antigens_sera(*result_antigens, *chart2.antigens(), report.antigens_secondary_target, false);
+    merge_antigens_sera(*result_sera, *chart1.sera(), report.sera_primary_target, true);
+    merge_antigens_sera(*result_sera, *chart2.sera(), report.sera_secondary_target, false);
     if (const auto rda = result_antigens->find_duplicates(), rds = result_sera->find_duplicates(); !rda.empty() || !rds.empty()) {
         const auto err_message = fmt::format("Merge \"{}\" has duplicates: AG:{} SR:{}", result->description(), rda, rds);
         fmt::print(stderr, "ERROR: {}\n", err_message);

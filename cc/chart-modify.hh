@@ -180,7 +180,7 @@ namespace acmacs::chart
     {
      public:
         explicit AntigenModify() = default;
-        explicit AntigenModify(AntigenP main);
+        explicit AntigenModify(const Antigen& main);
 
         acmacs::virus::name_t name() const override { return name_; }
         Date date() const override { return date_; }
@@ -205,8 +205,8 @@ namespace acmacs::chart
         template <typename S> void continent(S&& value) { continent_ = Continent{std::forward<S>(value)}; }
         void set_continent();
 
-        void replace_with(AntigenP main);
-        void update_with(AntigenP main);
+        void replace_with(const Antigen& main);
+        void update_with(const Antigen& main);
 
      private:
         acmacs::virus::name_t name_;
@@ -228,7 +228,7 @@ namespace acmacs::chart
     {
      public:
         explicit SerumModify() = default;
-        explicit SerumModify(SerumP main);
+        explicit SerumModify(const Serum& main);
 
         acmacs::virus::name_t name() const override { return name_; }
         acmacs::virus::Passage passage() const override { return passage_; }
@@ -250,8 +250,8 @@ namespace acmacs::chart
         void remove_annotation(std::string_view annotation) { annotations_.remove(std::string{annotation}); }
         void set_continent() {}
 
-        void replace_with(SerumP main);
-        void update_with(SerumP main);
+        void replace_with(const Serum& main);
+        void update_with(const Serum& main);
 
      private:
         acmacs::virus::name_t name_;
@@ -276,7 +276,7 @@ namespace acmacs::chart
         }
         explicit AntigensSeraModify(std::shared_ptr<Base> main) : data_(main->size(), nullptr)
         {
-            std::transform(main->begin(), main->end(), data_.begin(), [](auto ag_sr) { return std::make_shared<Modify>(ag_sr); });
+            std::transform(main->begin(), main->end(), data_.begin(), [](auto ag_sr) { return std::make_shared<Modify>(*ag_sr); });
         }
 
         size_t size() const override { return data_.size(); }

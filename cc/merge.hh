@@ -1,8 +1,6 @@
 #pragma once
 
-#include <tuple>
-#include <map>
-
+#include "acmacs-base/flat-map.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/common.hh"
 
@@ -29,14 +27,14 @@ namespace acmacs::chart
     {
         struct target_index_common_t
         {
-            target_index_common_t() = default;
-            target_index_common_t& operator=(size_t a_index) { index = a_index; return *this; }
-            target_index_common_t& operator=(const target_index_common_t& src) { index = src.index; common = true; return *this; }
-            size_t index;
+            // target_index_common_t() = default;
+            // target_index_common_t& operator=(size_t a_index) { index = a_index; return *this; }
+            // target_index_common_t& operator=(const target_index_common_t& src) { index = src.index; common = true; return *this; }
+            size_t index{static_cast<size_t>(-1)};
             bool common{false};
         };
 
-        using index_mapping_t = std::map<size_t, target_index_common_t>; // primary/secondary index -> (target index, if common)
+        using index_mapping_t = flat_map_t<size_t, target_index_common_t>; // primary/secondary index -> (target index, if common)
 
         MergeReport(const Chart& primary, const Chart& secondary, const MergeSettings& settings);
 
