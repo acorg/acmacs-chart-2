@@ -16,7 +16,7 @@ namespace acmacs::chart
 
     struct StressParameters
     {
-        StressParameters(size_t a_number_of_points, PointIndexList&& a_unmovable, PointIndexList&& a_disconnected, PointIndexList&& a_unmovable_in_the_last_dimension, multiply_antigen_titer_until_column_adjust a_mult, AvidityAdjusts&& a_avidity_adjusts, dodgy_titer_is_regular a_dodgy_titer_is_regular)
+        StressParameters(size_t a_number_of_points, UnmovablePoints&& a_unmovable, DisconnectedPoints&& a_disconnected, UnmovableInTheLastDimensionPoints&& a_unmovable_in_the_last_dimension, multiply_antigen_titer_until_column_adjust a_mult, AvidityAdjusts&& a_avidity_adjusts, dodgy_titer_is_regular a_dodgy_titer_is_regular)
             : number_of_points(a_number_of_points), unmovable(std::move(a_unmovable)), disconnected(std::move(a_disconnected)),
               unmovable_in_the_last_dimension(std::move(a_unmovable_in_the_last_dimension)), mult(a_mult),
               avidity_adjusts(std::move(a_avidity_adjusts)), dodgy_titer_is_regular(a_dodgy_titer_is_regular) {}
@@ -24,10 +24,10 @@ namespace acmacs::chart
             : number_of_points(a_number_of_points), mult(a_mult), dodgy_titer_is_regular(a_dodgy_titer_is_regular) {}
 
         size_t number_of_points;
-        PointIndexList unmovable;
-        PointIndexList disconnected;
-        PointIndexList unmovable_in_the_last_dimension;
-        multiply_antigen_titer_until_column_adjust mult;
+        UnmovablePoints unmovable;
+        DisconnectedPoints disconnected;
+        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension;
+        multiply_antigen_titer_until_column_adjust mult{multiply_antigen_titer_until_column_adjust::yes};
         AvidityAdjusts avidity_adjusts;
         enum dodgy_titer_is_regular dodgy_titer_is_regular;
 
@@ -54,13 +54,14 @@ namespace acmacs::chart
         constexpr auto number_of_dimensions() const { return number_of_dimensions_; }
         void change_number_of_dimensions(number_of_dimensions_t num_dim) { number_of_dimensions_ = num_dim; }
 
-        const TableDistances& table_distances() const { return table_distances_; }
-        TableDistances& table_distances() { return table_distances_; }
+        constexpr const TableDistances& table_distances() const { return table_distances_; }
+        constexpr TableDistances& table_distances() { return table_distances_; }
         TableDistancesForPoint table_distances_for(size_t point_no) const { return TableDistancesForPoint(point_no, table_distances_); }
-        const StressParameters& parameters() const { return parameters_; }
-        void set_disconnected(const PointIndexList& to_disconnect) { parameters_.disconnected = to_disconnect; }
-        void set_unmovable(const PointIndexList& unmovable) { parameters_.unmovable = unmovable; }
-        void set_unmovable_in_the_last_dimension(const PointIndexList& unmovable_in_the_last_dimension) { parameters_.unmovable_in_the_last_dimension = unmovable_in_the_last_dimension; }
+        constexpr const StressParameters& parameters() const { return parameters_; }
+        constexpr StressParameters& parameters() { return parameters_; }
+        void set_disconnected(const DisconnectedPoints& to_disconnect) { parameters_.disconnected = to_disconnect; }
+        void set_unmovable(const UnmovablePoints& unmovable) { parameters_.unmovable = unmovable; }
+        void set_unmovable_in_the_last_dimension(const UnmovableInTheLastDimensionPoints& unmovable_in_the_last_dimension) { parameters_.unmovable_in_the_last_dimension = unmovable_in_the_last_dimension; }
 
         void set_coordinates_of_disconnected(double* first, double value, number_of_dimensions_t number_of_dimensions) const;
 
@@ -74,7 +75,7 @@ namespace acmacs::chart
 
     }; // class Stress
 
-    Stress stress_factory(const Projection& projection, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes);
+    Stress stress_factory(const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
     Stress stress_factory(const Chart& chart, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular = dodgy_titer_is_regular::no);
 
     TableDistances table_distances(const acmacs::chart::Chart& chart, MinimumColumnBasis minimum_column_basis, dodgy_titer_is_regular a_dodgy_titer_is_regular = dodgy_titer_is_regular::no);

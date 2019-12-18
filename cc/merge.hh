@@ -33,7 +33,7 @@ namespace acmacs::chart
             target_index_common_t& operator=(size_t a_index) { index = a_index; return *this; }
             target_index_common_t& operator=(const target_index_common_t& src) { index = src.index; common = true; return *this; }
             size_t index;
-            bool common = false;
+            bool common{false};
         };
 
         using index_mapping_t = std::map<size_t, target_index_common_t>; // primary/secondary index -> (target index, if common)

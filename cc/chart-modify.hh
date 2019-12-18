@@ -72,9 +72,9 @@ namespace acmacs::chart
         const rjson::value& extension_field_modify(std::string field_name);
         void extension_field_modify(std::string field_name, const rjson::value& value);
 
-        std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {});
-        void relax(number_of_optimizations_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, enum report_stresses report_stresses, const PointIndexList& disconnect_points = {});
-        void relax_incremetal(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options, const PointIndexList& disconnect_points = {}, bool remove_source_projection = true);
+        std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points = {});
+        void relax(number_of_optimizations_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, enum report_stresses report_stresses, const DisconnectedPoints& disconnect_points = {});
+        void relax_incremetal(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points = {}, bool remove_source_projection = true);
 
         void remove_layers();
         void remove_antigens(const ReverseSortedIndexes& indexes);
@@ -474,6 +474,10 @@ namespace acmacs::chart
         virtual std::shared_ptr<ProjectionModifyNew> clone(ChartModify& chart) const;
         ProcrustesData orient_to(const Projection& master);
 
+        void set_unmovable(const UnmovablePoints& a_unmovable) { modify(); unmovable_ = a_unmovable; }
+        void set_disconnected(const DisconnectedPoints& disconnect) { modify(); disconnected_ = disconnect; }
+        void set_unmovable_in_the_last_dimension(const UnmovableInTheLastDimensionPoints& a_unmovable_in_the_last_dimension) { modify(); unmovable_in_the_last_dimension_ = a_unmovable_in_the_last_dimension; }
+
         void remove_antigens(const ReverseSortedIndexes& indexes) { modify(); layout_modified()->remove_points(indexes, 0); }
         void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens);
         void insert_antigen(size_t before) { modify(); layout_modified()->insert_point(before, 0); }
@@ -491,6 +495,9 @@ namespace acmacs::chart
         const Transformation& transformation_modified() const { return transformation_; }
         ColumnBasesModifyP forced_column_bases_modified() const { return forced_column_bases_; }
         void new_layout(size_t number_of_points, number_of_dimensions_t number_of_dimensions) { layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions); transformation_.reset(number_of_dimensions); transformed_layout_.reset(); }
+        UnmovablePoints get_unmovable() const { return unmovable_; }
+        DisconnectedPoints get_disconnected() const { return disconnected_; }
+        UnmovableInTheLastDimensionPoints get_unmovable_in_the_last_dimension() const { return unmovable_in_the_last_dimension_; }
 
      private:
         std::shared_ptr<acmacs::Layout> layout_;
@@ -499,6 +506,9 @@ namespace acmacs::chart
         mutable std::optional<double> stress_;
         ColumnBasesModifyP forced_column_bases_;
         std::string comment_;
+        DisconnectedPoints disconnected_;
+        UnmovablePoints unmovable_;
+        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension_;
 
         friend class ProjectionsModify;
         friend class ChartModify; // to set stress_ in ChartModify::relax()
@@ -524,9 +534,9 @@ namespace acmacs::chart
         acmacs::Transformation transformation() const override { return modified() ? transformation_modified() : main_->transformation(); }
         enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { return main_->dodgy_titer_is_regular(); }
         double stress_diff_to_stop() const override { return main_->stress_diff_to_stop(); }
-        PointIndexList unmovable() const override { return main_->unmovable(); }
-        PointIndexList disconnected() const override { return main_->disconnected(); }
-        PointIndexList unmovable_in_the_last_dimension() const override { return main_->unmovable_in_the_last_dimension(); }
+        UnmovablePoints unmovable() const override { return modified() ? get_unmovable() : main_->unmovable(); }
+        DisconnectedPoints disconnected() const override { return modified() ? get_disconnected() : main_->disconnected(); }
+        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const override { return modified() ? get_unmovable_in_the_last_dimension() : main_->unmovable_in_the_last_dimension(); }
         AvidityAdjusts avidity_adjusts() const override { return main_->avidity_adjusts(); }
 
      protected:
@@ -574,18 +584,22 @@ namespace acmacs::chart
         acmacs::Transformation transformation() const override { return transformation_modified(); }
         enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { return dodgy_titer_is_regular_; }
         double stress_diff_to_stop() const override { return stress_diff_to_stop_; }
-        PointIndexList unmovable() const override { return {}; }
-        PointIndexList disconnected() const override { return disconnected_; }
-        void set_disconnected(const PointIndexList& disconnect) { disconnected_ = disconnect; }
+        UnmovablePoints unmovable() const override { return unmovable_; }
+        void set_unmovable(const UnmovablePoints& a_unmovable) { unmovable_ = a_unmovable; }
+        DisconnectedPoints disconnected() const override { return disconnected_; }
+        void set_disconnected(const DisconnectedPoints& disconnect) { disconnected_ = disconnect; }
         void connect(const PointIndexList& to_connect);
-        PointIndexList unmovable_in_the_last_dimension() const override { return {}; }
+        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const override { return unmovable_in_the_last_dimension_; }
+        void set_unmovable_in_the_last_dimension(const UnmovableInTheLastDimensionPoints& a_unmovable_in_the_last_dimension) { unmovable_in_the_last_dimension_ = a_unmovable_in_the_last_dimension; }
         AvidityAdjusts avidity_adjusts() const override { return {}; }
 
      private:
         MinimumColumnBasis minimum_column_basis_;
         enum dodgy_titer_is_regular dodgy_titer_is_regular_ = dodgy_titer_is_regular::no;
         double stress_diff_to_stop_{0};
-        PointIndexList disconnected_;
+        DisconnectedPoints disconnected_;
+        UnmovablePoints unmovable_;
+        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension_;
 
     }; // class ProjectionModifyNew
 

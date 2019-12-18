@@ -46,6 +46,26 @@ namespace acmacs::chart
 
     }; // class PointIndexList
 
+    // ----------------------------------------------------------------------
+
+    class UnmovablePoints : public PointIndexList
+    {
+      public:
+        using PointIndexList::PointIndexList;
+    };
+
+    class UnmovableInTheLastDimensionPoints : public PointIndexList
+    {
+      public:
+        using PointIndexList::PointIndexList;
+    };
+
+    class DisconnectedPoints : public PointIndexList
+    {
+      public:
+        using PointIndexList::PointIndexList;
+    };
+
 } // namespace acmacs::chart
 
 namespace acmacs

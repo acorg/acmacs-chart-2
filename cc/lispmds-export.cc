@@ -8,15 +8,15 @@
 
 // ----------------------------------------------------------------------
 
-static std::string antigen_names(std::shared_ptr<acmacs::chart::Antigens> aAntigens, const acmacs::chart::PointIndexList& disconnected);
-static std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera, size_t aNumberOfAntigens, const acmacs::chart::PointIndexList& disconnected);
-static std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters, const acmacs::chart::PointIndexList& disconnected);
-static std::string starting_coordss(const acmacs::chart::Chart& aChart, const acmacs::chart::PointIndexList& disconnected);
-static std::string batch_runs(const acmacs::chart::Chart& aChart, const acmacs::chart::PointIndexList& disconnected);
-static std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_of_points, acmacs::number_of_dimensions_t number_of_dimensions, size_t aIndent, const acmacs::chart::PointIndexList& disconnected);
-static std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent, const acmacs::chart::PointIndexList& disconnected);
-static std::string reference_antigens(std::shared_ptr<acmacs::chart::Antigens> aAntigens, const acmacs::chart::PointIndexList& disconnected);
-static std::string plot_spec(const acmacs::chart::Chart& aChart, const acmacs::chart::PointIndexList& disconnected);
+static std::string antigen_names(std::shared_ptr<acmacs::chart::Antigens> aAntigens, const acmacs::chart::DisconnectedPoints& disconnected);
+static std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera, size_t aNumberOfAntigens, const acmacs::chart::DisconnectedPoints& disconnected);
+static std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters, const acmacs::chart::DisconnectedPoints& disconnected);
+static std::string starting_coordss(const acmacs::chart::Chart& aChart, const acmacs::chart::DisconnectedPoints& disconnected);
+static std::string batch_runs(const acmacs::chart::Chart& aChart, const acmacs::chart::DisconnectedPoints& disconnected);
+static std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_of_points, acmacs::number_of_dimensions_t number_of_dimensions, size_t aIndent, const acmacs::chart::DisconnectedPoints& disconnected);
+static std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent, const acmacs::chart::DisconnectedPoints& disconnected);
+static std::string reference_antigens(std::shared_ptr<acmacs::chart::Antigens> aAntigens, const acmacs::chart::DisconnectedPoints& disconnected);
+static std::string plot_spec(const acmacs::chart::Chart& aChart, const acmacs::chart::DisconnectedPoints& disconnected);
 static std::string point_style(const acmacs::PointStyle& aStyle);
 static std::string point_shape(const acmacs::PointShape& aShape);
 
@@ -24,7 +24,7 @@ static std::string point_shape(const acmacs::PointShape& aShape);
 
 std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, std::string_view aProgramName)
 {
-    const auto disconnected = aChart.projections()->empty() ? PointIndexList{} : (*aChart.projections())[0]->disconnected();
+    const auto disconnected = aChart.projections()->empty() ? DisconnectedPoints{} : (*aChart.projections())[0]->disconnected();
 
     auto result = fmt::format(";; MDS configuration file (version 0.6).\n;; Created by AD {} on {}\n", aProgramName, acmacs::time_format());
     if (!disconnected->empty())
@@ -72,7 +72,7 @@ std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, st
 
 // ----------------------------------------------------------------------
 
-std::string antigen_names(std::shared_ptr<acmacs::chart::Antigens> aAntigens, const acmacs::chart::PointIndexList& disconnected)
+std::string antigen_names(std::shared_ptr<acmacs::chart::Antigens> aAntigens, const acmacs::chart::DisconnectedPoints& disconnected)
 {
     std::string result;
     for (auto [ag_no, antigen] : acmacs::enumerate(*aAntigens)) {
@@ -88,7 +88,7 @@ std::string antigen_names(std::shared_ptr<acmacs::chart::Antigens> aAntigens, co
 
 // ----------------------------------------------------------------------
 
-std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera, size_t aNumberOfAntigens, const acmacs::chart::PointIndexList& disconnected)
+std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera, size_t aNumberOfAntigens, const acmacs::chart::DisconnectedPoints& disconnected)
 {
     std::string result;
     for (auto [sr_no, serum] : acmacs::enumerate(*aSera)) {
@@ -104,7 +104,7 @@ std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera, size_t aNumb
 
 // ----------------------------------------------------------------------
 
-std::string reference_antigens(std::shared_ptr<acmacs::chart::Antigens> aAntigens, const acmacs::chart::PointIndexList& disconnected)
+std::string reference_antigens(std::shared_ptr<acmacs::chart::Antigens> aAntigens, const acmacs::chart::DisconnectedPoints& disconnected)
 {
     std::string result = "  :REFERENCE-ANTIGENS '(";
     for (auto [ag_no, antigen] : acmacs::enumerate(*aAntigens)) {
@@ -120,7 +120,7 @@ std::string reference_antigens(std::shared_ptr<acmacs::chart::Antigens> aAntigen
 
 // ----------------------------------------------------------------------
 
-std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters, const acmacs::chart::PointIndexList& disconnected)
+std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters, const acmacs::chart::DisconnectedPoints& disconnected)
 {
     std::string result;
     const size_t number_of_antigens = aTiters->number_of_antigens();
@@ -148,7 +148,7 @@ std::string titers(std::shared_ptr<acmacs::chart::Titers> aTiters, const acmacs:
 
 // ----------------------------------------------------------------------
 
-std::string starting_coordss(const acmacs::chart::Chart& aChart, const acmacs::chart::PointIndexList& disconnected)
+std::string starting_coordss(const acmacs::chart::Chart& aChart, const acmacs::chart::DisconnectedPoints& disconnected)
 {
     auto projections = aChart.projections();
     if (projections->empty())
@@ -166,7 +166,7 @@ std::string starting_coordss(const acmacs::chart::Chart& aChart, const acmacs::c
 
 // ----------------------------------------------------------------------
 
-std::string batch_runs(const acmacs::chart::Chart& aChart, const acmacs::chart::PointIndexList& disconnected)
+std::string batch_runs(const acmacs::chart::Chart& aChart, const acmacs::chart::DisconnectedPoints& disconnected)
 {
     auto projections = aChart.projections();
     if (projections->size() < 2)
@@ -192,7 +192,7 @@ std::string batch_runs(const acmacs::chart::Chart& aChart, const acmacs::chart::
 
 // ----------------------------------------------------------------------
 
-std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_of_points, acmacs::number_of_dimensions_t number_of_dimensions, size_t aIndent, const acmacs::chart::PointIndexList& disconnected)
+std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_of_points, acmacs::number_of_dimensions_t number_of_dimensions, size_t aIndent, const acmacs::chart::DisconnectedPoints& disconnected)
 {
     std::string result;
     for (size_t point_no = 0; point_no < number_of_points; ++point_no) {
@@ -218,7 +218,7 @@ std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_o
 
 // ----------------------------------------------------------------------
 
-std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent, const acmacs::chart::PointIndexList& disconnected)
+std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_ptr<acmacs::chart::Projection> aProjection, size_t aIndent, const acmacs::chart::DisconnectedPoints& disconnected)
 {
     std::string result{"\n"};
     result.append(aIndent, ' ').append("((COL-AND-ROW-ADJUSTS\n").append(aIndent + 2, ' ').append(1, '(');
@@ -263,7 +263,7 @@ std::string col_and_row_adjusts(const acmacs::chart::Chart& aChart, std::shared_
 
 // ----------------------------------------------------------------------
 
-std::string plot_spec(const acmacs::chart::Chart& aChart, const acmacs::chart::PointIndexList& disconnected)
+std::string plot_spec(const acmacs::chart::Chart& aChart, const acmacs::chart::DisconnectedPoints& disconnected)
 {
     std::string result;
     if (auto plot_spec = aChart.plot_spec(); !plot_spec->empty()) {

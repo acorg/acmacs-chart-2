@@ -8,7 +8,7 @@
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
-static acmacs::chart::PointIndexList get_disconnected(std::string_view antigens, std::string_view sera, size_t number_of_antigens, size_t number_of_sera);
+static acmacs::chart::DisconnectedPoints get_disconnected(std::string_view antigens, std::string_view sera, size_t number_of_antigens, size_t number_of_sera);
 
 // ----------------------------------------------------------------------
 
@@ -87,9 +87,9 @@ inline void extend(acmacs::chart::PointIndexList& target, std::vector<size_t>&& 
     }
 }
 
-acmacs::chart::PointIndexList get_disconnected(std::string_view antigens, std::string_view sera, size_t number_of_antigens, size_t number_of_sera)
+acmacs::chart::DisconnectedPoints get_disconnected(std::string_view antigens, std::string_view sera, size_t number_of_antigens, size_t number_of_sera)
 {
-    acmacs::chart::PointIndexList points;
+    acmacs::chart::DisconnectedPoints points;
     if (!antigens.empty())
         extend(points, acmacs::string::split_into_size_t(antigens, ","), 0, number_of_antigens + number_of_sera);
     if (!sera.empty())

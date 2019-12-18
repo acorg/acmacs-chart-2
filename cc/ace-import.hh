@@ -188,12 +188,12 @@ namespace acmacs::chart
         acmacs::Transformation transformation() const override;
         enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { return data()["d"].get_or_default(false) ? dodgy_titer_is_regular::yes : dodgy_titer_is_regular::no; }
         double stress_diff_to_stop() const override { return data()["d"].get_or_default(0.0); }
-        PointIndexList unmovable() const override { return data()["U"]; }
-        PointIndexList unmovable_in_the_last_dimension() const override { return data()["u"]; }
+        UnmovablePoints unmovable() const override { return data()["U"]; }
+        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const override { return data()["u"]; }
         AvidityAdjusts avidity_adjusts() const override { return AvidityAdjusts{data()["f"]}; }
 
      protected:
-        PointIndexList make_disconnected() const override { return data()["D"]; }
+        DisconnectedPoints make_disconnected() const override { return data()["D"]; }
 
      private:
         static const Keys s_keys_;

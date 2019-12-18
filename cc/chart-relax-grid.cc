@@ -46,7 +46,7 @@ int main(int argc, char* const argv[])
         if (!opt.keep_original_projections)
             chart.projections_modify()->remove_all();
         const auto method{acmacs::chart::optimization_method_from_string(opt.method)};
-        acmacs::chart::PointIndexList disconnected;
+        acmacs::chart::DisconnectedPoints disconnected;
         if (!opt.no_disconnect_having_few_titers)
             disconnected.extend(chart.titers()->having_too_few_numeric_titers());
 

@@ -16,7 +16,7 @@ static void merge_plot_spec(acmacs::chart::ChartModifyP result, const acmacs::ch
 static void merge_projections_type2(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
 static void merge_projections_type3(acmacs::chart::ChartModifyP result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report);
 static void copy_layout(const acmacs::Layout& source, acmacs::Layout& target, size_t source_number_of_antigens, size_t target_number_of_antigens);
-static acmacs::chart::PointIndexList map_disconnected(const acmacs::chart::PointIndexList& source, size_t source_number_of_antigens, size_t target_number_of_antigens, const acmacs::chart::MergeReport::index_mapping_t& antigen_mapping, const acmacs::chart::MergeReport::index_mapping_t& sera_mapping);
+static acmacs::chart::DisconnectedPoints map_disconnected(const acmacs::chart::DisconnectedPoints& source, size_t source_number_of_antigens, size_t target_number_of_antigens, const acmacs::chart::MergeReport::index_mapping_t& antigen_mapping, const acmacs::chart::MergeReport::index_mapping_t& sera_mapping);
 
 // ----------------------------------------------------------------------
 
@@ -34,8 +34,11 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
         auto src2 = secondary.antigens();
         for (size_t no2 = 0; no2 < src2->size(); ++no2) {
             if (!remove_distinct || !src2->at(no2)->distinct()) {
-                if (const auto no1 = common.antigen_primary_by_secondary(no2); no1)
-                    antigens_secondary_target[no2] = antigens_primary_target.at(*no1);
+                if (const auto no1 = common.antigen_primary_by_secondary(no2); no1) {
+                    auto& en = antigens_primary_target.at(*no1);
+                    en.common = true;
+                    antigens_secondary_target[no2] = en;
+                }
                 else
                     antigens_secondary_target[no2] = target_antigens++;
             }
@@ -49,8 +52,11 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
             sera_primary_target[no1] = target_sera++;
         auto src2 = secondary.sera();
         for (size_t no2 = 0; no2 < src2->size(); ++no2) {
-            if (const auto no1 = common.serum_primary_by_secondary(no2); no1)
-                sera_secondary_target[no2] = sera_primary_target.at(*no1);
+            if (const auto no1 = common.serum_primary_by_secondary(no2); no1) {
+                auto& en = sera_primary_target.at(*no1);
+                en.common = true;
+                sera_secondary_target[no2] = en;
+            }
             else
                 sera_secondary_target[no2] = target_sera++;
         }
@@ -65,7 +71,7 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
 
 // ----------------------------------------------------------------------
 
-static auto merge_antigens_sera = [](auto& target, const auto& source, const acmacs::chart::MergeReport::index_mapping_t& to_target) {
+static const auto merge_antigens_sera = [](auto& target, const auto& source, const acmacs::chart::MergeReport::index_mapping_t& to_target) {
     for (size_t no = 0; no < source.size(); ++no) {
         if (const auto entry = to_target.find(no); entry != to_target.end()) {
             if (entry->second.common)
@@ -139,10 +145,17 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
                 if (chart2.number_of_projections() == 0)
                     throw merge_error{"cannot perform type4 merge: secondary chart has no projections"};
                 merge_projections_type3(result, chart1, chart2, report);
-                // {
-                //     list_of_the_fixed_points;
-                //     result->relax_with_unmovable_points(list_of_the_fixed_points);
-                // }
+                {
+                    UnmovablePoints unmovable_points;
+                    // set unmovable for all points of chart1 including common ones
+                    for (const auto& [index1, index_merge_common] : report.antigens_primary_target)
+                        unmovable_points.insert(index_merge_common.index);
+                    for (const auto& [index1, index_merge_common] : report.sera_primary_target)
+                        unmovable_points.insert(index_merge_common.index + result->number_of_antigens());
+                    auto projection = result->projection_modify(0);
+                    projection->set_unmovable(unmovable_points);
+                    projection->relax(optimization_options{});
+                }
                 break;
             // case projection_merge_t::type5:
             //     if (chart2.number_of_projections() == 0)
@@ -298,12 +311,12 @@ void merge_projections_type3(acmacs::chart::ChartModifyP result, const acmacs::c
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::PointIndexList map_disconnected(const acmacs::chart::PointIndexList& source, size_t source_number_of_antigens, size_t target_number_of_antigens, const acmacs::chart::MergeReport::index_mapping_t& antigen_mapping, const acmacs::chart::MergeReport::index_mapping_t& sera_mapping)
+acmacs::chart::DisconnectedPoints map_disconnected(const acmacs::chart::DisconnectedPoints& source, size_t source_number_of_antigens, size_t target_number_of_antigens, const acmacs::chart::MergeReport::index_mapping_t& antigen_mapping, const acmacs::chart::MergeReport::index_mapping_t& sera_mapping)
 {
     if (source->empty())
         return source;
 
-    acmacs::chart::PointIndexList result_disconnected;
+    acmacs::chart::DisconnectedPoints result_disconnected;
     for (const auto p_no : source) {
         if (p_no < source_number_of_antigens) {
             if (const auto found = antigen_mapping.find(p_no); found != antigen_mapping.end())

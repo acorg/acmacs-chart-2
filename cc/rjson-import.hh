@@ -187,7 +187,7 @@ namespace acmacs::chart
                 return {};
         }
         size_t number_of_points() const override { return data_[keys_.layout].size(); }
-        PointIndexList disconnected() const override;
+        DisconnectedPoints disconnected() const override;
 
       protected:
         struct Keys
@@ -202,7 +202,7 @@ namespace acmacs::chart
 
         const rjson::value& data() const { return data_; }
 
-        virtual PointIndexList make_disconnected() const = 0;
+        virtual DisconnectedPoints make_disconnected() const = 0;
 
       private:
         const rjson::value& data_;

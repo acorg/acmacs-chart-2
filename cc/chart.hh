@@ -656,9 +656,9 @@ namespace acmacs::chart
         virtual acmacs::Transformation transformation() const = 0;
         virtual enum dodgy_titer_is_regular dodgy_titer_is_regular() const = 0;
         virtual double stress_diff_to_stop() const = 0;
-        virtual PointIndexList unmovable() const = 0;
-        virtual PointIndexList disconnected() const = 0;
-        virtual PointIndexList unmovable_in_the_last_dimension() const = 0;
+        virtual UnmovablePoints unmovable() const = 0;
+        virtual DisconnectedPoints disconnected() const = 0;
+        virtual UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const = 0;
         virtual AvidityAdjusts avidity_adjusts() const = 0; // antigens_sera_titers_multipliers, double for each point
                                                             // antigens_sera_gradient_multipliers, double for each point
 

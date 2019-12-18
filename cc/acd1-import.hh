@@ -209,8 +209,8 @@ namespace acmacs::chart
         acmacs::Transformation transformation() const override;
         enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { if (const auto& sep = data()["stress_evaluator_parameters"]; !sep.is_null()) return sep["dodgy_titer_is_regular"].get_or_default(false) ? dodgy_titer_is_regular::yes : dodgy_titer_is_regular::no; else return dodgy_titer_is_regular::no; }
         double stress_diff_to_stop() const override { if (const auto& sep = data()["stress_evaluator_parameters"]; !sep.is_null()) return sep["stress_diff_to_stop"].get_or_default(0.0); else return 0.0; }
-        PointIndexList unmovable() const override { return make_attributes(1); }
-        PointIndexList unmovable_in_the_last_dimension() const override  { return make_attributes(3); }
+        UnmovablePoints unmovable() const override { UnmovablePoints result; make_attributes(1, result); return result; }
+        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const override  { UnmovableInTheLastDimensionPoints result; make_attributes(3, result); return result; }
         AvidityAdjusts avidity_adjusts() const override;
 
         MinimumColumnBasis minimum_column_basis() const override
@@ -226,12 +226,12 @@ namespace acmacs::chart
             }
 
      protected:
-        PointIndexList make_disconnected() const override { return make_attributes(2); }
+        DisconnectedPoints make_disconnected() const override { DisconnectedPoints disconnected; make_attributes(2, disconnected); return disconnected; }
 
      private:
         static const Keys s_keys_;
 
-        PointIndexList make_attributes(size_t aAttr) const;
+        void make_attributes(size_t aAttr, PointIndexList& result) const;
 
     }; // class Acd1Projections
 

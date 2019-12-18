@@ -202,9 +202,9 @@ namespace acmacs::chart
         acmacs::Transformation transformation() const override;
         enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { return dodgy_titer_is_regular::no; }
         double stress_diff_to_stop() const override { return 0.0; }
-        PointIndexList unmovable() const override;
-        PointIndexList disconnected() const override;
-        PointIndexList unmovable_in_the_last_dimension() const override { return {}; }
+        UnmovablePoints unmovable() const override;
+        DisconnectedPoints disconnected() const override;
+        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const override { return {}; }
         AvidityAdjusts avidity_adjusts() const override;
 
      private:

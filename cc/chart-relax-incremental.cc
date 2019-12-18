@@ -39,7 +39,7 @@ int main(int argc, char* const argv[])
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
             const auto precision = args["--rough"] ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
             const auto method{acmacs::chart::optimization_method_from_string(args["--method"])};
-            acmacs::chart::PointIndexList disconnected;
+            acmacs::chart::DisconnectedPoints disconnected;
             if (!args["--no-disconnect-having-few-titers"])
                 disconnected.extend(chart.titers()->having_too_few_numeric_titers());
 

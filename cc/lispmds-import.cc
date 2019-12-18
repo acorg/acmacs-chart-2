@@ -632,7 +632,7 @@ acmacs::Transformation LispmdsProjection::transformation() const
 
 // ----------------------------------------------------------------------
 
-PointIndexList LispmdsProjection::unmovable() const
+UnmovablePoints LispmdsProjection::unmovable() const
 {
       //   :UNMOVEABLE-COORDS '(87 86 85 83 82 80 81)
     try {
@@ -647,7 +647,7 @@ PointIndexList LispmdsProjection::unmovable() const
 
 // ----------------------------------------------------------------------
 
-PointIndexList LispmdsProjection::disconnected() const
+DisconnectedPoints LispmdsProjection::disconnected() const
 {
       // std::cerr << "WARNING: LispmdsProjection::disconnected not implemented\n";
     return {};

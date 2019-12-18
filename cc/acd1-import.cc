@@ -654,9 +654,8 @@ acmacs::Transformation Acd1Projection::transformation() const
 
 // ----------------------------------------------------------------------
 
-PointIndexList Acd1Projection::make_attributes(size_t aAttr) const
+void Acd1Projection::make_attributes(size_t aAttr, PointIndexList& result) const
 {
-    PointIndexList result;
     if (const rjson::value& attrs = data().get("stress_evaluator_parameters", "antigens_sera_attributes"); !attrs.is_null()) {
         rjson::for_each(attrs["antigens"], [&result, aAttr](const rjson::value& val, size_t index) {
             if (val.to<size_t>() == aAttr)
@@ -667,37 +666,8 @@ PointIndexList Acd1Projection::make_attributes(size_t aAttr) const
                 result.insert(index + number_of_antigens);
         });
     }
-    return result;
 
 } // Acd1Projection::make_attributes
-
-// ----------------------------------------------------------------------
-
-// static inline PointIndexList make_attributes(const rjson::value& aData, size_t aAttr)
-// {
-// }
-
-// PointIndexList Acd1Projection::unmovable() const
-// {
-//     return make_attributes(data_, 1);
-
-// } // Acd1Projection::unmovable
-
-// // ----------------------------------------------------------------------
-
-// PointIndexList Acd1Projection::disconnected() const
-// {
-//     return make_attributes(data_, 2);
-
-// } // Acd1Projection::disconnected
-
-// // ----------------------------------------------------------------------
-
-// PointIndexList Acd1Projection::unmovable_in_the_last_dimension() const
-// {
-//     return make_attributes(data_, 3);
-
-// } // Acd1Projection::unmovable_in_the_last_dimension
 
 // ----------------------------------------------------------------------
 
