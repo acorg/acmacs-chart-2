@@ -228,7 +228,7 @@ acmacs::chart::ProjectionModifyP flip_relax(acmacs::chart::ChartModify& chart, a
     flipped->comment("flipped " + std::to_string(split_data.on_the_wrong_side->size()) + " antigens");
     auto layout = flipped->layout();
     for (auto index : split_data.on_the_wrong_side)
-        flipped->move_point(index, split_data.serum_line.line().flip_over(layout->get(index), 1.0));
+        flipped->move_point(index, split_data.serum_line.line().flip_over(layout->at(index), 1.0));
 
     // relax from flipped
     auto relax_from_flipped = flipped; // chart.projections_modify()->new_by_cloning(*flipped);

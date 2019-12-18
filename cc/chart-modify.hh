@@ -495,9 +495,12 @@ namespace acmacs::chart
         const Transformation& transformation_modified() const { return transformation_; }
         ColumnBasesModifyP forced_column_bases_modified() const { return forced_column_bases_; }
         void new_layout(size_t number_of_points, number_of_dimensions_t number_of_dimensions) { layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions); transformation_.reset(number_of_dimensions); transformed_layout_.reset(); }
-        UnmovablePoints get_unmovable() const { return unmovable_; }
-        DisconnectedPoints get_disconnected() const { return disconnected_; }
-        UnmovableInTheLastDimensionPoints get_unmovable_in_the_last_dimension() const { return unmovable_in_the_last_dimension_; }
+        constexpr const UnmovablePoints& get_unmovable() const { return unmovable_; }
+        constexpr UnmovablePoints& get_unmovable() { return unmovable_; }
+        constexpr const DisconnectedPoints& get_disconnected() const { return disconnected_; }
+        constexpr DisconnectedPoints& get_disconnected() { return disconnected_; }
+        constexpr const UnmovableInTheLastDimensionPoints& get_unmovable_in_the_last_dimension() const { return unmovable_in_the_last_dimension_; }
+        constexpr UnmovableInTheLastDimensionPoints& get_unmovable_in_the_last_dimension() { return unmovable_in_the_last_dimension_; }
 
      private:
         std::shared_ptr<acmacs::Layout> layout_;
@@ -562,13 +565,15 @@ namespace acmacs::chart
 
         explicit ProjectionModifyNew(const ProjectionModify& aSource, const Chart& chart)
             : ProjectionModify(aSource, chart), minimum_column_basis_(aSource.minimum_column_basis()),
-              dodgy_titer_is_regular_(aSource.dodgy_titer_is_regular()), stress_diff_to_stop_(aSource.stress_diff_to_stop()),
-              disconnected_(aSource.disconnected())
+              dodgy_titer_is_regular_(aSource.dodgy_titer_is_regular()), stress_diff_to_stop_(aSource.stress_diff_to_stop())
             {
                 const auto& source_layout = *aSource.layout();
                 new_layout(source_layout.number_of_points(), source_layout.number_of_dimensions());
                 set_layout(source_layout);
                 set_forced_column_bases(aSource.forced_column_bases());
+                set_disconnected(aSource.disconnected());
+                set_unmovable(aSource.unmovable());
+                set_unmovable_in_the_last_dimension(aSource.unmovable_in_the_last_dimension());
                 comment(aSource.comment());
             }
 
@@ -584,22 +589,16 @@ namespace acmacs::chart
         acmacs::Transformation transformation() const override { return transformation_modified(); }
         enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { return dodgy_titer_is_regular_; }
         double stress_diff_to_stop() const override { return stress_diff_to_stop_; }
-        UnmovablePoints unmovable() const override { return unmovable_; }
-        void set_unmovable(const UnmovablePoints& a_unmovable) { unmovable_ = a_unmovable; }
-        DisconnectedPoints disconnected() const override { return disconnected_; }
-        void set_disconnected(const DisconnectedPoints& disconnect) { disconnected_ = disconnect; }
+        UnmovablePoints unmovable() const override { return get_unmovable(); }
+        DisconnectedPoints disconnected() const override { return get_disconnected(); }
         void connect(const PointIndexList& to_connect);
-        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const override { return unmovable_in_the_last_dimension_; }
-        void set_unmovable_in_the_last_dimension(const UnmovableInTheLastDimensionPoints& a_unmovable_in_the_last_dimension) { unmovable_in_the_last_dimension_ = a_unmovable_in_the_last_dimension; }
+        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const override { return get_unmovable_in_the_last_dimension(); }
         AvidityAdjusts avidity_adjusts() const override { return {}; }
 
      private:
         MinimumColumnBasis minimum_column_basis_;
         enum dodgy_titer_is_regular dodgy_titer_is_regular_ = dodgy_titer_is_regular::no;
         double stress_diff_to_stop_{0};
-        DisconnectedPoints disconnected_;
-        UnmovablePoints unmovable_;
-        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension_;
 
     }; // class ProjectionModifyNew
 

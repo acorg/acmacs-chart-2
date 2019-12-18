@@ -28,7 +28,7 @@ acmacs::chart::SerumLine::AntigensRelativeToLine acmacs::chart::SerumLine::antig
     acmacs::chart::SerumLine::AntigensRelativeToLine result;
     auto layout = projection.layout();
     for (auto antigen_no : acmacs::range(projection.chart().number_of_antigens())) {
-        const auto distance = line().distance_with_direction(layout->get(antigen_no));
+        const auto distance = line().distance_with_direction(layout->at(antigen_no));
         if (distance < 0)
             result.negative.insert(antigen_no);
         else

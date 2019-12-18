@@ -1657,10 +1657,11 @@ ProcrustesData ProjectionModify::orient_to(const Projection& master)
 void ProjectionModifyNew::connect(const PointIndexList& to_connect)
 {
     for (auto point_no: to_connect) {
-        const auto found = std::find(disconnected_.begin(), disconnected_.end(), point_no);
-        if (found == disconnected_.end())
-            throw invalid_data{"Point was not disconnected: " + std::to_string(point_no) + ": cannot connect it"};
-        disconnected_.get().erase(found);
+        auto& disconnected = get_disconnected();
+        const auto found = std::find(disconnected.begin(), disconnected.end(), point_no);
+        if (found == disconnected.end())
+            throw invalid_data{fmt::format("Point was not disconnected: {}: cannot connect it", point_no)};
+        disconnected.erase(found);
     }
 
 } // ProjectionModifyNew::connect

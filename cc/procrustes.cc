@@ -188,7 +188,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     result.rms = 0.0;
     size_t num_rows = 0;
     for (const auto& cp : common_without_disconnected) {
-        if (const auto pc = primary_layout->get(cp.primary), sc = secondary_transformed->get(cp.secondary); pc.exists() && sc.exists()) {
+        if (const auto pc = primary_layout->at(cp.primary), sc = secondary_transformed->at(cp.secondary); pc.exists() && sc.exists()) {
             ++num_rows;
             auto make_rms_inc = [&pc, &sc](auto sum, auto dim) {
                 auto square = [](auto v) { return v * v; };

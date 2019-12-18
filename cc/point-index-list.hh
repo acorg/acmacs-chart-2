@@ -13,6 +13,7 @@ namespace acmacs::chart
      public:
         using difference_type = std::vector<size_t>::difference_type;
         using base_t = acmacs::named_vector_t<size_t, struct chart_PointIndexList_tag_t>;
+        using const_iterator = std::vector<size_t>::const_iterator;
 
         using base_t::named_vector_t;
         PointIndexList(const rjson::value& src) : base_t::named_vector_t(src.size()) { rjson::copy(src, begin()); }
@@ -29,6 +30,8 @@ namespace acmacs::chart
                 if (const auto found = std::lower_bound(begin(), end(), val); found == end() || *found != val)
                     get().insert(found, val);
             }
+
+        void erase(const_iterator ptr) { get().erase(ptr); }
 
         void erase_except(size_t val)
             {

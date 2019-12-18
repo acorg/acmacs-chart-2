@@ -364,7 +364,7 @@ void test_insert_antigen(acmacs::chart::ChartP chart, size_t before, const argc_
                         throw std::runtime_error(fmt::format("inserted antigen has titer: sr_no:{} titer:{}", sr_no, *titers_imported->titer(imported_ag_no, sr_no)));
                 }
                 for (auto projection : *projections_imported) {
-                    if (auto imp = projection->layout()->get(imported_ag_no); imp.exists())
+                    if (auto imp = projection->layout()->at(imported_ag_no); imp.exists())
                         throw std::runtime_error("inserted antigen has coordinates: " + acmacs::to_string(imp));
                 }
             };
@@ -423,7 +423,7 @@ void test_insert_serum(acmacs::chart::ChartP chart, size_t before, const argc_ar
                     throw std::runtime_error(fmt::format("inserted serum has titer: ag_no:{} titer:{}", ag_no, *titers_imported->titer(ag_no, imported_sr_no)));
             }
             for (auto projection : *projections_imported) {
-                if (auto imp = projection->layout()->get(imported_sr_no + antigens_source->size()); imp.exists())
+                if (auto imp = projection->layout()->at(imported_sr_no + antigens_source->size()); imp.exists())
                     throw std::runtime_error("inserted serum has coordinates: " + acmacs::to_string(imp));
             }
         };
@@ -476,7 +476,7 @@ void compare_antigens(acmacs::chart::ChartP chart_source, size_t source_ag_no, a
         }
     }
     for (auto[p_no, projection] : acmacs::enumerate(*projections_source)) {
-        if (auto src = projection->layout()->get(source_ag_no), imp = (*projections_imported)[p_no]->layout()->get(imported_ag_no); src != imp)
+        if (auto src = projection->layout()->at(source_ag_no), imp = (*projections_imported)[p_no]->layout()->at(imported_ag_no); src != imp)
             throw std::runtime_error("antigen coordinates mismatch: orig:" + std::to_string(source_ag_no) + ' ' + acmacs::to_string(src) + " vs. imported:" + std::to_string(imported_ag_no) + ' ' +
                                      acmacs::to_string(imp));
     }
@@ -507,7 +507,7 @@ void compare_sera(acmacs::chart::ChartP chart_source, size_t source_sr_no, acmac
     }
     const auto point_no_source = source_sr_no + source_number_of_antigens, point_no_imported = imported_sr_no + imported_number_of_antigens;
     for (auto[p_no, projection] : acmacs::enumerate(*projections_source)) {
-        if (auto src = projection->layout()->get(point_no_source), imp = (*projections_imported)[p_no]->layout()->get(point_no_imported); src != imp)
+        if (auto src = projection->layout()->at(point_no_source), imp = (*projections_imported)[p_no]->layout()->at(point_no_imported); src != imp)
             throw std::runtime_error("serum coordinates mismatch: orig:" + std::to_string(source_sr_no) + ' ' + acmacs::to_string(src) + " vs. imported:" + std::to_string(imported_sr_no) + ' ' +
                                      acmacs::to_string(imp));
     }

@@ -37,9 +37,9 @@ acmacs::Area acmacs::chart::GridTest::area_for(const Stress::TableDistancesForPo
         another_point = table_distances_for_point.less_than.front().another_point;
     else
         throw std::runtime_error("acmacs::chart::GridTest::area_for: table_distances_for_point has neither regulr nor less_than entries");
-    acmacs::Area result(original_layout_.get(another_point));
+    acmacs::Area result(original_layout_.at(another_point));
     auto extend = [&result,this](const auto& entry) {
-        const auto coord = this->original_layout_.get(entry.another_point);
+        const auto coord = this->original_layout_.at(entry.another_point);
         const auto radius = entry.distance; // + 1;
         result.extend(coord - radius);
         result.extend(coord + radius);
@@ -75,7 +75,7 @@ void acmacs::chart::GridTest::test(Result& result)
 
         acmacs::Layout layout(original_layout_);
         const auto target_contribution = stress_.contribution(result.point_no, table_distances_for_point, layout.data());
-        const auto original_pos = original_layout_.get(result.point_no);
+        const auto original_pos = original_layout_.at(result.point_no);
         auto best_contribution = target_contribution;
         PointCoordinates best_coord(original_pos.number_of_dimensions()),
                 hemisphering_coord(original_pos.number_of_dimensions());
@@ -97,7 +97,7 @@ void acmacs::chart::GridTest::test(Result& result)
         if (best_coord.exists()) {
             layout[result.point_no] = best_coord;
             const auto status = acmacs::chart::optimize(optimization_method_, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
-            result.pos = layout.get(result.point_no);
+            result.pos = layout.at(result.point_no);
             result.distance = distance(original_pos, result.pos);
             result.contribution_diff = status.final_stress - projection_->stress();
             result.diagnosis = std::abs(result.contribution_diff) > hemisphering_stress_threshold_ ? Result::trapped : Result::hemisphering;
@@ -106,11 +106,11 @@ void acmacs::chart::GridTest::test(Result& result)
             // relax to find real contribution
             layout[result.point_no] = hemisphering_coord;
             auto status = acmacs::chart::optimize(optimization_method_, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
-            result.pos = layout.get(result.point_no);
+            result.pos = layout.at(result.point_no);
             result.distance = distance(original_pos, result.pos);
             if (result.distance > hemisphering_distance_threshold_ && result.distance < (hemisphering_distance_threshold_ * 1.2)) {
                 status = acmacs::chart::optimize(optimization_method_, stress_, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::fine);
-                result.pos = layout.get(result.point_no);
+                result.pos = layout.at(result.point_no);
                 result.distance = distance(original_pos, result.pos);
             }
             result.contribution_diff = status.final_stress - projection_->stress();
