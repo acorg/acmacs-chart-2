@@ -48,7 +48,7 @@ void acmacs::chart::export_factory(const Chart& aChart, std::string_view aFilena
     if (data.empty())
         throw export_error{fmt::format("No data to write to {}", aFilename)};
 
-    Timeit ti_file(fmt::format("writing {}: ", aFilename), aReport);
+    // Timeit ti_file(fmt::format("writing {}: ", aFilename), aReport);
     acmacs::file::write(aFilename, data, force_compression);
 
 } // acmacs::chart::export_factory

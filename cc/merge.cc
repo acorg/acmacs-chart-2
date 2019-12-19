@@ -154,13 +154,17 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
                 if (chart2.number_of_projections() == 0)
                     throw merge_error{"cannot perform type4 merge: secondary chart has no projections"};
                 merge_projections_type3(*result, chart1, chart2, report);
+                // fmt::print(stderr, "DEBUG: merge type4 before relax stress {}\n", result->projection(0)->stress());
                 relax_type4_type5(report, *result);
+                // fmt::print(stderr, "DEBUG: merge type4 after relax stress {}\n", result->projection(0)->stress());
                 break;
             case projection_merge_t::type5:
                 if (chart2.number_of_projections() == 0)
                     throw merge_error{"cannot perform type5 merge: secondary chart has no projections"};
                 merge_projections_type5(*result, chart1, chart2, report);
+                // fmt::print(stderr, "DEBUG: merge type5 before relax stress {}\n", result->projection(0)->stress());
                 relax_type4_type5(report, *result);
+                // fmt::print(stderr, "DEBUG: merge type5 after relax stress {}\n", result->projection(0)->stress());
                 break;
         }
     }

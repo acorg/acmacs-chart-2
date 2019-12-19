@@ -101,15 +101,15 @@ void test_merge_3(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart
 
     using namespace acmacs::chart;
     const MergeSettings settings(match_level, projection_merge_t::type3);
-    auto [merged_chart, merge_report] = merge(chart1, chart2, settings);
+    auto [merged3_chart, merge_report] = merge(chart1, chart2, settings);
 
-    // export_factory(*merged_chart, "/d/m3-3.ace", "test-chart-merge-types-2-5");
+    // export_factory(*merged3_chart, "/d/merge-type3.ace", "test-chart-merge-types-2-5", report_time::yes);
 
-    assert(merged_chart->number_of_projections() == 1);
+    assert(merged3_chart->number_of_projections() == 1);
 
-    auto merge_projection = merged_chart->projection(0);
+    auto merge_projection = merged3_chart->projection(0);
     auto merge_layout = merge_projection->layout();
-    const auto merge_num_antigens = merged_chart->number_of_antigens();
+    const auto merge_num_antigens = merged3_chart->number_of_antigens();
     auto layout1 = chart1.projection(0)->layout();
     const auto chart1_num_antigens = chart1.number_of_antigens();
 
@@ -151,8 +151,7 @@ void test_merge_4(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart
     auto [merged3_chart, merge3_report] = merge(chart1, chart2, MergeSettings(match_level, projection_merge_t::type3));
     auto [merged4_chart, merge4_report] = merge(chart1, chart2, MergeSettings(match_level, projection_merge_t::type4));
 
-    // export_factory(*merged3_chart, "/d/m3.ace", "test-chart-merge-types-2-5");
-    // export_factory(*merged4_chart, "/d/m4.ace", "test-chart-merge-types-2-5");
+    // export_factory(*merged4_chart, "/d/merge-type4.ace", "test-chart-merge-types-2-5", report_time::yes);
 
     assert(merged4_chart->number_of_projections() == 1);
 
@@ -178,13 +177,10 @@ void test_merge_4(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart
         assert(merge3_layout->at(index_merge_common.index + merge_num_antigens) == merge4_layout->at(index_merge_common.index + merge_num_antigens));
     }
 
-    // // gradient for all points (including common) in the chart2 must be about zero
-    // const auto gradient = merged4_chart->projection(0)->calculate_gradient();
+    const auto gradient = merged4_chart->projection(0)->calculate_gradient();
+    const auto gradient_max = std::accumulate(gradient.begin(), gradient.end(), 0.0, [](auto mx, auto val) { return std::max(mx, std::abs(val)); });
+    assert(gradient_max < 1e-5);
     // fmt::print(stderr, "DEBUG: merged4_chart gradient: {}\n", gradient);
-    // for (const auto& [index2, index_merge_common] : merge4_report.antigens_secondary_target)
-    //     assert(std::abs(gradient.at(index_merge_common.index)) < 1e-5);
-    // for (const auto& [index2, index_merge_common] : merge4_report.sera_secondary_target)
-    //     assert(std::abs(gradient.at(index_merge_common.index + merge_num_antigens)) < 1e-5);
 
 } // test_merge_4
 
@@ -197,6 +193,8 @@ void test_merge_5(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart
     using namespace acmacs::chart;
     auto [merged3_chart, merge3_report] = merge(chart1, chart2, MergeSettings(match_level, projection_merge_t::type3));
     auto [merged5_chart, merge5_report] = merge(chart1, chart2, MergeSettings(match_level, projection_merge_t::type5));
+
+    // export_factory(*merged5_chart, "/d/merge-type5.ace", "test-chart-merge-types-2-5", report_time::yes);
 
     assert(merged5_chart->number_of_projections() == 1);
 
@@ -222,6 +220,12 @@ void test_merge_5(const acmacs::chart::Chart& chart1, const acmacs::chart::Chart
         if (!index_merge_common.common)
             assert(merge3_layout->at(index_merge_common.index + merge_num_antigens) == merge5_layout->at(index_merge_common.index + merge_num_antigens));
     }
+
+    const auto gradient = merged5_chart->projection(0)->calculate_gradient();
+    const auto gradient_max = std::accumulate(gradient.begin(), gradient.end(), 0.0, [](auto mx, auto val) { return std::max(mx, std::abs(val)); });
+    assert(gradient_max < 1e-5);
+    // fmt::print(stderr, "DEBUG: merged5_chart stress: {}\n", merged5_chart->projection(0)->stress());
+    // fmt::print(stderr, "DEBUG: merged5_chart gradient: {}\n", gradient);
 
 } // test_merge_5
 
