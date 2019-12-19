@@ -26,7 +26,7 @@ trap failed ERR
 echo test-relax-seed
 
 exit_code=0
-declare -a seed_stress=( [0]=858 [1]=858 [2]=858 [3]=856 [4]=1026 [5]=856 [6]=843 [7]=854 [8]=1053 [9]=855 [10]=844 )
+declare -a seed_stress=( [0]=858 [1]=858 [2]=858 [4]=1026 [5]=856 [6]=843 [8]=1053 [9]=855 [10]=844 [11]=857 [13]=860)
 for seed in "${!seed_stress[@]}"; do
     stress="$(../dist/chart-relax ./test-h1-2009.ace -d 2 --seed ${seed} | /usr/bin/awk '/>=none/ { printf "%.0f", $2; }')"
     # echo "${stress} vs. expected ${seed_stress[$seed]}"
