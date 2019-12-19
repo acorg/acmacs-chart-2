@@ -33,6 +33,7 @@ cd "$TESTDIR"
 ./test-stress || failed test-stress
 ./test-titer-iterator || failed test-titer-iterator
 ./test-chart-modify || failed test-chart-modify
+./test-relax-seed || failed test-relax-seed
 
 echo ../dist/test-chart-proportion-to-dontcare *.ace
 ../dist/test-chart-proportion-to-dontcare *.ace

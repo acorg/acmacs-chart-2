@@ -5,6 +5,7 @@
 
 #include "acmacs-chart-2/chart.hh"
 #include "acmacs-chart-2/procrustes.hh"
+#include "acmacs-chart-2/randomizer.hh"
 
 // ----------------------------------------------------------------------
 
@@ -22,7 +23,6 @@ namespace acmacs::chart
     class ProjectionModify;
     class ProjectionsModify;
     class PlotSpecModify;
-    class LayoutRandomizer;
 
     using ChartModifyP = std::shared_ptr<ChartModify>;
     using InfoModifyP = std::shared_ptr<InfoModify>;
@@ -72,7 +72,7 @@ namespace acmacs::chart
         const rjson::value& extension_field_modify(std::string field_name);
         void extension_field_modify(std::string field_name, const rjson::value& value);
 
-        std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points = {});
+        std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, LayoutRandomizer::seed_t seed = std::nullopt, const DisconnectedPoints& disconnect_points = {});
         void relax(number_of_optimizations_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, enum report_stresses report_stresses, const DisconnectedPoints& disconnect_points = {});
         void relax_incremetal(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points = {}, bool remove_source_projection = true);
 
@@ -98,8 +98,6 @@ namespace acmacs::chart
         ProjectionsModifyP projections_;
         PlotSpecModifyP plot_spec_;
         rjson::value extensions_{rjson::null{}};
-
-        // std::shared_ptr<LayoutRandomizer> make_randomizer(const Stress& stress, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier) const;
 
     }; // class ChartModify
 
@@ -464,7 +462,7 @@ namespace acmacs::chart
         std::shared_ptr<acmacs::Layout> layout_modified() { modify(); return layout_; }
         std::shared_ptr<acmacs::Layout> layout_modified() const { return layout_; }
         std::shared_ptr<acmacs::Layout> randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer);
-        std::shared_ptr<acmacs::Layout> randomize_layout(randomizer rnd, double diameter_multiplier);
+        std::shared_ptr<acmacs::Layout> randomize_layout(randomizer rnd, double diameter_multiplier, LayoutRandomizer::seed_t seed = std::nullopt);
         std::shared_ptr<acmacs::Layout> randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> randomizer); // randomize just some point coordinates
         virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
         virtual void set_stress(double stress) { stress_ = stress; }

@@ -11,7 +11,6 @@
 #include "acmacs-base/statistics.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart-modify.hh"
-#include "acmacs-chart-2/randomizer.hh"
 
 using namespace std::string_literals;
 using namespace acmacs::chart;
@@ -255,7 +254,7 @@ PlotSpecModifyP ChartModify::plot_spec_modify()
 
 // ----------------------------------------------------------------------
 
-std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, optimization_options options, const DisconnectedPoints& disconnect_points)
+std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, optimization_options options, LayoutRandomizer::seed_t seed, const DisconnectedPoints& disconnect_points)
 {
     const auto start = std::chrono::high_resolution_clock::now();
     const auto start_num_dim = dimension_annealing == use_dimension_annealing::yes && *number_of_dimensions < 5 ? number_of_dimensions_t{5} : number_of_dimensions;
@@ -263,7 +262,8 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     projection->set_disconnected(disconnect_points);
     auto layout = projection->layout_modified();
     auto stress = acmacs::chart::stress_factory(*projection, options.mult);
-    projection->randomize_layout(randomizer_plain_from_sample_optimization(*projection, stress, options.randomization_diameter_multiplier));
+    auto rnd = randomizer_plain_from_sample_optimization(*projection, stress, options.randomization_diameter_multiplier, seed);
+    projection->randomize_layout(rnd);
     auto status = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
     if (start_num_dim > number_of_dimensions) {
         acmacs::chart::dimension_annealing(options.method, stress, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
@@ -1559,20 +1559,20 @@ void ProjectionModify::set_forced_column_basis(size_t serum_no, double column_ba
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(ProjectionModify::randomizer rnd, double diameter_multiplier)
+std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(ProjectionModify::randomizer rnd, double diameter_multiplier, LayoutRandomizer::seed_t seed)
 {
     std::shared_ptr<LayoutRandomizer> rnd_v;
     switch (rnd) {
       case randomizer::plain_with_table_max_distance:
-          rnd_v = acmacs::chart::randomizer_plain_with_table_max_distance(*this);
+          rnd_v = acmacs::chart::randomizer_plain_with_table_max_distance(*this, seed);
           break;
       case randomizer::plain_with_current_layout_area:
-          rnd_v = acmacs::chart::randomizer_plain_with_current_layout_area(*this, diameter_multiplier);
+          rnd_v = acmacs::chart::randomizer_plain_with_current_layout_area(*this, diameter_multiplier, seed);
           break;
       case randomizer::plain_from_sample_optimization:
       {
           auto stress = acmacs::chart::stress_factory(*this, multiply_antigen_titer_until_column_adjust::yes);
-          rnd_v = acmacs::chart::randomizer_plain_from_sample_optimization(*this, stress, diameter_multiplier);
+          rnd_v = acmacs::chart::randomizer_plain_from_sample_optimization(*this, stress, diameter_multiplier, seed);
       }
           break;
     }

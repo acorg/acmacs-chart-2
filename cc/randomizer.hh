@@ -3,6 +3,7 @@
 #include <random>
 #include <memory>
 #include <algorithm>
+#include <optional>
 
 #include "acmacs-base/line.hh"
 #include "acmacs-chart-2/column-bases.hh"
@@ -14,7 +15,9 @@ namespace acmacs::chart
     class LayoutRandomizer
     {
      public:
-        LayoutRandomizer() : generator_(std::random_device()()) {}
+        using seed_t = std::optional<std::uint_fast32_t>;
+
+        LayoutRandomizer(seed_t seed = std::nullopt) : generator_(seed ? *seed : std::random_device{}()) {}
         // LayoutRandomizer(LayoutRandomizer&&) = default;
         virtual ~LayoutRandomizer() = default;
 
@@ -40,7 +43,8 @@ namespace acmacs::chart
     class LayoutRandomizerPlain : public LayoutRandomizer
     {
      public:
-        LayoutRandomizerPlain(double diameter) : distribution_(-diameter / 2, diameter / 2) {}
+        LayoutRandomizerPlain(double diameter, seed_t seed = std::nullopt)
+            : LayoutRandomizer(seed), distribution_(-diameter / 2, diameter / 2) {}
           // LayoutRandomizerPlain(LayoutRandomizerPlain&&) = default;
 
         void diameter(double diameter) { distribution_ = std::uniform_real_distribution<>(-diameter / 2, diameter / 2); }
@@ -62,7 +66,8 @@ namespace acmacs::chart
     class LayoutRandomizerWithLineBorder : public LayoutRandomizerPlain
     {
      public:
-        LayoutRandomizerWithLineBorder(double diameter, const LineSide& line_side) : LayoutRandomizerPlain(diameter), line_side_(line_side) {}
+        LayoutRandomizerWithLineBorder(double diameter, const LineSide& line_side, seed_t seed = std::nullopt)
+            : LayoutRandomizerPlain(diameter, seed), line_side_(line_side) {}
 
         PointCoordinates get(number_of_dimensions_t number_of_dimensions) override { return line().fix(LayoutRandomizerPlain::get(number_of_dimensions)); }
 
@@ -84,15 +89,15 @@ namespace acmacs::chart
     class ProjectionModify;
     class Stress;
 
-    std::shared_ptr<LayoutRandomizerPlain> randomizer_plain_with_table_max_distance(const Projection& projection);
+    std::shared_ptr<LayoutRandomizerPlain> randomizer_plain_with_table_max_distance(const Projection& projection, LayoutRandomizer::seed_t seed = std::nullopt);
 
       // makes randomizer with table max distance, generates random layout, performs very rough optimization,
       // resets randomization diameter with the resulting projection layout size
-    std::shared_ptr<LayoutRandomizer> randomizer_plain_from_sample_optimization(const Chart& chart, const Stress& stress, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier);
-    std::shared_ptr<LayoutRandomizer> randomizer_plain_from_sample_optimization(const Projection& projection, const Stress& stress, double diameter_multiplier);
+    std::shared_ptr<LayoutRandomizer> randomizer_plain_from_sample_optimization(const Chart& chart, const Stress& stress, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, double diameter_multiplier, LayoutRandomizer::seed_t seed = std::nullopt);
+    std::shared_ptr<LayoutRandomizer> randomizer_plain_from_sample_optimization(const Projection& projection, const Stress& stress, double diameter_multiplier, LayoutRandomizer::seed_t seed = std::nullopt);
 
-    std::shared_ptr<LayoutRandomizer> randomizer_plain_with_current_layout_area(const ProjectionModify& projection, double diameter_multiplier);
-    std::shared_ptr<LayoutRandomizer> randomizer_border_with_current_layout_area(const ProjectionModify& projection, double diameter_multiplier, const LineSide& line_side);
+    std::shared_ptr<LayoutRandomizer> randomizer_plain_with_current_layout_area(const ProjectionModify& projection, double diameter_multiplier, LayoutRandomizer::seed_t seed = std::nullopt);
+    std::shared_ptr<LayoutRandomizer> randomizer_border_with_current_layout_area(const ProjectionModify& projection, double diameter_multiplier, const LineSide& line_side, LayoutRandomizer::seed_t seed = std::nullopt);
 
 } // namespace acmacs::chart
 

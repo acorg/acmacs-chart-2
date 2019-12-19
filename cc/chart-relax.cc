@@ -33,6 +33,7 @@ struct Options : public argv
     option<int>    threads{*this, "threads", dflt{0}, desc{"number of threads to use for optimization (omp): 0 - autodetect, 1 - sequential"}};
     option<bool>   report_time{*this, "time", desc{"report time of loading chart"}};
     option<bool>   verbose{*this, 'v', "verbose"};
+    option<unsigned> seed{*this, "seed", desc{"seed for randomization, -n 1 implied"}};
 
     argument<str>  source_chart{*this, arg_name{"source-chart"}, mandatory};
     argument<str>  output_chart{*this, arg_name{"output-chart"}};
@@ -56,9 +57,16 @@ int main(int argc, char* const argv[])
             std::cerr << "INFO: " << disconnected->size() << " points disconnected: " << disconnected << '\n';
 
         acmacs::chart::optimization_options options(method, precision, opt.max_distance_multiplier);
-        options.num_threads = opt.threads;
         const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(!opt.no_dimension_annealing);
-        chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
+        if (opt.seed.has_value()) {
+            if (opt.number_of_optimizations != 1UL)
+                fmt::print(stderr, "WARNING: can only perform one optimization when seed is used\n");
+            chart.relax(*opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, opt.seed, disconnected);
+        }
+        else {
+            options.num_threads = opt.threads;
+            chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
+        }
         auto projections = chart.projections_modify();
         projections->sort();
         for (size_t p_no = 0; p_no < opt.fine; ++p_no)
