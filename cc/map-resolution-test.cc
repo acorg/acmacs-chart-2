@@ -1,14 +1,18 @@
+#include "acmacs-base/read-file.hh"
 #include "acmacs-chart-2/map-resolution-test.hh"
 #include "acmacs-chart-2/chart-modify.hh"
+#include "acmacs-chart-2/factory-export.hh"
 
 static void relax(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t number_of_dimensions, const acmacs::chart::map_resolution_test_data::Parameters& parameters);
 static acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontcared(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t number_of_dimensions, double proportion_to_dont_care, size_t replicate_no, const acmacs::chart::map_resolution_test_data::Parameters& parameters);
 static acmacs::chart::map_resolution_test_data::ReplicateStat collect_errors(acmacs::chart::ChartModify& master_chart, acmacs::chart::ChartModify& prediction_chart, const acmacs::chart::map_resolution_test_data::Parameters& parameters);
+static void create_directory_for_intermediate_charts(const acmacs::chart::map_resolution_test_data::Parameters& parameters);
 
 // ----------------------------------------------------------------------
 
 acmacs::chart::map_resolution_test_data::Results acmacs::chart::map_resolution_test(ChartModify& chart, const map_resolution_test_data::Parameters& parameters)
 {
+    create_directory_for_intermediate_charts(parameters);
     map_resolution_test_data::Results results(parameters);
     chart.projections_modify()->remove_all();
     // std::cout << "master dot-cares: " << (1.0 - chart.titers()->percent_of_non_dont_cares()) << '\n' << chart.titers()->print() << '\n';
@@ -50,7 +54,7 @@ void relax(acmacs::chart::ChartModify& chart, acmacs::number_of_dimensions_t num
 // ----------------------------------------------------------------------
 
 acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontcared(acmacs::chart::ChartModify& master_chart, acmacs::number_of_dimensions_t number_of_dimensions,
-                                                                                     double proportion_to_dont_care, [[maybe_unused]] size_t replicate_no,
+                                                                                     double proportion_to_dont_care, size_t replicate_no,
                                                                                      const acmacs::chart::map_resolution_test_data::Parameters& parameters)
 {
     acmacs::chart::ChartClone chart(master_chart, acmacs::chart::ChartClone::clone_data::titers);
@@ -95,6 +99,9 @@ acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontc
     // //      // std::cout << "DEBUG: corr:" << predictions.correlation << " var-m:" << acmacs::statistics::varianceN(std::begin(replicate_stat.master_distances), std::end(replicate_stat.master_distances))
     // //      //          << "\n  m: " << replicate_stat.master_distances << "\n  p: " << replicate_stat.predicted_distances << '\n';
     //  }
+
+    if (!parameters.save_charts_to.empty())
+        export_factory(chart, fmt::format("{}/mrt-{}d-{}-{:03d}.ace", parameters.save_charts_to, number_of_dimensions, proportion_to_dont_care, replicate_no), "map_resolution_test");
 
     return predictions;
 
@@ -183,6 +190,27 @@ std::ostream& acmacs::chart::map_resolution_test_data::operator << (std::ostream
     return out;
 
 } // acmacs::chart::map_resolution_test_data::operator <<
+
+// ----------------------------------------------------------------------
+
+static auto readme_text = R"(This is the directory with intermediate charts generated during map resolution test.
+
+Structure of the file names: mrt-<number_of_dimensions>-<proportions_to_dont_care>-<replicate_no>.ace
+
+{}
+)";
+
+void create_directory_for_intermediate_charts(const acmacs::chart::map_resolution_test_data::Parameters& parameters)
+{
+    if (!parameters.save_charts_to.empty()) {
+        if (!fs::exists(parameters.save_charts_to))
+            fs::create_directory(parameters.save_charts_to);
+        else if (!fs::is_directory(parameters.save_charts_to))
+            throw std::runtime_error(fmt::format("{} exists and it is not a directory", parameters.save_charts_to));
+        acmacs::file::write(fmt::format("{}/README.acmacs-map-resolution-test", parameters.save_charts_to), fmt::format(readme_text, parameters));
+    }
+
+} // create_directory_for_intermediate_charts
 
 // ----------------------------------------------------------------------
 

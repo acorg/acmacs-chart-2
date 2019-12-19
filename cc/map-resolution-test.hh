@@ -39,6 +39,7 @@ namespace acmacs
                 enum column_bases_from_master column_bases_from_master { column_bases_from_master::yes };
                 enum optimization_precision optimization_precision { optimization_precision::rough };
                 enum relax_from_full_table relax_from_full_table { relax_from_full_table::no };
+                std::string save_charts_to;
             };
 
             // ----------------------------------------------------------------------
@@ -168,7 +169,8 @@ template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::Param
         format_to(ctx.out(), "  minimum_column_basis:                            {}\n", param.minimum_column_basis);
         format_to(ctx.out(), "  column_bases_from_master:                        {}\n", param.column_bases_from_master);
         format_to(ctx.out(), "  optimization_precision:                          {}\n", param.optimization_precision);
-        format_to(ctx.out(), "  relax_from_full_table:                           {}",   param.relax_from_full_table);
+        format_to(ctx.out(), "  relax_from_full_table:                           {}\n",   param.relax_from_full_table);
+        format_to(ctx.out(), "  save_charts_to:                                  {}",   param.relax_from_full_table);
         return ctx.out();
     }
 };

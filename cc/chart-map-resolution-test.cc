@@ -19,6 +19,7 @@ struct Options : public argv
     option<bool>   fine_optimisation{*this, "fine-optimisation"};
     option<bool>   no_column_bases_from_master{*this, "no-column-bases-from-master", desc{"converting titers to dont-care may change column bases, do not force master chart column bases"}};
     option<bool>   relax_from_full_table{*this, "relax-from-full-table", desc{"additional projection in each replicate, first full table is relaxed, then titers dont-cared and the best projection relaxed again from already found starting coordinates."}};
+    option<str>    save_charts_to{*this, "save", desc{"save intermediate charts to this directory"}};
 
     argument<str> source{*this, arg_name{"chart-to-test"}, mandatory};
 };
@@ -40,6 +41,7 @@ int main(int argc, char* const argv[])
         parameters.column_bases_from_master = *opt.no_column_bases_from_master ? acmacs::chart::map_resolution_test_data::column_bases_from_master::no : acmacs::chart::map_resolution_test_data::column_bases_from_master::yes;
         parameters.optimization_precision = *opt.fine_optimisation ? acmacs::chart::optimization_precision::fine : acmacs::chart::optimization_precision::rough;
         parameters.relax_from_full_table = *opt.relax_from_full_table ? acmacs::chart::map_resolution_test_data::relax_from_full_table::yes : acmacs::chart::map_resolution_test_data::relax_from_full_table::no;
+        parameters.save_charts_to = *opt.save_charts_to;
 
         fmt::print(stderr, "{}\n", parameters);
 
