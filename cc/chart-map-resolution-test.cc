@@ -41,6 +41,8 @@ int main(int argc, char* const argv[])
         parameters.optimization_precision = *opt.fine_optimisation ? acmacs::chart::optimization_precision::fine : acmacs::chart::optimization_precision::rough;
         parameters.relax_from_full_table = *opt.relax_from_full_table ? acmacs::chart::map_resolution_test_data::relax_from_full_table::yes : acmacs::chart::map_resolution_test_data::relax_from_full_table::no;
 
+        fmt::print(stderr, "{}\n", parameters);
+
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source, acmacs::chart::Verify::None, report_time::no)};
         const auto results = acmacs::chart::map_resolution_test(chart, parameters);
         std::cout << results << '\n';

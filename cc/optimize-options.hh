@@ -67,11 +67,85 @@ namespace acmacs::chart
 
 } // namespace acmacs::chart
 
+// ----------------------------------------------------------------------
+
 namespace acmacs
 {
     inline std::string to_string(const acmacs::chart::dimension_schedule& src) { return to_string(src.schedule); }
 
 } // namespace acmacs
+
+// ----------------------------------------------------------------------
+
+template <> struct fmt::formatter<acmacs::chart::optimization_method>
+{
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+    template <typename FormatContext> auto format(const acmacs::chart::optimization_method& method, FormatContext& ctx)
+    {
+        using namespace acmacs::chart;
+        switch (method) {
+          case optimization_method::alglib_lbfgs_pca:
+              return format_to(ctx.out(), "alglib_lbfgs_pca");
+          case optimization_method::alglib_cg_pca:
+              return format_to(ctx.out(), "alglib_cg_pca");
+        }
+        return format_to(ctx.out(), "unknown"); // g++9
+    }
+};
+
+template <> struct fmt::formatter<acmacs::chart::optimization_precision>
+{
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+    template <typename FormatContext> auto format(const acmacs::chart::optimization_precision& precision, FormatContext& ctx)
+    {
+        using namespace acmacs::chart;
+        switch (precision) {
+          case optimization_precision::rough:
+              return format_to(ctx.out(), "rough");
+          case optimization_precision::very_rough:
+              return format_to(ctx.out(), "very_rough");
+          case optimization_precision::fine:
+              return format_to(ctx.out(), "fine");
+        }
+        return format_to(ctx.out(), "unknown"); // g++9
+    }
+};
+
+template <> struct fmt::formatter<acmacs::chart::multiply_antigen_titer_until_column_adjust>
+{
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+    template <typename FormatContext> auto format(const acmacs::chart::multiply_antigen_titer_until_column_adjust& mul, FormatContext& ctx)
+    {
+        using namespace acmacs::chart;
+        switch (mul) {
+          case multiply_antigen_titer_until_column_adjust::no:
+              return format_to(ctx.out(), "no");
+          case multiply_antigen_titer_until_column_adjust::yes:
+              return format_to(ctx.out(), "yes");
+        }
+        return format_to(ctx.out(), "unknown"); // g++9
+    }
+};
+
+template <> struct fmt::formatter<acmacs::chart::dodgy_titer_is_regular>
+{
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+    template <typename FormatContext> auto format(const acmacs::chart::dodgy_titer_is_regular& dod, FormatContext& ctx)
+    {
+        using namespace acmacs::chart;
+        switch (dod) {
+          case dodgy_titer_is_regular::no:
+              return format_to(ctx.out(), "no");
+          case dodgy_titer_is_regular::yes:
+              return format_to(ctx.out(), "yes");
+        }
+        return format_to(ctx.out(), "unknown"); // g++9
+    }
+};
 
 // ----------------------------------------------------------------------
 /// Local Variables:
