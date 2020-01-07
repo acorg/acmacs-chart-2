@@ -185,6 +185,16 @@ namespace acmacs::chart
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------
+
+namespace std
+{
+    template <> struct iterator_traits<acmacs::chart::detail::DistancesBase::IteratorForPoint>
+    {
+        using iterator_category = output_iterator_tag;
+    };
+}
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
