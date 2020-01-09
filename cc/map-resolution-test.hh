@@ -121,10 +121,8 @@ namespace acmacs
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::relax_from_full_table>
+template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::relax_from_full_table> : public fmt::formatter<acmacs::fmt_default_formatter>
 {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
-
     template <typename FormatContext> auto format(const acmacs::chart::map_resolution_test_data::relax_from_full_table& rel, FormatContext& ctx)
     {
         using namespace acmacs::chart::map_resolution_test_data;
@@ -138,10 +136,8 @@ template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::relax
     }
 };
 
-template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::column_bases_from_master>
+template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::column_bases_from_master> : public fmt::formatter<acmacs::fmt_default_formatter>
 {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
-
     template <typename FormatContext> auto format(const acmacs::chart::map_resolution_test_data::column_bases_from_master& rel, FormatContext& ctx)
     {
         using namespace acmacs::chart::map_resolution_test_data;
@@ -155,10 +151,8 @@ template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::colum
     }
 };
 
-template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::Parameters>
+template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::Parameters> : public fmt::formatter<acmacs::fmt_default_formatter>
 {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
-
     template <typename FormatContext> auto format(const acmacs::chart::map_resolution_test_data::Parameters& param, FormatContext& ctx)
     {
         format_to(ctx.out(), "map resolution test parameters\n");

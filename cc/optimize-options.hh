@@ -77,10 +77,8 @@ namespace acmacs
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<acmacs::chart::optimization_method>
+template <> struct fmt::formatter<acmacs::chart::optimization_method> : public fmt::formatter<acmacs::fmt_default_formatter>
 {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
-
     template <typename FormatContext> auto format(const acmacs::chart::optimization_method& method, FormatContext& ctx)
     {
         using namespace acmacs::chart;
@@ -94,10 +92,8 @@ template <> struct fmt::formatter<acmacs::chart::optimization_method>
     }
 };
 
-template <> struct fmt::formatter<acmacs::chart::optimization_precision>
+template <> struct fmt::formatter<acmacs::chart::optimization_precision> : public fmt::formatter<acmacs::fmt_default_formatter>
 {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
-
     template <typename FormatContext> auto format(const acmacs::chart::optimization_precision& precision, FormatContext& ctx)
     {
         using namespace acmacs::chart;
@@ -113,10 +109,8 @@ template <> struct fmt::formatter<acmacs::chart::optimization_precision>
     }
 };
 
-template <> struct fmt::formatter<acmacs::chart::multiply_antigen_titer_until_column_adjust>
+template <> struct fmt::formatter<acmacs::chart::multiply_antigen_titer_until_column_adjust> : public fmt::formatter<acmacs::fmt_default_formatter>
 {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
-
     template <typename FormatContext> auto format(const acmacs::chart::multiply_antigen_titer_until_column_adjust& mul, FormatContext& ctx)
     {
         using namespace acmacs::chart;
@@ -130,10 +124,8 @@ template <> struct fmt::formatter<acmacs::chart::multiply_antigen_titer_until_co
     }
 };
 
-template <> struct fmt::formatter<acmacs::chart::dodgy_titer_is_regular>
+template <> struct fmt::formatter<acmacs::chart::dodgy_titer_is_regular> : public fmt::formatter<acmacs::fmt_default_formatter>
 {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
-
     template <typename FormatContext> auto format(const acmacs::chart::dodgy_titer_is_regular& dod, FormatContext& ctx)
     {
         using namespace acmacs::chart;
