@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-chart-2/factory-import.hh"
@@ -37,25 +35,21 @@ int main(int argc, char* const argv[])
         acmacs::chart::ChartModify to_reorient{acmacs::chart::import_from_file(opt.source, acmacs::chart::Verify::None, report)};
         acmacs::chart::CommonAntigensSera common(*master, to_reorient, match_level);
         if (common) {
-            std::cout << "common antigens: " << common.common_antigens() << " sera: " << common.common_sera() << '\n';
-            // std::cout << "common points:" << common.points() << '\n';
-            // common.report();
+            fmt::print("common antigens: {} sera: {}\n", common.common_antigens(), common.common_sera());
             const auto projections = *opt.chart_projection_no < 0 ? acmacs::filled_with_indexes(to_reorient.number_of_projections()) : std::vector<size_t>{static_cast<size_t>(*opt.chart_projection_no)};
             for (auto projection_no : projections) {
                 auto procrustes_data = acmacs::chart::procrustes(*master->projection(static_cast<size_t>(*opt.master_projection_no)), *to_reorient.projection(projection_no), common.points(), acmacs::chart::procrustes_scaling_t::no);
                 to_reorient.projection_modify(projection_no)->transformation(procrustes_data.transformation);
-                std::cout << "projection: " << projection_no << '\n';
-                std::cout << "transformation: " << acmacs::to_string(procrustes_data.transformation) << '\n';
-                std::cout << "rms: " << acmacs::to_string(procrustes_data.rms) << "\n\n";
+                fmt::print("projection: {}\ntransformation: {}\nrms: {}\n", projection_no, procrustes_data.transformation, procrustes_data.rms);
             }
             acmacs::chart::export_factory(to_reorient, opt.output, opt.program_name(), report);
         }
         else {
-            std::cerr << "ERROR: no common antigens/sera\n";
+            fmt::print(stderr, "ERROR: no common antigens/sera\n");
         }
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        fmt::print(stderr, "ERROR:  {}\n", err);
         exit_code = 2;
     }
     return exit_code;

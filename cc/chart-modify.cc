@@ -1431,6 +1431,9 @@ void ProjectionModify::clone_from(const Projection& aSource)
     transformation_ = aSource.transformation();
     transformed_layout_.reset();
     set_forced_column_bases(aSource.forced_column_bases());
+    disconnected_ = aSource.disconnected();
+    unmovable_ = aSource.unmovable();
+    unmovable_in_the_last_dimension_ = aSource.unmovable_in_the_last_dimension();
     comment_ = aSource.comment();
 
 } // ProjectionModify::clone_from
