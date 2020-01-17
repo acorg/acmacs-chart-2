@@ -28,8 +28,8 @@ struct Options : public argv
     option<double> max_distance_multiplier{*this, "md", dflt{2.0}, desc{"randomization diameter multiplier"}};
     option<size_t> keep_projections{*this, "keep-projections", dflt{0UL}, desc{"number of projections to keep, 0 - keep all"}};
     option<bool>   no_disconnect_having_few_titers{*this, "no-disconnect-having-few-titers"};
-    option<str>    disconnect_antigens{*this, "disconnect-antigens", dflt{""}, desc{"comma separated list of antigen/point indexes (0-based) to disconnect for the new projections"}};
-    option<str>    disconnect_sera{*this, "disconnect-sera", dflt{""}, desc{"comma separated list of serum indexes (0-based) to disconnect for the new projections"}};
+    option<str>    disconnect_antigens{*this, "disconnect-antigens", dflt{""}, desc{"comma or space separated list of antigen/point indexes (0-based) to disconnect for the new projections"}};
+    option<str>    disconnect_sera{*this, "disconnect-sera", dflt{""}, desc{"comma or space separated list of serum indexes (0-based) to disconnect for the new projections"}};
     option<int>    threads{*this, "threads", dflt{0}, desc{"number of threads to use for optimization (omp): 0 - autodetect, 1 - sequential"}};
     option<bool>   report_time{*this, "time", desc{"report time of loading chart"}};
     option<bool>   verbose{*this, 'v', "verbose"};
@@ -99,9 +99,9 @@ acmacs::chart::DisconnectedPoints get_disconnected(std::string_view antigens, st
 {
     acmacs::chart::DisconnectedPoints points;
     if (!antigens.empty())
-        extend(points, acmacs::string::split_into_size_t(antigens, ","), 0, number_of_antigens + number_of_sera);
+        extend(points, acmacs::string::split_into_size_t(antigens), 0, number_of_antigens + number_of_sera);
     if (!sera.empty())
-        extend(points, acmacs::string::split_into_size_t(sera, ","), number_of_antigens, number_of_sera);
+        extend(points, acmacs::string::split_into_size_t(sera), number_of_antigens, number_of_sera);
     return points;
 
 } // get_disconnected

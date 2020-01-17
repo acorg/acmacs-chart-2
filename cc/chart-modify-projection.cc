@@ -24,10 +24,10 @@ struct Options : public argv
     Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
 
     option<size_t> projection{*this, "projection", dflt{0UL}};
-    option<str>    points{*this, "points", dflt{""}, desc{"comma separated list of point indexes, no spaces!"}};
-    option<str>    antigens{*this, "antigens", dflt{""}, desc{"comma separated list of antigen indexes, no spaces!"}};
-    option<str>    sera{*this, "sera", dflt{""}, desc{"comma separated list of serum indexes, no spaces!"}};
-    option<str>    move_to{*this, "move-to", dflt{""}, desc{"comma separated list of coordinates, no spaces!"}};
+    option<str>    points{*this, "points", dflt{""}, desc{"comma or space separated list of point indexes, no spaces!"}};
+    option<str>    antigens{*this, "antigens", dflt{""}, desc{"comma or space separated list of antigen indexes, no spaces!"}};
+    option<str>    sera{*this, "sera", dflt{""}, desc{"comma or space separated list of serum indexes, no spaces!"}};
+    option<str>    move_to{*this, "move-to", dflt{""}, desc{"comma or space separated list of coordinates, no spaces!"}};
     option<double> rotate_degrees{*this, "rotate-degrees", dflt{0.0}};
     option<double> rotate_radians{*this, "rotate-radians", dflt{0.0}};
     option<bool>   flip_ew{*this, "flip-ew"};
@@ -50,11 +50,11 @@ int main(int argc, char* const argv[])
 
         std::vector<size_t> points;
         if (opt.points.has_value())
-            extend(points, acmacs::string::split_into_size_t(*opt.points, ","), 0, chart->number_of_points());
+            extend(points, acmacs::string::split_into_size_t(*opt.points), 0, chart->number_of_points());
         if (opt.antigens.has_value())
-            extend(points, acmacs::string::split_into_size_t(*opt.antigens, ","), 0, chart->number_of_antigens());
+            extend(points, acmacs::string::split_into_size_t(*opt.antigens), 0, chart->number_of_antigens());
         if (opt.sera.has_value())
-            extend(points, acmacs::string::split_into_size_t(*opt.sera, ","), chart->number_of_antigens(), chart->number_of_sera());
+            extend(points, acmacs::string::split_into_size_t(*opt.sera), chart->number_of_antigens(), chart->number_of_sera());
         std::sort(points.begin(), points.end());
         points.erase(std::unique(points.begin(), points.end()), points.end());
         if (!points.empty() && points.back() >= chart->number_of_points())
@@ -65,7 +65,7 @@ int main(int argc, char* const argv[])
         if (opt.move_to.has_value()) {
             if (points.empty())
                 throw std::runtime_error("--move-to requires at least one of --antigens, --sera, --points");
-            const auto target_coordinates_v = acmacs::string::split_into_double(*opt.move_to, ",");
+            const auto target_coordinates_v = acmacs::string::split_into_double(*opt.move_to);
             const acmacs::PointCoordinates target_coordinates(target_coordinates_v[0], target_coordinates_v[1]);
             for (auto point_no : points)
                 projection->move_point(point_no, target_coordinates);

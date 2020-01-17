@@ -20,7 +20,7 @@ struct Options : public argv
     option<bool> fields{*this, "fields", desc{"report names with fields"}};
     option<str>  format{*this, 'f', "format", dflt{"{ag_sr} {no0} {full_name_with_passage} {serum_species} [{date}] {lab_ids} {ref}"},
                         desc{"\n          supported fields:\n            {ag_sr} {no0} {<no0} {no1} {<no1}\n            {name} {full_name_with_passage} {full_name_with_fields} {abbreviated_name}\n            {abbreviated_name_with_passage_type} {abbreviated_location_with_passage_type}\n            {abbreviated_name_with_serum_id} {designation} {name_abbreviated} {name_without_subtype}\n            {abbreviated_location_year} {location_abbreviated}\n            {location} {country} {continent} {latitude} {longitude}\n            {serum_id} {serum_species} {sera_with_titrations}\n            {ref} {date} {lab_ids} {reassortant} {passage} {passage_type} {annotations} {lineage}"}};
-    option<str>  antigens{*this, 'a', "antigens", desc{"comma separated list of antigens (zero based indexes) to report for them only"}};
+    option<str>  antigens{*this, 'a', "antigens", desc{"comma or space separated list of antigens (zero based indexes) to report for them only"}};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
     option<bool> verbose{*this, 'v', "verbose"};
     argument<str_array> charts{*this, arg_name{"chart"}, mandatory};
@@ -40,7 +40,7 @@ int main(int argc, char* const argv[])
             auto sera = chart->sera();
             const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
             if (opt.antigens) {
-                for (auto ag_no : acmacs::string::split_into_size_t(*opt.antigens, ","))
+                for (auto ag_no : acmacs::string::split_into_size_t(*opt.antigens))
                     fmt::print("{}\n", string::strip(format(*chart, *antigens->at(ag_no), ag_no, num_digits, pattern)));
             }
             else {

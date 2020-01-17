@@ -15,7 +15,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv,
                        {
-                           {"-s", "", "comma separated list of serum indexes (zero based)"},
+                           {"-s", "", "comma or space separated list of serum indexes (zero based)"},
                            {"--time", false, "report time of loading chart"},
                            {"--dry-run", false, "report antigens, do not produce output"},
                            {"--verbose", false},
@@ -29,7 +29,7 @@ int main(int argc, char* const argv[])
         }
         else {
             const std::string sera(args["-s"]);
-            acmacs::chart::PointIndexList sera_titrated_against{sera.empty() ? acmacs::Indexes{} : acmacs::string::split_into_size_t(sera, ",")};
+            acmacs::chart::PointIndexList sera_titrated_against{sera.empty() ? acmacs::Indexes{} : acmacs::string::split_into_size_t(sera)};
             // acmacs::ReverseSortedIndexes antigens_to_remove;
             const auto report = do_report_time(args["--time"]);
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};

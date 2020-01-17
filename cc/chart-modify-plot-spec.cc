@@ -23,9 +23,9 @@ struct Options : public argv
 {
     Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
 
-    option<str> points{*this, "points", desc{"comma separated list of point indexes, no spaces!"}};
-    option<str> antigens{*this, "antigens", desc{"comma separated list of antigen indexes, no spaces!"}};
-    option<str> sera{*this, "sera", desc{"comma separated list of serum indexes, no spaces!"}};
+    option<str> points{*this, "points", desc{"comma or space separated list of point indexes, no spaces!"}};
+    option<str> antigens{*this, "antigens", desc{"comma or space separated list of antigen indexes, no spaces!"}};
+    option<str> sera{*this, "sera", desc{"comma or space separated list of serum indexes, no spaces!"}};
     option<double> size{*this, "size", desc{"change point size"}};
     option<str> fill{*this, "fill", desc{"change point fill color"}};
     option<str> outline{*this, "outline", desc{"change point outline color"}};
@@ -45,11 +45,11 @@ int main(int argc, char* const argv[])
 
         std::vector<size_t> points;
         if (opt.points)
-            extend(points, acmacs::string::split_into_size_t(static_cast<std::string_view>(opt.points), ","), 0, chart->number_of_points());
+            extend(points, acmacs::string::split_into_size_t(static_cast<std::string_view>(opt.points)), 0, chart->number_of_points());
         if (opt.antigens)
-            extend(points, acmacs::string::split_into_size_t(static_cast<std::string_view>(opt.antigens), ","), 0, chart->number_of_antigens());
+            extend(points, acmacs::string::split_into_size_t(static_cast<std::string_view>(opt.antigens)), 0, chart->number_of_antigens());
         if (opt.sera)
-            extend(points, acmacs::string::split_into_size_t(static_cast<std::string_view>(opt.sera), ","), chart->number_of_antigens(), chart->number_of_sera());
+            extend(points, acmacs::string::split_into_size_t(static_cast<std::string_view>(opt.sera)), chart->number_of_antigens(), chart->number_of_sera());
         std::sort(points.begin(), points.end());
         points.erase(std::unique(points.begin(), points.end()), points.end());
         if (points.empty())

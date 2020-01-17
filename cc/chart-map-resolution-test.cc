@@ -11,10 +11,10 @@ struct Options : public argv
 {
     Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
 
-    option<str>    number_of_dimensions{*this, 'd', dflt{"1,2,3,4,5"}, desc{"number of dimensions, comma separated values"}};
+    option<str>    number_of_dimensions{*this, 'd', dflt{"1,2,3,4,5"}, desc{"number of dimensions, comma or space separated values"}};
     option<size_t> number_of_optimizations{*this, 'n', dflt{100UL}, desc{"number of optimisations"}};
     option<size_t> number_of_random_replicates_for_each_proportion{*this, "random-replicates-for-each-proportion", dflt{25UL}};
-    option<str>    proportions_to_dont_care{*this, "proportions-to-dont-care", dflt{"0.1, 0.2, 0.3"}, desc{"comma separated values"}};
+    option<str>    proportions_to_dont_care{*this, "proportions-to-dont-care", dflt{"0.1, 0.2, 0.3"}, desc{"comma or space separated values"}};
     option<str>    minimum_column_basis{*this, 'm', dflt{"none"}, desc{"minimum column basis"}};
     option<bool>   fine_optimisation{*this, "fine-optimisation"};
     option<bool>   no_column_bases_from_master{*this, "no-column-bases-from-master", desc{"converting titers to dont-care may change column bases, do not force master chart column bases"}};
@@ -33,10 +33,10 @@ int main(int argc, char* const argv[])
         Options opt(argc, argv);
 
         acmacs::chart::map_resolution_test_data::Parameters parameters;
-        parameters.number_of_dimensions = acmacs::string::split_into_uint<acmacs::number_of_dimensions_t>(*opt.number_of_dimensions, ",");
+        parameters.number_of_dimensions = acmacs::string::split_into_uint<acmacs::number_of_dimensions_t>(*opt.number_of_dimensions);
         parameters.number_of_optimizations = acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations};
         parameters.number_of_random_replicates_for_each_proportion = opt.number_of_random_replicates_for_each_proportion;
-        parameters.proportions_to_dont_care = acmacs::string::split_into_double(*opt.proportions_to_dont_care, ",");
+        parameters.proportions_to_dont_care = acmacs::string::split_into_double(*opt.proportions_to_dont_care);
         parameters.minimum_column_basis = *opt.minimum_column_basis;
         parameters.column_bases_from_master = *opt.no_column_bases_from_master ? acmacs::chart::map_resolution_test_data::column_bases_from_master::no : acmacs::chart::map_resolution_test_data::column_bases_from_master::yes;
         parameters.optimization_precision = *opt.fine_optimisation ? acmacs::chart::optimization_precision::fine : acmacs::chart::optimization_precision::rough;

@@ -26,7 +26,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv, {
                 {"-n", 1, "number of optimizations"},
-                {"-d", "2", "number of dimensions (comma separated values for dimension annealing)"},
+                {"-d", "2", "number of dimensions (comma or space separated values for dimension annealing)"},
                 {"-m", "none", "minimum column basis"},
                 {"--rough", false},
                 {"--method", "cg", "method: lbfgs, cg"},
@@ -48,7 +48,7 @@ int main(int argc, char* const argv[])
         else {
             const auto report = do_report_time(args["--time"]);
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
-            const acmacs::chart::dimension_schedule schedule{acmacs::string::split_into_uint<acmacs::number_of_dimensions_t>(args["-d"].str(), ",")};
+            const acmacs::chart::dimension_schedule schedule{acmacs::string::split_into_uint<acmacs::number_of_dimensions_t>(args["-d"].str())};
             const auto number_of_dimensions = schedule.final();
             const auto precision = args["--rough"] ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
             const acmacs::chart::optimization_method method{acmacs::chart::optimization_method_from_string(args["--method"])};
