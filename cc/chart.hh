@@ -179,19 +179,6 @@ namespace acmacs::chart
 
     }; // class Continent
 
-    inline std::ostream& operator<<(std::ostream& s, const BLineage& lineage)
-    {
-        switch (static_cast<BLineage::Lineage>(lineage)) {
-            case BLineage::Victoria:
-            case BLineage::Yamagata:
-                s << fmt::format("{}", lineage);
-                break;
-            case BLineage::Unknown:
-                break;
-        }
-        return s;
-    }
-
     class LabIds : public acmacs::named_vector_t<std::string, struct chart_LabIds_tag_t>
     {
       public:
@@ -394,18 +381,6 @@ namespace acmacs::chart
 
     }; // class Antigen
 
-    inline std::ostream& operator<<(std::ostream& out, const Antigen& ag)
-    {
-        out << ag.full_name();
-        if (const auto date = ag.date(); !date.empty())
-            out << fmt::format(" [{}]", *date);
-        if (const auto lab_ids = ag.lab_ids(); !lab_ids->empty())
-            out << ' ' << *lab_ids;
-        if (const auto lineage = ag.lineage(); lineage != BLineage::Unknown)
-            out << fmt::format(" {}", lineage);
-        return out;
-    }
-
     // ----------------------------------------------------------------------
 
     class Serum
@@ -454,16 +429,6 @@ namespace acmacs::chart
         bool is_cell() const { return !is_egg(); }
 
     }; // class Serum
-
-    inline std::ostream& operator<<(std::ostream& out, const Serum& sr)
-    {
-        out << sr.full_name();
-        if (const auto lineage = sr.lineage(); lineage != BLineage::Unknown)
-            out << fmt::format(" {}", lineage);
-        if (const auto serum_species = sr.serum_species(); !serum_species.empty())
-            out << ' ' << *serum_species;
-        return out;
-    }
 
     // ----------------------------------------------------------------------
 
@@ -909,6 +874,40 @@ template <> struct std::iterator_traits<acmacs::chart::Projections::iterator>
 };
 
 #endif
+
+// ----------------------------------------------------------------------
+
+template <> struct fmt::formatter<acmacs::chart::BLineage> : fmt::formatter<acmacs::fmt_default_formatter> {
+    template <typename FormatCtx> auto format(const acmacs::chart::BLineage& lineage, FormatCtx& ctx) { return format_to(ctx.out(), "{}", lineage.to_string()); }
+};
+
+
+template <> struct fmt::formatter<acmacs::chart::Antigen> : fmt::formatter<acmacs::fmt_default_formatter> {
+    template <typename FormatCtx> auto format(const acmacs::chart::Antigen& antigen, FormatCtx& ctx)
+    {
+        format_to(ctx.out(), "{}", antigen.full_name());
+        if (const auto date = antigen.date(); !date.empty())
+            format_to(ctx.out(), " [{}]", date);
+        if (const auto lab_ids = antigen.lab_ids(); !lab_ids->empty())
+            format_to(ctx.out(), " {}", lab_ids.join());
+        if (const auto lineage = antigen.lineage(); lineage != acmacs::chart::BLineage::Unknown)
+            format_to(ctx.out(), " {}", lineage);
+        return ctx.out();
+    }
+};
+
+template <> struct fmt::formatter<acmacs::chart::Serum> : fmt::formatter<acmacs::fmt_default_formatter> {
+    template <typename FormatCtx> auto format(const acmacs::chart::Serum& serum, FormatCtx& ctx)
+    {
+        format_to(ctx.out(), "{}", serum.full_name());
+        if (const auto lineage = serum.lineage(); lineage != acmacs::chart::BLineage::Unknown)
+            format_to(ctx.out(), " {}", lineage);
+        if (const auto serum_species = serum.serum_species(); !serum_species.empty())
+            format_to(ctx.out(), " {}", serum_species);
+        return ctx.out();
+    }
+};
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:
