@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "acmacs-base/argv.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
@@ -22,11 +20,11 @@ int main(int argc, char* const argv[])
     try {
         Options opt(argc, argv);
         auto chart = acmacs::chart::import_from_file(opt.input_chart);
-        std::cout << chart->make_info() << '\n';
+        fmt::print("{}\n", chart->make_info());
         acmacs::chart::export_factory(*chart, opt.output_chart, opt.program_name());
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        fmt::print(stderr, "ERROR: {}\n", err);
         exit_code = 2;
     }
     return exit_code;
