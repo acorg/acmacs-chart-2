@@ -38,6 +38,7 @@ int main(int argc, char* const argv[])
             auto chart = acmacs::chart::import_from_file(chart_filename, acmacs::chart::Verify::None, do_report_time(opt.report_time));
             auto antigens = chart->antigens();
             auto sera = chart->sera();
+            sera->set_homologous(acmacs::chart::find_homologous::all, *antigens, acmacs::debug::no);
             const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
             if (opt.antigens) {
                 for (auto ag_no : acmacs::string::split_into_size_t(*opt.antigens))
@@ -126,6 +127,14 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Serum
 {
     const auto [location_name, country, continent, latitude, longitude] = location_data(serum.location());
 
+    std::string date;
+    for (auto ag_no : serum.homologous_antigens()) {
+        if (const auto ag_date  = chart.antigens()->at(ag_no)->date(); !ag_date.empty()) {
+            date = ag_date;
+            break;
+        }
+    }
+
     return fmt::format(
         pattern,
         fmt::arg("ag_sr", "SR"),
@@ -138,7 +147,7 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Serum
         fmt::arg("full_name_with_passage", serum.full_name_with_passage()),
         fmt::arg("full_name_with_fields", serum.full_name_with_fields()),
         fmt::arg("serum_species", *serum.serum_species()),
-        fmt::arg("date", ""),
+        fmt::arg("date", date),
         fmt::arg("lab_ids", ""),
         fmt::arg("ref", ""),
         fmt::arg("serum_id", *serum.serum_id()),
