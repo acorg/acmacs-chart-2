@@ -153,7 +153,9 @@ void report_text(const acmacs::chart::Chart& chart, const std::vector<SerumData>
 void report_csv(std::ostream& output, const std::vector<SerumData>& sera_data)
 {
     acmacs::CsvWriter writer;
-    writer << "serum" << "passage" << "empirical" << "theoretical" << "titers" << acmacs::CsvWriter::end_of_row;
+    writer << "serum" << "passage" << "empirical" << "theoretical" << "diff" << "titers" << acmacs::CsvWriter::end_of_row;
+    double diff{0};
+    size_t num_diff{0};
     for (const auto& serum_data : sera_data) {
         writer << serum_data.serum->full_name() << serum_data.serum->passage().passage_type();
         std::string titers;
@@ -180,8 +182,17 @@ void report_csv(std::ostream& output, const std::vector<SerumData>& sera_data)
             writer << theoretical / num_theoretical;
         else
             writer << acmacs::CsvWriter::empty_field;
+        if (num_empirical && num_theoretical) {
+            const auto emp_theor_diff = empirical / num_empirical - theoretical / num_theoretical;
+            diff += std::abs(emp_theor_diff);
+            writer << emp_theor_diff;
+            ++num_diff;
+        }
+        else
+            writer << acmacs::CsvWriter::empty_field;
         writer << titers << acmacs::CsvWriter::end_of_row;
     }
+    writer << "average abs difference" << diff / num_diff << acmacs::CsvWriter::end_of_row;
     output << writer;
 
 } // report_csv
