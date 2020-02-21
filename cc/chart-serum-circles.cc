@@ -10,7 +10,7 @@
 
 // ----------------------------------------------------------------------
 
-static void report(std::string_view chart_filename, size_t projection_no, std::string_view json_filename, std::string_view csv_filename);
+static void report(std::string_view chart_filename, size_t projection_no, std::string_view json_filename, std::string_view csv_filename, acmacs::verbose verbose);
 
 using namespace acmacs::argv;
 struct Options : public argv
@@ -20,6 +20,7 @@ struct Options : public argv
     option<str>    json{*this, "json", desc{"write json data into file suitable for the ssm report"}};
     option<str>    csv{*this, "csv", desc{"write csv data into file"}};
     option<size_t> projection{*this, "projection", dflt{0UL}};
+    option<bool>   verbose{*this, 'v', "verbose"};
 
     argument<str> chart{*this, arg_name{"chart"}, mandatory};
 };
@@ -29,7 +30,7 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         Options opt(argc, argv);
-        report(opt.chart, opt.projection, opt.json, opt.csv);
+        report(opt.chart, opt.projection, opt.json, opt.csv, opt.verbose ? acmacs::verbose::yes : acmacs::verbose::no);
     }
     catch (std::exception& err) {
         fmt::print(stderr, "ERROR {}\n", err);
@@ -72,12 +73,12 @@ struct SerumData
     bool valid() const { return !antigens.empty(); }
 };
 
-static std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t projection_no);
+static std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t projection_no, acmacs::verbose verbose);
 static void report_text(const acmacs::chart::Chart& chart, const std::vector<SerumData>& sera_data);
 static void report_json(std::ostream& output, const acmacs::chart::Chart& chart, const std::vector<SerumData>& sera_data);
 static void report_csv(std::ostream& output, const std::vector<SerumData>& sera_data);
 
-void report(std::string_view chart_filename, size_t projection_no, std::string_view json_filename, std::string_view csv_filename)
+void report(std::string_view chart_filename, size_t projection_no, std::string_view json_filename, std::string_view csv_filename, acmacs::verbose verbose)
 {
     auto chart = acmacs::chart::import_from_file(chart_filename);
     if (chart->number_of_projections() == 0)
@@ -85,7 +86,9 @@ void report(std::string_view chart_filename, size_t projection_no, std::string_v
     if (chart->number_of_projections() <= projection_no)
         throw std::runtime_error("invalid projection number");
     chart->set_homologous(acmacs::chart::find_homologous::all);
-    auto result = collect(*chart, projection_no);
+    auto result = collect(*chart, projection_no, verbose);
+    if (verbose == acmacs::verbose::yes)
+        std::cerr << "\n\n\n";
 
     if (!json_filename.empty())
         report_json(acmacs::file::ofstream(json_filename), *chart, result);
@@ -98,7 +101,7 @@ void report(std::string_view chart_filename, size_t projection_no, std::string_v
 
 // ----------------------------------------------------------------------
 
-std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t projection_no)
+std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t projection_no, acmacs::verbose verbose)
 {
     std::vector<SerumData> result;
     auto antigens = chart.antigens();
@@ -110,7 +113,9 @@ std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t project
             auto& antigen_data = serum_data.antigens.emplace_back(ag_no, (*antigens)[ag_no], titers->titer(ag_no, sr_no));
             if (antigen_data.titer.is_regular()) {
                 antigen_data.theoretical = chart.serum_circle_radius_theoretical(ag_no, sr_no, projection_no);
-                antigen_data.empirical = chart.serum_circle_radius_empirical(ag_no, sr_no, projection_no);
+                antigen_data.empirical = chart.serum_circle_radius_empirical(ag_no, sr_no, projection_no, 2.0,
+                                                                             // sr_no == 19 ? acmacs::verbose::yes :
+                                                                             verbose);
             }
         }
     }

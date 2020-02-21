@@ -744,17 +744,17 @@ namespace acmacs::chart
         }
         std::vector<acmacs::PointStyle> default_all_styles() const;
 
-        SerumCircle serum_circle_radius_empirical(const Indexes& antigens, Titer aHomologousTiter, size_t aSerumNo, size_t aProjectionNo, double fold = 2) const // aFold=2 for 4fold, 3 - for 8fold
+        SerumCircle serum_circle_radius_empirical(const Indexes& antigens, Titer aHomologousTiter, size_t aSerumNo, size_t aProjectionNo, double fold = 2, acmacs::verbose verbose = acmacs::verbose::no) const // aFold=2 for 4fold, 3 - for 8fold
         {
-            return serum_circle_empirical(antigens, aHomologousTiter, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers(), fold);
+            return serum_circle_empirical(antigens, aHomologousTiter, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers(), fold, verbose);
         }
-        SerumCircle serum_circle_radius_empirical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, double fold = 2) const
+        SerumCircle serum_circle_radius_empirical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, double fold = 2, acmacs::verbose verbose = acmacs::verbose::no) const
         {
-            return serum_circle_empirical(aAntigenNo, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers(), fold);
+            return serum_circle_empirical(aAntigenNo, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers(), fold, verbose);
         }
-        SerumCircle serum_circle_radius_empirical(const Indexes& antigens, size_t aSerumNo, size_t aProjectionNo, double fold = 2) const
+        SerumCircle serum_circle_radius_empirical(const Indexes& antigens, size_t aSerumNo, size_t aProjectionNo, double fold = 2, acmacs::verbose verbose = acmacs::verbose::no) const
         {
-            return serum_circle_empirical(antigens, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers(), fold);
+            return serum_circle_empirical(antigens, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers(), fold, verbose);
         }
         SerumCircle serum_circle_radius_theoretical(Titer aHomologousTiter, size_t aSerumNo, size_t aProjectionNo, double fold = 2) const
         {

@@ -62,7 +62,7 @@ class TiterDistance
         : titer(aTiter), similarity(aTiter.is_dont_care() ? 0.0 : aTiter.logged_for_column_bases()),
           final_similarity(std::min(aColumnBase, similarity)), distance(aDistance) {}
     inline TiterDistance() : similarity(0), final_similarity(0), distance(std::numeric_limits<double>::quiet_NaN()) {}
-    inline operator bool() const { return !titer.is_dont_care(); }
+    inline operator bool() const { return !titer.is_dont_care() && !std::isnan(distance); }
 
     acmacs::chart::Titer titer;
     double similarity;
@@ -73,9 +73,34 @@ class TiterDistance
 inline std::ostream& operator << (std::ostream& out, const TiterDistance& td)
 {
     if (td)
-        return out << "t:" << *td.titer << " s:" << td.similarity << " f:" << td.final_similarity << " d:" << td.distance << '\n';
+        return out << "{t:" << *td.titer << " s:" << td.similarity << " f:" << td.final_similarity << " d:" << td.distance << '}';
     else
-        return out << "dont-care" << '\n';
+        return out << '*';
+}
+
+inline std::ostream& operator << (std::ostream& out, const std::vector<TiterDistance>& vtd)
+{
+    out << fmt::format("({})[", vtd.size());
+    bool space{false};
+    size_t num_dont_care{0};
+    for (const auto& td : vtd) {
+        if (td) {
+        if (space)
+            out << ' ';
+        else
+            space = true;
+        if (num_dont_care) {
+            out << fmt::format("*({}) ", num_dont_care);
+            num_dont_care = 0;
+        }
+        out << td;
+        }
+        else
+            ++num_dont_care;
+    }
+    if (num_dont_care)
+        out << fmt::format(" *({})", num_dont_care);
+    return out << ']';
 }
 
 // ----------------------------------------------------------------------
@@ -110,8 +135,12 @@ inline std::ostream& operator << (std::ostream& out, const TiterDistance& td)
 // If there are multiple optima with equal sums of 2 and 3, then the
 // radius is a mean of optimal radii.
 
-void acmacs::chart::detail::serum_circle_empirical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen, const Layout& layout, const Titers& titers, double fold)
+void acmacs::chart::detail::serum_circle_empirical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen, const Layout& layout, const Titers& titers, double fold, acmacs::verbose verbose)
 {
+    if (verbose == acmacs::verbose::yes) {
+        std::cerr << "======================================================================\nSerum circle empirical for SR " << circle_data.serum_no() << "\n======================================================================\n";
+    }
+
     std::vector<TiterDistance> titers_and_distances(titers.number_of_antigens());
     size_t max_titer_for_serum_ag_no = 0;
     for (size_t ag_no = 0; ag_no < titers.number_of_antigens(); ++ag_no) {
@@ -132,10 +161,10 @@ void acmacs::chart::detail::serum_circle_empirical(const SerumCircle& circle_dat
         return;
     }
 
-    // if (aVerbose) {
-    //     std::cerr << ">>> titers_and_distances: " << titers_and_distances << '\n';
-    //     std::cerr << ">>> serum_circle_radius_empirical protection_boundary_titer: " << protection_boundary_titer << '\n';
-    // }
+    if (verbose == acmacs::verbose::yes) {
+        // std::cerr << ">>> titers_and_distances: " << titers_and_distances << '\n';
+        std::cerr << ">>> serum_circle_radius_empirical protection_boundary_titer: " << protection_boundary_titer << '\n';
+    }
 
     // sort antigen indices by antigen distance from serum, closest first
     auto antigens_by_distances_sorting = [&titers_and_distances](size_t a, size_t b) -> bool {
@@ -149,17 +178,28 @@ void acmacs::chart::detail::serum_circle_empirical(const SerumCircle& circle_dat
     };
     Indexes antigens_by_distances(acmacs::index_iterator(0UL), acmacs::index_iterator(titers.number_of_antigens()));
     std::sort(antigens_by_distances.begin(), antigens_by_distances.end(), antigens_by_distances_sorting);
-    // if (aVerbose) std::cerr << "DEBUG: antigens_by_distances " << antigens_by_distances << std::endl;
+    if (verbose == acmacs::verbose::yes) {
+        // std::cerr << ">>> antigens_by_distances " << antigens_by_distances << std::endl;
+        std::cerr << ">>> antigens_by_distances\n  AG    distance   titer   simil   fsimil\n";
+        for (auto ag_no : antigens_by_distances) {
+            if (titers_and_distances[ag_no])
+                std::cerr << fmt::format(" {:4d}   {:7.4f}  {:>6s}     {:4.2f}    {:4.2f}\n", ag_no, titers_and_distances[ag_no].distance, titers_and_distances[ag_no].titer, titers_and_distances[ag_no].similarity, titers_and_distances[ag_no].final_similarity);
+            else if (!titers_and_distances[ag_no].titer.is_dont_care())
+                std::cerr << fmt::format(" {:4d}   disconn  {:>6s}     {:4.2f}    {:4.2f}\n", ag_no, titers_and_distances[ag_no].titer, titers_and_distances[ag_no].similarity, titers_and_distances[ag_no].final_similarity);
+        }
+    }
 
     constexpr const size_t None = static_cast<size_t>(-1);
     size_t best_sum = None;
     size_t previous = None;
     double sum_radii = 0;
     size_t num_radii = 0;
+    if (verbose == acmacs::verbose::yes)
+        std::cerr << "\n>>> AG   radius    dist  protected-outside     not-protected-inside  sum   best-sum\n                         theoretically only      empirically only\n";
     for (size_t ag_no : antigens_by_distances) {
         if (!titers_and_distances[ag_no])
             break;
-        if (!std::isnan(titers_and_distances[ag_no].distance)) {
+        if (titers_and_distances[ag_no]) {
             const double radius = previous == None ? titers_and_distances[ag_no].distance : (titers_and_distances[ag_no].distance + titers_and_distances[previous].distance) / 2.0;
             size_t protected_outside = 0, not_protected_inside = 0; // , protected_inside = 0, not_protected_outside = 0;
             for (const auto& protection_data : titers_and_distances) {
@@ -176,61 +216,60 @@ void acmacs::chart::detail::serum_circle_empirical(const SerumCircle& circle_dat
             const size_t summa = protected_outside + not_protected_inside;
             if (best_sum == None || best_sum >= summa) { // if sums are the same, choose the smaller radius (found earlier)
                 if (best_sum == summa) {
-                    // if (aVerbose)
-                    //     std::cerr << "DEBUG: AG " << ag_no << " radius:" << radius << " distance:" << titers_and_distances[ag_no].distance << " prev:" << static_cast<int>(previous) << "
-                    //     protected_outside:" << protected_outside << " not_protected_inside:" << not_protected_inside << " best_sum:" << best_sum << std::endl;
+                    // if (verbose == acmacs::verbose::yes)
+                    //     std::cerr << ">>> AG " << ag_no << " radius:" << radius << " distance:" << titers_and_distances[ag_no].distance << " prev:" << static_cast<int>(previous) << " protected_outside:" << protected_outside << " not_protected_inside:" << not_protected_inside << " best_sum:" << best_sum << std::endl;
                     sum_radii += radius;
                     ++num_radii;
                 }
                 else {
-                    // if (aVerbose)
-                    //     std::cerr << "======================================================================" << std::endl
-                    //               << "DEBUG: AG " << ag_no << " radius:" << radius << " distance:" << titers_and_distances[ag_no].distance << " prev:" << static_cast<int>(previous) << "
-                    //               protected_outside:" << protected_outside << " not_protected_inside:" << not_protected_inside << " best_sum:" << best_sum << std::endl;
+                    // if (verbose == acmacs::verbose::yes)
+                    //     std::cerr << ">>> AG " << ag_no << " radius:" << radius << " distance:" << titers_and_distances[ag_no].distance << " prev:" << static_cast<int>(previous) << " protected_outside:" << protected_outside << " not_protected_inside:" << not_protected_inside << " best_sum:" << best_sum << std::endl;
                     sum_radii = radius;
                     num_radii = 1;
                     best_sum = summa;
                 }
             }
-            // std::cerr << "AG " << ag_no << " radius:" << radius << " protected_outside:" << protected_outside << " not_protected_inside:" << not_protected_inside << " best_sum:" << best_sum <<
-            // std::endl;
+            if (verbose == acmacs::verbose::yes)
+                std::cerr << fmt::format("  {:4d}  {:7.4f}  {:7.4f}       {:3d}                  {:3d}              {:3d}   {:3d}\n", ag_no, radius, titers_and_distances[ag_no].distance, protected_outside, not_protected_inside, summa, best_sum);
             previous = ag_no;
         }
     }
     per_antigen.radius = sum_radii / num_radii;
+    if (verbose == acmacs::verbose::yes)
+        std::cerr << fmt::format("\n>>> Radius: {}\n\n", *per_antigen.radius);
 
 } // acmacs::chart::detail::serum_circle_empirical
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::SerumCircle acmacs::chart::serum_circle_empirical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold)
+acmacs::chart::SerumCircle acmacs::chart::serum_circle_empirical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold, acmacs::verbose verbose)
 {
     SerumCircle circle_data(antigens, serum_no, column_basis, homologous_titer, fold);
     if (circle_data.failure_reason() == serum_circle_failure_reason::not_calculated)
-        serum_circle_empirical(circle_data, circle_data.per_antigen_.front(), layout, titers, fold);
+        serum_circle_empirical(circle_data, circle_data.per_antigen_.front(), layout, titers, fold, verbose);
     return circle_data;
 
 } // acmacs::chart::serum_circle_empirical
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::SerumCircle acmacs::chart::serum_circle_empirical(size_t antigen_no, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold)
+acmacs::chart::SerumCircle acmacs::chart::serum_circle_empirical(size_t antigen_no, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold, acmacs::verbose verbose)
 {
     SerumCircle circle_data(antigen_no, serum_no, column_basis, titers.titer(antigen_no, serum_no), fold);
     if (circle_data.failure_reason() == serum_circle_failure_reason::not_calculated)
-        serum_circle_empirical(circle_data, circle_data.per_antigen_.front(), layout, titers, fold);
+        serum_circle_empirical(circle_data, circle_data.per_antigen_.front(), layout, titers, fold, verbose);
     return circle_data;
 
 } // acmacs::chart::serum_circle_empirical
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::SerumCircle acmacs::chart::serum_circle_empirical(const PointIndexList& antigens, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold)
+acmacs::chart::SerumCircle acmacs::chart::serum_circle_empirical(const PointIndexList& antigens, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold, acmacs::verbose verbose)
 {
     SerumCircle circle_data(antigens, serum_no, column_basis, titers, fold);
     for (auto& per_antigen : circle_data.per_antigen_) {
         if (per_antigen.failure_reason == serum_circle_failure_reason::not_calculated)
-            serum_circle_empirical(circle_data, per_antigen, layout, titers, fold);
+            serum_circle_empirical(circle_data, per_antigen, layout, titers, fold, verbose);
     }
     return circle_data;
 
