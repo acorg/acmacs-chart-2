@@ -16,7 +16,6 @@ using namespace acmacs::chart;
 
 // ----------------------------------------------------------------------
 
-
 static std::vector<double> native_column_bases(const acmacs::lispmds::value& aData);
 static std::vector<double> column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo);
 static std::pair<std::shared_ptr<acmacs::chart::ColumnBases>, acmacs::chart::MinimumColumnBasis> forced_column_bases(const acmacs::lispmds::value& aData, size_t aProjectionNo);
@@ -141,7 +140,7 @@ std::pair<std::shared_ptr<acmacs::chart::ColumnBases>, acmacs::chart::MinimumCol
         return {nullptr, acmacs::chart::MinimumColumnBasis()};
     }
     catch (acmacs::lispmds::error& err) {
-        std::cerr << "WARNING: broken save: " << err.what() << '\n';
+        fmt::print(stderr, "WARNING: broken save: {}\n", err);
         return {nullptr, acmacs::chart::MinimumColumnBasis()};
     }
 
@@ -151,15 +150,15 @@ std::pair<std::shared_ptr<acmacs::chart::ColumnBases>, acmacs::chart::MinimumCol
 
 ChartP acmacs::chart::lispmds_import(std::string_view aData, Verify aVerify)
 {
-    // try {
+    try {
         auto chart = std::make_shared<LispmdsChart>(acmacs::lispmds::parse_string(aData));
         chart->verify_data(aVerify);
         return chart;
-    // }
-    // catch (std::exception& err) {
-    //     std::cerr << "ERROR: " << err.what() << '\n';
-    //     throw;
-    // }
+    }
+    catch (std::exception& err) {
+        fmt::print(stderr, "ERROR: lispmds_import: {}\n", err);
+        throw;
+    }
 
 } // acmacs::chart::lispmds_import
 
@@ -667,8 +666,12 @@ AvidityAdjusts LispmdsProjection::avidity_adjusts() const
         return result;
     }
     catch (acmacs::lispmds::error& err) {
-        std::cerr << "WARNING: broken save: " << err.what() << '\n';
+        fmt::print(stderr, "ERROR: [lispmds avidity_adjusts] broken save: {}\n", err);
         return {};
+    }
+    catch (std::exception& err) {
+        fmt::print(stderr, "ERROR: [lispmds avidity_adjusts]: {}\n", err);
+        throw;
     }
 
 } // LispmdsProjection::avidity_adjusts

@@ -2,50 +2,65 @@
 
 #include "acmacs-base/named-type.hh"
 #include "acmacs-base/rjson.hh"
+#include "acmacs-base/indexes.hh"
 
 // ----------------------------------------------------------------------
 
 namespace acmacs::chart
 {
-      // sorted list of indexes
+    // sorted list of indexes
     class PointIndexList : public acmacs::named_vector_t<size_t, struct chart_PointIndexList_tag_t>
     {
-     public:
+      public:
         using difference_type = std::vector<size_t>::difference_type;
         using base_t = acmacs::named_vector_t<size_t, struct chart_PointIndexList_tag_t>;
         using const_iterator = std::vector<size_t>::const_iterator;
 
         using base_t::named_vector_t;
         PointIndexList(const rjson::value& src) : base_t::named_vector_t(src.size()) { rjson::copy(src, begin()); }
-        template <typename Iter> PointIndexList(Iter first, Iter last, std::function<size_t (const typename Iter::value_type&)> convert) : base_t::named_vector_t(static_cast<size_t>(last - first)) { std::transform(first, last, begin(), convert); }
+        template <typename Iter> PointIndexList(Iter first, Iter last, std::function<size_t(const typename Iter::value_type&)> convert) : base_t::named_vector_t(static_cast<size_t>(last - first))
+        {
+            std::transform(first, last, begin(), convert);
+        }
 
         bool contains(size_t val) const
-            {
-                const auto found = std::lower_bound(begin(), end(), val);
-                return found != end() && *found == val;
-            }
+        {
+            const auto found = std::lower_bound(begin(), end(), val);
+            return found != end() && *found == val;
+        }
 
         void insert(size_t val)
-            {
-                if (const auto found = std::lower_bound(begin(), end(), val); found == end() || *found != val)
-                    get().insert(found, val);
-            }
+        {
+            if (const auto found = std::lower_bound(begin(), end(), val); found == end() || *found != val)
+                get().insert(found, val);
+        }
 
         void erase(const_iterator ptr) { get().erase(ptr); }
 
         void erase_except(size_t val)
-            {
-                const auto present = contains(val);
-                get().clear();
-                if (present)
-                    insert(val);
-            }
+        {
+            const auto present = contains(val);
+            get().clear();
+            if (present)
+                insert(val);
+        }
 
         void extend(const PointIndexList& source)
-            {
-                for (const auto no : source)
-                    insert(no);
-            }
+        {
+            for (const auto no : source)
+                insert(no);
+        }
+
+        void remove(const ReverseSortedIndexes& indexes, size_t base_index = 0)
+        {
+            get().erase(std::remove_if(begin(), end(),
+                                       [&indexes, base_index](size_t index) {
+                                           if (index < base_index)
+                                               return false;
+                                           return indexes.contains(index - base_index);
+                                       }),
+                        end());
+        }
 
     }; // class PointIndexList
 

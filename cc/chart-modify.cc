@@ -1529,14 +1529,69 @@ void ProjectionsModify::remove_except(size_t number_of_initial_projections_to_ke
 
 // ----------------------------------------------------------------------
 
+static inline void remove_from(PointIndexList& list, const acmacs::ReverseSortedIndexes& indexes, size_t base)
+{
+    // if (!list.empty() && !indexes.empty())
+    //     fmt::print(stderr, "DEBUG: remove_from BEGIN {} {} {}\n", list, indexes, base);
+    for (const auto to_remove_base : indexes) {
+        const auto to_remove = to_remove_base + base;
+        for (auto listp = list.rbegin(); listp != list.rend(); ++listp) {
+            if (*listp > to_remove) {
+                --*listp;
+            }
+            else if (*listp == to_remove) {
+                list.erase(listp.base());
+                break;
+            }
+            else
+                break;
+        }
+    }
+    // if (!indexes.empty())
+    //     fmt::print(stderr, "DEBUG: remove_from END {}\n", list);
+}
+
+void ProjectionModify::remove_antigens(const ReverseSortedIndexes& indexes)
+{
+    modify();
+    layout_modified()->remove_points(indexes, 0);
+    ::remove_from(disconnected_, indexes, 0);
+    ::remove_from(unmovable_, indexes, 0);
+    ::remove_from(unmovable_in_the_last_dimension_, indexes, 0);
+
+} // ProjectionModify::remove_antigens
+
+// ----------------------------------------------------------------------
+
 void ProjectionModify::remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens)
 {
     modify();
     layout_modified()->remove_points(indexes, number_of_antigens);
     if (forced_column_bases_)
         forced_column_bases_->remove(indexes);
+    ::remove_from(disconnected_, indexes, number_of_antigens);
+    ::remove_from(unmovable_, indexes, number_of_antigens);
+    ::remove_from(unmovable_in_the_last_dimension_, indexes, number_of_antigens);
 
 } // ProjectionModify::remove_sera
+
+// ----------------------------------------------------------------------
+
+static inline void index_inserted(PointIndexList& list, size_t before, size_t base)
+{
+    for (auto listp = std::lower_bound(list.begin(), list.end(), before + base); listp != list.end(); ++listp)
+        ++*listp;
+}
+
+void ProjectionModify::insert_antigen(size_t before)
+{
+    modify();
+    layout_modified()->insert_point(before, 0);
+    ::index_inserted(disconnected_, before, 0);
+    ::index_inserted(unmovable_, before, 0);
+    ::index_inserted(unmovable_in_the_last_dimension_, before, 0);
+
+} // ProjectionModify::insert_antigen
 
 // ----------------------------------------------------------------------
 
@@ -1546,6 +1601,9 @@ void ProjectionModify::insert_serum(size_t before, size_t number_of_antigens)
     layout_modified()->insert_point(before, number_of_antigens);
     if (forced_column_bases_)
         forced_column_bases_->insert(before - number_of_antigens, 7.0);
+    ::index_inserted(disconnected_, before, number_of_antigens);
+    ::index_inserted(unmovable_, before, number_of_antigens);
+    ::index_inserted(unmovable_in_the_last_dimension_, before, number_of_antigens);
 
 } // ProjectionModify::insert_serum
 

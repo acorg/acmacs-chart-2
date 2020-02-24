@@ -476,9 +476,9 @@ namespace acmacs::chart
         void set_disconnected(const DisconnectedPoints& disconnect) { modify(); disconnected_ = disconnect; }
         void set_unmovable_in_the_last_dimension(const UnmovableInTheLastDimensionPoints& a_unmovable_in_the_last_dimension) { modify(); unmovable_in_the_last_dimension_ = a_unmovable_in_the_last_dimension; }
 
-        void remove_antigens(const ReverseSortedIndexes& indexes) { modify(); layout_modified()->remove_points(indexes, 0); }
+        void remove_antigens(const ReverseSortedIndexes& indexes);
         void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens);
-        void insert_antigen(size_t before) { modify(); layout_modified()->insert_point(before, 0); }
+        void insert_antigen(size_t before);
         void insert_serum(size_t before, size_t number_of_antigens);
 
      protected:
