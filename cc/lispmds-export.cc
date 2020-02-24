@@ -31,22 +31,25 @@ std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, st
         result += ";; Disconnected points (excluded): " + acmacs::to_string(disconnected) + '\n';
     result += '\n';
     result += R"((MAKE-MASTER-MDS-WINDOW
-   (HI-IN '()" + antigen_names(aChart.antigens(), disconnected) + R"()
-          '()" + serum_names(aChart.sera(), aChart.number_of_antigens(), disconnected) + R"()
-          '()" + titers(aChart.titers(), disconnected) + R"()
-          ')" + lispmds_table_name_encode(aChart.info()->name_non_empty()) + R"()
-  )" + starting_coordss(aChart, disconnected) + R"(
-  )" + batch_runs(aChart, disconnected) + R"(
+   (HI-IN '()" +
+              antigen_names(aChart.antigens(), disconnected) + R"()
+          '()" +
+              serum_names(aChart.sera(), aChart.number_of_antigens(), disconnected) + R"()
+          '()" +
+              titers(aChart.titers(), disconnected) + R"()
+          ')" +
+              lispmds_table_name_encode(aChart.info()->name_non_empty()) + R"()
+  )" + starting_coordss(aChart, disconnected) +
+              R"(
+  )" + batch_runs(aChart, disconnected) +
+              R"(
 )";
     if (auto projections = aChart.projections(); !projections->empty()) {
         auto projection = (*projections)[0];
         result.append("  :MDS-DIMENSIONS '" + acmacs::to_string(projection->layout()->number_of_dimensions()) + '\n');
         result.append("  :MOVEABLE-COORDS 'ALL\n  :UNMOVEABLE-COORDS '");
         if (auto unmovable = projection->unmovable(); !unmovable->empty()) {
-            result
-                    .append(1, '(')
-                    .append(string::join(" ", unmovable.begin(), unmovable.end(), [](auto index) -> std::string { return acmacs::to_string(index); }))
-                    .append(1, ')');
+            result.append(1, '(').append(string::join(" ", unmovable.begin(), unmovable.end(), [](auto index) -> std::string { return acmacs::to_string(index); })).append(1, ')');
         }
         else
             result.append("NIL");
@@ -58,10 +61,12 @@ std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, st
                                   :BASIS-VECTOR-POINT-INDICES NIL :BASIS-VECTOR-POINT-INDICES-BACKUP NIL
                                   :BASIS-VECTOR-X-COORD-TRANSLATION 0 :BASIS-VECTOR-Y-COORD-TRANSLATION 0
                                   :TRANSLATE-TO-FIT-MDS-WINDOW T :SCALE-TO-FIT-MDS-WINDOW T
-                                  :BASIS-VECTOR-X-COORD-SCALE 1 :BASIS-VECTOR-Y-COORD-SCALE 1
+                                  :BASIS-VECTOR-X-COORD-SCALE 1 :BASIS-VECTOR-Y-COORD-SCALE 1)
 )");
-        if (const auto transformation = projection->transformation(); transformation != acmacs::Transformation{} && transformation.valid() && transformation.number_of_dimensions == number_of_dimensions_t{2})
-            result.append(string::concat_precise("                                  :CANVAS-BASIS-VECTOR-0 (", transformation.a(), ' ', transformation.c(), ") :CANVAS-BASIS-VECTOR-1 (", transformation.b(), ' ', transformation.d(), "))\n"));
+        if (const auto transformation = projection->transformation();
+            transformation != acmacs::Transformation{} && transformation.valid() && transformation.number_of_dimensions == number_of_dimensions_t{2})
+            result.append(string::concat_precise("                                  :CANVAS-BASIS-VECTOR-0 (", transformation.a(), ' ', transformation.c(), ") :CANVAS-BASIS-VECTOR-1 (",
+                                                 transformation.b(), ' ', transformation.d(), "))\n"));
     }
     result.append(reference_antigens(aChart.antigens(), disconnected));
     result.append(plot_spec(aChart, disconnected));
