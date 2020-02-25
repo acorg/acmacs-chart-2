@@ -386,6 +386,7 @@ namespace acmacs::chart
         const layers_t& layers() const { return layers_; }
         std::vector<Titer> titers_for_layers(size_t aAntigenNo, size_t aSerumNo, include_dotcare inc = include_dotcare::no) const override;
         std::vector<size_t> layers_with_antigen(size_t aAntigenNo) const override;
+        std::vector<size_t> layers_with_serum(size_t aSerumNo) const override;
         void remove_layers();
         void create_layers(size_t number_of_layers, size_t number_of_antigens);
         void titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const Titer& aTiter);

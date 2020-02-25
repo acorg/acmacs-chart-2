@@ -158,6 +158,7 @@ namespace acmacs::chart
         Titer titer_of_layer(size_t, size_t, size_t) const override { throw data_not_available("lispmds importer does not support layers"); }
         std::vector<Titer> titers_for_layers(size_t /*aAntigenNo*/, size_t /*aSerumNo*/, include_dotcare = include_dotcare::no) const override { throw data_not_available("lispmds importer does not support layers"); }
         std::vector<size_t> layers_with_antigen(size_t /*aAntigenNo*/) const override { throw data_not_available("lispmds importer does not support layers"); }
+        std::vector<size_t> layers_with_serum(size_t /*aSerumNo*/) const override { throw data_not_available("lispmds importer does not support layers"); }
         size_t number_of_layers() const override { return 0; }
         size_t number_of_antigens() const override;
         size_t number_of_sera() const override;

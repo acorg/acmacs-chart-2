@@ -846,6 +846,26 @@ std::vector<size_t> TitersModify::layers_with_antigen(size_t aAntigenNo) const
 
 // ----------------------------------------------------------------------
 
+std::vector<size_t> TitersModify::layers_with_serum(size_t aSerumNo) const
+{
+    if (layers_.empty())
+        throw acmacs::chart::data_not_available("no layers");
+    const auto num_antigens = number_of_antigens();
+    std::vector<size_t> result;
+    for (auto [no, layer] : acmacs::enumerate(layers_)) {
+        for (size_t antigen_no = 0; antigen_no < num_antigens; ++antigen_no) {
+            if (const auto titer = find_titer_for_serum(layer[antigen_no], aSerumNo); !titer.is_dont_care()) {
+                result.push_back(no);
+                break;
+            }
+        }
+    }
+    return result;
+
+} // TitersModify::layers_with_antigen
+
+// ----------------------------------------------------------------------
+
 void TitersModify::remove_layers()
 {
     layers_.clear();

@@ -21,6 +21,7 @@ struct Options : public argv
     option<bool> show_number_of_sera{*this, "sera", desc{"just show number of sera"}};
     option<bool> column_bases{*this, "column-bases"};
     option<bool> list_tables{*this, "list-tables"};
+    option<bool> list_tables_for_sera{*this, "list-tables-for-sera"};
     option<bool> dates{*this, "dates", desc{"show isolation dates stats"}};
     option<bool> homologous{*this, "homologous", desc{"report homologous antigens for sera"}};
     option<bool> verify{*this, "verify"};
@@ -104,6 +105,15 @@ int main(int argc, char* const argv[])
                     std::cout << "\nTables:\n";
                     for (auto src_no : acmacs::range(info->number_of_sources()))
                         std::cout << std::setw(3) << src_no << ' ' << info->source(src_no)->make_name() << '\n';
+                }
+                if (opt.list_tables_for_sera && info->number_of_sources() > 0) {
+                    auto sera = chart->sera();
+                    auto titers = chart->titers();
+                    for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
+                        fmt::print("SR {:3d} {}\n", sr_no, serum->full_name_with_passage());
+                        for (auto layer_no : titers->layers_with_serum(sr_no))
+                            fmt::print("    {:3d} {}\n", layer_no, info->source(layer_no)->make_name());
+                    }
                 }
                 if (opt.dates) {
                     acmacs::Counter<std::string> dates;
