@@ -43,7 +43,7 @@ int main(int argc, char* const argv[])
 
 static inline std::string make_infix(size_t no, std::string source)
 {
-    return std::to_string(no) + "_" + string::replace(source, "/", "_", " (", "_", " ", "_", "A(H1N1)", "H1", "A(H3N2)", "H3", ",", "_", "(", "", ")", "", "?", "X");
+    return fmt::format("{:04d}_{}", no, string::replace(source, "/", "_", " (", "_", " ", "_", "A(H1N1)", "H1", "A(H3N2)", "H3", ",", "_", "(", "", ")", "", "?", "X"));
 }
 
 struct AntigenData
@@ -491,7 +491,7 @@ template <typename ... Args> void make_antigen_mod(mod_type mt, radius_type rt, 
 
 void report_json(std::ostream& output, const acmacs::chart::Chart& chart, const std::vector<SerumData>& sera_data)
 {
-      // const auto assay_tag = string::replace(chart.info()->assay(), "FOCUS REDUCTION", "FRA", " ", "_");
+    // const auto assay_tag = string::replace(chart.info()->assay(), "FOCUS REDUCTION", "FRA", " ", "_");
     const std::string assay_tag = *chart.info()->assay() == "HI" ? "HI" : "NEUT";
     const auto lab = chart.info()->lab(acmacs::chart::Info::Compute::Yes);
     const auto lab_assay_tag = *lab + '_' + assay_tag + '.';
@@ -500,6 +500,35 @@ void report_json(std::ostream& output, const acmacs::chart::Chart& chart, const 
 
     output << "{ \"_\":\"-*- js-indent-level: 2 -*-\",\n\n";
     output << "  \"?? " << *lab << ' ' << assay_tag << "\": false,\n\n";
+
+    output << "  \"?? ==== TITLES ======================================================================\": false,\n";
+    output << "  \"titles\": {\n\n";
+    for (auto rt : {radius_type::theoretical, radius_type::empirical}) {
+        const auto* suffix = rt == radius_type::theoretical ? "theoretical" : "empirical";
+        const auto validate_rt = rt == radius_type::theoretical ? validate<radius_type::theoretical> : validate<radius_type::empirical>;
+        output << "    \"sera_" << suffix << "\": [\n";
+        for (const auto& serum_data : sera_data) {
+            for ([[maybe_unused]] const auto& antigen_data : serum_data.antigens) {
+                if (validate_rt(antigen_data)) {
+                    output << "      \"" << serum_data.serum->full_name_with_passage() << "\",\n";
+                }
+            }
+        }
+        output << "      \"?? no comma\"\n";
+        output << "    ],\n\n";
+        output << "    \"antigens_" << suffix << "\": [\n";
+        for (const auto& serum_data : sera_data) {
+            for (const auto& antigen_data : serum_data.antigens) {
+                if (validate_rt(antigen_data)) {
+                    output << "      \"" << antigen_data.antigen->full_name_with_passage() << "\",\n";
+                }
+            }
+        }
+        output << "      \"?? no comma\"\n";
+        output << "    ],\n\n";
+    }
+    output << "    \"?? no comma\": false\n";
+    output << "  },\n\n";
 
     output << "  \"?? ==== COVERAGE LIST ======================================================================\": false,\n";
     output << "  \"serum_coverage_mods\": {\n\n";
