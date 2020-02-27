@@ -67,9 +67,10 @@ struct SerumData
     acmacs::chart::SerumP serum;
     std::string infix;
     std::vector<AntigenData> antigens;
+    double column_basis;
 
-    SerumData(size_t sr_no, acmacs::chart::SerumP sr)
-        : serum_no{sr_no}, serum{sr}, infix(make_infix(sr_no, sr->full_name_without_passage())) {}
+    SerumData(size_t sr_no, acmacs::chart::SerumP sr, double a_column_basis)
+        : serum_no{sr_no}, serum{sr}, infix(make_infix(sr_no, sr->full_name_without_passage())), column_basis{a_column_basis} {}
     bool valid() const { return !antigens.empty(); }
 };
 
@@ -108,7 +109,7 @@ std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t project
     auto sera = chart.sera();
     auto titers = chart.titers();
     for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
-        auto& serum_data = result.emplace_back(sr_no, serum);
+        auto& serum_data = result.emplace_back(sr_no, serum, chart.column_basis(sr_no));
         for (auto ag_no : serum->homologous_antigens()) {
             auto& antigen_data = serum_data.antigens.emplace_back(ag_no, (*antigens)[ag_no], titers->titer(ag_no, sr_no));
             if (antigen_data.titer.is_regular()) {
@@ -233,10 +234,10 @@ template <time_type> const char* time_infix();
 template <> inline const char* time_infix<time_type::all>() { return "all"; }
 template <> inline const char* time_infix<time_type::m12>() { return "12m"; }
 
-template <mod_type mt, radius_type rt, time_type tt> inline void make_tag(std::ostream& output, std::string /*lab_assay_tag*/, std::string serum_tag, std::string antigen_tag)
+template <mod_type mt, radius_type rt, time_type tt> inline void make_tag(std::ostream& output, std::string /*lab_assay_tag*/, std::string_view serum_tag, std::string_view antigen_tag, std::string_view suffix = {})
 {
       // output << lab_assay_tag << mod_type_name<mt>() << '.' << serum_tag << '.' << antigen_tag << '.' << radius_infix<rt>() << '.' << time_infix<tt>();
-    output << mod_type_name<mt>() << '.' << serum_tag << '.' << antigen_tag << '.' << radius_infix<rt>() << '.' << time_infix<tt>();
+    output << mod_type_name<mt>() << '.' << serum_tag << '.' << antigen_tag << '.' << radius_infix<rt>() << '.' << time_infix<tt>() << suffix;
 }
 
 // ----------------------------------------------------------------------
@@ -391,12 +392,12 @@ template <mod_type mt, std::enable_if_t<mt==mod_type::coverage_circle, int> = 0>
 template <mod_type mt, radius_type rt, time_type tt, std::enable_if_t<tt==time_type::all, int> = 0>
     void make_antigen_mod_3(std::ostream& output, const SerumData& serum_data, const AntigenData& antigen_data, std::string /*lab_assay_tag*/)
 {
-    output << "        {\"serum_name\": \"" << serum_data.serum->full_name_with_passage() << "\", \"serum_no\": " << serum_data.serum_no
+    output << "        {\"N\": \"comment\", \"serum_name\": \"" << serum_data.serum->full_name_with_passage() << "\", \"serum_no\": " << serum_data.serum_no
            << ", \"antigen_name\": \"" << antigen_data.antigen->full_name_with_passage() << "\", \"antigen_no\": " << antigen_data.antigen_no
            << ", \"titer\": \"" << *antigen_data.titer
            << "\", \"theoretical\": " << std::setprecision(2) << std::fixed << antigen_data.theoretical.radius()
            << ", \"empirical\": " << std::setprecision(2) << std::fixed << antigen_data.empirical.radius()
-           << ", \"N\": \"comment\", \"type\": \"data\"},\n";
+           << ", \"type\": \"data\"},\n";
     output << "        {\"N\": \"" << mod_type_name<mt>()
            << "\", \"serum\": {\"index\": " << serum_data.serum_no
            << "}, \"antigen\": {\"index\": " << antigen_data.antigen_no << "},\n";
@@ -419,6 +420,20 @@ template <mod_type mt, radius_type rt, time_type tt, std::enable_if_t<tt==time_t
 
 // ----------------------------------------------------------------------
 
+template <mod_type mt, radius_type rt>
+    void make_antigen_title(std::ostream& output, const SerumData& serum_data, const AntigenData& antigen_data)
+{
+    output << "        {\"N\": \"title\", \"display_name\": ["
+           << "\"" << serum_data.serum->full_name_with_passage() << "\", "
+           << "\"" << antigen_data.antigen->full_name_with_passage() << "\", "
+           << "\"empirical: " << std::setprecision(2) << std::fixed << antigen_data.empirical.radius()
+           << "  theoretical: " << std::setprecision(2) << std::fixed << antigen_data.theoretical.radius()
+           << "  homo: " << *antigen_data.titer << "  max: " << std::lround(std::exp2(serum_data.column_basis) * 10.0) << "\""
+           << "]}\n";
+}
+
+// ----------------------------------------------------------------------
+
 template <mod_type mt, radius_type rt, time_type tt>
     void make_antigen_mod_2(std::ostream& output, const SerumData& serum_data, const AntigenData& antigen_data, std::string lab_assay_tag)
 {
@@ -427,6 +442,12 @@ template <mod_type mt, radius_type rt, time_type tt>
         make_tag<mt, rt, tt>(output, lab_assay_tag, serum_data.infix, antigen_data.infix);
         output << "\": [\n";
         make_antigen_mod_3<mt, rt, tt>(output, serum_data, antigen_data, lab_assay_tag);
+        output << "      ],\n";
+
+        output << "      \"";
+        make_tag<mt, rt, tt>(output, lab_assay_tag, serum_data.infix, antigen_data.infix, ".title");
+        output << "\": [\n";
+        make_antigen_title<mt, rt>(output, serum_data, antigen_data);
         output << "      ],\n";
     }
 }
