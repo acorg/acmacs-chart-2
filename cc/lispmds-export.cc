@@ -19,6 +19,7 @@ static std::string reference_antigens(std::shared_ptr<acmacs::chart::Antigens> a
 static std::string plot_spec(const acmacs::chart::Chart& aChart, const acmacs::chart::DisconnectedPoints& disconnected);
 static std::string point_style(const acmacs::PointStyle& aStyle);
 static std::string point_shape(const acmacs::PointShape& aShape);
+static std::string unmoveable_coords(const acmacs::chart::UnmovablePoints& unmoveable);
 
 // ----------------------------------------------------------------------
 
@@ -28,45 +29,41 @@ std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, st
 
     auto result = fmt::format(";; MDS configuration file (version 0.6).\n;; Created by AD {} on {}\n", aProgramName, acmacs::time_format());
     if (!disconnected->empty())
-        result += ";; Disconnected points (excluded): " + acmacs::to_string(disconnected) + '\n';
-    result += '\n';
-    result += R"((MAKE-MASTER-MDS-WINDOW
-   (HI-IN '()" +
-              antigen_names(aChart.antigens(), disconnected) + R"()
-          '()" +
-              serum_names(aChart.sera(), aChart.number_of_antigens(), disconnected) + R"()
-          '()" +
-              titers(aChart.titers(), disconnected) + R"()
-          ')" +
-              lispmds_table_name_encode(aChart.info()->name_non_empty()) + R"()
-  )" + starting_coordss(aChart, disconnected) +
-              R"(
-  )" + batch_runs(aChart, disconnected) +
-              R"(
-)";
+        result += fmt::format(";; Disconnected points (excluded): {}\n", disconnected);
+    result += fmt::format(R"(
+(MAKE-MASTER-MDS-WINDOW
+    (HI-IN
+        '({})
+        '({})
+        '({})
+        '{})
+    {}
+    {}
+)",
+                          antigen_names(aChart.antigens(), disconnected), serum_names(aChart.sera(), aChart.number_of_antigens(), disconnected), titers(aChart.titers(), disconnected),
+                          lispmds_table_name_encode(aChart.info()->name_non_empty()), starting_coordss(aChart, disconnected), batch_runs(aChart, disconnected));
+
     if (auto projections = aChart.projections(); !projections->empty()) {
         auto projection = (*projections)[0];
-        result.append("  :MDS-DIMENSIONS '" + acmacs::to_string(projection->layout()->number_of_dimensions()) + '\n');
-        result.append("  :MOVEABLE-COORDS 'ALL\n  :UNMOVEABLE-COORDS '");
-        if (auto unmovable = projection->unmovable(); !unmovable->empty()) {
-            result.append(1, '(').append(string::join(" ", unmovable.begin(), unmovable.end(), [](auto index) -> std::string { return acmacs::to_string(index); })).append(1, ')');
-        }
-        else
-            result.append("NIL");
-        result.append(R"(
-  :CANVAS-COORD-TRANSFORMATIONS '(:CANVAS-WIDTH 800 :CANVAS-HEIGHT 800
-                                  :CANVAS-X-COORD-TRANSLATION 0.0 :CANVAS-Y-COORD-TRANSLATION 0.0
-                                  :CANVAS-X-COORD-SCALE 1 :CANVAS-Y-COORD-SCALE 1
-                                  :FIRST-DIMENSION 0 :SECOND-DIMENSION 1
-                                  :BASIS-VECTOR-POINT-INDICES NIL :BASIS-VECTOR-POINT-INDICES-BACKUP NIL
-                                  :BASIS-VECTOR-X-COORD-TRANSLATION 0 :BASIS-VECTOR-Y-COORD-TRANSLATION 0
-                                  :TRANSLATE-TO-FIT-MDS-WINDOW T :SCALE-TO-FIT-MDS-WINDOW T
-                                  :BASIS-VECTOR-X-COORD-SCALE 1 :BASIS-VECTOR-Y-COORD-SCALE 1)
-)");
+        result.append(fmt::format(R"(
+    :MDS-DIMENSIONS '{}
+    :MOVEABLE-COORDS 'ALL
+    :UNMOVEABLE-COORDS '{}
+    :CANVAS-COORD-TRANSFORMATIONS '(
+        :CANVAS-WIDTH 800 :CANVAS-HEIGHT 800
+        :CANVAS-X-COORD-TRANSLATION 0.0 :CANVAS-Y-COORD-TRANSLATION 0.0
+        :CANVAS-X-COORD-SCALE 1 :CANVAS-Y-COORD-SCALE 1
+        :FIRST-DIMENSION 0 :SECOND-DIMENSION 1
+        :BASIS-VECTOR-POINT-INDICES NIL :BASIS-VECTOR-POINT-INDICES-BACKUP NIL
+        :BASIS-VECTOR-X-COORD-TRANSLATION 0 :BASIS-VECTOR-Y-COORD-TRANSLATION 0
+        :TRANSLATE-TO-FIT-MDS-WINDOW T :SCALE-TO-FIT-MDS-WINDOW T
+        :BASIS-VECTOR-X-COORD-SCALE 1 :BASIS-VECTOR-Y-COORD-SCALE 1)", projection->layout()->number_of_dimensions(), unmoveable_coords(projection->unmovable())));
+
         if (const auto transformation = projection->transformation();
             transformation != acmacs::Transformation{} && transformation.valid() && transformation.number_of_dimensions == number_of_dimensions_t{2})
-            result.append(string::concat_precise("                                  :CANVAS-BASIS-VECTOR-0 (", transformation.a(), ' ', transformation.c(), ") :CANVAS-BASIS-VECTOR-1 (",
-                                                 transformation.b(), ' ', transformation.d(), "))\n"));
+            result.append(string::concat_precise("\n        :CANVAS-BASIS-VECTOR-0 (", transformation.a(), ' ', transformation.c(), ") :CANVAS-BASIS-VECTOR-1 (",
+                                                 transformation.b(), ' ', transformation.d(), ")"));
+        result.append(1, ')');
     }
     result.append(reference_antigens(aChart.antigens(), disconnected));
     result.append(plot_spec(aChart, disconnected));
@@ -111,11 +108,14 @@ std::string serum_names(std::shared_ptr<acmacs::chart::Sera> aSera, size_t aNumb
 
 std::string reference_antigens(std::shared_ptr<acmacs::chart::Antigens> aAntigens, const acmacs::chart::DisconnectedPoints& disconnected)
 {
-    std::string result = "  :REFERENCE-ANTIGENS '(";
+    std::string result = "    :REFERENCE-ANTIGENS '(";
+    bool append_space = false;
     for (auto [ag_no, antigen] : acmacs::enumerate(*aAntigens)) {
         if (antigen->reference() && !disconnected.contains(ag_no)) {
-            if (!result.empty())
+            if (append_space)
                 result += ' ';
+            else
+                append_space = true;
             result += lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations());
         }
     }
@@ -163,11 +163,23 @@ std::string starting_coordss(const acmacs::chart::Chart& aChart, const acmacs::c
     const auto number_of_points = layout->number_of_points();
     const auto number_of_dimensions = layout->number_of_dimensions();
     if (number_of_points && acmacs::valid(number_of_dimensions))
-        return "  :STARTING-COORDSS '(" + coordinates(layout, number_of_points, number_of_dimensions, 22, disconnected) + col_and_row_adjusts(aChart, projection, 22, disconnected) + ')';
+        return fmt::format(":STARTING-COORDSS '(\n        {}\n{})", coordinates(layout, number_of_points, number_of_dimensions, 8, disconnected), col_and_row_adjusts(aChart, projection, 8, disconnected));
     else
         return {};
 
 } // starting_coordss
+
+// ----------------------------------------------------------------------
+
+std::string unmoveable_coords(const acmacs::chart::UnmovablePoints& unmovable)
+{
+    if (!unmovable.empty()) {
+        return fmt::format("({})", string::join(" ", unmovable.begin(), unmovable.end(), [](auto index) -> std::string { return acmacs::to_string(index); }));
+    }
+    else
+        return "NIL";
+
+} // unmoveable_coords
 
 // ----------------------------------------------------------------------
 
@@ -272,7 +284,7 @@ std::string plot_spec(const acmacs::chart::Chart& aChart, const acmacs::chart::D
 {
     std::string result;
     if (auto plot_spec = aChart.plot_spec(); !plot_spec->empty()) {
-        result.append("  :PLOT-SPEC '(");
+        result.append("    :PLOT-SPEC '(");
         auto antigens = aChart.antigens();
         const auto number_of_antigens = antigens->size();
         auto sera = aChart.sera();
