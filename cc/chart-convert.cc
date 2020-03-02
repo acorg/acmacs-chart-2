@@ -14,7 +14,7 @@ struct Options : public argv
     option<str> format{*this, 'f', "format", desc{"ace, save"}};
 
     argument<str> input_chart{*this, arg_name{"input-chart-file"}, mandatory};
-    argument<str> output_chart{*this, arg_name{"output-chart-file"},};
+    argument<str> output_chart{*this, arg_name{"output-chart-file"}};
 };
 
 int main(int argc, char* const argv[])
