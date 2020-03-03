@@ -690,7 +690,9 @@ namespace acmacs::chart
         void shown(size_t point_no, bool shown) { modify(); validate_point_no(point_no); styles_[point_no].shown = shown; }
         void size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].size = size; }
         void fill(size_t point_no, Color fill) { modify(); validate_point_no(point_no); styles_[point_no].fill = fill; }
+        void fill_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].fill.set().set_opacity(opacity); }
         void outline(size_t point_no, Color outline) { modify(); validate_point_no(point_no); styles_[point_no].outline = outline; }
+        void outline_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].outline.set().set_opacity(opacity); }
         void outline_width(size_t point_no, Pixels outline_width) { modify(); validate_point_no(point_no); styles_[point_no].outline_width = outline_width; }
         void rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].rotation = rotation; }
         void aspect(size_t point_no, Aspect aspect) { modify(); validate_point_no(point_no); styles_[point_no].aspect = aspect; }
@@ -728,8 +730,14 @@ namespace acmacs::chart
             {
                 // std::cerr << "DEBUG: PlotSpecModify::validate_point_no: number_of_points main: " << main_->number_of_points() << " modified: " << modified() << " number_of_points: " << number_of_points() << DEBUG_FILE_LINE_FUNC << '\n';
                 if (point_no >= number_of_points())
-                    throw std::runtime_error("Invalid point number: " + acmacs::to_string(point_no) + ", expected integer in range 0.." + acmacs::to_string(number_of_points() - 1) + ", inclusive");
+                    throw std::runtime_error{fmt::format("Invalid point number: {}, expected integer in range 0..{} inclusive", point_no, number_of_points() - 1)};
             }
+
+        void validate_opacity(double opacity) const
+        {
+            if (opacity < 0 || opacity > 1.0)
+                throw std::runtime_error{fmt::format("Invalid color opacity: {}, expected within range 0.0..1.0 inclusive", opacity)};
+        }
 
      private:
         PlotSpecP main_;
