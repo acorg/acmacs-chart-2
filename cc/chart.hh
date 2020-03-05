@@ -93,7 +93,7 @@ namespace acmacs::chart
             return !empty() && (first_date.empty() || *this >= first_date) && (after_last_date.empty() || *this < after_last_date);
         }
 
-        void check() const;
+        // void check() const;
 
     }; // class Date
 

@@ -11,16 +11,16 @@
 
 // ----------------------------------------------------------------------
 
-#include "acmacs-base/global-constructors-push.hh"
-static const std::regex sDate{"[12][90][0-9][0-9]-[0-2][0-9]-[0-3][0-9]"};
-#include "acmacs-base/diagnostics-pop.hh"
+// #include "acmacs-base/global-constructors-push.hh"
+// static const std::regex sDate{"[12][90][0-9][0-9]-[0-2][0-9]-[0-3][0-9]"};
+// #include "acmacs-base/diagnostics-pop.hh"
 
-void acmacs::chart::Date::check() const
-{
-    if (!empty() && !std::regex_match(std::begin(this->get()), std::end(this->get()), sDate))
-        throw invalid_data{fmt::format("invalid date (YYYY-MM-DD expected): {}", **this)};
+// void acmacs::chart::Date::checkx() const
+// {
+//     if (!empty() && !std::regex_match(std::begin(this->get()), std::end(this->get()), sDate))
+//         throw invalid_data{fmt::format("invalid date (YYYY-MM-DD expected): {}", **this)};
 
-} // acmacs::chart::Date::check
+// } // acmacs::chart::Date::check
 
 // ----------------------------------------------------------------------
 
