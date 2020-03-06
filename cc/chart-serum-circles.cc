@@ -30,7 +30,7 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         Options opt(argc, argv);
-        report(opt.chart, opt.projection, opt.json, opt.csv, opt.verbose ? acmacs::verbose::yes : acmacs::verbose::no);
+        report(opt.chart, opt.projection, opt.json, opt.csv, acmacs::verbose_from(opt.verbose));
     }
     catch (std::exception& err) {
         fmt::print(stderr, "ERROR {}\n", err);
