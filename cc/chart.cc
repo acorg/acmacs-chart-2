@@ -26,10 +26,12 @@
 
 std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_show) const
 {
+    const auto layers = titers()->number_of_layers();
     return string::join("\n", {info()->make_info(),
-                    "Antigens:" + std::to_string(number_of_antigens()) + " Sera:" + std::to_string(number_of_sera()),
-                    projections()->make_info(max_number_of_projections_to_show)
-                    });
+                               layers ? fmt::format("Number of layers: {}", layers) : std::string{},
+                               fmt::format("Antigens: {}   Sera: {}", number_of_antigens(), number_of_sera()),
+                               projections()->make_info(max_number_of_projections_to_show)
+        });
 
 } // acmacs::chart::Chart::make_info
 

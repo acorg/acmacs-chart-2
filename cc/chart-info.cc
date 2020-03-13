@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "acmacs-base/debug.hh"
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/string.hh"
@@ -40,6 +41,8 @@ int main(int argc, char* const argv[])
         for (size_t file_no = 0; file_no < opt.charts->size(); ++file_no) {
             auto chart = acmacs::chart::import_from_file((*opt.charts)[file_no], opt.verify ? acmacs::chart::Verify::All : acmacs::chart::Verify::None, report);
             auto info = chart->info();
+            auto sera = chart->sera();
+            const auto serum_index_num_digits = acmacs::number_of_decimal_digits(sera->size());
 
             std::vector<std::string> fields;
             if (opt.show_lab)
@@ -77,10 +80,8 @@ int main(int argc, char* const argv[])
             if (opt.homologous) {
                 chart->set_homologous(acmacs::chart::find_homologous::all, nullptr, acmacs::debug::yes);
                 auto antigens = chart->antigens();
-                auto sera = chart->sera();
-                const auto num_digits = static_cast<int>(std::log10(sera->size())) + 1;
                 for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-                    std::cout << "SR " << std::setw(num_digits) << sr_no << ' ' << serum->full_name() << " -- " << serum->homologous_antigens() << '\n';
+                    std::cout << "SR " << std::setw(serum_index_num_digits) << sr_no << ' ' << serum->full_name() << " -- " << serum->homologous_antigens() << '\n';
                 }
                 fields.emplace_back();
             }
@@ -107,10 +108,9 @@ int main(int argc, char* const argv[])
                         std::cout << std::setw(3) << src_no << ' ' << info->source(src_no)->make_name() << '\n';
                 }
                 if (opt.list_tables_for_sera && info->number_of_sources() > 0) {
-                    auto sera = chart->sera();
                     auto titers = chart->titers();
                     for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-                        fmt::print("SR {:3d} {}\n", sr_no, serum->full_name_with_passage());
+                        fmt::print("SR {:{}d} {}\n", sr_no, serum_index_num_digits, serum->full_name_with_passage());
                         for (auto layer_no : titers->layers_with_serum(sr_no))
                             fmt::print("    {:3d} {}\n", layer_no, info->source(layer_no)->make_name());
                     }

@@ -1,3 +1,5 @@
+#include "acmacs-base/debug.hh"
+#include "acmacs-base/timeit.hh"
 #include "acmacs-base/omp.hh"
 #include "acmacs-base/fmt.hh"
 #include "acmacs-base/enumerate.hh"
@@ -65,6 +67,7 @@ acmacs::chart::GridTest::Result acmacs::chart::GridTest::test(size_t point_no)
 void acmacs::chart::GridTest::test(Result& result)
 {
     if (result.diagnosis == Result::not_tested) {
+        const auto start = acmacs::timestamp();
         const auto table_distances_for_point = stress_.table_distances_for(result.point_no);
         if (table_distances_for_point.empty()) { // no table distances, cannot test
             result.diagnosis = Result::excluded;
@@ -123,6 +126,7 @@ void acmacs::chart::GridTest::test(Result& result)
                 }
             }
         }
+        LOG(0, "GridTest {} area: {:08.1f} units^{}  grid-step: {:5.3f} <Time: {}>", result.report(chart_), area.area(), area.num_dim(), grid_step_, acmacs::format(acmacs::elapsed(start)));
     }
 
 } // acmacs::chart::GridTest::test
@@ -192,30 +196,33 @@ std::string acmacs::chart::GridTest::Results::report() const
 
 std::string acmacs::chart::GridTest::Result::report(const Chart& chart) const
 {
-    std::string diag;
+    using namespace std::string_view_literals;
+
+    std::string_view diag;
     switch (diagnosis) {
       case excluded:
-          diag = "excl";
+          diag = "excl"sv;
           break;
       case not_tested:
-          diag = "nott";
+          diag = "nott"sv;
           break;
       case normal:
-          diag = "norm";
+          diag = "norm"sv;
           break;
       case trapped:
-          diag = "trap";
+          diag = "trap"sv;
           break;
       case hemisphering:
-          diag = "hemi";
+          diag = "hemi"sv;
           break;
     }
     std::string name;
+    const auto index_num_digits = acmacs::number_of_decimal_digits(std::max(chart.number_of_antigens(), chart.number_of_sera()));
     if (const auto num_ags = chart.number_of_antigens(); point_no < num_ags)
-        name = fmt::format("[AG {:5d} {}]", point_no, chart.antigens()->at(point_no)->full_name());
+        name = fmt::format("[AG {:{}d} {:60s}]", point_no, index_num_digits, chart.antigens()->at(point_no)->full_name());
     else
-        name = fmt::format("[SR {:5d} {}]", point_no - num_ags, chart.sera()->at(point_no - num_ags)->full_name());
-    return fmt::format("{} {} diff:{:.4f} dist:{:.4f}", diag, name, contribution_diff, distance);
+        name = fmt::format("[SR {:{}d} {:60s}]", point_no - num_ags, index_num_digits, chart.sera()->at(point_no - num_ags)->full_name());
+    return fmt::format("{} {} diff:{:7.4f} dist:{:7.4f}", diag, name, contribution_diff, distance);
 
 } // acmacs::chart::GridTest::Result::report
 
