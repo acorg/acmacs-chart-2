@@ -34,7 +34,7 @@ namespace acmacs::chart
             bool common{false};
         };
 
-        using index_mapping_t = flat_map_t<size_t, target_index_common_t>; // primary/secondary index -> (target index, if common)
+        using index_mapping_t = small_map_with_unique_keys_t<size_t, target_index_common_t>; // primary/secondary index -> (target index, if common)
 
         MergeReport(const Chart& primary, const Chart& secondary, const MergeSettings& settings);
 
