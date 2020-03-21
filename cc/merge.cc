@@ -37,7 +37,7 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
         for (size_t no2 = 0; no2 < src2->size(); ++no2) {
             if (!remove_distinct || !src2->at(no2)->distinct()) {
                 if (const auto no1 = common.antigen_primary_by_secondary(no2); no1)
-                    antigens_secondary_target.emplace_or_replace(no2, antigens_primary_target.at(*no1));
+                    antigens_secondary_target.emplace_or_replace(no2, antigens_primary_target.get(*no1));
                 else
                     antigens_secondary_target.emplace_or_replace(no2, target_index_common_t{target_antigens++, false});
             }
@@ -52,7 +52,7 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
         auto src2 = secondary.sera();
         for (size_t no2 = 0; no2 < src2->size(); ++no2) {
             if (const auto no1 = common.serum_primary_by_secondary(no2); no1)
-                sera_secondary_target.emplace_or_replace(no2, sera_primary_target.at(*no1));
+                sera_secondary_target.emplace_or_replace(no2, sera_primary_target.get(*no1));
             else
                 sera_secondary_target.emplace_or_replace(no2, target_index_common_t{target_sera++, false});
         }
