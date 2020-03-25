@@ -319,9 +319,9 @@ void export_plot_spec(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Plot
     if (const auto drawing_order = aPlotSpec->drawing_order(); ! drawing_order->empty())
         aTarget["d"] = rjson::array(drawing_order.begin(), drawing_order.end());
     if (const auto color = aPlotSpec->error_line_positive_color(); color != RED)
-        aTarget["E"] = rjson::object{{"c", color.to_string()}};
+        aTarget["E"] = rjson::object{{"c", fmt::format("{}", color)}};
     if (const auto color = aPlotSpec->error_line_negative_color(); color != BLUE)
-        aTarget["e"] = rjson::object{{"c", color.to_string()}};
+        aTarget["e"] = rjson::object{{"c", fmt::format("{}", color)}};
 
     const auto compacted = aPlotSpec->compacted();
     aTarget["p"] = rjson::array(compacted.index.begin(), compacted.index.end());
@@ -355,16 +355,16 @@ void export_plot_spec(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Plot
 template <typename T> inline void set_field(rjson::value& target, const char* name, const acmacs::detail::field_optional_with_default<T>& field)
 {
     if (field.not_default()) {
-        if constexpr (std::is_same_v<T, Color>)
-            target[name] = field->to_hex_string();
+        if constexpr (std::is_same_v<T, Color> || std::is_same_v<T, acmacs::color::Modifier>)
+            target[name] = fmt::format("{:X}", *field);
         else if constexpr (std::is_same_v<T, Pixels> || std::is_same_v<T, Scaled> || std::is_same_v<T, Rotation> || std::is_same_v<T, Aspect>)
             target[name] = field->value();
-        else if constexpr (std::is_same_v<T, acmacs::PointShape> || std::is_same_v<T, acmacs::FontSlant> || std::is_same_v<T, acmacs::FontWeight>)
-            target[name] = static_cast<std::string>(*field);
+        else if constexpr (std::is_same_v<T, bool>)
+            target[name] = *field;
         else if constexpr (std::is_same_v<T, acmacs::Offset>)
             target[name] = rjson::array{field->x(), field->y()};
         else
-            target[name] = *field;
+            target[name] = fmt::format("{}", field);
     }
 }
 

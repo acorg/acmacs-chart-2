@@ -319,7 +319,7 @@ Color AcePlotSpec::error_line_positive_color() const
     if (const auto& color = data_.get("E", "c"); !color.is_null())
         return Color(color.to<std::string_view>());
     else
-        return "red";
+        return RED;
 
 } // AcePlotSpec::error_line_positive_color
 
@@ -330,7 +330,7 @@ Color AcePlotSpec::error_line_negative_color() const
     if (const auto& color = data_.get("e", "c"); !color.is_null())
         return Color(color.to<std::string_view>());
     else
-        return "blue";
+        return BLUE;
 
 } // AcePlotSpec::error_line_negative_color
 
@@ -418,7 +418,7 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointN
                       result.aspect = Aspect{field_value.to<double>()};
                       break;
                   case 'S':
-                      result.shape = field_value.to<std::string>();
+                      result.shape = field_value.to<std::string_view>();
                       break;
                   case 'l':
                       this->label_style(result, field_value);
@@ -426,7 +426,7 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointN
                 }
             }
             catch (std::exception& err) {
-                std::cerr << "WARNING: [ace]: point " << aPointNo << " style " << aStyleNo << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << rjson::to_string(field_value) << '\n';
+                fmt::print(stderr, ">> WARNING [ace]: point {} style {} field \"{}\" value is wrong: {} value {}\n", aPointNo, aStyleNo, field_name, err, field_value);
             }
         }
     });
@@ -462,21 +462,21 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
                       label_style.interline = field_value.to<double>();
                       break;
                   case 'f':
-                      label_style.style.font_family = field_value.to<std::string>();
+                      label_style.style.font_family = field_value.to<std::string_view>();
                       break;
                   case 'S':
-                      label_style.style.slant = field_value.to<std::string>();
+                      label_style.style.slant = field_value.to<std::string_view>();
                       break;
                   case 'W':
-                      label_style.style.weight = field_value.to<std::string>();
+                      label_style.style.weight = field_value.to<std::string_view>();
                       break;
                   case 't':
-                      aStyle.label_text = field_value.to<std::string>();
+                      aStyle.label_text = field_value.to<std::string_view>();
                       break;
                 }
             }
             catch (std::exception& err) {
-                std::cerr << "WARNING: [ace]: label style field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << rjson::to_string(field_value) << '\n';
+                fmt::print(stderr, ">> WARNING [ace]: label style field \"{}\" value is wrong: {} value {}\n", field_name, err, field_value);
             }
         }
     });

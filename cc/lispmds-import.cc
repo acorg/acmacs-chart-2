@@ -738,7 +738,7 @@ DrawingOrder LispmdsPlotSpec::drawing_order() const
 
 Color LispmdsPlotSpec::error_line_positive_color() const
 {
-    return "red";
+    return RED;
 
 } // LispmdsPlotSpec::error_line_positive_color
 
@@ -746,7 +746,7 @@ Color LispmdsPlotSpec::error_line_positive_color() const
 
 Color LispmdsPlotSpec::error_line_negative_color() const
 {
-    return "blue";
+    return BLUE;
 
 } // LispmdsPlotSpec::error_line_negative_color
 
@@ -866,9 +866,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
     }
 
     try {
-        Color fill = aTarget.fill;
-        fill.set_transparency(std::get<acmacs::lispmds::number>(aSource[":TR"]));
-        aTarget.fill = fill;
+        acmacs::color::set_transparency(aTarget.fill.set(), std::get<acmacs::lispmds::number>(aSource[":TR"]));
     }
     catch (std::exception&) {
     }

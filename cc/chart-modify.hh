@@ -690,9 +690,9 @@ namespace acmacs::chart
         void shown(size_t point_no, bool shown) { modify(); validate_point_no(point_no); styles_[point_no].shown = shown; }
         void size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].size = size; }
         void fill(size_t point_no, Color fill) { modify(); validate_point_no(point_no); styles_[point_no].fill = fill; }
-        void fill_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].fill.set().set_opacity(opacity); }
+        void fill_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); acmacs::color::set_opacity(styles_[point_no].fill.set(), opacity); }
         void outline(size_t point_no, Color outline) { modify(); validate_point_no(point_no); styles_[point_no].outline = outline; }
-        void outline_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].outline.set().set_opacity(opacity); }
+        void outline_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); acmacs::color::set_opacity(styles_[point_no].outline.set(), opacity); }
         void outline_width(size_t point_no, Pixels outline_width) { modify(); validate_point_no(point_no); styles_[point_no].outline_width = outline_width; }
         void rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].rotation = rotation; }
         void aspect(size_t point_no, Aspect aspect) { modify(); validate_point_no(point_no); styles_[point_no].aspect = aspect; }

@@ -708,7 +708,7 @@ Color Acd1PlotSpec::error_line_positive_color() const
         if (color.is_number())
             return Color(color.to<size_t>());
     }
-    return "red";
+    return RED;
 
 } // Acd1PlotSpec::error_line_positive_color
 
@@ -722,7 +722,7 @@ Color Acd1PlotSpec::error_line_negative_color() const
         if (color.is_number())
             return Color(color.to<size_t>());
     }
-    return "blue";
+    return BLUE;
 
 } // Acd1PlotSpec::error_line_negative_color
 
@@ -797,7 +797,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                 else if (field_name == "line_width") // acmacs-b3
                     result.outline_width = Pixels{field_value.to<double>()};
                 else if (field_name == "shape")
-                    result.shape = field_value.to<std::string>();
+                    result.shape = field_value.to<std::string_view>();
                 else if (field_name == "size")
                     result.size = Pixels{field_value.to<double>() * PointScale};
                 else if (field_name == "rotation")
@@ -811,7 +811,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                 else if (field_name == "label_position_y")
                     result.label.offset.set().y(field_value.to<double>());
                 else if (field_name == "label")
-                    result.label_text = field_value.to<std::string>();
+                    result.label_text = field_value.to<std::string_view>();
                 else if (field_name == "label_size")
                     result.label.size = Pixels{field_value.to<double>() * LabelScale};
                 else if (field_name == "label_color")
@@ -821,9 +821,9 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                 else if (field_name == "label_font_face")
                     result.label.style.font_family = field_value.to<std::string>();
                 else if (field_name == "label_font_slant")
-                    result.label.style.slant = field_value.to<std::string>();
+                    result.label.style.slant = field_value.to<std::string_view>();
                 else if (field_name == "label_font_weight")
-                    result.label.style.weight = field_value.to<std::string>();
+                    result.label.style.weight = field_value.to<std::string_view>();
             }
             catch (std::exception& err) {
                 std::cerr << "WARNING: [acd1]: point " << aPointNo << " style " << aStyleNo << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << rjson::to_string(field_value)

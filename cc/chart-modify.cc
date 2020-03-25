@@ -1753,7 +1753,7 @@ PlotSpecModify::PlotSpecModify(size_t number_of_antigens, size_t number_of_sera)
     : main_{nullptr}, number_of_antigens_(number_of_antigens), modified_{true}, styles_(number_of_antigens + number_of_sera, PointStyle{})
 {
     for (size_t point_no : acmacs::range(number_of_antigens)) {
-        styles_[point_no].fill = "green";
+        styles_[point_no].fill = GREEN;
     }
     for (size_t point_no : acmacs::range(number_of_antigens, number_of_antigens + number_of_sera)) {
         styles_[point_no].shape = PointShape::Box;
