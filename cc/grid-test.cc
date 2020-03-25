@@ -126,7 +126,7 @@ void acmacs::chart::GridTest::test(Result& result)
                 }
             }
         }
-        LOG(0, "GridTest {} area: {:08.1f} units^{}  grid-step: {:5.3f} <Time: {}>", result.report(chart_), area.area(), area.num_dim(), grid_step_, acmacs::format(acmacs::elapsed(start)));
+        AD_LOG(0, "GridTest {} area: {:08.1f} units^{}  grid-step: {:5.3f} <Time: {}>", result.report(chart_), area.area(), area.num_dim(), grid_step_, acmacs::format(acmacs::elapsed(start)));
     }
 
 } // acmacs::chart::GridTest::test

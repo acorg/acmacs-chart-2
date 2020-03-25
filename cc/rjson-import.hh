@@ -125,7 +125,7 @@ namespace acmacs::chart
             if (number_of_sera())
                 rjson_import::update(data_, keys_.list, keys_.dict, table_distances, column_bases, parameters, number_of_antigens() + number_of_sera());
             else
-                throw std::runtime_error("genetic table support not implemented in " + DEBUG_FILE_LINE_FUNC_S);
+                throw std::runtime_error("genetic table support not implemented in " + AD_DEBUG_FILE_LINE_FUNC_S);
         }
 
         TiterIteratorMaker titers_existing() const override;

@@ -58,10 +58,10 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
         }
     }
 
-    // std::cerr << "DEBUG: antigens_primary_target " << antigens_primary_target << DEBUG_FILE_LINE_FUNC << '\n';
-    // std::cerr << "DEBUG: antigens_secondary_target" << antigens_secondary_target << DEBUG_FILE_LINE_FUNC << '\n';
-    // std::cerr << "DEBUG: sera_primary_target " << sera_primary_target << DEBUG_FILE_LINE_FUNC << '\n';
-    // std::cerr << "DEBUG: sera_secondary_target" << sera_secondary_target << DEBUG_FILE_LINE_FUNC << '\n';
+    // std::cerr << "DEBUG: antigens_primary_target " << antigens_primary_target << AD_DEBUG_FILE_LINE_FUNC << '\n';
+    // std::cerr << "DEBUG: antigens_secondary_target" << antigens_secondary_target << AD_DEBUG_FILE_LINE_FUNC << '\n';
+    // std::cerr << "DEBUG: sera_primary_target " << sera_primary_target << AD_DEBUG_FILE_LINE_FUNC << '\n';
+    // std::cerr << "DEBUG: sera_secondary_target" << sera_secondary_target << AD_DEBUG_FILE_LINE_FUNC << '\n';
 
 } // acmacs::chart::MergeReport::MergeReport
 

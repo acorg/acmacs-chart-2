@@ -728,7 +728,7 @@ namespace acmacs::chart
 
         void validate_point_no(size_t point_no) const
             {
-                // std::cerr << "DEBUG: PlotSpecModify::validate_point_no: number_of_points main: " << main_->number_of_points() << " modified: " << modified() << " number_of_points: " << number_of_points() << DEBUG_FILE_LINE_FUNC << '\n';
+                // std::cerr << "DEBUG: PlotSpecModify::validate_point_no: number_of_points main: " << main_->number_of_points() << " modified: " << modified() << " number_of_points: " << number_of_points() << AD_DEBUG_FILE_LINE_FUNC << '\n';
                 if (point_no >= number_of_points())
                     throw std::runtime_error{fmt::format("Invalid point number: {}, expected integer in range 0..{} inclusive", point_no, number_of_points() - 1)};
             }
