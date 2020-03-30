@@ -807,9 +807,9 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                 else if (field_name == "show_label")
                     result.label.shown = field_value.to<bool>();
                 else if (field_name == "label_position_x")
-                    result.label.offset.set().x(field_value.to<double>());
+                    result.label.offset.x(field_value.to<double>());
                 else if (field_name == "label_position_y")
-                    result.label.offset.set().y(field_value.to<double>());
+                    result.label.offset.y(field_value.to<double>());
                 else if (field_name == "label")
                     result.label_text = field_value.to<std::string_view>();
                 else if (field_name == "label_size")

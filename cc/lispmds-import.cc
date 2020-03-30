@@ -823,7 +823,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
 
     try {
         aTarget.label_text = *std::get<acmacs::lispmds::string>(aSource[":WN"]);
-        aTarget.label.shown = !aTarget.label_text->empty();
+        aTarget.label.shown = !aTarget.label_text.empty();
     }
     catch (std::exception&) {
     }
@@ -866,7 +866,8 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
     }
 
     try {
-        acmacs::color::set_transparency(aTarget.fill.set(), std::get<acmacs::lispmds::number>(aSource[":TR"]));
+        // acmacs::color::set_transparency(aTarget.fill.set(), std::get<acmacs::lispmds::number>(aSource[":TR"]));
+        aTarget.fill.set_transparency(std::get<acmacs::lispmds::number>(aSource[":TR"]));
     }
     catch (std::exception&) {
     }

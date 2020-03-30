@@ -690,16 +690,16 @@ namespace acmacs::chart
         void shown(size_t point_no, bool shown) { modify(); validate_point_no(point_no); styles_[point_no].shown = shown; }
         void size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].size = size; }
         void fill(size_t point_no, Color fill) { modify(); validate_point_no(point_no); styles_[point_no].fill = fill; }
-        void fill_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); acmacs::color::set_opacity(styles_[point_no].fill.set(), opacity); }
+        void fill_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].fill.set_opacity(opacity); }
         void outline(size_t point_no, Color outline) { modify(); validate_point_no(point_no); styles_[point_no].outline = outline; }
-        void outline_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); acmacs::color::set_opacity(styles_[point_no].outline.set(), opacity); }
+        void outline_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].outline.set_opacity(opacity); }
         void outline_width(size_t point_no, Pixels outline_width) { modify(); validate_point_no(point_no); styles_[point_no].outline_width = outline_width; }
         void rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].rotation = rotation; }
         void aspect(size_t point_no, Aspect aspect) { modify(); validate_point_no(point_no); styles_[point_no].aspect = aspect; }
         void shape(size_t point_no, PointShape::Shape shape) { modify(); validate_point_no(point_no); styles_[point_no].shape = shape; }
         void label_shown(size_t point_no, bool shown) { modify(); validate_point_no(point_no); styles_[point_no].label.shown = shown; }
-        void label_offset_x(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label.offset.set().x(offset); }
-        void label_offset_y(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label.offset.set().y(offset); }
+        void label_offset_x(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label.offset.x(offset); }
+        void label_offset_y(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label.offset.y(offset); }
         void label_size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].label.size = size; }
         void label_color(size_t point_no, Color color) { modify(); validate_point_no(point_no); styles_[point_no].label.color = color; }
         void label_rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].label.rotation = rotation; }

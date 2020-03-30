@@ -339,33 +339,34 @@ void export_plot_spec(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Plot
 
 // ----------------------------------------------------------------------
 
-// namespace rjson
+// template <typename T> inline void set_field(rjson::value& target, const char* name, const acmacs::detail::field_optional_with_default<T>& field)
 // {
-//     template <> struct content_type<Color> { using type = rjson::string; };
-//     template <> struct content_type<acmacs::PointShape> { using type = rjson::string; };
-//     template <> struct content_type<acmacs::FontSlant> { using type = rjson::string; };
-//     template <> struct content_type<acmacs::FontWeight> { using type = rjson::string; };
+//     if (field.not_default()) {
+//         if constexpr (std::is_same_v<T, Color> || std::is_same_v<T, acmacs::color::Modifier>)
+//             target[name] = fmt::format("{:X}", *field);
+//         else if constexpr (std::is_same_v<T, Pixels> || std::is_same_v<T, Scaled> || std::is_same_v<T, Rotation> || std::is_same_v<T, Aspect>)
+//             target[name] = field->value();
+//         else if constexpr (std::is_same_v<T, bool>)
+//             target[name] = *field;
+//         else if constexpr (std::is_same_v<T, acmacs::Offset>)
+//             target[name] = rjson::array{field->x(), field->y()};
+//         else
+//             target[name] = fmt::format("{}", field);
+//     }
+// }
 
-//     template <char Tag> inline value to_value(acmacs::detail::SizeScale<Tag> aValue) { return to_value(aValue.value()); }
-
-//     inline value to_value(const acmacs::Offset aValue) { return array{aValue.x(), aValue.y()}; }
-
-// } // namespace rjson
-
-template <typename T> inline void set_field(rjson::value& target, const char* name, const acmacs::detail::field_optional_with_default<T>& field)
+template <typename T> inline void set_field(rjson::value& target, const char* name, const T& field)
 {
-    if (field.not_default()) {
-        if constexpr (std::is_same_v<T, Color> || std::is_same_v<T, acmacs::color::Modifier>)
-            target[name] = fmt::format("{:X}", *field);
-        else if constexpr (std::is_same_v<T, Pixels> || std::is_same_v<T, Scaled> || std::is_same_v<T, Rotation> || std::is_same_v<T, Aspect>)
-            target[name] = field->value();
-        else if constexpr (std::is_same_v<T, bool>)
-            target[name] = *field;
-        else if constexpr (std::is_same_v<T, acmacs::Offset>)
-            target[name] = rjson::array{field->x(), field->y()};
-        else
-            target[name] = fmt::format("{}", field);
-    }
+    if constexpr (std::is_same_v<T, Color> || std::is_same_v<T, acmacs::color::Modifier>)
+        target[name] = fmt::format("{:X}", field);
+    else if constexpr (std::is_same_v<T, Pixels> || std::is_same_v<T, Scaled> || std::is_same_v<T, Rotation> || std::is_same_v<T, Aspect>)
+        target[name] = field.value();
+    else if constexpr (std::is_same_v<T, bool>)
+        target[name] = field;
+    else if constexpr (std::is_same_v<T, acmacs::Offset>)
+        target[name] = rjson::array{field.x(), field.y()};
+    else
+        target[name] = fmt::format("{}", field);
 }
 
 void export_style(rjson::value& target_styles, const acmacs::PointStyle& aStyle)
@@ -375,8 +376,7 @@ void export_style(rjson::value& target_styles, const acmacs::PointStyle& aStyle)
     set_field(st, "F", aStyle.fill);
     set_field(st, "O", aStyle.outline);
     set_field(st, "o", aStyle.outline_width);
-    if (aStyle.size.not_default())
-        st["s"] = aStyle.size->value() / acmacs::chart::ace::PointScale;
+    st["s"] = aStyle.size.value() / acmacs::chart::ace::PointScale;
     set_field(st, "r", aStyle.rotation);
     set_field(st, "a", aStyle.aspect);
     set_field(st, "S", aStyle.shape);
@@ -387,8 +387,7 @@ void export_style(rjson::value& target_styles, const acmacs::PointStyle& aStyle)
     set_field(ls, "f", aStyle.label.style.font_family);
     set_field(ls, "S", aStyle.label.style.slant);
     set_field(ls, "W", aStyle.label.style.weight);
-    if (aStyle.label.size.not_default())
-        ls["s"] = aStyle.label.size->value() / acmacs::chart::ace::LabelScale;
+    ls["s"] = aStyle.label.size.value() / acmacs::chart::ace::LabelScale;
     set_field(ls, "c", aStyle.label.color);
     set_field(ls, "r", aStyle.label.rotation);
     set_field(ls, "i", aStyle.label.interline);
