@@ -339,22 +339,6 @@ void export_plot_spec(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Plot
 
 // ----------------------------------------------------------------------
 
-// template <typename T> inline void set_field(rjson::value& target, const char* name, const acmacs::detail::field_optional_with_default<T>& field)
-// {
-//     if (field.not_default()) {
-//         if constexpr (std::is_same_v<T, Color> || std::is_same_v<T, acmacs::color::Modifier>)
-//             target[name] = fmt::format("{:X}", *field);
-//         else if constexpr (std::is_same_v<T, Pixels> || std::is_same_v<T, Scaled> || std::is_same_v<T, Rotation> || std::is_same_v<T, Aspect>)
-//             target[name] = field->value();
-//         else if constexpr (std::is_same_v<T, bool>)
-//             target[name] = *field;
-//         else if constexpr (std::is_same_v<T, acmacs::Offset>)
-//             target[name] = rjson::array{field->x(), field->y()};
-//         else
-//             target[name] = fmt::format("{}", field);
-//     }
-// }
-
 template <typename T> inline void set_field(rjson::value& target, const char* name, const T& field, bool do_set = true)
 {
     if (do_set) {
