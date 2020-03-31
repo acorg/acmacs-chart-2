@@ -1,0 +1,51 @@
+#! /bin/bash
+
+set -e
+
+TDIR=$(mktemp -d -t XXXXXX)
+TESTDIR=$(dirname $0)
+
+# ======================================================================
+
+function on_exit
+{
+    rm -rf "$TDIR"
+}
+
+trap on_exit EXIT
+
+function failed
+{
+    echo ERROR: FAILED: "$@" >&2
+    exit 1
+}
+
+# ======================================================================
+
+function separator
+{
+    echo '****************************************************************************************************'
+}
+
+function report_files
+{
+    for f in "$@"; do
+        separator
+        echo "$f"
+        separator
+        cat "$f"
+    done
+    separator
+}
+
+# ======================================================================
+
+function report_fail
+{
+    local test_name="$1"
+    shift
+    report_files "$@"
+    failed "${test_name}"
+}
+
+# ======================================================================
