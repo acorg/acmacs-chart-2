@@ -826,8 +826,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                     result.label.style.weight = field_value.to<std::string_view>();
             }
             catch (std::exception& err) {
-                std::cerr << "WARNING: [acd1]: point " << aPointNo << " style " << aStyleNo << " field \"" << field_name << "\" value is wrong: " << err.what() << " value: " << rjson::to_string(field_value)
-                          << '\n';
+                AD_WARNING("[acd1]: point {} style {} field \"{}\" value is wrong: {} value: {}", aPointNo, aStyleNo, field_name, err, field_value);
             }
         }
     });

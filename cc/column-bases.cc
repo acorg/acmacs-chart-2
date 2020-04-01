@@ -30,7 +30,7 @@ void acmacs::chart::MinimumColumnBasis::from(std::string_view value)
         value_ = ::string::from_chars<double>(value);
     }
     else {
-        value_ = ::string::from_chars<long>(value);
+        value_ = static_cast<double>(::string::from_chars<long>(value));
         if (value_ > 9)
             value_ = std::log2(value_ / 10.0);
     }

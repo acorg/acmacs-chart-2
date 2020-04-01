@@ -197,11 +197,11 @@ acmacs::chart::Titer acmacs::chart::Titer::multiplied_by(double value) const // 
       case DontCare:
           return *this;
       case Regular:
-          return Titer{std::to_string(std::lround(std::stoul(get()) * value))};
+          return Titer{std::to_string(std::lround(static_cast<double>(std::stoul(get())) * value))};
       case LessThan:
       case MoreThan:
       case Dodgy:
-          return Titer{get().front() + std::to_string(std::lround(std::stoul(get().substr(1)) * value))};
+          return Titer{get().front() + std::to_string(std::lround(static_cast<double>(std::stoul(get().substr(1))) * value))};
     }
     return Titer{};
 

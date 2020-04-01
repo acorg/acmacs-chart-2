@@ -222,7 +222,7 @@ void test_multiply_by_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo
 
     for (auto ti_source : titers_source->titers_existing()) {
         if (ti_source.antigen == aAntigenNo && !ti_source.titer.is_dont_care()) {
-            const auto expected_value = static_cast<size_t>(std::lround(ti_source.titer.value() * aMult));
+            const auto expected_value = static_cast<size_t>(std::lround(static_cast<double>(ti_source.titer.value()) * aMult));
             if (titers_modified->titer(ti_source.antigen, ti_source.serum).value() != expected_value)
                 throw std::runtime_error(fmt::format("test_multiply_by_for_antigen: unexpected titer: [ag:{} sr:{} t:{}], expected: {}", ti_source.antigen, ti_source.serum,
                                                      *titers_modified->titer(ti_source.antigen, ti_source.serum), expected_value));
@@ -246,7 +246,7 @@ void test_multiply_by_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, do
 
     for (auto ti_source : titers_source->titers_existing()) {
         if (ti_source.serum == aSerumNo && !ti_source.titer.is_dont_care()) {
-            const auto expected_value = static_cast<size_t>(std::lround(ti_source.titer.value() * aMult));
+            const auto expected_value = static_cast<size_t>(std::lround(static_cast<double>(ti_source.titer.value()) * aMult));
             if (titers_modified->titer(ti_source.antigen, ti_source.serum).value() != expected_value)
                 throw std::runtime_error(fmt::format("test_multiply_by_for_serum: unexpected titer: [ag:{} sr:{} t:{}], expected: {}", ti_source.antigen, ti_source.serum,
                                                      *titers_modified->titer(ti_source.antigen, ti_source.serum), std::to_string(expected_value)));

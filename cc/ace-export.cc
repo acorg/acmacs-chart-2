@@ -66,7 +66,7 @@ std::string acmacs::chart::export_ace(const Chart& aChart, std::string_view aPro
     if (aIndent)
         return rjson::pretty(ace, rjson::emacs_indent::yes, rjson::PrettyHandler(aIndent));
     else
-        return rjson::to_string(ace);
+        return rjson::format(ace);
 
 } // acmacs::chart::export_ace
 
@@ -202,7 +202,7 @@ void export_titers(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Titers>
     if (!titers_exported) {
         // slow method
         if ((number_of_antigens < 100 && number_of_sera < 100) ||
-            (static_cast<double>(aTiters->number_of_non_dont_cares()) / (number_of_antigens * number_of_sera)) > acmacs::chart::Titers::dense_sparse_boundary) {
+            (static_cast<double>(aTiters->number_of_non_dont_cares()) / static_cast<double>(number_of_antigens * number_of_sera)) > acmacs::chart::Titers::dense_sparse_boundary) {
             auto& list = aTarget["l"] = rjson::array{};
             for (size_t ag_no = 0; ag_no < number_of_antigens; ++ag_no) {
                 auto& row = list.append(rjson::array{});

@@ -21,7 +21,7 @@ int main(int argc, char* const argv[])
                 titers->remove_layers();
                 titers->set_proportion_of_titers_to_dont_care(proportion);
                 const auto now_titers = titers->number_of_non_dont_cares();
-                const auto resulting_proportion = double(initial_titers - now_titers) / initial_titers;
+                const auto resulting_proportion = double(initial_titers - now_titers) / static_cast<double>(initial_titers);
                 if (std::abs(resulting_proportion - proportion) > 0.01) {
                     std::cerr << argv[arg] << "  initial: " << initial_titers << "  after dontcaring: " << now_titers << "  resulting proportion: " << resulting_proportion << '\n';
                     throw std::runtime_error("set_proportion_of_titers_to_dont_care failed");

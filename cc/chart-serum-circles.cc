@@ -186,15 +186,15 @@ void report_csv(std::ostream& output, const std::vector<SerumData>& sera_data)
             titers += fmt::format("{}", antigen_data.titer);
         }
         if (num_empirical)
-            writer << empirical / num_empirical;
+            writer << empirical / static_cast<double>(num_empirical);
         else
             writer << acmacs::CsvWriter::empty_field;
         if (num_theoretical)
-            writer << theoretical / num_theoretical;
+            writer << theoretical / static_cast<double>(num_theoretical);
         else
             writer << acmacs::CsvWriter::empty_field;
         if (num_empirical && num_theoretical) {
-            if (const auto emp_theor_diff = empirical / num_empirical - theoretical / num_theoretical; !std::isnan(emp_theor_diff)) {
+            if (const auto emp_theor_diff = empirical / static_cast<double>(num_empirical) - theoretical / static_cast<double>(num_theoretical); !std::isnan(emp_theor_diff)) {
                 diff += std::abs(emp_theor_diff);
                 writer << emp_theor_diff;
                 ++num_diff;
@@ -206,7 +206,7 @@ void report_csv(std::ostream& output, const std::vector<SerumData>& sera_data)
             writer << acmacs::CsvWriter::empty_field;
         writer << titers << acmacs::CsvWriter::end_of_row;
     }
-    writer << "average abs difference" << diff / num_diff << acmacs::CsvWriter::end_of_row;
+    writer << "average abs difference" << diff / static_cast<double>(num_diff) << acmacs::CsvWriter::end_of_row;
     output << writer;
 
 } // report_csv

@@ -234,7 +234,7 @@ void acmacs::chart::detail::serum_circle_empirical(const SerumCircle& circle_dat
             previous = ag_no;
         }
     }
-    per_antigen.radius = sum_radii / num_radii;
+    per_antigen.radius = sum_radii / static_cast<double>(num_radii);
     if (verbose == acmacs::verbose::yes)
         std::cerr << fmt::format("\n>>> Radius: {}\n\n", *per_antigen.radius);
 

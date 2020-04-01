@@ -1287,7 +1287,7 @@ void TitersModify::set_proportion_of_titers_to_dont_care(double proportion)
 
     std::mt19937 generator{std::random_device{}()};
     std::shuffle(cells.begin(), cells.end(), generator);
-    const auto entries_to_dont_care = static_cast<size_t>(std::lround(cells.size() * proportion));
+    const auto entries_to_dont_care = static_cast<size_t>(std::lround(static_cast<double>(cells.size()) * proportion));
     const auto set_to_dont_care = [entries_to_dont_care, &cells, number_of_sera = number_of_sera_](auto& titers) {
         for (auto index : acmacs::range(entries_to_dont_care)) {
             const auto ag_no = cells[index].first, sr_no = cells[index].second;

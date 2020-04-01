@@ -211,24 +211,24 @@ int main(int argc, char* const argv[])
                 }
             }
 
-            const double total_sans_dontcare = total - stat[TiterMerger::DontCare];
+            const double total_sans_dontcare = static_cast<double>(total - stat[TiterMerger::DontCare]);
 
             if (true) {
                 std::cout << "\n\n";
                 std::cout << "<td class=\"number\">" << total << "</td><td></td>\n";
-                std::cout << "<td class=\"number\">" << total_sans_dontcare << "</td><td class=\"percent\">" << std::setprecision(3) << (total_sans_dontcare / total * 100.0) << "%</td>\n";
+                std::cout << "<td class=\"number\">" << total_sans_dontcare << "</td><td class=\"percent\">" << std::setprecision(3) << (total_sans_dontcare / static_cast<double>(total) * 100.0) << "%</td>\n";
                 std::cout << "<td class=\"number\">" << stat[TiterMerger::Regular] << "</td><td class=\"percent\">" << std::setprecision(3)
-                          << (stat[TiterMerger::Regular] / total_sans_dontcare * 100.0) << "%</td>\n";
+                          << (static_cast<double>(stat[TiterMerger::Regular]) / total_sans_dontcare * 100.0) << "%</td>\n";
                 std::cout << "<td class=\"number\">" << stat[TiterMerger::SDTooBig] << "</td><td class=\"percent\">" << std::setprecision(3)
-                          << (stat[TiterMerger::SDTooBig] / total_sans_dontcare * 100.0) << "%</td>\n";
+                          << (static_cast<double>(stat[TiterMerger::SDTooBig]) / total_sans_dontcare * 100.0) << "%</td>\n";
                 std::cout << "<td class=\"number\">" << stat[TiterMerger::ThresholdedBoth] << "</td><td class=\"percent\">" << std::setprecision(3)
-                          << (stat[TiterMerger::ThresholdedBoth] / total_sans_dontcare * 100.0) << "%</td>\n";
+                          << (static_cast<double>(stat[TiterMerger::ThresholdedBoth]) / total_sans_dontcare * 100.0) << "%</td>\n";
                 std::cout << "<td class=\"number\">" << stat[TiterMerger::ThresholdedOnly] << "</td><td class=\"percent\">" << std::setprecision(3)
-                          << (stat[TiterMerger::ThresholdedOnly] / total_sans_dontcare * 100.0) << "%</td>\n";
+                          << (static_cast<double>(stat[TiterMerger::ThresholdedOnly]) / total_sans_dontcare * 100.0) << "%</td>\n";
                 std::cout << "<td class=\"number\">" << stat[TiterMerger::Thresholded] << "</td><td class=\"percent\">" << std::setprecision(3)
-                          << (stat[TiterMerger::Thresholded] / total_sans_dontcare * 100.0) << "%</td>\n";
+                          << (static_cast<double>(stat[TiterMerger::Thresholded]) / total_sans_dontcare * 100.0) << "%</td>\n";
                 std::cout << "<td class=\"number\">" << stat[TiterMerger::ThresholdedMax] << "</td><td class=\"percent\">" << std::setprecision(3)
-                          << (stat[TiterMerger::ThresholdedMax] / total_sans_dontcare * 100.0) << "%</td>\n";
+                          << (static_cast<double>(stat[TiterMerger::ThresholdedMax]) / total_sans_dontcare * 100.0) << "%</td>\n";
             }
 
             // if (false) {
