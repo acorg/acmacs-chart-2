@@ -20,6 +20,14 @@ function failed
     exit 1
 }
 
+function failed_macos_only
+{
+    if [ "$(uname)" = "Darwin" ]; then
+        failed "$@"
+    else
+        echo "WARNING: FAILED (ignored): $@" >&2
+    fi
+}
 # ======================================================================
 
 function separator
