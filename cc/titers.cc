@@ -262,7 +262,7 @@ void acmacs::chart::Titers::update(acmacs::chart::TableDistances& table_distance
         }
     }
     else {
-        throw std::runtime_error("genetic table support not implemented in " + AD_DEBUG_FILE_LINE_FUNC_S);
+        throw std::runtime_error(AD_FORMAT("genetic table support not implemented"));
     }
 } // acmacs::chart::Titers::update
 
@@ -307,7 +307,7 @@ double acmacs::chart::Titers::max_distance(const acmacs::chart::ColumnBases& col
             max_distance = std::max(max_distance, column_bases.column_basis(titer_ref.serum) - titer_ref.titer.logged_with_thresholded());
     }
     else {
-        throw std::runtime_error("genetic table support not implemented in " + AD_DEBUG_FILE_LINE_FUNC_S);
+        throw std::runtime_error(AD_FORMAT("genetic table support not implemented"));
     }
       // std::cerr << "Titers::max_distance: " << max_distance << '\n';
     return max_distance;

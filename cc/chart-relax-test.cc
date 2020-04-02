@@ -124,12 +124,12 @@ void test_rough(acmacs::chart::ChartModify& chart, size_t attempts, std::string 
         std::cout << "rough " << std::setprecision(12) << status.final_stress << " time: " << acmacs::format(status.time) << " iters: " << status.number_of_iterations << " nstress: " << status.number_of_stress_calculations << ' ' << status.termination_report << '\n';
         const auto status2 = projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_lbfgs_pca, acmacs::chart::optimization_precision::fine));
         std::cout << "fin   " << std::setprecision(12) << status2.final_stress << " time: " << acmacs::format(status2.time) << " iters: " << status2.number_of_iterations << " nstress: " << status2.number_of_stress_calculations << ' ' << status.termination_report << '\n';
-        const double speed_ratio = static_cast<double>(status.time.count()) / (status.time + status2.time).count();
+        const double speed_ratio = static_cast<double>(status.time.count()) / static_cast<double>((status.time + status2.time).count());
           // std::cout << "  rough speed ratio: " << speed_ratio << '\n';
         speed_ratio_sum += speed_ratio;
         stresses.emplace_back(no, status.final_stress, status2.final_stress);
     }
-    std::cout << "average speed ratio: " << (speed_ratio_sum / attempts) << '\n';
+    std::cout << "average speed ratio: " << (speed_ratio_sum / static_cast<double>(attempts)) << '\n';
 
     auto report = [&stresses](std::string header) {
                       std::cout << header << '\n';

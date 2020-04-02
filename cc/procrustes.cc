@@ -38,7 +38,7 @@ class MatrixJ
 class MatrixJProcrustes : public MatrixJ
 {
  public:
-    template <typename S> MatrixJProcrustes(S size) : MatrixJ(size), diagonal_(1.0 - 1.0 / size), non_diagonal_(-1.0 / size) {}
+    template <typename S> MatrixJProcrustes(S size) : MatrixJ(size), diagonal_(1.0 - 1.0 / static_cast<double>(size)), non_diagonal_(-1.0 / static_cast<double>(size)) {}
     double operator()(aint_t row, aint_t column) const override { return row == column ? diagonal_ : non_diagonal_; }
 
  private:
@@ -51,9 +51,9 @@ class MatrixJProcrustesScaling : public MatrixJ
  public:
     template <typename S> MatrixJProcrustesScaling(S size)
         : MatrixJ(size),
-          diagonal_0_(1.0 - 1.0 / size), non_diagonal_0_(-1.0 / size),
-          diagonal_(non_diagonal_0_ * non_diagonal_0_ * (size - 1) + diagonal_0_ * diagonal_0_),
-          non_diagonal_(non_diagonal_0_ * non_diagonal_0_ * (size - 2) + non_diagonal_0_ * diagonal_0_ * 2)
+          diagonal_0_(1.0 - 1.0 / static_cast<double>(size)), non_diagonal_0_(-1.0 / static_cast<double>(size)),
+          diagonal_(non_diagonal_0_ * non_diagonal_0_ * static_cast<double>(size - 1) + diagonal_0_ * diagonal_0_),
+          non_diagonal_(non_diagonal_0_ * non_diagonal_0_ * static_cast<double>(size - 2) + non_diagonal_0_ * diagonal_0_ * 2)
         {}
     double operator()(aint_t row, aint_t column) const override { return row == column ? diagonal_ : non_diagonal_; }
 
@@ -180,7 +180,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     for (auto dim : range(number_of_dimensions)) {
         const auto t_i =
             std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(common_without_disconnected.size())), 0.0, [&m5, dim = cint(dim)](auto sum, auto row) { return sum + m5(row, dim); });
-        result.transformation.translation(dim) = t_i / common_without_disconnected.size();
+        result.transformation.translation(dim) = t_i / static_cast<double>(common_without_disconnected.size());
     }
 
     // rms
@@ -198,7 +198,7 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
               //std::cerr << cp.primary << ' ' << cp.secondary << ' ' << result.rms << '\n';
         }
     }
-    result.rms = std::sqrt(result.rms / num_rows);
+    result.rms = std::sqrt(result.rms / static_cast<double>(num_rows));
 
       // std::cerr << "common points (without disconnected): " << common_without_disconnected.size() << '\n';
       // std::cerr << "transformation: " << acmacs::to_string(result.transformation) << '\n';

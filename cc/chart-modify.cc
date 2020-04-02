@@ -926,7 +926,7 @@ std::unique_ptr<TitersModify::titer_merge_report> TitersModify::set_from_layers(
     std::shared_ptr<ColumnBases> column_bases;
     MinimumColumnBasis no_column_bases{};
     if (has_morethan_in_layers()) {
-          // std::cerr << "DEBUG: has_morethan_in_layers" << AD_DEBUG_FILE_LINE_FUNC << '\n';
+          // std::cerr << AD_FORMAT("DEBUG: has_morethan_in_layers");
         set_titers_from_layers(more_than_thresholded::adjust_to_next);
         column_bases = computed_column_bases(no_column_bases);
     }
@@ -964,7 +964,7 @@ std::unique_ptr<TitersModify::titer_merge_report> TitersModify::set_titers_from_
         titers_ = sparse_t(number_of_antigens);
     else
         titers_ = dense_t(number_of_antigens * number_of_sera_);
-    // std::cerr << "DEBUG: titers: " << titers.size() << " ag:" << number_of_antigens << " sr: " << number_of_sera_ << AD_DEBUG_FILE_LINE_FUNC << '\n';
+    // std::cerr << "DEBUG: titers: " << titers.size() << " ag:" << number_of_antigens << " sr: " << number_of_sera_ << '\n';
     for (const auto& data : *titers) {
         if (!data.titer.is_dont_care())
             std::visit([&data,this](auto& target) { this->set_titer(target, data.antigen, data.serum, data.titer); }, titers_);
@@ -1025,7 +1025,7 @@ std::pair<Titer, TitersModify::titer_merge> TitersModify::titer_from_layers(size
     if (max_less_than != 0 && min_more_than != max_limit) // 1. both thresholded
         return {{}, titer_merge::less_and_more_than};
     if (min_regular == max_limit) { // 3. no regular, just thresholded
-        // std::cerr << "DEBUG: no regular " << titers << AD_DEBUG_FILE_LINE_FUNC << '\n';
+        // std::cerr << "DEBUG: no regular " << titers << '\n';
         if (min_less_than != max_limit)
             return {Titer('<', min_less_than), titer_merge::less_than_only};
         if (mtt == more_than_thresholded::adjust_to_next)

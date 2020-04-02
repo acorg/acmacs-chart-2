@@ -5,12 +5,14 @@
 
 echo test-modify-projection
 
+echo ">>>> ASAN_OPTIONS=${ASAN_OPTIONS}"
+
 cd "$TESTDIR"
 ../dist/chart-modify-projection --points 0,3 --move-to 10,-10 test-2004-3.ace "${TDIR}/r1.ace" >/dev/null 2>&1 || failed chart-modify-projection --points 0,3 --move-to 10,-10 test-2004-3.ace "${TDIR}/r1.ace"
 ../dist/chart-layout test-2004-3.ace "${TDIR}/o.txt" 2>/dev/null
 ../dist/chart-layout "${TDIR}/r1.ace" "${TDIR}/r1.txt" 2>/dev/null
 diff "${TDIR}/o.txt" "${TDIR}/r1.txt" >"${TDIR}/diff-1.txt" || true
-cmp "${TDIR}/diff-1.txt" test-modify-projection.expected-1.diff || report_fail "chart-modify-projection-1" "${TDIR}/diff-1.txt" "${TDIR}/o.txt" "${TDIR}/r1.txt"
+cmp "${TDIR}/diff-1.txt" test-modify-projection.expected-1.diff || report_fail "chart-modify-projection-1" "test-modify-projection.expected-1.diff" "${TDIR}/diff-1.txt" "${TDIR}/o.txt" "${TDIR}/r1.txt"
 
 # ../dist/chart-transformation test-2004-3.ace
 ../dist/chart-transformation test-2004-3.ace >"${TDIR}/test-2004-3.transformation.txt"

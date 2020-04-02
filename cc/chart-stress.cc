@@ -21,7 +21,7 @@ double measure(acmacs::chart::ProjectionP projection, const acmacs::chart::Stres
         for (size_t i = 0; i < 300; ++i, ++count)
             projection->calculate_stress(stress);
     }
-    return count / duration;
+    return static_cast<double>(count) / duration;
 }
 
 double measure_gradient(acmacs::chart::ProjectionP projection, const acmacs::chart::Stress& stress)
@@ -34,7 +34,7 @@ double measure_gradient(acmacs::chart::ProjectionP projection, const acmacs::cha
         for (size_t i = 0; i < 300; ++i, ++count)
             projection->calculate_gradient(stress);
     }
-    return count / duration;
+    return static_cast<double>(count) / duration;
 }
 
 // ----------------------------------------------------------------------
@@ -48,7 +48,7 @@ int main(int argc, char* const argv[])
                 {"--double", false, "just report stress (double)"},
                 {"--gradient", false, "just report gradient (double)"},
                 {"--gradient-max", false, "just report gradient max (double)"},
-                {"--precision", 5, "stress/gradient report precision (double)"},
+                {"--precision", 17, "stress/gradient report precision (double)"},
                 {"--time", false, "test speed"},
                 {"--verbose", false},
                 {"-h", false},
