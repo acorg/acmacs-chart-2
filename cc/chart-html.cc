@@ -7,6 +7,7 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
 #include "acmacs-base/read-file.hh"
+#include "acmacs-base/temp-file.hh"
 #include "acmacs-base/quicklook.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"

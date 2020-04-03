@@ -4,7 +4,9 @@
 #include <array>
 
 #include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/filesystem.hh"
 #include "acmacs-base/read-file.hh"
+#include "acmacs-base/temp-file.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -295,7 +297,7 @@ void test_remove_antigens(acmacs::chart::ChartP chart, const acmacs::Indexes& in
     catch (std::exception& err) {
         // const std::string prefix = fs::exists("/r/ramdisk-id") ? "/r/" : "/tmp/";
         // acmacs::file::write(prefix + "a.ace", exported, acmacs::file::force_compression::yes);
-        throw std::runtime_error(std::string("test_remove_antigens: ") + err.what() + "\n  indexes:" + acmacs::to_string(indexes));
+        throw std::runtime_error(fmt::format("test_remove_antigens: {}\n  indexes:{}", err, indexes));
     }
 
 } // test_remove_antigens

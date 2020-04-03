@@ -3,7 +3,7 @@
 
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-base/read-file.hh"
+#include "acmacs-base/file-stream.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"

@@ -1,7 +1,6 @@
 #include <sstream>
 
-// #include "acmacs-base/stream.hh"
-#include "acmacs-base/read-file.hh"
+#include "acmacs-base/file-stream.hh"
 #include "acmacs-base/date.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/merge.hh"
