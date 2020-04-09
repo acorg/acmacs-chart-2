@@ -6,7 +6,7 @@
 #include "acmacs-base/omp.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-base/fmt.hh"
+#include "acmacs-base/string-join.hh"
 #include "acmacs-virus/virus-name.hh"
 #include "acmacs-base/statistics.hh"
 #include "locationdb/locdb.hh"
@@ -537,7 +537,7 @@ template <typename Field, typename Func> static inline Field info_modify_make_fi
     std::set<std::string> composition;
     std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(info.number_of_sources()), std::inserter(composition, composition.begin()),
                    [&info,&func](size_t index) { return static_cast<std::string>(std::invoke(func, *info.source(index), acmacs::chart::Info::Compute::No)); });
-    return Field{string::join("+", composition)};
+    return Field{acmacs::string::join("+", composition)};
 }
 
 Virus       InfoModify::virus(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_, &Info::virus); }
@@ -741,7 +741,7 @@ TitersModify::TitersModify(TitersP main)
                     else if (source_row.is_array())
                         rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::value& titer, size_t serum_no) -> value_type { return {serum_no, acmacs::chart::Titer{titer.to<std::string_view>()}}; });
                     else
-                        throw invalid_data{string::concat("invalid layer ", ag_no, " type: ", source_row.actual_type())};
+                        throw invalid_data{::string::concat("invalid layer ", ag_no, " type: ", source_row.actual_type())};
                 });
                   // sort entries by serum no
                 for (auto& row : target)
@@ -877,7 +877,7 @@ void TitersModify::remove_layers()
 void TitersModify::create_layers(size_t number_of_layers, size_t number_of_antigens)
 {
     if (number_of_layers < 2)
-        throw invalid_data{string::concat("invalid number of layers to create: ", number_of_layers)};
+        throw invalid_data{::string::concat("invalid number of layers to create: ", number_of_layers)};
     if (!layers_.empty())
         throw invalid_data{"cannot create layers: already present"};
     layers_.resize(number_of_layers);
@@ -1277,7 +1277,7 @@ void TitersModify::set_proportion_of_titers_to_dont_care(double proportion)
     modifiable_check();
 
     if (proportion <= 0.0 || proportion > 0.5)
-        throw std::invalid_argument(string::concat("invalid proportion for set_proportion_of_titers_to_dont_care: ", proportion));
+        throw std::invalid_argument(::string::concat("invalid proportion for set_proportion_of_titers_to_dont_care: ", proportion));
 
     // collect all non-dont-care titers (row, col), randomly shuffle them, choose first proportion*size entries and set the to don't care
 

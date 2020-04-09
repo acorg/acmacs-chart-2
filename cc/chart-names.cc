@@ -1,6 +1,6 @@
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-base/string.hh"
+#include "acmacs-base/string-join.hh"
 #include "acmacs-base/string-split.hh"
 #include "acmacs-base/fmt.hh"
 #include "locationdb/locdb.hh"
@@ -94,7 +94,7 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Antig
         fmt::arg("full_name_with_fields", antigen.full_name_with_fields()),
         fmt::arg("serum_species", ""),
         fmt::arg("date", *antigen.date()),
-        fmt::arg("lab_ids", string::join(" ", antigen.lab_ids())),
+        fmt::arg("lab_ids", acmacs::string::join(" ", antigen.lab_ids())),
         fmt::arg("ref", antigen.reference() ? "Ref" : ""),
         fmt::arg("serum_id", ""),
         fmt::arg("reassortant", *antigen.reassortant()),

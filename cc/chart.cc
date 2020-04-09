@@ -2,6 +2,7 @@
 #include <algorithm>
 
 #include "acmacs-base/string.hh"
+#include "acmacs-base/string-join.hh"
 #include "acmacs-virus/virus-name.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/range.hh"
@@ -27,11 +28,12 @@
 std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_show) const
 {
     const auto layers = titers()->number_of_layers();
-    return string::join("\n", {info()->make_info(),
-                               layers ? fmt::format("Number of layers: {}", layers) : std::string{},
-                               fmt::format("Antigens: {}   Sera: {}", number_of_antigens(), number_of_sera()),
-                               projections()->make_info(max_number_of_projections_to_show)
-        });
+    return string::join("\n",
+                        info()->make_info(),
+                        layers ? fmt::format("Number of layers: {}", layers) : std::string{},
+                        fmt::format("Antigens: {}   Sera: {}", number_of_antigens(), number_of_sera()),
+                        projections()->make_info(max_number_of_projections_to_show)
+        );
 
 } // acmacs::chart::Chart::make_info
 
@@ -55,13 +57,13 @@ std::string acmacs::chart::Chart::description() const
     auto n = info()->make_name();
     if (auto prjs = projections(); !prjs->empty()) {
         auto prj = (*prjs)[0];
-        n += string::concat(" >=", prj->minimum_column_basis(), " ", prj->stress());
+        n += ::string::concat(" >=", prj->minimum_column_basis(), " ", prj->stress());
     }
     if (info()->virus_type() == acmacs::virus::type_subtype_t{"B"})
-        n += string::concat(' ', lineage());
-    n += string::concat(" Ag:", number_of_antigens(), " Sr:", number_of_sera());
+        n += ::string::concat(' ', lineage());
+    n += ::string::concat(" Ag:", number_of_antigens(), " Sr:", number_of_sera());
     if (const auto layers = titers()->number_of_layers(); layers > 1)
-        n += string::concat(" (", layers, " source tables)");
+        n += ::string::concat(" (", layers, " source tables)");
     return n;
 
 } // acmacs::chart::Chart::description
@@ -460,7 +462,7 @@ std::string acmacs::chart::Antigen::full_name_with_fields() const
     std::string r{name()};
     if (const auto value = reassortant(); !value.empty())
         r += " reassortant=\"" + *value + '"';
-    if (const auto value = ::string::join(" ", annotations()); !value.empty())
+    if (const auto value = string::join(" ", annotations()); !value.empty())
         r += " annotations=\"" + value + '"';
     if (const auto value = passage(); !value.empty())
         r += " passage=\"" + *value + "\" ptype=" + value.passage_type();
@@ -470,7 +472,7 @@ std::string acmacs::chart::Antigen::full_name_with_fields() const
         r += fmt::format(" lineage={}", value);
     if (reference())
         r += " reference";
-    if (const auto value = ::string::join(" ", lab_ids()); !value.empty())
+    if (const auto value = string::join(" ", lab_ids()); !value.empty())
         r += " lab_ids=\"" + value + '"';
     return r;
 
@@ -483,7 +485,7 @@ std::string acmacs::chart::Serum::full_name_with_fields() const
     std::string r{name()};
     if (const auto value = reassortant(); !value.empty())
         r += " reassortant=\"" + *value + '"';
-    if (const auto value = ::string::join(" ", annotations()); !value.empty())
+    if (const auto value = string::join(" ", annotations()); !value.empty())
         r += " annotations=\"" + value + '"';
     if (const auto value = serum_id(); !value.empty())
         r += " serum_id=\"" + *value + '"';
@@ -505,7 +507,7 @@ static inline std::string name_abbreviated(std::string_view aName)
     try {
         std::string virus_type, host, location, isolation, year, passage, extra;
         virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
-        return string::join("/", {get_locdb().abbreviation(location), isolation, year.substr(2)});
+        return acmacs::string::join("/", get_locdb().abbreviation(location), isolation, year.substr(2));
     }
     catch (virus_name::Unrecognized&) {
         return std::string{aName};
@@ -530,7 +532,7 @@ static inline std::string name_without_subtype(std::string_view aName)
         virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
         if (virus_type.size() > 1 && virus_type[0] == 'A' && virus_type[1] == '(')
             virus_type.resize(1);
-        return string::join("/", {virus_type, host, location, isolation, year});
+        return acmacs::string::join("/", virus_type, host, location, isolation, year);
     }
     catch (virus_name::Unrecognized&) {
         return std::string{aName};
@@ -578,7 +580,7 @@ static inline std::string abbreviated_location_year(std::string_view aName)
     try {
         std::string virus_type, host, location, isolation, year, passage, extra;
         virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
-        return string::join("/", {get_locdb().abbreviation(location), year.substr(2, 2)});
+        return acmacs::string::join("/", get_locdb().abbreviation(location), year.substr(2, 2));
     }
     catch (virus_name::Unrecognized&) {
         return std::string{aName};
@@ -703,9 +705,9 @@ acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string_view aN
         if (const auto first_name = (*begin())->name(); first_name.size() > 2) {
         // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix (for A and B)
             if ((aName[0] == 'A' && aName[1] == '/' && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos) || (aName[0] == 'B' && aName[1] == '/'))
-                indexes = find(string::concat(first_name->substr(0, first_name.find('/')), aName.substr(1)));
+                indexes = find(::string::concat(first_name->substr(0, first_name.find('/')), aName.substr(1)));
             else if (aName[1] != '/' && aName[1] != '(')
-                indexes = find(string::concat(first_name->substr(0, first_name.find('/') + 1), aName));
+                indexes = find(::string::concat(first_name->substr(0, first_name.find('/') + 1), aName));
         }
     }
     return indexes;

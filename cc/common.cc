@@ -28,7 +28,7 @@ class CommonAntigensSera::Impl
                     return n_c;
                 if (auto r_c = lhs.reassortant.compare(rhs.reassortant); r_c != 0)
                     return r_c;
-                return string::compare(lhs.annotations.join(), rhs.annotations.join());
+                return ::string::compare(lhs.annotations.join(), rhs.annotations.join());
             }
 
         static bool less(const CoreEntry& lhs, const CoreEntry& rhs) { return compare(lhs, rhs) < 0; }
@@ -47,7 +47,7 @@ class CommonAntigensSera::Impl
         AntigenEntry(size_t a_index, const Antigen& antigen) : CoreEntry(a_index, antigen), passage(antigen.passage()) {}
         AntigenEntry& operator=(AntigenEntry&&) = default;
 
-        std::string full_name() const { return ::string::join(" ", {name, reassortant, ::string::join(" ", annotations), passage}); }
+        std::string full_name() const { return string::join(" ", {name, reassortant, string::join(" ", annotations), passage}); }
         size_t full_name_length() const { return name.size() + reassortant.size() + annotations.total_length() + passage.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size(); }
         bool operator<(const AntigenEntry& rhs) const { return compare(*this, rhs) < 0; }
 
@@ -69,7 +69,7 @@ class CommonAntigensSera::Impl
         SerumEntry(size_t a_index, const Serum& serum) : CoreEntry(a_index, serum), serum_id(serum.serum_id()), passage(serum.passage()) {}
         SerumEntry& operator=(SerumEntry&&) = default;
 
-        std::string full_name() const { return ::string::join(" ", {name, reassortant, ::string::join(" ", annotations), serum_id, passage}); }
+        std::string full_name() const { return string::join(" ", {name, reassortant, string::join(" ", annotations), serum_id, passage}); }
         size_t full_name_length() const { return name.size() + reassortant.size() + annotations.total_length() + serum_id.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size() + passage.size() + (passage.empty() ? 0 : 1); }
         bool operator<(const SerumEntry& rhs) const { return compare(*this, rhs) < 0; }
 
@@ -635,7 +635,7 @@ acmacs::chart::CommonAntigensSera::match_level_t acmacs::chart::CommonAntigensSe
                 match_level = match_level_t::automatic;
                 break;
             default:
-                throw std::runtime_error(string::concat("unrecognized match_level: ", source));
+                throw std::runtime_error(::string::concat("unrecognized match_level: ", source));
         }
     }
     return match_level;

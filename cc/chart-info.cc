@@ -3,7 +3,7 @@
 #include "acmacs-base/debug.hh"
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/range.hh"
-#include "acmacs-base/string.hh"
+#include "acmacs-base/string-join.hh"
 #include "acmacs-base/counter.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
@@ -87,7 +87,7 @@ int main(int argc, char* const argv[])
             }
 
             if (!fields.empty()) {
-                std::cout << string::join(" ", fields) << '\n';
+                std::cout << acmacs::string::join(" ", fields) << '\n';
             }
             else {
                 std::cout << chart->make_info() << '\n';

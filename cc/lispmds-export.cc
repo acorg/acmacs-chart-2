@@ -1,4 +1,5 @@
 #include "acmacs-base/time.hh"
+#include "acmacs-base/string-join.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/number-of-dimensions.hh"
@@ -61,7 +62,7 @@ std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, st
 
         if (const auto transformation = projection->transformation();
             transformation != acmacs::Transformation{} && transformation.valid() && transformation.number_of_dimensions == number_of_dimensions_t{2})
-            result.append(string::concat_precise("\n        :CANVAS-BASIS-VECTOR-0 (", transformation.a(), ' ', transformation.c(), ") :CANVAS-BASIS-VECTOR-1 (",
+            result.append(::string::concat_precise("\n        :CANVAS-BASIS-VECTOR-0 (", transformation.a(), ' ', transformation.c(), ") :CANVAS-BASIS-VECTOR-1 (",
                                                  transformation.b(), ' ', transformation.d(), ")"));
         result.append(1, ')');
     }
@@ -174,7 +175,7 @@ std::string starting_coordss(const acmacs::chart::Chart& aChart, const acmacs::c
 std::string unmoveable_coords(const acmacs::chart::UnmovablePoints& unmovable)
 {
     if (!unmovable.empty()) {
-        return fmt::format("({})", string::join(" ", unmovable.begin(), unmovable.end(), [](auto index) -> std::string { return acmacs::to_string(index); }));
+        return fmt::format("({})", acmacs::string::join(" ", unmovable.begin(), unmovable.end(), [](auto index) -> std::string { return acmacs::to_string(index); }));
     }
     else
         return "NIL";
@@ -297,12 +298,12 @@ std::string plot_spec(const acmacs::chart::Chart& aChart, const acmacs::chart::D
                 if (point_no < number_of_antigens) {
                     auto antigen = (*antigens)[point_no];
                     name = lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations()) + "-AG";
-                    nm = string::join(" ", {antigen->name(), antigen->reassortant(), antigen->passage(), string::join(" ", antigen->annotations())});
+                    nm = acmacs::string::join(" ", antigen->name(), antigen->reassortant(), antigen->passage(), acmacs::string::join(" ", antigen->annotations()));
                 }
                 else {
                     auto serum = (*sera)[point_no - number_of_antigens];
                     name = lispmds_serum_name_encode(serum->name(), serum->reassortant(), serum->annotations(), serum->serum_id()) + "-SR";
-                    nm = string::join(" ", {serum->name(), serum->reassortant(), string::join(" ", serum->annotations()), serum->serum_id()});
+                    nm = acmacs::string::join(" ", serum->name(), serum->reassortant(), acmacs::string::join(" ", serum->annotations()), serum->serum_id());
                 }
                 result.append('(' + name + " :NM \"" + nm + '"' + point_style(plot_spec->style(point_no)) + ')');
             }
