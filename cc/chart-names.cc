@@ -61,11 +61,11 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-inline std::tuple<std::string, std::string, std::string, Latitude, Longitude> location_data(std::string_view location)
+inline std::tuple<std::string, std::string, std::string, acmacs::locationdb::Latitude, acmacs::locationdb::Longitude> location_data(std::string_view location)
 {
     try {
-        const auto& locdb = get_locdb();
-        const auto data = locdb.find(location);
+        const auto& locdb = acmacs::locationdb::get();
+        const auto data = locdb.find_or_throw(location);
         const auto country = data.country();
         return {std::move(data.location_name), std::string{country}, std::string{locdb.continent_of_country(country)}, data.latitude(), data.longitude()};
     }

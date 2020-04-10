@@ -19,7 +19,7 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         Options opt(argc, argv);
-        const auto& locdb = get_locdb();
+        const auto& locdb = acmacs::locationdb::get();
         std::set<std::string> locations;
         for (const auto& chart_filename : *opt.charts) {
             auto chart = acmacs::chart::import_from_file(chart_filename);
@@ -27,7 +27,7 @@ int main(int argc, char* const argv[])
             for (auto antigen : *antigens) {
                 if (!opt.test_only || !antigen->reference()) {
                     try {
-                        locations.emplace(locdb.find(antigen->location()).location_name);
+                        locations.emplace(locdb.find_or_throw(antigen->location()).location_name);
                     }
                     catch (std::exception&) {
                     }

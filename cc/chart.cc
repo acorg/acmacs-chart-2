@@ -507,7 +507,7 @@ static inline std::string name_abbreviated(std::string_view aName)
     try {
         std::string virus_type, host, location, isolation, year, passage, extra;
         virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
-        return acmacs::string::join("/", get_locdb().abbreviation(location), isolation, year.substr(2));
+        return acmacs::string::join("/", acmacs::locationdb::get().abbreviation(location), isolation, year.substr(2));
     }
     catch (virus_name::Unrecognized&) {
         return std::string{aName};
@@ -565,7 +565,7 @@ std::string acmacs::chart::Antigen::location() const
 std::string acmacs::chart::Antigen::location_abbreviated() const
 {
     try {
-        return get_locdb().abbreviation(::virus_name::location(name()));
+        return acmacs::locationdb::get().abbreviation(::virus_name::location(name()));
     }
     catch (virus_name::Unrecognized&) {
         return "*no-location-extracted*";
@@ -580,7 +580,7 @@ static inline std::string abbreviated_location_year(std::string_view aName)
     try {
         std::string virus_type, host, location, isolation, year, passage, extra;
         virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
-        return acmacs::string::join("/", get_locdb().abbreviation(location), year.substr(2, 2));
+        return acmacs::string::join("/", acmacs::locationdb::get().abbreviation(location), year.substr(2, 2));
     }
     catch (virus_name::Unrecognized&) {
         return std::string{aName};
@@ -629,7 +629,7 @@ std::string acmacs::chart::Serum::location() const
 std::string acmacs::chart::Serum::location_abbreviated() const
 {
     try {
-        return get_locdb().abbreviation(::virus_name::location(name()));
+        return acmacs::locationdb::get().abbreviation(::virus_name::location(name()));
     }
     catch (virus_name::Unrecognized&) {
         return "*no-location-extracted*";
@@ -650,11 +650,11 @@ std::string acmacs::chart::Serum::abbreviated_location_year() const
 static inline bool not_in_country(std::string_view aName, std::string_view aCountry)
 {
     try {
-        return get_locdb().country(virus_name::location(aName)) != aCountry;
+        return acmacs::locationdb::get().country(virus_name::location(aName)) != aCountry;
     }
     catch (virus_name::Unrecognized&) {
     }
-    catch (LocationNotFound&) {
+    catch (acmacs::locationdb::LocationNotFound&) {
     }
     return true;
 
@@ -665,11 +665,11 @@ static inline bool not_in_country(std::string_view aName, std::string_view aCoun
 static inline bool not_in_continent(std::string_view aName, std::string_view aContinent)
 {
     try {
-        return get_locdb().continent(virus_name::location(aName)) != aContinent;
+        return acmacs::locationdb::get().continent(virus_name::location(aName)) != aContinent;
     }
     catch (virus_name::Unrecognized&) {
     }
-    catch (LocationNotFound&) {
+    catch (acmacs::locationdb::LocationNotFound&) {
     }
     return true;
 

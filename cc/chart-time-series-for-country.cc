@@ -26,7 +26,7 @@ int main(int argc, char* const argv[])
         std::map<std::string, std::vector<std::string>> antigens_per_month;
         for (const auto antigen : *antigens) {
             try {
-                if (get_locdb().country(::virus_name::location(antigen->name())) == country) {
+                if (acmacs::locationdb::get().country(::virus_name::location(antigen->name())) == country) {
                     std::string key;
                     if (const auto date = antigen->date(); !date.empty())
                         key = date->substr(0, 7);

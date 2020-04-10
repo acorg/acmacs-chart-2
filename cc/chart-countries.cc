@@ -20,7 +20,7 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         Options opt(argc, argv);
-        const auto& locdb = get_locdb();
+        const auto& locdb = acmacs::locationdb::get();
         std::set<std::string> countries;
         for (const auto& chart_filename : *opt.charts) {
             auto chart = acmacs::chart::import_from_file(chart_filename);

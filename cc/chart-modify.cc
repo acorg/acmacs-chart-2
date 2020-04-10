@@ -623,12 +623,12 @@ void AntigenModify::update_with(const Antigen& main)
 void AntigenModify::set_continent()
 {
     if (continent().empty()) {
-        if (const auto& locdb = get_locdb(); locdb) {
+        if (const auto& locdb = acmacs::locationdb::get(); locdb) {
             try {
                 continent(locdb.continent(::virus_name::location(name())));
             }
             catch (std::exception& err) {
-                fmt::print(stderr, "WARNING: cannot figure out continent for \"{}\": {}\n", *name(), err.what());
+                fmt::print(stderr, "WARNING: cannot figure out continent for \"{}\": {}\n", *name(), err);
             }
             catch (...) {
                 fmt::print(stderr, "WARNING: cannot figure out continent for \"{}\": unknown exception\n", *name());
