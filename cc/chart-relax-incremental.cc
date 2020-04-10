@@ -46,7 +46,7 @@ int main(int argc, char* const argv[])
             const size_t source_projection_no = 0;
             acmacs::chart::optimization_options options(method, precision, args["--md"]);
             options.num_threads = args["--threads"];
-            chart.relax_incremetal(source_projection_no, acmacs::chart::number_of_optimizations_t{number_of_attempts}, options, disconnected);
+            chart.relax_incremental(source_projection_no, acmacs::chart::number_of_optimizations_t{number_of_attempts}, options, disconnected);
             auto projections = chart.projections_modify();
             if (const size_t keep_projections = args["--keep-projections"]; keep_projections > 0 && projections->size() > keep_projections)
                 projections->keep_just(keep_projections);

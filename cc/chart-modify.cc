@@ -334,7 +334,7 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
 
 // ----------------------------------------------------------------------
 
-void ChartModify::relax_incremetal(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points,
+void ChartModify::relax_incremental(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points,
                                    bool remove_source_projection)
 {
     auto source_projection = projection_modify(source_projection_no);
@@ -389,7 +389,7 @@ void ChartModify::relax_incremetal(size_t source_projection_no, number_of_optimi
         projections_modify()->sort();
     }
 
-} // ChartModify::relax_incremetal
+} // ChartModify::relax_incremental
 
 // ----------------------------------------------------------------------
 
