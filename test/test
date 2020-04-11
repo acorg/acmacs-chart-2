@@ -40,7 +40,7 @@ echo ../dist/test-chart-proportion-to-dontcare *.ace
 
 echo test-chart-merge
 ../dist/test-chart-merge --ignore-passages to-merge-1.ace to-merge-2.ace to-merge-3.ace
-echo test-chart-merge-types-2-5
+# echo test-chart-merge-types-2-5
 ../dist/test-chart-merge-types-2-5 --ignore-passages to-merge-1.ace to-merge-2.ace
 
 # ../bin/test-ace ./test.ace

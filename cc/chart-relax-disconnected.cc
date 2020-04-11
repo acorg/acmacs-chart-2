@@ -51,7 +51,7 @@ int main(int argc, char* const argv[])
             auto disconnected = source_projection->disconnected();
             if (disconnected->empty())
                 throw std::runtime_error("projection has no disconnected points");
-            std::cout << "INFO: disconnected points: (" << disconnected->size() << ')' << disconnected << '\n';
+            std::cout << fmt::format("INFO: disconnected points: ({}) {}\n", disconnected->size(), disconnected);
 
             const size_t number_of_attempts = args["-n"];
             for (size_t attempt = 1; attempt <= number_of_attempts; ++attempt) {

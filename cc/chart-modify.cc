@@ -3,6 +3,7 @@
 #include <limits>
 #include <algorithm>
 
+#include "acmacs-base/debug.hh"
 #include "acmacs-base/omp.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
@@ -342,6 +343,12 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
     const auto minimum_column_basis = source_projection->minimum_column_basis();
     auto stress = acmacs::chart::stress_factory(*this, num_dim, minimum_column_basis, options.mult, dodgy_titer_is_regular::no);
     stress.set_disconnected(disconnect_points);
+    AD_DEBUG("relax_incremental: {}", number_of_points());
+    const UnmovablePoints unmovable_points{unnp == unmovable_non_nan_points::yes ? source_projection->non_nan_points() : PointIndexList{}};
+    if (!unmovable_points.empty()) {
+        AD_DEBUG("relax_incremental unmovable_points: {}", unmovable_points);
+        stress.set_unmovable(unmovable_points);
+    }
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
 
     auto make_points_with_nan_coordinates = [&source_projection, &disconnect_points]() -> PointIndexList {
@@ -357,12 +364,12 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
     // fmt::print("INFO: about to randomize coordinates of {} points\n", points_with_nan_coordinates.size());
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
-    std::transform(projections.begin(), projections.end(), projections.begin(), [&disconnect_points, &source_projection, unnp, pp = projections_modify()](const auto&) {
+    std::transform(projections.begin(), projections.end(), projections.begin(), [&disconnect_points, &unmovable_points, &source_projection, pp = projections_modify()](const auto&) {
         auto projection = pp->new_by_cloning(*source_projection);
         if (!disconnect_points->empty())
             projection->set_disconnected(disconnect_points);
-        if (unnp == unmovable_non_nan_points::yes)
-            projection->set_unmovable_non_nan();
+        if (!unmovable_points.empty())
+            projection->set_unmovable(unmovable_points);
         return projection;
     });
 
@@ -1551,17 +1558,19 @@ void ProjectionsModify::remove_except(size_t number_of_initial_projections_to_ke
 
 // ----------------------------------------------------------------------
 
-void ProjectionModify::set_unmovable_non_nan() // see enum unmovable_non_nan_points above
+PointIndexList ProjectionModify::non_nan_points() const // for relax_incremental and enum unmovable_non_nan_points
 {
-    modify();
     if (!layout_present())
-        throw invalid_data{"cannot use set_unmovable_non_nan: projection has no layout"};
-    for (size_t point_no = 0; point_no < layout_->number_of_points(); ++point_no) {
-        if (!layout_->point_has_coordinates(point_no))
-            unmovable_.insert(point_no);
-    }
+        throw invalid_data{"cannot use ProjectionModify::non_nan_points: projection has no layout"};
 
-} // ProjectionModify::set_unmovable_non_nan
+    PointIndexList non_nan;
+    for (size_t point_no{0}; point_no < layout_->number_of_points(); ++point_no) {
+        if (layout_->point_has_coordinates(point_no))
+            non_nan.insert(point_no);
+    }
+    return non_nan;
+
+} // ProjectionModify::non_nan_points
 
 // ----------------------------------------------------------------------
 

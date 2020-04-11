@@ -3,6 +3,7 @@
 #include "acmacs-base/named-type.hh"
 #include "acmacs-base/rjson.hh"
 #include "acmacs-base/indexes.hh"
+#include "acmacs-base/algorithm.hh"
 
 // ----------------------------------------------------------------------
 
@@ -17,10 +18,32 @@ namespace acmacs::chart
         using const_iterator = std::vector<size_t>::const_iterator;
 
         using base_t::named_vector_t;
+
+        PointIndexList(const PointIndexList& src) : base_t::named_vector_t(src.size()) { std::copy(std::begin(src), std::end(src), begin()); }
+        PointIndexList(PointIndexList&& src) : base_t::named_vector_t(src.size()) { std::move(std::begin(src), std::end(src), begin()); }
+        PointIndexList& operator=(const PointIndexList& src) = default;
+        PointIndexList& operator=(PointIndexList&& src) = default;
+
         PointIndexList(const rjson::value& src) : base_t::named_vector_t(src.size()) { rjson::copy(src, begin()); }
-        template <typename Iter> PointIndexList(Iter first, Iter last, std::function<size_t(const typename Iter::value_type&)> convert) : base_t::named_vector_t(static_cast<size_t>(last - first))
+
+        template <typename Iter, typename Convert> PointIndexList(Iter first, Iter last, Convert convert) : base_t::named_vector_t(static_cast<size_t>(last - first))
         {
             std::transform(first, last, begin(), convert);
+            std::sort(begin(), end());
+        }
+
+        template <typename Iter, typename Predicate, typename Convert>
+        PointIndexList(Iter first, Iter last, Predicate predicate, Convert convert) : base_t::named_vector_t(static_cast<size_t>(last - first))
+        {
+            acmacs::transform_if(first, last, begin(), predicate, convert);
+            std::sort(begin(), end());
+        }
+
+        template <typename Iter, typename Predicate, typename Convert>
+        PointIndexList(Iter first, Iter last, size_t number_of_points, Predicate predicate, Convert convert) : base_t::named_vector_t(number_of_points)
+        {
+            acmacs::transform_if(first, last, begin(), predicate, convert);
+            std::sort(begin(), end());
         }
 
         bool contains(size_t val) const
@@ -70,33 +93,39 @@ namespace acmacs::chart
     {
       public:
         using PointIndexList::PointIndexList;
+        UnmovablePoints(const PointIndexList& src) : PointIndexList(src) {}
+        UnmovablePoints(PointIndexList&& src) : PointIndexList(std::move(src)) {}
     };
 
     class UnmovableInTheLastDimensionPoints : public PointIndexList
     {
       public:
         using PointIndexList::PointIndexList;
+        UnmovableInTheLastDimensionPoints(const PointIndexList& src) : PointIndexList(src) {}
+        UnmovableInTheLastDimensionPoints(PointIndexList&& src) : PointIndexList(std::move(src)) {}
     };
 
     class DisconnectedPoints : public PointIndexList
     {
       public:
         using PointIndexList::PointIndexList;
+        DisconnectedPoints(const PointIndexList& src) : PointIndexList(src) {}
+        DisconnectedPoints(PointIndexList&& src) : PointIndexList(std::move(src)) {}
     };
 
 } // namespace acmacs::chart
 
-namespace acmacs
-{
-    inline std::string to_string(const acmacs::chart::PointIndexList& indexes) { return to_string(*indexes); }
+// namespace acmacs
+// {
+//     inline std::string to_string(const acmacs::chart::PointIndexList& indexes) { return to_string(*indexes); }
 
-} // namespace acmacs
+// } // namespace acmacs
 
-namespace acmacs::chart
-{
-    inline std::ostream& operator<<(std::ostream& out, const PointIndexList& indexes) { return out << acmacs::to_string(indexes); }
+// namespace acmacs::chart
+// {
+//     inline std::ostream& operator<<(std::ostream& out, const PointIndexList& indexes) { return out << acmacs::to_string(indexes); }
 
-} // namespace acmacs::chart
+// } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 /// Local Variables:

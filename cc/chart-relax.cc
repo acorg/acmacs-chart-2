@@ -54,7 +54,7 @@ int main(int argc, char* const argv[])
         if (!opt.no_disconnect_having_few_titers)
             disconnected.extend(chart.titers()->having_too_few_numeric_titers());
         if (!disconnected->empty())
-            std::cerr << "INFO: " << disconnected->size() << " points disconnected: " << disconnected << '\n';
+            std::cerr << fmt::format("INFO: disconnected points: ({}) {}\n", disconnected->size(), disconnected);
 
         acmacs::chart::optimization_options options(method, precision, opt.max_distance_multiplier);
         const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(!opt.no_dimension_annealing);

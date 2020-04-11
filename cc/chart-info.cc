@@ -81,7 +81,7 @@ int main(int argc, char* const argv[])
                 chart->set_homologous(acmacs::chart::find_homologous::all, nullptr, acmacs::debug::yes);
                 auto antigens = chart->antigens();
                 for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-                    std::cout << "SR " << std::setw(serum_index_num_digits) << sr_no << ' ' << serum->full_name() << " -- " << serum->homologous_antigens() << '\n';
+                    std::cout << fmt::format("SR {:{}d} {} -- {}\n", sr_no, serum_index_num_digits, serum->full_name(), serum->homologous_antigens());
                 }
                 fields.emplace_back();
             }
@@ -92,7 +92,7 @@ int main(int argc, char* const argv[])
             else {
                 std::cout << chart->make_info() << '\n';
                 if (const auto having_too_few_numeric_titers = chart->titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers->empty())
-                    std::cout << "Points having too few numeric titers: " << having_too_few_numeric_titers->size() << ' ' << having_too_few_numeric_titers << '\n';
+                    std::cout << fmt::format("Points having too few numeric titers:{} {}\n ", having_too_few_numeric_titers->size(), having_too_few_numeric_titers);
                 if (opt.column_bases) {
                     // Timeit ti("column bases computing ");
                     auto cb = chart->computed_column_bases(acmacs::chart::MinimumColumnBasis{});

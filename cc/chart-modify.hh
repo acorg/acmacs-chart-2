@@ -475,8 +475,8 @@ namespace acmacs::chart
         virtual std::shared_ptr<ProjectionModifyNew> clone(ChartModify& chart) const;
         ProcrustesData orient_to(const Projection& master);
 
+        PointIndexList non_nan_points() const; // for relax_incremental and enum unmovable_non_nan_points
         void set_unmovable(const UnmovablePoints& a_unmovable) { modify(); unmovable_ = a_unmovable; }
-        void set_unmovable_non_nan(); // see enum unmovable_non_nan_points above
         void set_disconnected(const DisconnectedPoints& disconnect) { modify(); disconnected_ = disconnect; }
         void set_unmovable_in_the_last_dimension(const UnmovableInTheLastDimensionPoints& a_unmovable_in_the_last_dimension) { modify(); unmovable_in_the_last_dimension_ = a_unmovable_in_the_last_dimension; }
 
