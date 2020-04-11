@@ -5,35 +5,41 @@
 
 echo test-modify-projection
 
-echo ">>>> ASAN_OPTIONS=${ASAN_OPTIONS}"
-
+# echo ">>>> ASAN_OPTIONS=${ASAN_OPTIONS}"
 cd "$TESTDIR"
+
+echo "    move points"
 ../dist/chart-modify-projection --points 0,3 --move-to 10,-10 test-2004-3.ace "${TDIR}/r1.ace" >/dev/null 2>&1 || failed chart-modify-projection --points 0,3 --move-to 10,-10 test-2004-3.ace "${TDIR}/r1.ace"
 ../dist/chart-layout test-2004-3.ace "${TDIR}/o.txt" 2>/dev/null
 ../dist/chart-layout "${TDIR}/r1.ace" "${TDIR}/r1.txt" 2>/dev/null
 diff "${TDIR}/o.txt" "${TDIR}/r1.txt" >"${TDIR}/diff-1.txt" || true
 cmp "${TDIR}/diff-1.txt" test-modify-projection.expected-1.diff || report_fail "chart-modify-projection-1" "test-modify-projection.expected-1.diff" "${TDIR}/diff-1.txt" "${TDIR}/o.txt" "${TDIR}/r1.txt"
 
+echo "    check transformation"
 # ../dist/chart-transformation test-2004-3.ace
 ../dist/chart-transformation test-2004-3.ace >"${TDIR}/test-2004-3.transformation.txt"
-xz -dc test-2004-3.ace >"${TDIR}/orig.json"
+../dist/chart-convert test-2004-3.ace "${TDIR}/orig.txt" >/dev/null || failed " ../dist/chart-convert test-2004-3.ace orig.txt"
 
+echo "    rotate"
 ../dist/chart-modify-projection --rotate-degrees 60 test-2004-3.ace "${TDIR}/r2.ace" >/dev/null 2>&1 || failed chart-modify-projection --rotate-degrees 60 test-2004-3.ace "${TDIR}/r2.ace"
 # ../dist/chart-transformation "${TDIR}/r2.ace"
 ../dist/chart-transformation "${TDIR}/r2.ace" >"${TDIR}/r2.transformation.txt"
 diff "${TDIR}/test-2004-3.transformation.txt" "${TDIR}/r2.transformation.txt" >"${TDIR}/diff-2.txt" || true
 cmp "${TDIR}/diff-2.txt" test-modify-projection.transformation-2.diff || report_fail "chart-modify-projection-2" "${TDIR}/diff-2.txt" "${TDIR}/test-2004-3.transformation.txt" "${TDIR}/r2.transformation.txt"
 
-xz -dc "${TDIR}/r2.ace" >"${TDIR}/r2.json"
-diff -I "\"\\?created\":" "${TDIR}/orig.json" "${TDIR}/r2.json" >"${TDIR}/diff-2.txt" || true
-cmp "${TDIR}/diff-2.txt" test-modify-projection.expected-2.diff || report_fail "chart-modify-projection-3" "${TDIR}/diff-2.txt" "${TDIR}/orig.json" "${TDIR}/r2.json"
+echo "    check after rotation"
+../dist/chart-convert "${TDIR}/r2.ace" "${TDIR}/r2.txt" >/dev/null || failed " ../dist/chart-convert r2.ace r2.txt"
+diff "${TDIR}/orig.txt" "${TDIR}/r2.txt" >"${TDIR}/diff-2.txt" || true
+cmp "${TDIR}/diff-2.txt" test-modify-projection.expected-2.diff || report_fail "chart-modify-projection-3" "${TDIR}/diff-2.txt" "${TDIR}/orig.txt" "${TDIR}/r2.txt"
 
+echo "    flip"
 ../dist/chart-modify-projection --flip-ew test-2004-3.ace "${TDIR}/r3.ace" >/dev/null 2>&1 || failed chart-modify-projection test-2004-3.ace
 ../dist/chart-transformation "${TDIR}/r3.ace" >"${TDIR}/r3.transformation.txt"
 diff "${TDIR}/test-2004-3.transformation.txt" "${TDIR}/r3.transformation.txt" >"${TDIR}/diff-3.txt" || true
 cmp "${TDIR}/diff-3.txt" test-modify-projection.transformation-3.diff || report_fail "chart-modify-projection-4" "${TDIR}/diff-3.txt" "${TDIR}/test-2004-3.transformation.txt" "${TDIR}/r3.transformation.txt"
 
-xz -dc "${TDIR}/r3.ace" >"${TDIR}/r3.json"
-diff -I "\"\\?created\":" "${TDIR}/orig.json" "${TDIR}/r3.json" >"${TDIR}/diff-3.txt" || true
-cmp "${TDIR}/diff-3.txt" test-modify-projection.expected-3.diff || report_fail "chart-modify-projection-5" "${TDIR}/diff-3.txt" "${TDIR}/orig.json" "${TDIR}/r3.json"
+echo "    check after flipping"
+../dist/chart-convert "${TDIR}/r3.ace" "${TDIR}/r3.txt" >/dev/null || failed " ../dist/chart-convert r3.ace r3.txt"
+diff "${TDIR}/orig.txt" "${TDIR}/r3.txt" >"${TDIR}/diff-3.txt" || true
+cmp "${TDIR}/diff-3.txt" test-modify-projection.expected-3.diff || report_fail "chart-modify-projection-5" "${TDIR}/diff-3.txt" "${TDIR}/orig.txt" "${TDIR}/r3.txt"
 

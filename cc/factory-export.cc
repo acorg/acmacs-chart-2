@@ -54,43 +54,7 @@ void acmacs::chart::export_factory(const Chart& chart, std::string_view filename
         throw export_error{fmt::format("No data to write to {}", filename)};
 
     // Timeit ti_file(fmt::format("writing {}: ", filename), report);
-    acmacs::file::write(filename, data);
-
-
-    // auto force_compression = acmacs::file::force_compression::no;
-    // std::string data;
-    // if (fs::path(filename).extension() == ".ace") {
-    //     force_compression = acmacs::file::force_compression::yes;
-    //     data = export_factory(chart, export_format::ace, program_name, report_time::no);
-    // }
-    // else if (fs::path(filename).extension() == ".save") {
-    //     force_compression = acmacs::file::force_compression::no;
-    //     data = export_factory(chart, export_format::save, program_name, report_time::no);
-    // }
-    // else if (fs::path(filename).extension() == ".txt") {
-    //     force_compression = acmacs::file::force_compression::no;
-    //     data = export_factory(chart, export_format::text, program_name, report_time::no);
-    // }
-    // else if (filename.size() > 8 && filename.substr(filename.size() - 8) == ".save.xz") {
-    //     force_compression = acmacs::file::force_compression::yes;
-    //     data = export_factory(chart, export_format::save, program_name, report_time::no);
-    // }
-    // else if (filename.size() > 8 && filename.substr(filename.size() - 8) == ".save.gz") {
-    //     force_compression = acmacs::file::force_compression::yes;
-    //     data = export_factory(chart, export_format::save, program_name, report_time::no);
-    // }
-    // else if (filename.size() > 8 && filename.substr(filename.size() - 8) == ".text.gz") {
-    //     force_compression = acmacs::file::force_compression::yes;
-    //     data = export_factory(chart, export_format::save, program_name, report_time::no);
-    // }
-    // else
-    //     throw import_error{fmt::format("[acmacs::chart::export_factory]: cannot infer export format from extension of {}", filename)};
-
-    // if (data.empty())
-    //     throw export_error{fmt::format("No data to write to {}", filename)};
-
-    // // Timeit ti_file(fmt::format("writing {}: ", filename), report);
-    // acmacs::file::write(filename, data, force_compression);
+    acmacs::file::write(filename, data, endswith(filename, ".ace") ? acmacs::file::force_compression::yes : acmacs::file::force_compression::no);
 
 } // acmacs::chart::export_factory
 

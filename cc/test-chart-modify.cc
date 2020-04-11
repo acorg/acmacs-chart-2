@@ -532,12 +532,12 @@ void test_insert_remove_antigen(acmacs::chart::ChartP chart, size_t before, cons
     chart_modify.insert_antigen(before);
     chart_modify.remove_antigens(acmacs::ReverseSortedIndexes(std::vector<size_t>{before}));
 
-    const auto source_exported = acmacs::chart::export_factory(*chart, acmacs::chart::export_format::ace, args.program(), report);
-    const auto modified_exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
+    const auto source_exported = acmacs::chart::export_factory(*chart, acmacs::chart::export_format::text, args.program(), report);
+    const auto modified_exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::text, args.program(), report);
     if (source_exported != modified_exported) {
-        acmacs::file::write("/tmp/source.ace", source_exported, acmacs::file::force_compression::no);
-        acmacs::file::write("/tmp/modified.ace", modified_exported, acmacs::file::force_compression::no);
-        throw std::runtime_error(fmt::format("test_insert_remove_antigen: exported chart difference, opendiff /tmp/source.ace /tmp/modified.ace\n  before: {}", before));
+        acmacs::file::write("/tmp/source.txt", source_exported, acmacs::file::force_compression::no);
+        acmacs::file::write("/tmp/modified.txt", modified_exported, acmacs::file::force_compression::no);
+        throw std::runtime_error(fmt::format("test_insert_remove_antigen: exported chart difference, opendiff /tmp/source.txt /tmp/modified.txt\n  before: {}", before));
     }
 
 } // test_insert_remove_antigen
@@ -550,12 +550,12 @@ void test_insert_remove_serum(acmacs::chart::ChartP chart, size_t before, const 
     chart_modify.insert_serum(before);
     chart_modify.remove_sera(acmacs::ReverseSortedIndexes(acmacs::Indexes{before}));
 
-    const auto source_exported = acmacs::chart::export_factory(*chart, acmacs::chart::export_format::ace, args.program(), report);
-    const auto modified_exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
+    const auto source_exported = acmacs::chart::export_factory(*chart, acmacs::chart::export_format::text, args.program(), report);
+    const auto modified_exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::text, args.program(), report);
     if (source_exported != modified_exported) {
-        acmacs::file::write("/tmp/source.ace", source_exported, acmacs::file::force_compression::no);
-        acmacs::file::write("/tmp/modified.ace", modified_exported, acmacs::file::force_compression::no);
-        throw std::runtime_error(fmt::format("test_insert_remove_serum: {}): exported chart difference, (no ediff!) opendiff /tmp/source.ace /tmp/modified.ace\n  before: {}", before));
+        acmacs::file::write("/tmp/source.txt", source_exported, acmacs::file::force_compression::no);
+        acmacs::file::write("/tmp/modified.txt", modified_exported, acmacs::file::force_compression::no);
+        throw std::runtime_error(fmt::format("test_insert_remove_serum: {}): exported chart difference, (no ediff!) opendiff /tmp/source.txt /tmp/modified.txt\n  before: {}", before));
     }
 
 } // test_insert_remove_serum

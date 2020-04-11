@@ -1,25 +1,5 @@
 #! /bin/bash
-set -e
-
-TDIR=$(mktemp -d -t XXXXXX)
-TESTDIR=$(dirname $0)
-
-# ======================================================================
-
-function on_exit
-{
-    rm -rf "$TDIR"
-}
-
-trap on_exit EXIT
-
-function failed
-{
-    echo FAILED "$@" >&2
-    exit 1
-}
-
-trap failed ERR
+. ./_functions
 
 # ======================================================================
 
@@ -27,7 +7,7 @@ echo test-modify-plot-spec
 
 cd "$TESTDIR"
 ../dist/chart-modify-plot-spec --sera 4,5 --fill pink --size 25 ./test-2004-3.ace "${TDIR}/r1.ace" >/dev/null 2>&1
-xz -dc ./test-2004-3.ace >"${TDIR}/orig.json"
-xz -dc "${TDIR}/r1.ace" >"${TDIR}/r1.json"
-diff -I "\"\\?created\":" "${TDIR}/orig.json" "${TDIR}/r1.json" >"${TDIR}/diff-1.txt" || true
-cmp "${TDIR}/diff-1.txt" test-modify-plot-spec.expected-1.diff || (echo '********* now ***********'; cat "${TDIR}/diff-1.txt"; echo '******* expected *********'; cat test-modify-plot-spec.expected-1.diff; echo '********************************'; false)
+../dist/chart-convert ./test-2004-3.ace "${TDIR}/orig.txt" >/dev/null || failed " ../dist/chart-convert ./test-2004-3.ace orig.txt"
+../dist/chart-convert "${TDIR}/r1.ace" "${TDIR}/r1.txt" >/dev/null || failed " ../dist/chart-convert r1.ace r1.txt"
+diff "${TDIR}/orig.txt" "${TDIR}/r1.txt" >"${TDIR}/diff-1.txt" || true
+cmp "${TDIR}/diff-1.txt" test-modify-plot-spec.expected-1.diff  || report_fail "test-modify-plot-spec" "${TDIR}/diff-1.txt" "${TDIR}/orig.txt" "${TDIR}/r1.txt"

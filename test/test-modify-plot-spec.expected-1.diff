@@ -1,11 +1,8 @@
-173a174,179
->     },
->     {
->      "F": "#FFC0CB",
->      "S": "BOX",
->      "l": {"+": false},
->      "s": 5
-177c183
-<    "p": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 8, 8, 8, 19, 19, 19, 19, 19, 19]
+75,76c75,76
+<   plot-style-per-point: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 8 8 8 19 19 19 19 19 19
+<   styles: 20
 ---
->    "p": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 8, 8, 8, 19, 19, 19, 19, 20, 20]
+>   plot-style-per-point: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 8 8 8 19 19 19 19 20 20
+>   styles: 21
+96a97
+>     20 shown:true fill:"pink" outline:"black" outline_width:1.0 size:25.0 rotation:0.0 aspect:1.0 shape:BOX label:{ shown:false text:"" font_family:"" slant:"normal" weight:"normal" size:10.0 color:"black" rotation:0.0 interline:0.2 offset:{0.0, 1.0}

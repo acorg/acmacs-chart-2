@@ -1,31 +1,12 @@
 #! /bin/bash
-set -e
-
-TDIR=$(mktemp -d -t XXXXXX)
-TESTDIR=$(dirname $0)
-
-# ======================================================================
-
-function on_exit
-{
-    rm -rf "$TDIR"
-}
-
-trap on_exit EXIT
-
-function failed
-{
-    echo FAILED "$@" >&2
-    exit 1
-}
-
-trap failed ERR
+. ./_functions
 
 # ======================================================================
 
 echo test-convert
 
 cd "$TESTDIR"
-../dist/chart-convert ./test-2004-3.ace "${TDIR}/r.ace" >/dev/null 2>&1
-xz -dc ./test-2004-3.ace >"${TDIR}/orig"
-xz -dc "${TDIR}/r.ace" | diff -I "\"\\?created\":" "${TDIR}/orig" -
+../dist/chart-convert ./test-2004-3.ace "${TDIR}/r1.ace" >/dev/null 2>&1
+../dist/chart-convert ./test-2004-3.ace "${TDIR}/orig.txt" >/dev/null || failed " ../dist/chart-convert ./test-2004-3.ace orig.txt"
+../dist/chart-convert "${TDIR}/r1.ace" "${TDIR}/r1.txt" >/dev/null || failed " ../dist/chart-convert r1.ace r1.txt"
+diff "${TDIR}/orig.txt" "${TDIR}/r1.txt" >"${TDIR}/diff-1.txt" || true

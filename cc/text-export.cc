@@ -234,12 +234,11 @@ std::string export_style_to_text(const acmacs::PointStyle& aStyle)
 std::string export_extensions_to_text(const acmacs::chart::Chart& chart)
 {
     fmt::memory_buffer result;
+    if (const auto& ext = chart.extension_fields(); ext.is_object())
+        fmt::format_to(result, "extensions:\n{}\n", rjson::pretty(ext));
     return fmt::to_string(result);
 
 } // export_extensions_to_text
-
-// ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:
