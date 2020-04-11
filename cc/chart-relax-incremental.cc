@@ -39,14 +39,11 @@ int main(int argc, char* const argv[])
             acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report)};
             const auto precision = args["--rough"] ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
             const auto method{acmacs::chart::optimization_method_from_string(args["--method"])};
-            acmacs::chart::DisconnectedPoints disconnected;
-            if (!args["--no-disconnect-having-few-titers"])
-                disconnected.extend(chart.titers()->having_too_few_numeric_titers());
 
             const size_t source_projection_no = 0;
             acmacs::chart::optimization_options options(method, precision, args["--md"]);
             options.num_threads = args["--threads"];
-            chart.relax_incremental(source_projection_no, acmacs::chart::number_of_optimizations_t{number_of_attempts}, options, disconnected);
+            chart.relax_incremental(source_projection_no, acmacs::chart::number_of_optimizations_t{number_of_attempts}, options, args["--no-disconnect-having-few-titers"] ? acmacs::chart::disconnect_having_too_few_titers::no : acmacs::chart::disconnect_having_too_few_titers::yes);
             auto projections = chart.projections_modify();
             if (const size_t keep_projections = args["--keep-projections"]; keep_projections > 0 && projections->size() > keep_projections)
                 projections->keep_just(keep_projections);

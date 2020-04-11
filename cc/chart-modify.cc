@@ -336,26 +336,43 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
 // ----------------------------------------------------------------------
 
 void ChartModify::relax_incremental(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options,
-                                    const DisconnectedPoints& disconnect_points, remove_source_projection rsp, unmovable_non_nan_points unnp)
+                                    disconnect_having_too_few_titers disconnect, remove_source_projection rsp, unmovable_non_nan_points unnp)
 {
     auto source_projection = projection_modify(source_projection_no);
     const auto num_dim = source_projection->number_of_dimensions();
     const auto minimum_column_basis = source_projection->minimum_column_basis();
     auto stress = acmacs::chart::stress_factory(*this, num_dim, minimum_column_basis, options.mult, dodgy_titer_is_regular::no);
-    stress.set_disconnected(disconnect_points);
-    AD_DEBUG("relax_incremental: {}", number_of_points());
+
     const UnmovablePoints unmovable_points{unnp == unmovable_non_nan_points::yes ? source_projection->non_nan_points() : PointIndexList{}};
     if (!unmovable_points.empty()) {
-        AD_DEBUG("relax_incremental unmovable_points: {}", unmovable_points);
+        // AD_DEBUG("relax_incremental unmovable_points: {}", unmovable_points);
         stress.set_unmovable(unmovable_points);
     }
+
+    DisconnectedPoints disconnected_points;
+    if (disconnect == disconnect_having_too_few_titers::yes)
+        disconnected_points.extend(titers()->having_too_few_numeric_titers());
+
+    // remove unmovable points from disconnected, it affects stress
+    // value but keeping them is ambiguous: if after merge one of the
+    // unmovable point (i.e. from the primary chart) has too few
+    // numreic titers, disconnecting it leads to erasing its
+    // coordinate, this leaves of impression of a bug in the program
+    // which is hard to catch.
+    if (!disconnected_points.empty()) {
+        if (!unmovable_points.empty())
+            disconnected_points.remove(ReverseSortedIndexes{*unmovable_points});
+        stress.set_disconnected(disconnected_points);
+    }
+
+    // AD_DEBUG("relax_incremental: {}", number_of_points());
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
 
-    auto make_points_with_nan_coordinates = [&source_projection, &disconnect_points]() -> PointIndexList {
+    auto make_points_with_nan_coordinates = [&source_projection, &disconnected_points]() -> PointIndexList {
         PointIndexList result;
         auto source_layout = source_projection->layout();
         for (size_t p_no = 0; p_no < source_layout->number_of_points(); ++p_no) {
-            if (!source_layout->point_has_coordinates(p_no) && !disconnect_points.contains(p_no))
+            if (!source_layout->point_has_coordinates(p_no) && !disconnected_points.contains(p_no))
                 result.insert(p_no);
         }
         return result;
@@ -364,10 +381,10 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
     // fmt::print("INFO: about to randomize coordinates of {} points\n", points_with_nan_coordinates.size());
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
-    std::transform(projections.begin(), projections.end(), projections.begin(), [&disconnect_points, &unmovable_points, &source_projection, pp = projections_modify()](const auto&) {
+    std::transform(projections.begin(), projections.end(), projections.begin(), [&disconnected_points, &unmovable_points, &source_projection, pp = projections_modify()](const auto&) {
         auto projection = pp->new_by_cloning(*source_projection);
-        if (!disconnect_points->empty())
-            projection->set_disconnected(disconnect_points);
+        if (!disconnected_points->empty())
+            projection->set_disconnected(disconnected_points);
         if (!unmovable_points.empty())
             projection->set_unmovable(unmovable_points);
         return projection;

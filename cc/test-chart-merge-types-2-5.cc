@@ -105,7 +105,7 @@ void test_merge_2_frozen(const acmacs::chart::Chart& chart1, const acmacs::chart
     using namespace acmacs::chart;
     auto [merged2_chart, merge_report] = merge(chart1, chart2, MergeSettings(match_level, projection_merge_t::type2));
     assert(merged2_chart->number_of_projections() == 1);
-    AD_DEBUG("merged\n{}\ndisconnected: {}", merged2_chart->make_info(), merged2_chart->titers()->having_too_few_numeric_titers());
+    // AD_DEBUG("merged\n{}\ndisconnected: {}", merged2_chart->make_info(), merged2_chart->titers()->having_too_few_numeric_titers());
 
     auto layout1 = chart1.projection(0)->layout();
     const auto chart1_num_antigens = chart1.number_of_antigens();
@@ -113,7 +113,7 @@ void test_merge_2_frozen(const acmacs::chart::Chart& chart1, const acmacs::chart
     // AD_DEBUG("merge before\n{}", *merged2_chart->projection(0)->layout());
 
     constexpr size_t num_opt{10};
-    merged2_chart->relax_incremental(0, number_of_optimizations_t{num_opt}, optimization_options{}, DisconnectedPoints{}, remove_source_projection::yes, unmovable_non_nan_points::yes);
+    merged2_chart->relax_incremental(0, number_of_optimizations_t{num_opt}, optimization_options{}, disconnect_having_too_few_titers::yes, remove_source_projection::yes, unmovable_non_nan_points::yes);
     assert(merged2_chart->number_of_projections() == num_opt);
 
     for (size_t projection_no{0}; projection_no < num_opt; ++projection_no) {
