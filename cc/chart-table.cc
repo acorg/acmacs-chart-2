@@ -4,6 +4,7 @@
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
+#include "acmacs-chart-2/text-export.hh"
 
 // ----------------------------------------------------------------------
 
@@ -24,53 +25,8 @@ int main(int argc, char* const argv[])
         Options opt(argc, argv);
         for (size_t file_no = 0; file_no < opt.charts->size(); ++file_no) {
             auto chart = acmacs::chart::import_from_file((*opt.charts)[file_no]);
-            auto antigens = chart->antigens();
-            auto sera = chart->sera();
-            auto titers = chart->titers();
-            const auto max_antigen_name = antigens->max_full_name();
-
-            if (opt.layer.has_value()) {
-                if (opt.layer >= titers->number_of_layers())
-                    throw std::runtime_error(fmt::format("Invalid layer: {}, number of layers in the chart: {}", opt.layer, titers->number_of_layers()));
-                fmt::print("Layer {}   {}\n\n", opt.layer, chart->info()->source(opt.layer)->make_name());
-            }
-
-            const auto column_width = 8;
-            const auto table_prefix = 5;
-            fmt::print("{: >{}s}  ", "", max_antigen_name + table_prefix);
-            for (auto serum_no : acmacs::range(sera->size()))
-                fmt::print("{: ^{}d}", serum_no, column_width);
-            fmt::print("\n");
-            fmt::print("{: >{}s}  ", "", max_antigen_name + table_prefix);
-            for (auto serum : *sera)
-                fmt::print("{: ^8s}", serum->abbreviated_location_year(), column_width);
-            fmt::print("\n\n");
-
-            const auto ag_no_num_digits = static_cast<int>(std::log10(antigens->size())) + 1;
-            if (!opt.layer.has_value()) {
-                // merged table
-                for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
-                    fmt::print("{:{}d} {: <{}s} ", ag_no, ag_no_num_digits, antigen->full_name(), max_antigen_name);
-                    for (auto serum_no : acmacs::range(sera->size()))
-                        fmt::print("{: >{}s}", *titers->titer(ag_no, serum_no), column_width);
-                    fmt::print("\n");
-                }
-            }
-            else {
-                // just layer
-                const auto [antigens_of_layer, sera_of_layer] = titers->antigens_sera_of_layer(opt.layer);
-                for (auto ag_no : antigens_of_layer) {
-                    auto antigen = antigens->at(ag_no);
-                    fmt::print("{:{}d} {: <{}s} ", ag_no, ag_no_num_digits, antigen->full_name(), max_antigen_name);
-                    for (auto serum_no : acmacs::range(sera->size()))
-                        fmt::print("{: >{}s}", *titers->titer_of_layer(opt.layer, ag_no, serum_no), column_width);
-                    fmt::print("\n");
-                }
-            }
-
-            fmt::print("\n");
-            for (auto [sr_no, serum] : acmacs::enumerate(*sera))
-                fmt::print("{: >{}s} {:3d} {}\n", "", max_antigen_name + table_prefix, sr_no, serum->full_name());
+            const auto layer{opt.layer.has_value() ? std::optional<size_t>{opt.layer} : std::nullopt};
+            fmt::print("{}", acmacs::chart::export_table_to_text(*chart, layer));
         }
     }
     catch (std::exception& err) {

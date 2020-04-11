@@ -74,7 +74,7 @@ std::string acmacs::chart::export_ace(const Chart& aChart, std::string_view aPro
 
 void export_info(rjson::value& aTarget, acmacs::chart::InfoP aInfo)
 {
-    auto do_export = [](rjson::value& target, acmacs::chart::InfoP info, bool /*for_source*/) {
+    const auto do_export = [](rjson::value& target, acmacs::chart::InfoP info, bool /*for_source*/) {
         rjson::set_field_if_not_empty(target, "v", info->virus());
         rjson::set_field_if_not_empty(target, "V", info->virus_type());
         rjson::set_field_if_not_empty(target, "A", info->assay());

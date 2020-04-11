@@ -4,17 +4,22 @@
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/ace-export.hh"
 #include "acmacs-chart-2/lispmds-export.hh"
+#include "acmacs-chart-2/text-export.hh"
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::export_factory(const Chart& aChart, acmacs::chart::export_format aFormat, std::string_view aProgramName, report_time aReport)
+std::string acmacs::chart::export_factory(const Chart& chart, acmacs::chart::export_format format, std::string_view program_name, report_time report)
 {
-    Timeit ti("exporting chart: ", aReport);
-    switch (aFormat) {
+    Timeit ti("exporting chart: ", report);
+    switch (format) {
       case export_format::ace:
-          return export_ace(aChart, aProgramName, 1);
+          return export_ace(chart, program_name, 1);
       case export_format::save:
-          return export_lispmds(aChart, aProgramName);
+          return export_lispmds(chart, program_name);
+      case export_format::text:
+          return export_text(chart);
+      case export_format::text_table:
+          return export_table_to_text(chart);
     }
     return {};
 
@@ -22,35 +27,70 @@ std::string acmacs::chart::export_factory(const Chart& aChart, acmacs::chart::ex
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::export_factory(const Chart& aChart, std::string_view aFilename, std::string_view aProgramName, report_time aReport)
+inline bool endswith(std::string_view source, std::string_view ending)
 {
-    Timeit ti(fmt::format("writing chart to {}: ", aFilename), aReport);
-    auto force_compression = acmacs::file::force_compression::no;
+    return source.size() >= ending.size() && source.substr(source.size() - ending.size()) == ending;
+}
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::export_factory(const Chart& chart, std::string_view filename, std::string_view program_name, report_time report)
+{
+    Timeit ti(fmt::format("writing chart to {}: ", filename), report);
+
     std::string data;
-    if (fs::path(aFilename).extension() == ".ace") {
-        force_compression = acmacs::file::force_compression::yes;
-        data = export_factory(aChart, export_format::ace, aProgramName, report_time::no);
-    }
-    else if (fs::path(aFilename).extension() == ".save") {
-        force_compression = acmacs::file::force_compression::no;
-        data = export_factory(aChart, export_format::save, aProgramName, report_time::no);
-    }
-    else if (aFilename.size() > 8 && aFilename.substr(aFilename.size() - 8) == ".save.xz") {
-        force_compression = acmacs::file::force_compression::yes;
-        data = export_factory(aChart, export_format::save, aProgramName, report_time::no);
-    }
-    else if (aFilename.size() > 8 && aFilename.substr(aFilename.size() - 8) == ".save.gz") {
-        force_compression = acmacs::file::force_compression::yes;
-        data = export_factory(aChart, export_format::save, aProgramName, report_time::no);
-    }
+    if (endswith(filename, ".ace"))
+        data = export_factory(chart, export_format::ace, program_name, report_time::no);
+    else if (endswith(filename, ".save") || endswith(filename, ".save.xz") || endswith(filename, ".save.gz"))
+        data = export_factory(chart, export_format::save, program_name, report_time::no);
+    else if (endswith(filename, ".table.txt") || endswith(filename, ".table.txt.xz") || endswith(filename, ".table.txt.gz") || endswith(filename, ".table") || endswith(filename, ".table.xz") || endswith(filename, ".table.gz"))
+        data = export_factory(chart, export_format::text_table, program_name, report_time::no);
+    else if (endswith(filename, ".txt") || endswith(filename, ".txt.xz") || endswith(filename, ".txt.gz"))
+        data = export_factory(chart, export_format::text, program_name, report_time::no);
     else
-        throw import_error{fmt::format("[acmacs::chart::export_factory]: cannot infer export format from extension of {}", aFilename)};
+        throw import_error{fmt::format("[acmacs::chart::export_factory]: cannot infer export format from extension of {}", filename)};
 
     if (data.empty())
-        throw export_error{fmt::format("No data to write to {}", aFilename)};
+        throw export_error{fmt::format("No data to write to {}", filename)};
 
-    // Timeit ti_file(fmt::format("writing {}: ", aFilename), aReport);
-    acmacs::file::write(aFilename, data, force_compression);
+    // Timeit ti_file(fmt::format("writing {}: ", filename), report);
+    acmacs::file::write(filename, data);
+
+
+    // auto force_compression = acmacs::file::force_compression::no;
+    // std::string data;
+    // if (fs::path(filename).extension() == ".ace") {
+    //     force_compression = acmacs::file::force_compression::yes;
+    //     data = export_factory(chart, export_format::ace, program_name, report_time::no);
+    // }
+    // else if (fs::path(filename).extension() == ".save") {
+    //     force_compression = acmacs::file::force_compression::no;
+    //     data = export_factory(chart, export_format::save, program_name, report_time::no);
+    // }
+    // else if (fs::path(filename).extension() == ".txt") {
+    //     force_compression = acmacs::file::force_compression::no;
+    //     data = export_factory(chart, export_format::text, program_name, report_time::no);
+    // }
+    // else if (filename.size() > 8 && filename.substr(filename.size() - 8) == ".save.xz") {
+    //     force_compression = acmacs::file::force_compression::yes;
+    //     data = export_factory(chart, export_format::save, program_name, report_time::no);
+    // }
+    // else if (filename.size() > 8 && filename.substr(filename.size() - 8) == ".save.gz") {
+    //     force_compression = acmacs::file::force_compression::yes;
+    //     data = export_factory(chart, export_format::save, program_name, report_time::no);
+    // }
+    // else if (filename.size() > 8 && filename.substr(filename.size() - 8) == ".text.gz") {
+    //     force_compression = acmacs::file::force_compression::yes;
+    //     data = export_factory(chart, export_format::save, program_name, report_time::no);
+    // }
+    // else
+    //     throw import_error{fmt::format("[acmacs::chart::export_factory]: cannot infer export format from extension of {}", filename)};
+
+    // if (data.empty())
+    //     throw export_error{fmt::format("No data to write to {}", filename)};
+
+    // // Timeit ti_file(fmt::format("writing {}: ", filename), report);
+    // acmacs::file::write(filename, data, force_compression);
 
 } // acmacs::chart::export_factory
 

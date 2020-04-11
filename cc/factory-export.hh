@@ -12,13 +12,10 @@ namespace acmacs::chart
 {
     class Chart;
 
-    void export_factory(const Chart& aChart, std::string_view aFilename, std::string_view aProgramName, report_time aReport = report_time::no);
-    // inline void export_factory(const Chart& aChart, std::string_view aFilename, std::string_view aProgramName, report_time aReport = report_time::no) { export_factory(aChart, std::string(aFilename), aProgramName, aReport); }
-    // inline void export_factory(const Chart& aChart, std::string_view aFilename, std::string_view aProgramName, report_time aReport = report_time::no) { export_factory(aChart, std::string(aFilename), std::string{aProgramName}, aReport); }
-    // inline void export_factory(const Chart& aChart, const char* aFilename, std::string_view aProgramName, report_time aReport = report_time::no) { export_factory(aChart, std::string(aFilename), aProgramName, aReport); }
+    void export_factory(const Chart& chart, std::string_view filename, std::string_view program_name, report_time report = report_time::no);
 
-    enum class export_format { ace, save };
-    std::string export_factory(const Chart& aChart, export_format aFormat, std::string_view aProgramName, report_time aReport = report_time::no);
+    enum class export_format { ace, save, text, text_table };
+    std::string export_factory(const Chart& chart, export_format format, std::string_view program_name, report_time report = report_time::no);
 
 } // namespace acmacs::chart
 
