@@ -2,6 +2,7 @@
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/string-join.hh"
 #include "acmacs-base/string-split.hh"
+#include "acmacs-base/string-strip.hh"
 #include "acmacs-base/fmt.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/factory-import.hh"
@@ -42,13 +43,13 @@ int main(int argc, char* const argv[])
             const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
             if (opt.antigens) {
                 for (auto ag_no : acmacs::string::split_into_size_t(*opt.antigens))
-                    fmt::print("{}\n", string::strip(format(*chart, *antigens->at(ag_no), ag_no, num_digits, pattern)));
+                    fmt::print("{}\n", acmacs::string::strip(format(*chart, *antigens->at(ag_no), ag_no, num_digits, pattern)));
             }
             else {
                 for (auto [ag_no, antigen] : acmacs::enumerate(*antigens))
-                    fmt::print("{}\n", string::strip(format(*chart, *antigen, ag_no, num_digits, pattern)));
+                    fmt::print("{}\n", acmacs::string::strip(format(*chart, *antigen, ag_no, num_digits, pattern)));
                 for (auto [sr_no, serum] : acmacs::enumerate(*sera))
-                    fmt::print("{}\n", string::strip(format(*chart, *serum, sr_no, num_digits, pattern)));
+                    fmt::print("{}\n", acmacs::string::strip(format(*chart, *serum, sr_no, num_digits, pattern)));
             }
         }
     }

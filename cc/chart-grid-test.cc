@@ -3,6 +3,7 @@
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/string-split.hh"
+#include "acmacs-base/string-from-chars.hh"
 #include "acmacs-chart-2/grid-test.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
@@ -79,7 +80,7 @@ int main(int argc, char* const argv[])
             auto antigens = chart.antigens();
             acmacs::chart::Indexes points;
             for (const auto& point_ref : acmacs::string::split(*opt.points_to_test, ",")) {
-                if (const auto point_no = string::from_chars<size_t>(point_ref); point_no != std::numeric_limits<size_t>::max()) {
+                if (const auto point_no = acmacs::string::from_chars<size_t>(point_ref); point_no != std::numeric_limits<size_t>::max()) {
                     points.insert(point_no);
                 }
                 else {

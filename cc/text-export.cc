@@ -1,5 +1,5 @@
 #include "acmacs-base/string-join.hh"
-#include "acmacs-base/string.hh"
+#include "acmacs-base/string-split.hh"
 #include "acmacs-chart-2/text-export.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -8,10 +8,11 @@
 std::string acmacs::chart::export_text(const Chart& chart)
 {
     fmt::memory_buffer result;
-    fmt::format_to(result, "{}\n\n{}", export_info_to_text(chart), export_table_to_text(chart));
+    fmt::format_to(
+        result, "{}",
+        acmacs::string::join("\n\n", export_info_to_text(chart), export_table_to_text(chart)), "\n", acmacs::string::Split::StripKeepEmpty);
     return fmt::to_string(result);
 
-    // export_info(ace["c"]["i"], aChart.info());
     // export_forced_column_bases(ace["c"], aChart.forced_column_bases(MinimumColumnBasis{}));
     // if (auto projections = aChart.projections(); !projections->empty())
     //     export_projections(ace["c"]["P"], projections);
@@ -100,7 +101,7 @@ std::string acmacs::chart::export_info_to_text(const Chart& chart)
             do_export(info->source(source_no));
         }
     }
-    return ::string::strip(fmt::to_string(result));
+    return fmt::to_string(result);
 
 } // acmacs::chart::export_info_to_text
 

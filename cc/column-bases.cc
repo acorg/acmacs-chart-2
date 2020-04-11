@@ -1,6 +1,7 @@
 #include "acmacs-base/fmt.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
+#include "acmacs-base/string-from-chars.hh"
 #include "acmacs-chart-2/column-bases.hh"
 
 // ----------------------------------------------------------------------
@@ -27,10 +28,10 @@ void acmacs::chart::MinimumColumnBasis::from(std::string_view value)
         value_ = 0;
     }
     else if (value.find('.') != std::string::npos) {
-        value_ = ::string::from_chars<double>(value);
+        value_ = acmacs::string::from_chars<double>(value);
     }
     else {
-        value_ = static_cast<double>(::string::from_chars<long>(value));
+        value_ = static_cast<double>(acmacs::string::from_chars<long>(value));
         if (value_ > 9)
             value_ = std::log2(value_ / 10.0);
     }
