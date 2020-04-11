@@ -334,8 +334,8 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
 
 // ----------------------------------------------------------------------
 
-void ChartModify::relax_incremental(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points,
-                                   bool remove_source_projection)
+void ChartModify::relax_incremental(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options,
+                                    const DisconnectedPoints& disconnect_points, remove_source_projection rsp, unmovable_non_nan_points unnp)
 {
     auto source_projection = projection_modify(source_projection_no);
     const auto num_dim = source_projection->number_of_dimensions();
@@ -354,13 +354,15 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
         return result;
     };
     const auto points_with_nan_coordinates = make_points_with_nan_coordinates();
-      // fmt::print("INFO: about to randomize coordinates of {} points\n", points_with_nan_coordinates.size());
+    // fmt::print("INFO: about to randomize coordinates of {} points\n", points_with_nan_coordinates.size());
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
-    std::transform(projections.begin(), projections.end(), projections.begin(), [&disconnect_points, &source_projection, pp = projections_modify()](const auto&) {
+    std::transform(projections.begin(), projections.end(), projections.begin(), [&disconnect_points, &source_projection, unnp, pp = projections_modify()](const auto&) {
         auto projection = pp->new_by_cloning(*source_projection);
         if (!disconnect_points->empty())
             projection->set_disconnected(disconnect_points);
+        if (unnp == unmovable_non_nan_points::yes)
+            projection->set_unmovable_non_nan();
         return projection;
     });
 
@@ -378,7 +380,7 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
             projection->stress_ = status.final_stress;
     }
 
-    if (remove_source_projection)
+    if (rsp == remove_source_projection::yes)
         projections_modify()->remove(source_projection_no);
     projections_modify()->sort();
 
@@ -1511,7 +1513,7 @@ void ProjectionsModify::remove_all()
 void ProjectionsModify::remove(size_t projection_no)
 {
     if (projection_no >= projections_.size())
-        throw invalid_data{"invalid projection number: " + std::to_string(projection_no)};
+        throw invalid_data{fmt::format("invalid projection number: {}", projection_no)};
     projections_.erase(projections_.begin() + static_cast<decltype(projections_)::difference_type>(projection_no));
     set_projection_no();
 
@@ -1523,7 +1525,7 @@ void ProjectionsModify::remove_all_except(size_t projection_no)
 {
     using diff_t = decltype(projections_)::difference_type;
     if (projection_no >= projections_.size())
-        throw invalid_data{"invalid projection number: " + std::to_string(projection_no)};
+        throw invalid_data{fmt::format("invalid projection number: {}", projection_no)};
     projections_.erase(projections_.begin() + static_cast<diff_t>(projection_no + 1), projections_.end());
     projections_.erase(projections_.begin(), projections_.begin() + static_cast<diff_t>(projection_no));
     set_projection_no();
@@ -1546,6 +1548,20 @@ void ProjectionsModify::remove_except(size_t number_of_initial_projections_to_ke
     set_projection_no();
 
 } // ProjectionsModify::remove_except
+
+// ----------------------------------------------------------------------
+
+void ProjectionModify::set_unmovable_non_nan() // see enum unmovable_non_nan_points above
+{
+    modify();
+    if (!layout_present())
+        throw invalid_data{"cannot use set_unmovable_non_nan: projection has no layout"};
+    for (size_t point_no = 0; point_no < layout_->number_of_points(); ++point_no) {
+        if (!layout_->point_has_coordinates(point_no))
+            unmovable_.insert(point_no);
+    }
+
+} // ProjectionModify::set_unmovable_non_nan
 
 // ----------------------------------------------------------------------
 

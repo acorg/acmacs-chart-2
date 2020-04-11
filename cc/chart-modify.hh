@@ -40,6 +40,8 @@ namespace acmacs::chart
     constexpr inline use_dimension_annealing use_dimension_annealing_from_bool(bool use) { return use ? use_dimension_annealing::yes : use_dimension_annealing::no; }
 
     enum class report_stresses { no, yes };
+    enum class remove_source_projection { no, yes }; // for relax_incremental
+    enum class unmovable_non_nan_points { no, yes }; // for relax_incremental, points that have coordinates (not NaN) are marked as unmovable
 
 // ----------------------------------------------------------------------
 
@@ -74,7 +76,7 @@ namespace acmacs::chart
 
         std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, LayoutRandomizer::seed_t seed = std::nullopt, const DisconnectedPoints& disconnect_points = {});
         void relax(number_of_optimizations_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, enum report_stresses report_stresses, const DisconnectedPoints& disconnect_points = {});
-        void relax_incremental(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points = {}, bool remove_source_projection = true);
+        void relax_incremental(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points = {}, remove_source_projection rsp = remove_source_projection::yes, unmovable_non_nan_points unnp = unmovable_non_nan_points::no);
 
         void remove_layers();
         void remove_antigens(const ReverseSortedIndexes& indexes);
@@ -474,6 +476,7 @@ namespace acmacs::chart
         ProcrustesData orient_to(const Projection& master);
 
         void set_unmovable(const UnmovablePoints& a_unmovable) { modify(); unmovable_ = a_unmovable; }
+        void set_unmovable_non_nan(); // see enum unmovable_non_nan_points above
         void set_disconnected(const DisconnectedPoints& disconnect) { modify(); disconnected_ = disconnect; }
         void set_unmovable_in_the_last_dimension(const UnmovableInTheLastDimensionPoints& a_unmovable_in_the_last_dimension) { modify(); unmovable_in_the_last_dimension_ = a_unmovable_in_the_last_dimension; }
 
