@@ -360,7 +360,7 @@ std::vector<size_t> serum_rows(std::ostream& output, const acmacs::chart::Chart&
                 std::vector<std::string> fields;
                 for (auto field : acmacs::string::split(name, "/", acmacs::string::Split::RemoveEmpty)) {
                     if (field.size() > 3)
-                        fields.push_back(string::concat(field.substr(0, 3), "..."));
+                        fields.push_back(acmacs::string::concat(field.substr(0, 3), "..."));
                     else
                         fields.emplace_back(field);
                 }

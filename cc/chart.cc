@@ -57,13 +57,13 @@ std::string acmacs::chart::Chart::description() const
     auto n = info()->make_name();
     if (auto prjs = projections(); !prjs->empty()) {
         auto prj = (*prjs)[0];
-        n += ::string::concat(" >=", prj->minimum_column_basis(), " ", prj->stress());
+        n += acmacs::string::concat(" >=", prj->minimum_column_basis(), " ", prj->stress());
     }
     if (info()->virus_type() == acmacs::virus::type_subtype_t{"B"})
-        n += ::string::concat(' ', lineage());
-    n += ::string::concat(" Ag:", number_of_antigens(), " Sr:", number_of_sera());
+        n += acmacs::string::concat(' ', lineage());
+    n += acmacs::string::concat(" Ag:", number_of_antigens(), " Sr:", number_of_sera());
     if (const auto layers = titers()->number_of_layers(); layers > 1)
-        n += ::string::concat(" (", layers, " source tables)");
+        n += acmacs::string::concat(" (", layers, " source tables)");
     return n;
 
 } // acmacs::chart::Chart::description
@@ -705,9 +705,9 @@ acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string_view aN
         if (const auto first_name = (*begin())->name(); first_name.size() > 2) {
         // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix (for A and B)
             if ((aName[0] == 'A' && aName[1] == '/' && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos) || (aName[0] == 'B' && aName[1] == '/'))
-                indexes = find(::string::concat(first_name->substr(0, first_name.find('/')), aName.substr(1)));
+                indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/')), aName.substr(1)));
             else if (aName[1] != '/' && aName[1] != '(')
-                indexes = find(::string::concat(first_name->substr(0, first_name.find('/') + 1), aName));
+                indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/') + 1), aName));
         }
     }
     return indexes;

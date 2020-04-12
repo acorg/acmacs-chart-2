@@ -152,15 +152,15 @@ void test_modify_titers(acmacs::chart::ChartP chart, const argc_argv& args, repo
     auto ti_source = tim_source.begin(), ti_modified = tim_modified.begin();
     for (; ti_source != tim_source.end(); ++ti_source, ++ti_modified) {
         if (ti_source->antigen != ti_modified->antigen || ti_source->serum != ti_modified->serum)
-            throw std::runtime_error("test_modify_titers: titer iterator mismatch: [" + acmacs::to_string(*ti_source) + "] vs. [" + acmacs::to_string(*ti_modified) + ']');
+            throw std::runtime_error{fmt::format("test_modify_titers: titer iterator mismatch: [{}] vs. [{}]", *ti_source, *ti_modified)};
         if (auto found = std::find_if(test_data.begin(), test_data.end(), [ag_no=ti_source->antigen, sr_no=ti_source->serum](const auto& entry) { return ag_no == entry.ag_no && sr_no == entry.sr_no; }); found != test_data.end()) {
             if (ti_source->titer == ti_modified->titer)
-                throw std::runtime_error("test_modify_titers: unexpected titer match: [" + acmacs::to_string(*ti_source) + "] vs. [" + acmacs::to_string(*ti_modified) + ']');
+                throw std::runtime_error{fmt::format("test_modify_titers: unexpected titer match: [{}] vs. [{}]", *ti_source, *ti_modified)};
             if (ti_modified->titer != acmacs::chart::Titer{found->titer})
-                throw std::runtime_error("titer mismatch: [" + std::string(found->titer) + "] vs. [" + acmacs::to_string(*ti_modified) + ']');
+                throw std::runtime_error{fmt::format("titer mismatch: [{}] vs. [{}]", found->titer, *ti_modified)};
         }
         else if (ti_source->titer != ti_modified->titer)
-            throw std::runtime_error("test_modify_titers: titer mismatch: [" + acmacs::to_string(*ti_source) + "] vs. [" + acmacs::to_string(*ti_modified) + ']');
+            throw std::runtime_error{fmt::format("test_modify_titers: titer mismatch: [{}] vs. [{}]", *ti_source, *ti_modified)};
     }
     if (ti_modified != tim_modified.end())
         throw std::runtime_error("test_modify_titers: titer iterator end mismatch");
@@ -181,7 +181,7 @@ void test_dont_care_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo, 
     for (auto ti_source : titers_source->titers_existing()) {
         if (ti_source.antigen == aAntigenNo) {
             if (!titers_modified->titer(ti_source.antigen, ti_source.serum).is_dont_care())
-                throw std::runtime_error("test_dont_care_for_antigen: unexpected titer: [" + acmacs::to_string(ti_source) + "], expected: *");
+                throw std::runtime_error{fmt::format("test_dont_care_for_antigen: unexpected titer: [{}], expected: *", ti_source)};
         }
         else if (titers_modified->titer(ti_source.antigen, ti_source.serum) != ti_source.titer)
             throw std::runtime_error(fmt::format("test_dont_care_for_antigen: titer mismatch: [{} {}] vs. {}", ti_source.antigen, ti_source.serum, *titers_modified->titer(ti_source.antigen, ti_source.serum)));
@@ -203,7 +203,7 @@ void test_dont_care_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, cons
     for (auto ti_source : titers_source->titers_existing()) {
         if (ti_source.serum == aSerumNo) {
             if (!titers_modified->titer(ti_source.antigen, ti_source.serum).is_dont_care())
-                throw std::runtime_error("test_dont_care_for_serum: unexpected titer: [" + acmacs::to_string(ti_source) + "], expected: *");
+                throw std::runtime_error{fmt::format("test_dont_care_for_serum: unexpected titer: [{}], expected: *", ti_source)};
         }
         else if (titers_modified->titer(ti_source.antigen, ti_source.serum) != ti_source.titer)
             throw std::runtime_error(fmt::format("test_dont_care_for_serum: titer mismatch: [{} {}] vs. {}", ti_source.antigen, ti_source.serum, *titers_modified->titer(ti_source.antigen, ti_source.serum)));

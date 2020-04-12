@@ -59,7 +59,7 @@ acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontc
                                                                                      const acmacs::chart::map_resolution_test_data::Parameters& parameters)
 {
     acmacs::chart::ChartClone chart(master_chart, acmacs::chart::ChartClone::clone_data::titers);
-    chart.info_modify()->name_append(string::concat(proportion_to_dont_care, "-dont-cared"));
+    chart.info_modify()->name_append(acmacs::string::concat(proportion_to_dont_care, "-dont-cared"));
     chart.titers_modify()->remove_layers();
     chart.titers_modify()->set_proportion_of_titers_to_dont_care(proportion_to_dont_care);
     if (parameters.column_bases_from_master == acmacs::chart::map_resolution_test_data::column_bases_from_master::yes)

@@ -43,7 +43,7 @@ int main(int argc, const char* const argv[])
         else if (opt.merge_type == "type5")
             settings.projection_merge = acmacs::chart::projection_merge_t::type5;
         else if (opt.merge_type != "simple" && opt.merge_type != "type1")
-            throw std::runtime_error(string::concat("unrecognized --merge-type value: ", opt.merge_type.get()));
+            throw std::runtime_error(acmacs::string::concat("unrecognized --merge-type value: ", opt.merge_type.get()));
         if (opt.source_charts->size() < 2)
             throw std::runtime_error("too few source charts specified");
         settings.match_level = acmacs::chart::CommonAntigensSera::match_level(opt.match);

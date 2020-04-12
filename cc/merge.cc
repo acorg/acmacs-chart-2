@@ -97,10 +97,10 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
     // --------------------------------------------------
 
     if (const auto dup1a = chart1.antigens()->find_duplicates(), dup1s = chart1.sera()->find_duplicates(); !dup1a.empty() || !dup1s.empty()) {
-        throw merge_error{::string::concat(chart1.description(), " has duplicates among antigens or sera: ", to_string(dup1a), ' ', to_string(dup1s))};
+        throw merge_error{acmacs::string::concat(chart1.description(), " has duplicates among antigens or sera: ", to_string(dup1a), ' ', to_string(dup1s))};
     }
     if (const auto dup2a = chart2.antigens()->find_duplicates(), dup2s = chart2.sera()->find_duplicates(); !dup2a.empty() || !dup2s.empty()) {
-        throw merge_error{::string::concat(chart2.description(), " has duplicates among antigens or sera: ", to_string(dup2a), ' ', to_string(dup2s))};
+        throw merge_error{acmacs::string::concat(chart2.description(), " has duplicates among antigens or sera: ", to_string(dup2a), ' ', to_string(dup2s))};
     }
 
     MergeReport report(chart1, chart2, settings);
@@ -131,7 +131,7 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
         // fmt::print(stderr, "\n");
         // for (auto [sr_no, serum] : acmacs::enumerate(*result_sera))
         //     fmt::print(stderr, "  {:3d} {}\n ", sr_no, serum->full_name());
-        throw merge_error{err_message}; // ::string::concat("Merge ", result->description(), " has duplicates among antigens or sera: ", to_string(rda), ' ' , to_string(rds))};
+        throw merge_error{err_message}; // acmacs::string::concat("Merge ", result->description(), " has duplicates among antigens or sera: ", to_string(rda), ' ' , to_string(rds))};
     }
 
     merge_titers(*result, chart1, chart2, report);

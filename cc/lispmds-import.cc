@@ -11,7 +11,6 @@
 #include "acmacs-chart-2/lispmds-import.hh"
 #include "acmacs-chart-2/lispmds-encode.hh"
 
-using namespace std::string_literals;
 using namespace acmacs::chart;
 
 // ----------------------------------------------------------------------
@@ -89,7 +88,7 @@ std::vector<double> native_column_bases(const acmacs::lispmds::value& aData)
                             cb[sr_no] = titer_d;
                     }
                     else
-                        throw acmacs::lispmds::type_mismatch("Unexpected titer type: "s + typeid(T).name());
+                        throw acmacs::lispmds::type_mismatch{fmt::format("Unexpected titer type: {}", typeid(T).name())};
                 },
                 titer_v);
         }
@@ -173,7 +172,7 @@ void LispmdsChart::verify_data(Verify) const
             throw import_error("no sera (genetic tables are not supported)");
     }
     catch (std::exception& err) {
-        throw import_error("[lispmds]: structure verification failed: "s + err.what());
+        throw import_error{fmt::format("[lispmds]: structure verification failed: {}", err)};
     }
 
 } // LispmdsChart::verify_data
@@ -441,13 +440,13 @@ Titer LispmdsTiters::titer(size_t aAntigenNo, size_t aSerumNo) const
             if constexpr (std::is_same_v<T, acmacs::lispmds::symbol>) {
                 if (titer_x[0] == '*')
                     return Titer{std::string(1, titer_x[0])};
-                return Titer{std::string(1, titer_x[0]) + acmacs::to_string(std::lround(std::exp2(std::stod(titer_x->substr(1))) * 10))};
+                return Titer{fmt::format("{}{}", titer_x[0], std::lround(std::exp2(std::stod(titer_x->substr(1))) * 10))};
             }
             else if constexpr (std::is_same_v<T, acmacs::lispmds::number>) {
-                return Titer{acmacs::to_string(std::lround(std::exp2(static_cast<double>(titer_x)) * 10))};
+                return Titer{fmt::format("{}", std::lround(std::exp2(static_cast<double>(titer_x)) * 10))};
             }
             else
-                throw acmacs::lispmds::type_mismatch("Unexpected titer type: "s + typeid(T).name());
+                throw acmacs::lispmds::type_mismatch{fmt::format("Unexpected titer type: {}", typeid(T).name())};
         },
         acmacs::lispmds::get(mData, 0, 3, aAntigenNo, aSerumNo));
 
@@ -485,7 +484,7 @@ size_t LispmdsTiters::number_of_non_dont_cares() const
                 else if constexpr (std::is_same_v<T, acmacs::lispmds::number>)
                     ++result;
                 else
-                    throw acmacs::lispmds::type_mismatch("Unexpected titer type: "s + typeid(T).name());
+                    throw acmacs::lispmds::type_mismatch{fmt::format("Unexpected titer type: {}", typeid(T).name())};
             }, titer);
         }
     }
@@ -499,10 +498,10 @@ void LispmdsProjection::check() const
 {
     try {
         if (auto nd = layout()->number_of_dimensions(); *nd > 5)
-            throw import_error("[lispmds] projection " + acmacs::to_string(projection_no()) + " has unsupported number of dimensions: " + acmacs::to_string(nd));
+            throw import_error{fmt::format("[lispmds] projection {} has unsupported number of dimensions: {}", projection_no(), nd)};
     }
     catch (std::exception& err) {
-        throw import_error("[lispmds] projection " + acmacs::to_string(projection_no()) + " reading error: " + err.what());
+        throw import_error{fmt::format("[lispmds] projection {} reading error: {}", projection_no(), err)};
     }
 
 } // LispmdsProjection::check
@@ -539,7 +538,7 @@ class LispmdsLayout : public acmacs::Layout
                         *target++ = std::get<acmacs::lispmds::number>(acmacs::lispmds::get(point, dim));
                 }
                 else if (ps > 0)
-                    throw invalid_data("LispmdsLayout: point has invalid number of coordinates: " + std::to_string(ps) + ", expected 0 or " + acmacs::to_string(number_of_dimensions()));
+                    throw invalid_data(fmt::format("LispmdsLayout: point has invalid number of coordinates: {}, expected 0 or {}", ps, number_of_dimensions()));
                 else
                     target += static_cast<decltype(target)::difference_type>(*number_of_dimensions());
             }

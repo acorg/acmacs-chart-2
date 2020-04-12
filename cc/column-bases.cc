@@ -47,7 +47,7 @@ acmacs::chart::MinimumColumnBasis::operator std::string() const noexcept
     if (is_none())
         return "none";
     else
-        return acmacs::to_string(std::lround(std::exp2(value_) * 10.0));
+        return fmt::format("{}", std::lround(std::exp2(value_) * 10.0));
 
 } // operator std::string
 

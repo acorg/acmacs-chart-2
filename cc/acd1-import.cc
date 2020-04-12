@@ -508,7 +508,7 @@ LabIds Acd1Antigen::lab_ids() const
     if (data_["lab_id"].is_array())
         rjson::transform(data_["lab_id"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return val[0].to<std::string>() + '#' + val[1].to<std::string>(); });
     else
-        rjson::transform(data_["lab_id"], std::back_inserter(result), [](std::string_view key, const rjson::value& val) -> std::string { return ::string::concat(key, '#', val.to<std::string_view>()); });
+        rjson::transform(data_["lab_id"], std::back_inserter(result), [](std::string_view key, const rjson::value& val) -> std::string { return acmacs::string::concat(key, '#', val.to<std::string_view>()); });
     return result;
 
 } // Acd1Antigen::lab_ids

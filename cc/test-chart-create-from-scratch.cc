@@ -1,4 +1,3 @@
-#include <iostream>
 #include <unistd.h>
 #include <cstdlib>
 #include <array>
@@ -18,7 +17,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv, {{"--time", false, "report time of loading chart"}, {"-h", false}, {"--help", false}, {"-v", false}, {"--verbose", false}});
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 0) {
-            std::cerr << "Usage: " << args.program() << " [options]\n" << args.usage_options() << '\n';
+            fmt::print(stderr, "Usage: {} [options]\n{}\n", args.program(), args.usage_options());
             exit_code = 1;
         }
         else {
@@ -28,7 +27,6 @@ int main(int argc, char* const argv[])
                 throw std::runtime_error("invalid new chart name");
             const auto exported = acmacs::chart::export_factory(chart, acmacs::chart::export_format::ace, args.program(), report_time::no);
             auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report_time::no);
-            // std::cout << exported << '\n';
 
             if (imported->number_of_antigens() != num_antigens)
                 throw std::runtime_error("invalid number_of_antigens");
@@ -38,12 +36,12 @@ int main(int argc, char* const argv[])
             auto titers = chart.titers();
             for (auto ti_source : titers->titers_existing()) {
                 if (!ti_source.titer.is_dont_care())
-                    throw std::runtime_error("unexpected titer: [" + acmacs::to_string(ti_source) + "], expected: *");
+                    throw std::runtime_error{fmt::format("unexpected titer: [{}], expected: *", ti_source)};
             }
         }
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        fmt::print(stderr, "> ERROR {}\n", err);
         exit_code = 2;
     }
     return exit_code;

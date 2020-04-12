@@ -3,8 +3,8 @@
 #include <memory>
 #include <cmath>
 
+#include "acmacs-base/fmt.hh"
 #include "acmacs-base/rjson-forward.hh"
-#include "acmacs-base/string.hh"
 #include "acmacs-base/named-type.hh"
 #include "acmacs-chart-2/column-bases.hh"
 
@@ -264,14 +264,12 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-namespace acmacs
-{
-    inline std::string to_string(const acmacs::chart::TiterIterator::Data& data)
+template <> struct fmt::formatter<acmacs::chart::TiterIterator::Data> : fmt::formatter<acmacs::fmt_default_formatter> {
+    template <typename FormatCtx> auto format(const acmacs::chart::TiterIterator::Data& value, FormatCtx& ctx)
     {
-        return ::string::concat("ag:", data.antigen, " sr:", data.serum, " t:", data.titer);
+        return format_to(ctx.out(), "ag:{} sr:{} t:{}", value.antigen, value.serum, value.titer);
     }
-
-} // namespace acmacs
+};
 
 // ----------------------------------------------------------------------
 /// Local Variables:

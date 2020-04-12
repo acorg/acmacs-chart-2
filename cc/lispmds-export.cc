@@ -62,8 +62,7 @@ std::string acmacs::chart::export_lispmds(const acmacs::chart::Chart& aChart, st
 
         if (const auto transformation = projection->transformation();
             transformation != acmacs::Transformation{} && transformation.valid() && transformation.number_of_dimensions == number_of_dimensions_t{2})
-            result.append(::string::concat_precise("\n        :CANVAS-BASIS-VECTOR-0 (", transformation.a(), ' ', transformation.c(), ") :CANVAS-BASIS-VECTOR-1 (",
-                                                 transformation.b(), ' ', transformation.d(), ")"));
+            result.append(fmt::format("\n        :CANVAS-BASIS-VECTOR-0 ({:.32f} {:.32f}) :CANVAS-BASIS-VECTOR-1 ({:.32f} {:.32f})", transformation.a(), transformation.c(), transformation.b(), transformation.d()));
         result.append(1, ')');
     }
     result.append(reference_antigens(aChart.antigens(), disconnected));

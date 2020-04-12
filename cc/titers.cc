@@ -94,13 +94,13 @@ std::string acmacs::chart::Titer::logged_as_string() const
       case Invalid:
           throw invalid_titer(*this);
       case Regular:
-          return acmacs::to_string(logged());
+          return fmt::format("{}", logged());
       case DontCare:
           return std::string{get()};
       case LessThan:
       case MoreThan:
       case Dodgy:
-          return get().front() + acmacs::to_string(logged());
+          return fmt::format("{}{}", get().front(), logged());
     }
     throw invalid_titer(*this); // for gcc 7.2
 
@@ -197,11 +197,11 @@ acmacs::chart::Titer acmacs::chart::Titer::multiplied_by(double value) const // 
       case DontCare:
           return *this;
       case Regular:
-          return Titer{std::to_string(std::lround(static_cast<double>(std::stoul(get())) * value))};
+          return Titer{fmt::format("{}", std::lround(static_cast<double>(std::stoul(get())) * value))};
       case LessThan:
       case MoreThan:
       case Dodgy:
-          return Titer{get().front() + std::to_string(std::lround(static_cast<double>(std::stoul(get().substr(1))) * value))};
+          return Titer{fmt::format("{}{}", get().front(), std::lround(static_cast<double>(std::stoul(get().substr(1))) * value))};
     }
     return Titer{};
 

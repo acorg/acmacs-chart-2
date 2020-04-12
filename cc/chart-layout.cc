@@ -1,6 +1,5 @@
-#include <iostream>
-
 #include "acmacs-base/argv.hh"
+#include "acmacs-base/debug.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/read-file.hh"
@@ -28,6 +27,8 @@ struct Options : public argv
 
 int main(int argc, char* const argv[])
 {
+    using namespace std::string_view_literals;
+
     int exit_code = 0;
     try {
         Options opt(argc, argv);
@@ -37,14 +38,14 @@ int main(int argc, char* const argv[])
         auto layout = chart->projection(opt.projection)->layout();
         if (*opt.output_layout == "-")
             write_text(std::string{opt.output_layout}, opt.field_separator, antigens, sera, layout);
-        else if (string::ends_with(*opt.output_layout, ".csv") || string::ends_with(*opt.output_layout, ".csv.xz"))
+        else if (string::endswith(*opt.output_layout, ".csv"sv) || string::endswith(*opt.output_layout, ".csv.xz"sv))
             write_csv(std::string{opt.output_layout}, antigens, sera, layout);
         else
             write_text(std::string{opt.output_layout}, opt.field_separator, antigens, sera, layout);
         // const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;
@@ -82,16 +83,16 @@ void write_text(std::string aFilename, std::string_view aFieldSeparator, std::sh
     std::string result;
     const auto number_of_dimensions = layout->number_of_dimensions();
     for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-        result += string::concat("AG", aFieldSeparator, encode_name(antigen->full_name(), aFieldSeparator));
+        result += acmacs::string::concat("AG", aFieldSeparator, encode_name(antigen->full_name(), aFieldSeparator));
         for (auto dim : acmacs::range(number_of_dimensions))
-            result += string::concat(aFieldSeparator, acmacs::to_string(layout->coordinate(ag_no, dim)));
+            result += acmacs::string::concat(aFieldSeparator, acmacs::to_string(layout->coordinate(ag_no, dim)));
         result += '\n';
     }
     const auto number_of_antigens = antigens->size();
     for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
-        result += string::concat("SR", aFieldSeparator, encode_name(serum->full_name(), aFieldSeparator));
+        result += acmacs::string::concat("SR", aFieldSeparator, encode_name(serum->full_name(), aFieldSeparator));
         for (auto dim : acmacs::range(number_of_dimensions))
-            result += string::concat(aFieldSeparator, acmacs::to_string(layout->coordinate(sr_no + number_of_antigens, dim)));
+            result += acmacs::string::concat(aFieldSeparator, acmacs::to_string(layout->coordinate(sr_no + number_of_antigens, dim)));
         result += '\n';
     }
     acmacs::file::write(aFilename, result);
@@ -108,9 +109,6 @@ std::string encode_name(std::string_view aName, std::string_view aFieldSeparator
         return std::string(aName);
 
 } // encode_name
-
-// ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:
