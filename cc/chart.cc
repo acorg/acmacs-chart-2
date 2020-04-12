@@ -575,7 +575,7 @@ std::string acmacs::chart::Antigen::location_abbreviated() const
 
 // ----------------------------------------------------------------------
 
-static inline std::string abbreviated_location_year(std::string_view aName)
+inline std::string abbreviated_location_year(std::string_view aName)
 {
     try {
         std::string virus_type, host, location, isolation, year, passage, extra;
