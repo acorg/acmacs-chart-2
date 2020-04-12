@@ -1,4 +1,4 @@
-# Time-stamp: <2020-04-11 09:12:34 eu>
+# Time-stamp: <2020-04-12 15:58:11 eu>
 * Introduction
 People have different opinions on what are "overlay", "fzozen"
 etc. merges and what was really implemented in lispmds, also their
@@ -19,6 +19,11 @@ just one projection. If the first chart has no projections, error is
 raised. Resulting projection is *not relaxed*.
 
 relax_incremental() can be used to relax the merge.
+
+If you want to freeze primary map (projection of the first chart in
+the merge) and randomize and relax just points found in the secondary
+table (merged in), use 
+relax_incremental(number_of_optimizations, "unmovable-primary-points")
 
 * Merge type 3
 Tables are merged. The best projection of the second chart orieneted
