@@ -343,6 +343,7 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
     const auto minimum_column_basis = source_projection->minimum_column_basis();
     auto stress = acmacs::chart::stress_factory(*this, num_dim, minimum_column_basis, options.mult, dodgy_titer_is_regular::no);
 
+    // source_projection->modify();
     const UnmovablePoints unmovable_points{unnp == unmovable_non_nan_points::yes ? source_projection->non_nan_points() : PointIndexList{}};
     if (!unmovable_points.empty()) {
         // AD_DEBUG("relax_incremental unmovable_points: {}", unmovable_points);
@@ -1577,12 +1578,10 @@ void ProjectionsModify::remove_except(size_t number_of_initial_projections_to_ke
 
 PointIndexList ProjectionModify::non_nan_points() const // for relax_incremental and enum unmovable_non_nan_points
 {
-    if (!layout_present())
-        throw invalid_data{"cannot use ProjectionModify::non_nan_points: projection has no layout"};
-
+    auto layt = layout();
     PointIndexList non_nan;
-    for (size_t point_no{0}; point_no < layout_->number_of_points(); ++point_no) {
-        if (layout_->point_has_coordinates(point_no))
+    for (size_t point_no{0}; point_no < layt->number_of_points(); ++point_no) {
+        if (layt->point_has_coordinates(point_no))
             non_nan.insert(point_no);
     }
     return non_nan;

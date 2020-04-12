@@ -15,7 +15,7 @@ struct Options : public argv
 
     option<size_t> number_of_attempts{*this, 'n', desc{"number of optimizations"}};
     option<bool> no_disconnect_having_few_titers{*this, "no-disconnect-having-few-titers", desc{"do not disconnect points having too few numeric titers"}};
-    option<bool> unmovable_non_nan_points{*this, "unmovable_non-nan-points", desc{"keep ag/sr of primary chart frozen (unmovable)"}};
+    option<bool> unmovable_non_nan_points{*this, "unmovable-non-nan-points", desc{"keep ag/sr of primary chart frozen (unmovable)"}};
     option<bool> remove_source_projection{*this, "remove-source-projection"};
     option<bool> rough{*this, "rough"};
     option<str> method{*this, "method", dflt{"cg"}, desc{"method: lbfgs, cg"}};
