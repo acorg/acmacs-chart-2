@@ -137,7 +137,7 @@ std::string export_projections_to_text(const acmacs::chart::Chart& chart)
             if (const auto comment = projection->comment(); !comment.empty())
                 fmt::format_to(result, "  comment: {}\n", comment);
             if (const auto stress = projection->stress(); !std::isnan(stress) && stress >= 0)
-                fmt::format_to(result, "  stress: {}\n", stress);
+                fmt::format_to(result, "  stress: {:.10f}\n", stress); // to avoid problems comparing exported charts during test on linux
             if (const auto minimum_column_basis = projection->minimum_column_basis(); !minimum_column_basis.is_none())
                 fmt::format_to(result, "  minimum-column-basis: {}\n", minimum_column_basis);
             if (const auto column_bases = projection->forced_column_bases(); column_bases) {
@@ -166,7 +166,7 @@ std::string export_projections_to_text(const acmacs::chart::Chart& chart)
             fmt::format_to(result, "  layout {} x {}\n", layout->number_of_points(), number_of_dimensions);
             if (const auto number_of_points = layout->number_of_points(); number_of_points && acmacs::valid(number_of_dimensions)) {
                 for (size_t p_no = 0; p_no < number_of_points; ++p_no)
-                    fmt::format_to(result, "    {:4d} {:20.17f}\n", p_no, layout->at(p_no));
+                    fmt::format_to(result, "    {:4d} {:13.10f}\n", p_no, layout->at(p_no)); // to avoid problems comparing exported charts during test on linux
             }
         }
     }
