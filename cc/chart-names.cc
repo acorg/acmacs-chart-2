@@ -64,16 +64,11 @@ int main(int argc, char* const argv[])
 
 inline std::tuple<std::string, std::string, std::string, acmacs::locationdb::Latitude, acmacs::locationdb::Longitude> location_data(std::string_view location)
 {
-    try {
-        const auto& locdb = acmacs::locationdb::get();
-        const auto data = locdb.find_or_throw(location);
-        const auto country = data.country();
-        return {std::move(data.location_name), std::string{country}, std::string{locdb.continent_of_country(country)}, data.latitude(), data.longitude()};
-    }
-    catch (std::exception&) {
-        const std::string unknown{"*unknown*"};
-        return {std::string{location}, unknown, unknown, 360.0, 360.0};
-    }
+    using namespace std::string_literals;
+    if (const auto loc = acmacs::locationdb::get().find(location, acmacs::locationdb::include_continent::yes); loc.has_value())
+        return {std::move(loc->location_name), std::string{loc->country()}, loc->continent, loc->latitude(), loc->longitude()};
+    else
+        return {std::string{location}, "*unknown*"s, "*unknown*"s, 360.0, 360.0};
 }
 
 // ----------------------------------------------------------------------

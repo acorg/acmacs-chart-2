@@ -652,11 +652,9 @@ static inline bool not_in_country(std::string_view aName, std::string_view aCoun
     try {
         return acmacs::locationdb::get().country(virus_name::location(aName)) != aCountry;
     }
-    catch (virus_name::Unrecognized&) {
+    catch (std::exception&) {
+        return true;
     }
-    catch (acmacs::locationdb::LocationNotFound&) {
-    }
-    return true;
 
 } // AntigensSera<AgSr>::filter_country
 
@@ -667,11 +665,9 @@ static inline bool not_in_continent(std::string_view aName, std::string_view aCo
     try {
         return acmacs::locationdb::get().continent(virus_name::location(aName)) != aContinent;
     }
-    catch (virus_name::Unrecognized&) {
+    catch (std::exception&) {
+        return true;
     }
-    catch (acmacs::locationdb::LocationNotFound&) {
-    }
-    return true;
 
 } // AntigensSera<AgSr>::filter_continent
 
