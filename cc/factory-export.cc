@@ -34,13 +34,13 @@ void acmacs::chart::export_factory(const Chart& chart, std::string_view filename
     Timeit ti(fmt::format("writing chart to {}: ", filename), report);
 
     std::string data;
-    if (string::endswith(filename, ".ace"sv))
+    if (acmacs::string::endswith(filename, ".ace"sv))
         data = export_factory(chart, export_format::ace, program_name, report_time::no);
-    else if (string::endswith(filename, ".save"sv) || string::endswith(filename, ".save.xz"sv) || string::endswith(filename, ".save.gz"sv))
+    else if (acmacs::string::endswith(filename, ".save"sv) || acmacs::string::endswith(filename, ".save.xz"sv) || acmacs::string::endswith(filename, ".save.gz"sv))
         data = export_factory(chart, export_format::save, program_name, report_time::no);
-    else if (string::endswith(filename, ".table.txt"sv) || string::endswith(filename, ".table.txt.xz"sv) || string::endswith(filename, ".table.txt.gz"sv) || string::endswith(filename, ".table"sv) || string::endswith(filename, ".table.xz"sv) || string::endswith(filename, ".table.gz"sv))
+    else if (acmacs::string::endswith(filename, ".table.txt"sv) || acmacs::string::endswith(filename, ".table.txt.xz"sv) || acmacs::string::endswith(filename, ".table.txt.gz"sv) || acmacs::string::endswith(filename, ".table"sv) || acmacs::string::endswith(filename, ".table.xz"sv) || acmacs::string::endswith(filename, ".table.gz"sv))
         data = export_factory(chart, export_format::text_table, program_name, report_time::no);
-    else if (string::endswith(filename, ".txt"sv) || string::endswith(filename, ".txt.xz"sv) || string::endswith(filename, ".txt.gz"sv))
+    else if (acmacs::string::endswith(filename, ".txt"sv) || acmacs::string::endswith(filename, ".txt.xz"sv) || acmacs::string::endswith(filename, ".txt.gz"sv))
         data = export_factory(chart, export_format::text, program_name, report_time::no);
     else
         throw import_error{fmt::format("[acmacs::chart::export_factory]: cannot infer export format from extension of {}", filename)};
@@ -49,7 +49,7 @@ void acmacs::chart::export_factory(const Chart& chart, std::string_view filename
         throw export_error{fmt::format("No data to write to {}", filename)};
 
     // Timeit ti_file(fmt::format("writing {}: ", filename), report);
-    acmacs::file::write(filename, data, string::endswith(filename, ".ace"sv) ? acmacs::file::force_compression::yes : acmacs::file::force_compression::no);
+    acmacs::file::write(filename, data, acmacs::string::endswith(filename, ".ace"sv) ? acmacs::file::force_compression::yes : acmacs::file::force_compression::no);
 
 } // acmacs::chart::export_factory
 

@@ -38,7 +38,7 @@ int main(int argc, char* const argv[])
         auto layout = chart->projection(opt.projection)->layout();
         if (*opt.output_layout == "-")
             write_text(std::string{opt.output_layout}, opt.field_separator, antigens, sera, layout);
-        else if (string::endswith(*opt.output_layout, ".csv"sv) || string::endswith(*opt.output_layout, ".csv.xz"sv))
+        else if (acmacs::string::endswith(*opt.output_layout, ".csv"sv) || acmacs::string::endswith(*opt.output_layout, ".csv.xz"sv))
             write_csv(std::string{opt.output_layout}, antigens, sera, layout);
         else
             write_text(std::string{opt.output_layout}, opt.field_separator, antigens, sera, layout);
