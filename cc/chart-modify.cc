@@ -585,7 +585,7 @@ TableDate InfoModify::date(Compute aCompute) const
     std::vector<std::string> composition{number_of_sources()};
     std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(number_of_sources()), composition.begin(), [this](size_t index) { return source(index)->date(); });
     std::sort(std::begin(composition), std::end(composition));
-    return TableDate{string::join("-", {composition.front(), composition.back()})};
+    return TableDate{acmacs::string::join("-", composition.front(), composition.back())};
 
 } // InfoModify::date
 

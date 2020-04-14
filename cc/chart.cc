@@ -304,16 +304,8 @@ acmacs::chart::BLineage::Lineage acmacs::chart::BLineage::from(std::string_view 
 std::string acmacs::chart::Info::make_info() const
 {
     const auto n_sources = number_of_sources();
-    return string::join(" ", {name(),
-                    *virus(Compute::Yes),
-                    lab(Compute::Yes),
-                    virus_type(Compute::Yes),
-                    subset(Compute::Yes),
-                    assay(Compute::Yes),
-                    rbc_species(Compute::Yes),
-                    date(Compute::Yes),
-                    n_sources ? ("(" + std::to_string(n_sources) + " tables)") : std::string{}
-                             });
+    return acmacs::string::join(" ", name(), *virus(Compute::Yes), lab(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), assay(Compute::Yes), rbc_species(Compute::Yes),
+                                date(Compute::Yes), n_sources ? ("(" + std::to_string(n_sources) + " tables)") : std::string{});
 
 } // acmacs::chart::Info::make_info
 
@@ -323,7 +315,7 @@ std::string acmacs::chart::Info::make_name() const
 {
     std::string n = name(Compute::No);
     if (n.empty())
-        n = string::join({lab(Compute::Yes), *virus_not_influenza(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), assay(Compute::Yes), rbc_species(Compute::Yes), date(Compute::Yes)});
+        n = acmacs::string::join(lab(Compute::Yes), *virus_not_influenza(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), assay(Compute::Yes), rbc_species(Compute::Yes), date(Compute::Yes));
     return n;
 
 } // acmacs::chart::Info::make_name

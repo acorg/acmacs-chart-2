@@ -365,7 +365,7 @@ std::string Acd1Info::name(Compute aCompute) const
         }
     }
     if (result.empty() && aCompute == Compute::Yes) {
-        result = string::join(" ", {*virus_not_influenza(aCompute), virus_type(aCompute), subset(aCompute), assay(aCompute), lab(aCompute), rbc_species(aCompute), date(aCompute)});
+        result = acmacs::string::join(" ", *virus_not_influenza(aCompute), virus_type(aCompute), subset(aCompute), assay(aCompute), lab(aCompute), rbc_species(aCompute), date(aCompute));
     }
     return result;
 
@@ -397,7 +397,7 @@ TableDate Acd1Info::date(Compute aCompute) const
             std::vector<std::string> composition{sources.size()};
             rjson::transform(sources, composition.begin(), [](const rjson::value& sinfo) { return sinfo["date"].get_or_default(""); });
             std::sort(std::begin(composition), std::end(composition));
-            result = string::join("-", {composition.front(), composition.back()});
+            result = acmacs::string::join("-", composition.front(), composition.back());
         }
     }
     return TableDate{result};
