@@ -1,7 +1,7 @@
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/debug.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-base/string.hh"
+#include "acmacs-base/string-compare.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/csv.hh"
 #include "acmacs-chart-2/factory-import.hh"
