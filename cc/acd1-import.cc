@@ -8,7 +8,7 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-join.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-virus/virus-name.hh"
+#include "acmacs-virus/virus-name-v1.hh"
 #include "acmacs-chart-2/acd1-import.hh"
 
 using namespace std::string_literals;

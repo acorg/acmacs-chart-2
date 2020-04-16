@@ -3,7 +3,7 @@
 
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-join.hh"
-#include "acmacs-virus/virus-name.hh"
+#include "acmacs-virus/virus-name-v1.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/range.hh"
 #include "locationdb/locdb.hh"

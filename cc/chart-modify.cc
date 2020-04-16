@@ -8,7 +8,7 @@
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/string-join.hh"
-#include "acmacs-virus/virus-name.hh"
+#include "acmacs-virus/virus-name-v1.hh"
 #include "acmacs-base/statistics.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart-modify.hh"
