@@ -1,6 +1,7 @@
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
 #include "locationdb/locdb.hh"
+#include "acmacs-virus/virus-name-v1.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
 
