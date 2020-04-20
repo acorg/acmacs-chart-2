@@ -27,6 +27,7 @@ TARGETS = \
   $(DIST)/chart-relax-disconnected \
   $(DIST)/chart-relax-incremental \
   $(DIST)/chart-relax-save-intermediate-layouts \
+  $(DIST)/chart-projection-pca \
   $(DIST)/chart-grid-test \
   $(DIST)/chart-relax-grid \
   $(DIST)/chart-error-lines \
