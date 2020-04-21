@@ -29,14 +29,14 @@ int main(int argc, char* const argv[])
         auto projections = chart.projections_modify();
         if (projections->size() == 0)
             throw std::runtime_error{"chart has no projections"};
-        projections->remove_except(opt.number_of_projections_to_convert);
+        projections->remove_except(*opt.number_of_projections_to_convert);
         const acmacs::chart::optimization_options opt_opt;
         for (size_t p_no = 0; p_no < projections->size(); ++p_no) {
             auto projection = projections->at(p_no);
             if (projection->number_of_dimensions() > target_number_of_dimensions) {
                 auto stress = acmacs::chart::stress_factory(*projection, opt_opt.mult);
                 auto layout = projection->layout_modified();
-                const auto status = acmacs::chart::dimension_annealing(opt_opt.method, stress, projection->number_of_dimensions(), target_number_of_dimensions, layout->data(), layout->data() + layout->size());
+                acmacs::chart::dimension_annealing(opt_opt.method, stress, projection->number_of_dimensions(), target_number_of_dimensions, layout->data(), layout->data() + layout->size());
                 layout->change_number_of_dimensions(target_number_of_dimensions);
                 stress.change_number_of_dimensions(target_number_of_dimensions);
                 const auto stress_value = projection->calculate_stress(stress);

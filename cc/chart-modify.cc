@@ -1565,10 +1565,10 @@ void ProjectionsModify::remove_except(size_t number_of_initial_projections_to_ke
     const auto projection_no = projection_to_keep ? projection_to_keep->projection_no() : 0;
     if (projection_no >= number_of_initial_projections_to_keep) {
         projections_.erase(projections_.begin() + static_cast<diff_t>(projection_no + 1), projections_.end());
-        projections_.erase(projections_.begin() + static_cast<diff_t>(std::min(number_of_initial_projections_to_keep, size())), projections_.begin() + static_cast<diff_t>(projection_no));
+        projections_.erase(projections_.begin() + static_cast<diff_t>(std::min(number_of_initial_projections_to_keep, projections_.size())), projections_.begin() + static_cast<diff_t>(projection_no));
     }
     else {
-        projections_.erase(projections_.begin() + static_cast<diff_t>(std::min(number_of_initial_projections_to_keep, size())), projections_.end());
+        projections_.erase(projections_.begin() + static_cast<diff_t>(std::min(number_of_initial_projections_to_keep, projections_.size())), projections_.end());
     }
     set_projection_no();
 
