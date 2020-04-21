@@ -12,7 +12,7 @@ struct Options : public argv
 {
     Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
 
-    option<size_t>    target_number_of_dimensions{*this, 'd',  dflt{20ul}, desc{"target number of dimensions"}};
+    option<size_t>    target_number_of_dimensions{*this, 'd',  dflt{2ul}, desc{"target number of dimensions, if 0 - apply full pca"}};
     option<size_t>    number_of_projections_to_convert{*this, 'p',  dflt{10ul}, desc{"number of the best projections to convert (0 - to conver all)"}};
 
     argument<str> input_chart{*this, arg_name{"input-chart"}, mandatory};
@@ -33,15 +33,22 @@ int main(int argc, char* const argv[])
         const acmacs::chart::optimization_options opt_opt;
         for (size_t p_no = 0; p_no < projections->size(); ++p_no) {
             auto projection = projections->at(p_no);
+            auto stress = acmacs::chart::stress_factory(*projection, opt_opt.mult);
+            auto layout = projection->layout_modified();
             if (projection->number_of_dimensions() > target_number_of_dimensions) {
-                auto stress = acmacs::chart::stress_factory(*projection, opt_opt.mult);
-                auto layout = projection->layout_modified();
                 acmacs::chart::dimension_annealing(opt_opt.method, stress, projection->number_of_dimensions(), target_number_of_dimensions, layout->data(), layout->data() + layout->size());
                 layout->change_number_of_dimensions(target_number_of_dimensions);
                 stress.change_number_of_dimensions(target_number_of_dimensions);
-                const auto stress_value = projection->calculate_stress(stress);
-                // projection->stress_ = status;
-                AD_DEBUG("stress: {}", stress_value);
+                const auto resulting_stress = projection->calculate_stress(stress);
+                AD_DEBUG("stress: {}", resulting_stress);
+                projection->transformation_reset();
+            }
+            else if (*target_number_of_dimensions == 0) {
+                // full pca
+                const auto initial_stress = projection->stress();
+                acmacs::chart::pca(stress, projection->number_of_dimensions(), layout->data(), layout->data() + layout->size());
+                const auto resulting_stress = projection->calculate_stress(stress);
+                AD_DEBUG("initial stress: {} resulting stress: {} diff:{}", initial_stress, resulting_stress, std::abs(initial_stress - resulting_stress));
                 projection->transformation_reset();
             }
             else {

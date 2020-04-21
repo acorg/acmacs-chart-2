@@ -49,6 +49,7 @@ namespace acmacs::chart
 static void alglib_lbfgs_optimize(acmacs::chart::optimization_status& status, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
 static void alglib_cg_optimize(acmacs::chart::optimization_status& status, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision);
 static void alglib_pca(OptimiserCallbackData& callback_data, acmacs::number_of_dimensions_t source_number_of_dimensions, acmacs::number_of_dimensions_t target_number_of_dimensions, double* arg_first, double* arg_last);
+static void alglib_pca_full(OptimiserCallbackData& callback_data, acmacs::number_of_dimensions_t number_of_dimensions, double* arg_first, double* arg_last);
 
 // ----------------------------------------------------------------------
 
@@ -409,6 +410,65 @@ void alglib_pca(OptimiserCallbackData& callback_data, acmacs::number_of_dimensio
     callback_data.stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), target_number_of_dimensions);
 
 } // alglib_pca
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::pca(const Stress& stress, number_of_dimensions_t number_of_dimensions, double* arg_first, double* arg_last)
+{
+    OptimiserCallbackData callback_data(stress);
+    alglib_pca_full(callback_data, number_of_dimensions, arg_first, arg_last);
+
+} // acmacs::chart::pca
+
+// ----------------------------------------------------------------------
+
+void alglib_pca_full(OptimiserCallbackData& callback_data, acmacs::number_of_dimensions_t number_of_dimensions, double* arg_first, double* arg_last)
+{
+    const aint_t number_of_points = (arg_last - arg_first) / cint(number_of_dimensions);
+
+    // alglib does not like NaN coordinates of disconnected points, set them to 0
+    callback_data.stress.set_coordinates_of_disconnected(arg_first, 0.0, number_of_dimensions);
+
+    alglib::real_2d_array x;
+    x.attach_to_ptr(number_of_points, cint(number_of_dimensions), arg_first);
+    alglib::real_1d_array s2; // output Variance values corresponding to basis vectors.
+    s2.setlength(cint(number_of_dimensions));
+    alglib::real_2d_array v; // output matrix to transform x to target
+    v.setlength(cint(number_of_dimensions), cint(number_of_dimensions));
+
+    aint_t info{0}; // -4, if SVD subroutine haven't converged; -1, if wrong parameters has been passed (NPoints<0, NVars<1); 1, if task is solved
+    alglib::pcabuildbasis(x, number_of_points, cint(number_of_dimensions), // input
+                          info, s2, v);                                   // output
+    switch (info) {
+      case -4:
+          throw std::runtime_error{"alglib pca failed: SVD subroutine haven't converged"};
+      case -1:
+          throw std::runtime_error{"alglib pca failed: wrong parameters passed (NPoints<0, NVars<1)"};
+      case 1:                   // good
+          break;
+      default:
+          throw std::runtime_error{fmt::format("alglib pca failed: unknown error {}", info)};
+    }
+
+    // x * v -> t
+    // https://www.tol-project.org/svn/tolp/OfficialTolArchiveNetwork/AlgLib/CppTools/source/alglib/manual.cpp.html#example_ablas_d_gemm
+    // https://stackoverflow.com/questions/5607631/matrix-multiplication-alglib
+    alglib::real_2d_array t;
+    t.setlength(number_of_points, cint(number_of_dimensions));
+    alglib::rmatrixgemm(number_of_points, cint(number_of_dimensions), cint(number_of_dimensions), 1.0, x, 0, 0, 0, v, 0, 0, 0, 0, t, 0, 0);
+
+    double* target = arg_first;
+    for (aint_t p_no = 0; p_no < number_of_points; ++p_no) {
+        for (aint_t dim_no = 0; dim_no < cint(number_of_dimensions); ++dim_no) {
+            *target++ = t(p_no, dim_no);
+        }
+    }
+
+    // return back NaN for disconnected points
+    // number of dimensions changed!
+    callback_data.stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), number_of_dimensions);
+
+} // alglib_pca_full
 
 // ----------------------------------------------------------------------
 /// Local Variables:

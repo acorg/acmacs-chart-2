@@ -68,6 +68,9 @@ namespace acmacs::chart
 
     DimensionAnnelingStatus dimension_annealing(optimization_method optimization_method, const Stress& stress, number_of_dimensions_t source_number_of_dimensions, number_of_dimensions_t target_number_of_dimensions, double* arg_first, double* arg_last);
 
+    // replaces layout in (arg_first, arg_last)
+    void pca(const Stress& stress, number_of_dimensions_t number_of_dimensions, double* arg_first, double* arg_last);
+
 // ----------------------------------------------------------------------
 
     struct ErrorLine
