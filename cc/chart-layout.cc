@@ -17,7 +17,7 @@ struct Options : public argv
     option<size_t> projection{*this, "projection", dflt{0UL}};
     option<str>    field_separator{*this, 'f', "field-separator", dflt{" "}};
     option<bool>   add_header{*this, "header"};
-    option<str_array> prepend_field{*this, "prepend", desc{"fields to prepend: \"ag\", \"name\", \"color\", default: \"ag\" \"name\""}};
+    option<str_array> prepend_field{*this, "prepend", desc{R"(fields to prepend: "ag", "name", "no0", "no1", "color", default: "ag" "name")"}};
     option<str_array> append_field{*this, "append", desc{"fields to append: \"ag\", \"name\", \"color\", default: nothing"}};
 
     argument<str> input_chart{*this, arg_name{"chart-file"}, mandatory};
@@ -27,6 +27,7 @@ struct Options : public argv
 static void write_csv(std::string_view aFilename, const Options& opt, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::Layout> layout);
 static void write_text(std::string_view aFilename, const Options& opt, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::Layout> layout);
 static std::string encode_name(std::string_view aName, std::string_view aFieldSeparator);
+// static std::string field(const acmacs::chart::Chart& chart, std::string_view field_name, size_t point_no);
 
 int main(int argc, char* const argv[])
 {
@@ -54,10 +55,23 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
+// std::string field(const acmacs::chart::Chart& chart, std::string_view field_name, size_t point_no)
+// {
+//     auto antigens = chart.antigens();
+//     if (point_no < antigens->size()) {
+//         if (field_name == "ag")
+
+//     }
+//     else {
+//     }
+
+// } // field
+
+// ----------------------------------------------------------------------
+
 void write_csv(std::string_view aFilename, const Options& opt, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::Layout> layout)
 {
     std::vector<std::string> prepend{"ag", "name"}, append;
-    AD_DEBUG("prep {}", prepend);
     if (!opt.prepend_field.empty()) {
         prepend.clear();
         std::transform(opt.prepend_field->begin(), opt.prepend_field->end(), std::back_inserter(prepend), [](const auto& src) { return std::string{src}; });
@@ -66,7 +80,6 @@ void write_csv(std::string_view aFilename, const Options& opt, std::shared_ptr<a
         append.clear();
         std::transform(opt.append_field->begin(), opt.append_field->end(), std::back_inserter(append), [](const auto& src) { return std::string{src}; });
     }
-    AD_DEBUG("prep {}", prepend);
 
     acmacs::CsvWriter writer;
     const auto number_of_dimensions = layout->number_of_dimensions();
