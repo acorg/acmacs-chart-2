@@ -354,6 +354,7 @@ void alglib_cg_optimize(acmacs::chart::optimization_status& status, OptimiserCal
 
 acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(optimization_method optimization_method, const Stress& stress, number_of_dimensions_t source_number_of_dimensions, number_of_dimensions_t target_number_of_dimensions, double* arg_first, double* arg_last)
 {
+    try {
     // std::cerr << "dimension_annealing " << std::pair(arg_first, arg_last) << '\n';
     DimensionAnnelingStatus status;
     OptimiserCallbackData callback_data(stress);
@@ -368,6 +369,11 @@ acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(optimi
 
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
     return status;
+    }
+    catch (alglib::ap_error& err) {
+        AD_ERROR("acmacs::chart::dimension_annealing: alglib error: {}", err.msg);
+        throw;
+    }
 
 } // acmacs::chart::dimension_annealing
 
@@ -415,8 +421,14 @@ void alglib_pca(OptimiserCallbackData& callback_data, acmacs::number_of_dimensio
 
 void acmacs::chart::pca(const Stress& stress, number_of_dimensions_t number_of_dimensions, double* arg_first, double* arg_last)
 {
-    OptimiserCallbackData callback_data(stress);
-    alglib_pca_full(callback_data, number_of_dimensions, arg_first, arg_last);
+    try {
+        OptimiserCallbackData callback_data(stress);
+        alglib_pca_full(callback_data, number_of_dimensions, arg_first, arg_last);
+    }
+    catch (alglib::ap_error& err) {
+        AD_ERROR("acmacs::chart::pca: alglib error: {}", err.msg);
+        throw;
+    }
 
 } // acmacs::chart::pca
 

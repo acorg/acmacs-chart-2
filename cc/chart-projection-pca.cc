@@ -35,20 +35,20 @@ int main(int argc, char* const argv[])
             auto projection = projections->at(p_no);
             auto stress = acmacs::chart::stress_factory(*projection, opt_opt.mult);
             auto layout = projection->layout_modified();
-            if (projection->number_of_dimensions() > target_number_of_dimensions) {
-                acmacs::chart::dimension_annealing(opt_opt.method, stress, projection->number_of_dimensions(), target_number_of_dimensions, layout->data(), layout->data() + layout->size());
-                layout->change_number_of_dimensions(target_number_of_dimensions);
-                stress.change_number_of_dimensions(target_number_of_dimensions);
-                const auto resulting_stress = projection->calculate_stress(stress);
-                AD_DEBUG("stress: {}", resulting_stress);
-                projection->transformation_reset();
-            }
-            else if (*target_number_of_dimensions == 0) {
+            if (*target_number_of_dimensions == 0) {
                 // full pca
                 const auto initial_stress = projection->stress();
                 acmacs::chart::pca(stress, projection->number_of_dimensions(), layout->data(), layout->data() + layout->size());
                 const auto resulting_stress = projection->calculate_stress(stress);
                 AD_DEBUG("initial stress: {} resulting stress: {} diff:{}", initial_stress, resulting_stress, std::abs(initial_stress - resulting_stress));
+                projection->transformation_reset();
+            }
+            else if (projection->number_of_dimensions() > target_number_of_dimensions) {
+                acmacs::chart::dimension_annealing(opt_opt.method, stress, projection->number_of_dimensions(), target_number_of_dimensions, layout->data(), layout->data() + layout->size());
+                layout->change_number_of_dimensions(target_number_of_dimensions);
+                stress.change_number_of_dimensions(target_number_of_dimensions);
+                const auto resulting_stress = projection->calculate_stress(stress);
+                AD_DEBUG("stress: {}", resulting_stress);
                 projection->transformation_reset();
             }
             else {
