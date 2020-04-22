@@ -714,10 +714,10 @@ namespace acmacs::chart
 
         void scale_all(double point_scale, double outline_scale) { modify(); std::for_each(styles_.begin(), styles_.end(), [=](auto& style) { style.scale(point_scale).scale_outline(outline_scale); }); }
 
-        void modify(size_t point_no, const PointStyle& style) { modify(); validate_point_no(point_no); styles_[point_no] = style; }
-        void modify(const Indexes& points, const PointStyle& style) { modify(); std::for_each(points.begin(), points.end(), [this,&style](size_t index) { this->modify(index, style); }); }
-        void modify_serum(size_t serum_no, const PointStyle& style) { modify(serum_no + number_of_antigens_, style); }
-        void modify_sera(const Indexes& sera, const PointStyle& style) { std::for_each(sera.begin(), sera.end(), [this,&style](size_t index) { this->modify(index + this->number_of_antigens_, style); }); }
+        void modify(size_t point_no, const PointStyleModified& style) { modify(); validate_point_no(point_no); styles_[point_no] = style; }
+        void modify(const Indexes& points, const PointStyleModified& style) { modify(); std::for_each(points.begin(), points.end(), [this,&style](size_t index) { this->modify(index, style); }); }
+        void modify_serum(size_t serum_no, const PointStyleModified& style) { modify(serum_no + number_of_antigens_, style); }
+        void modify_sera(const Indexes& sera, const PointStyleModified& style) { std::for_each(sera.begin(), sera.end(), [this,&style](size_t index) { this->modify(index + this->number_of_antigens_, style); }); }
 
         void remove_antigens(const ReverseSortedIndexes& indexes);
         void remove_sera(const ReverseSortedIndexes& indexes);

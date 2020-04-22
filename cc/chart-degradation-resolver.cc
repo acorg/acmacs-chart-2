@@ -218,9 +218,11 @@ acmacs::chart::ProjectionModifyP flip_relax(acmacs::chart::ChartModify& chart, a
       // std::cerr << "antigens on the wrong side: " << split_data.on_the_wrong_side.size() << '\n';
 
     // mark bad side antigens
-    acmacs::PointStyle style;
+    acmacs::PointStyleModified style;
     style.outline = ORANGE;
+    style.modified_outline = true;
     style.outline_width = Pixels{2};
+    style.modified_outline_width = true;
     chart.plot_spec_modify()->modify(split_data.on_the_wrong_side, style);
 
     // flip bad side antigens to good side
