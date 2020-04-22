@@ -24,10 +24,10 @@ struct Options : public argv
     argument<str> output_layout{*this, arg_name{"output-layout.{txt,csv}[.xz]"}, mandatory};
 };
 
-static void write_csv(std::string_view aFilename, const Options& opt, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::Layout> layout);
+static void write_csv(std::string_view aFilename, const Options& opt, const acmacs::chart::Chart& chart, const std::vector<std::string>& prepend_fields, const std::vector<std::string>& append_fields);
 static void write_text(std::string_view aFilename, const Options& opt, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::Layout> layout);
 static std::string encode_name(std::string_view aName, std::string_view aFieldSeparator);
-// static std::string field(const acmacs::chart::Chart& chart, std::string_view field_name, size_t point_no);
+static std::string field(const acmacs::chart::Chart& chart, std::string_view field_name, size_t point_no);
 
 int main(int argc, char* const argv[])
 {
@@ -36,12 +36,23 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         Options opt(argc, argv);
+
+        std::vector<std::string> prepend_fields{"ag", "name"}, append_fields;
+        if (!opt.prepend_field.empty()) {
+            prepend_fields.clear();
+            std::transform(opt.prepend_field->begin(), opt.prepend_field->end(), std::back_inserter(prepend_fields), [](const auto& src) { return std::string{src}; });
+        }
+        if (!opt.append_field.empty()) {
+            append_fields.clear();
+            std::transform(opt.append_field->begin(), opt.append_field->end(), std::back_inserter(append_fields), [](const auto& src) { return std::string{src}; });
+        }
+
         auto chart = acmacs::chart::import_from_file(opt.input_chart);
         auto antigens = chart->antigens();
         auto sera = chart->sera();
         auto layout = chart->projection(opt.projection)->layout();
         if (acmacs::string::endswith(*opt.output_layout, ".csv"sv) || acmacs::string::endswith(*opt.output_layout, ".csv.xz"sv) || opt.field_separator == ","sv)
-            write_csv(opt.output_layout, opt, antigens, sera, layout);
+            write_csv(opt.output_layout, opt, *chart, prepend_fields, append_fields);
         else
             write_text(opt.output_layout, opt, antigens, sera, layout);
         // const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
@@ -55,56 +66,71 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-// std::string field(const acmacs::chart::Chart& chart, std::string_view field_name, size_t point_no)
-// {
-//     auto antigens = chart.antigens();
-//     if (point_no < antigens->size()) {
-//         if (field_name == "ag")
+std::string field(const acmacs::chart::Chart& chart, std::string_view field_name, size_t point_no)
+{
+    auto antigens = chart.antigens();
+    if (point_no < antigens->size()) {
+        if (field_name == "ag")
+            return "AG";
+        else if (field_name == "no0")
+            return fmt::format("{}", point_no);
+        else if (field_name == "no1")
+            return fmt::format("{}", point_no + 1);
+        else if (field_name == "name")
+            return antigens->at(point_no)->full_name();
+        else
+            return fmt::format("?{}", field_name);
+    }
+    else {
+        if (field_name == "ag")
+            return "SR";
+        else if (field_name == "no0")
+            return fmt::format("{}", point_no - antigens->size());
+        else if (field_name == "no1")
+            return fmt::format("{}", point_no + 1 - antigens->size());
+        else if (field_name == "name")
+            return chart.sera()->at(point_no - antigens->size())->full_name();
+        else
+            return fmt::format("?{}", field_name);
+    }
 
-//     }
-//     else {
-//     }
-
-// } // field
+} // field
 
 // ----------------------------------------------------------------------
 
-void write_csv(std::string_view aFilename, const Options& opt, std::shared_ptr<acmacs::chart::Antigens> antigens, std::shared_ptr<acmacs::chart::Sera> sera, std::shared_ptr<acmacs::Layout> layout)
+void write_csv(std::string_view aFilename, const Options& opt, const acmacs::chart::Chart& chart, const std::vector<std::string>& prepend_fields, const std::vector<std::string>& append_fields)
 {
-    std::vector<std::string> prepend{"ag", "name"}, append;
-    if (!opt.prepend_field.empty()) {
-        prepend.clear();
-        std::transform(opt.prepend_field->begin(), opt.prepend_field->end(), std::back_inserter(prepend), [](const auto& src) { return std::string{src}; });
-    }
-    if (!opt.append_field.empty()) {
-        append.clear();
-        std::transform(opt.append_field->begin(), opt.append_field->end(), std::back_inserter(append), [](const auto& src) { return std::string{src}; });
-    }
-
+    auto antigens = chart.antigens();
+    auto sera = chart.sera();
+    auto layout = chart.projection(opt.projection)->layout();
     acmacs::CsvWriter writer;
     const auto number_of_dimensions = layout->number_of_dimensions();
     if (opt.add_header) {
-        for (const auto& prep : prepend)
+        for (const auto& prep : prepend_fields)
             writer.add_field(prep);
         for (auto dim : acmacs::range(number_of_dimensions))
             writer.add_field(fmt::format("{}", dim));
-        for (const auto& app : append)
+        for (const auto& app : append_fields)
             writer.add_field(app);
         writer.new_row();
     }
-    for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-        writer.add_field("AG");
-        writer.add_field(antigen->full_name());
+    for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
+        for (const auto& prep : prepend_fields)
+            writer.add_field(field(chart, prep, ag_no));
         for (auto dim : acmacs::range(number_of_dimensions))
             writer.add_field(acmacs::to_string(layout->coordinate(ag_no, dim)));
+        for (const auto& app : append_fields)
+            writer.add_field(field(chart, app, ag_no));
         writer.new_row();
     }
     const auto number_of_antigens = antigens->size();
-    for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
-        writer.add_field("SR");
-        writer.add_field(serum->full_name());
+    for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
+        for (const auto& prep : prepend_fields)
+            writer.add_field(field(chart, prep, sr_no + number_of_antigens));
         for (auto dim : acmacs::range(number_of_dimensions))
             writer.add_field(acmacs::to_string(layout->coordinate(sr_no + number_of_antigens, dim)));
+        for (const auto& app : append_fields)
+            writer.add_field(field(chart, app, sr_no + number_of_antigens));
         writer.new_row();
     }
     acmacs::file::write(aFilename, writer);
