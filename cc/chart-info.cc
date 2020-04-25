@@ -87,7 +87,7 @@ int main(int argc, char* const argv[])
             }
 
             if (!fields.empty()) {
-                std::cout << acmacs::string::join(" ", fields) << '\n';
+                std::cout << acmacs::string::join(acmacs::string::join_space, fields) << '\n';
             }
             else {
                 std::cout << chart->make_info() << '\n';

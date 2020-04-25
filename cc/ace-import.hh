@@ -50,13 +50,15 @@ namespace acmacs::chart
       public:
         AceInfo(const rjson::value& aData) : data_{aData} {}
 
+        inline static const acmacs::string::join_sep_t join_plus{"+"};
+
         std::string name(Compute aCompute = Compute::No) const override;
-        Virus       virus(Compute aCompute = Compute::No) const override { return Virus{make_field("v", "+", aCompute)}; }
-        acmacs::virus::type_subtype_t   virus_type(Compute aCompute = Compute::Yes) const override { return acmacs::virus::type_subtype_t{make_field("V", "+", aCompute)}; }
-        std::string subset(Compute aCompute = Compute::No) const override { return make_field("s", "+", aCompute); }
-        Assay       assay(Compute aCompute = Compute::No) const override { return Assay{make_field("A", "+", aCompute)}; }
-        Lab         lab(Compute aCompute = Compute::No, FixLab fix = FixLab::yes) const override { return Lab{fix_lab_name(Lab{make_field("l", "+", aCompute)}, fix)}; }
-        RbcSpecies  rbc_species(Compute aCompute = Compute::No) const override { return RbcSpecies{make_field("r", "+", aCompute)}; }
+        Virus       virus(Compute aCompute = Compute::No) const override { return Virus{make_field("v", join_plus, aCompute)}; }
+        acmacs::virus::type_subtype_t   virus_type(Compute aCompute = Compute::Yes) const override { return acmacs::virus::type_subtype_t{make_field("V", join_plus, aCompute)}; }
+        std::string subset(Compute aCompute = Compute::No) const override { return make_field("s", join_plus, aCompute); }
+        Assay       assay(Compute aCompute = Compute::No) const override { return Assay{make_field("A", join_plus, aCompute)}; }
+        Lab         lab(Compute aCompute = Compute::No, FixLab fix = FixLab::yes) const override { return Lab{fix_lab_name(Lab{make_field("l", join_plus, aCompute)}, fix)}; }
+        RbcSpecies  rbc_species(Compute aCompute = Compute::No) const override { return RbcSpecies{make_field("r", join_plus, aCompute)}; }
         TableDate   date(Compute aCompute = Compute::No) const override;
         size_t number_of_sources() const override { return data_["S"].size(); }
         InfoP source(size_t aSourceNo) const override { return std::make_shared<AceInfo>(data_["S"][aSourceNo]); }
@@ -64,7 +66,7 @@ namespace acmacs::chart
      private:
         const rjson::value& data_;
 
-        std::string make_field(const char* aField, const char* aSeparator, Compute aCompute) const;
+        std::string make_field(const char* aField, acmacs::string::join_sep_t aSeparator, Compute aCompute) const;
 
     }; // class AceInfo
 

@@ -174,11 +174,11 @@ std::string AceInfo::name(Compute aCompute) const
             rjson::transform(sources, composition.begin(), [](const rjson::value& sinfo) { return sinfo["N"].get_or_default(""); });
             composition.erase(std::remove_if(composition.begin(), composition.end(), [](const auto& s) { return s.empty(); }), composition.end());
             if (composition.size() > (sources.size() / 2))
-                result = string::join(" + ", composition);
+                result = string::join(acmacs::string::join_sep_t{" + "}, composition);
         }
     }
     if (result.empty() && aCompute == Compute::Yes) {
-        result = acmacs::string::join(" ", *virus_not_influenza(aCompute), virus_type(aCompute), subset(aCompute), assay(aCompute), lab(aCompute), rbc_species(aCompute), date(aCompute));
+        result = acmacs::string::join(acmacs::string::join_space, *virus_not_influenza(aCompute), virus_type(aCompute), subset(aCompute), assay(aCompute), lab(aCompute), rbc_species(aCompute), date(aCompute));
     }
     return result;
 
@@ -186,7 +186,7 @@ std::string AceInfo::name(Compute aCompute) const
 
 // ----------------------------------------------------------------------
 
-std::string AceInfo::make_field(const char* aField, const char* aSeparator, Compute aCompute) const
+std::string AceInfo::make_field(const char* aField, acmacs::string::join_sep_t aSeparator, Compute aCompute) const
 {
     std::string result{data_[aField].get_or_default("")};
     if (result.empty() && aCompute == Compute::Yes) {
@@ -210,7 +210,7 @@ TableDate AceInfo::date(Compute aCompute) const
             std::vector<std::string> composition{sources.size()};
             rjson::transform(sources, composition.begin(), [](const rjson::value& sinfo) { return sinfo["D"].get_or_default(""); });
             std::sort(std::begin(composition), std::end(composition));
-            result = acmacs::string::join("-", composition.front(), composition.back());
+            result = acmacs::string::join(acmacs::string::join_dash, composition.front(), composition.back());
         }
     }
     return TableDate{result};

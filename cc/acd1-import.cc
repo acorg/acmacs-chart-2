@@ -361,11 +361,11 @@ std::string Acd1Info::name(Compute aCompute) const
             rjson::transform(sources, composition.begin(), [](const rjson::value& sinfo) { return sinfo["name"].get_or_default(""); });
             composition.erase(std::remove_if(composition.begin(), composition.end(), [](const auto& s) { return s.empty(); }), composition.end());
             if (composition.size() > (sources.size() / 2))
-                result = string::join(" + ", composition); // use only, if most sources have "name"
+                result = string::join(acmacs::string::join_sep_t{" + "}, composition); // use only, if most sources have "name"
         }
     }
     if (result.empty() && aCompute == Compute::Yes) {
-        result = acmacs::string::join(" ", *virus_not_influenza(aCompute), virus_type(aCompute), subset(aCompute), assay(aCompute), lab(aCompute), rbc_species(aCompute), date(aCompute));
+        result = acmacs::string::join(acmacs::string::join_space, *virus_not_influenza(aCompute), virus_type(aCompute), subset(aCompute), assay(aCompute), lab(aCompute), rbc_species(aCompute), date(aCompute));
     }
     return result;
 
@@ -373,7 +373,7 @@ std::string Acd1Info::name(Compute aCompute) const
 
 // ----------------------------------------------------------------------
 
-std::string Acd1Info::make_field(const char* aField, const char* aSeparator, Compute aCompute) const
+std::string Acd1Info::make_field(const char* aField, acmacs::string::join_sep_t aSeparator, Compute aCompute) const
 {
     std::string result{data_[aField].get_or_default("")};
     if (result.empty() && aCompute == Compute::Yes) {
@@ -397,7 +397,7 @@ TableDate Acd1Info::date(Compute aCompute) const
             std::vector<std::string> composition{sources.size()};
             rjson::transform(sources, composition.begin(), [](const rjson::value& sinfo) { return sinfo["date"].get_or_default(""); });
             std::sort(std::begin(composition), std::end(composition));
-            result = acmacs::string::join("-", composition.front(), composition.back());
+            result = acmacs::string::join(acmacs::string::join_dash, composition.front(), composition.back());
         }
     }
     return TableDate{result};
@@ -414,7 +414,7 @@ static inline acmacs::virus::name_t make_name(const rjson::value& aData)
         std::string host = aData["host"].get_or_default("");
         if (host == "HUMAN")
             host.clear();
-        return acmacs::virus::name_t{acmacs::string::join("/", aData["virus_type"].get_or_default(""), host, aData.get("location", "name").get_or_default(""), isolation_number, aData["year"].get_or_default(""))};
+        return acmacs::virus::name_t{acmacs::string::join(acmacs::string::join_slash, aData["virus_type"].get_or_default(""), host, aData.get("location", "name").get_or_default(""), isolation_number, aData["year"].get_or_default(""))};
     }
     else if (auto raw_name = aData["raw_name"].get_or_default(""); !raw_name.empty()) {
         return acmacs::virus::name_t{raw_name};
@@ -424,7 +424,7 @@ static inline acmacs::virus::name_t make_name(const rjson::value& aData)
         std::string name = aData["name"].get_or_default("");
         if (!cdc_abbreviation.empty() && name.size() > 3 && name[2] == '-' && name[0] == cdc_abbreviation[0] && name[1] == cdc_abbreviation[1])
             name.erase(0, 3);   // old cdc name (acmacs-b?) begins with cdc_abbreviation
-        return acmacs::virus::name_t{acmacs::string::join(" ", cdc_abbreviation, name)};
+        return acmacs::virus::name_t{acmacs::string::join(acmacs::string::join_space, cdc_abbreviation, name)};
     }
 }
 
@@ -479,7 +479,7 @@ static inline acmacs::virus::Reassortant make_reassortant(const rjson::value& aD
         std::vector<std::string> composition;
         rjson::transform(complete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return val.to<std::string>(); }); // cannot use rjson::copy here
         rjson::transform(incomplete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return val.to<std::string>(); }); // cannot use rjson::copy here
-        return acmacs::virus::Reassortant{acmacs::string::join(" ", composition)};
+        return acmacs::virus::Reassortant{acmacs::string::join(acmacs::string::join_space, composition)};
     }
     else if (auto r_str = aData["reassortant"].get_or_default(""); !r_str.empty()) {
         return acmacs::virus::Reassortant{std::move(r_str)};

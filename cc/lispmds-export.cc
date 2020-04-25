@@ -174,7 +174,7 @@ std::string starting_coordss(const acmacs::chart::Chart& aChart, const acmacs::c
 std::string unmoveable_coords(const acmacs::chart::UnmovablePoints& unmovable)
 {
     if (!unmovable.empty()) {
-        return fmt::format("({})", acmacs::string::join(" ", unmovable.begin(), unmovable.end(), [](auto index) -> std::string { return acmacs::to_string(index); }));
+        return fmt::format("({})", acmacs::string::join(acmacs::string::join_space, unmovable.begin(), unmovable.end(), [](auto index) -> std::string { return acmacs::to_string(index); }));
     }
     else
         return "NIL";
@@ -297,12 +297,12 @@ std::string plot_spec(const acmacs::chart::Chart& aChart, const acmacs::chart::D
                 if (point_no < number_of_antigens) {
                     auto antigen = (*antigens)[point_no];
                     name = lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations()) + "-AG";
-                    nm = acmacs::string::join(" ", antigen->name(), antigen->reassortant(), antigen->passage(), acmacs::string::join(" ", antigen->annotations()));
+                    nm = acmacs::string::join(acmacs::string::join_space, antigen->name(), antigen->reassortant(), antigen->passage(), acmacs::string::join(acmacs::string::join_space, antigen->annotations()));
                 }
                 else {
                     auto serum = (*sera)[point_no - number_of_antigens];
                     name = lispmds_serum_name_encode(serum->name(), serum->reassortant(), serum->annotations(), serum->serum_id()) + "-SR";
-                    nm = acmacs::string::join(" ", serum->name(), serum->reassortant(), acmacs::string::join(" ", serum->annotations()), serum->serum_id());
+                    nm = acmacs::string::join(acmacs::string::join_space, serum->name(), serum->reassortant(), acmacs::string::join(acmacs::string::join_space, serum->annotations()), serum->serum_id());
                 }
                 result.append('(' + name + " :NM \"" + nm + '"' + point_style(plot_spec->style(point_no)) + ')');
             }

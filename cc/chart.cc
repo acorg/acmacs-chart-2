@@ -28,7 +28,7 @@
 std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_show) const
 {
     const auto layers = titers()->number_of_layers();
-    return string::join("\n",
+    return string::join(acmacs::string::join_newline,
                         info()->make_info(),
                         layers ? fmt::format("Number of layers: {}", layers) : std::string{},
                         fmt::format("Antigens: {}   Sera: {}", number_of_antigens(), number_of_sera()),
@@ -304,7 +304,7 @@ acmacs::chart::BLineage::Lineage acmacs::chart::BLineage::from(std::string_view 
 std::string acmacs::chart::Info::make_info() const
 {
     const auto n_sources = number_of_sources();
-    return acmacs::string::join(" ", name(), *virus(Compute::Yes), lab(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), assay(Compute::Yes), rbc_species(Compute::Yes),
+    return acmacs::string::join(acmacs::string::join_space, name(), *virus(Compute::Yes), lab(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), assay(Compute::Yes), rbc_species(Compute::Yes),
                                 date(Compute::Yes), n_sources ? ("(" + std::to_string(n_sources) + " tables)") : std::string{});
 
 } // acmacs::chart::Info::make_info
@@ -315,7 +315,7 @@ std::string acmacs::chart::Info::make_name() const
 {
     std::string n = name(Compute::No);
     if (n.empty())
-        n = acmacs::string::join(" ", lab(Compute::Yes), *virus_not_influenza(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), assay(Compute::Yes), rbc_species(Compute::Yes), date(Compute::Yes));
+        n = acmacs::string::join(acmacs::string::join_space, lab(Compute::Yes), *virus_not_influenza(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), assay(Compute::Yes), rbc_species(Compute::Yes), date(Compute::Yes));
     return n;
 
 } // acmacs::chart::Info::make_name
@@ -454,7 +454,7 @@ std::string acmacs::chart::Antigen::full_name_with_fields() const
     std::string r{name()};
     if (const auto value = reassortant(); !value.empty())
         r += " reassortant=\"" + *value + '"';
-    if (const auto value = string::join(" ", annotations()); !value.empty())
+    if (const auto value = string::join(acmacs::string::join_space, annotations()); !value.empty())
         r += " annotations=\"" + value + '"';
     if (const auto value = passage(); !value.empty())
         r += " passage=\"" + *value + "\" ptype=" + value.passage_type();
@@ -464,7 +464,7 @@ std::string acmacs::chart::Antigen::full_name_with_fields() const
         r += fmt::format(" lineage={}", value);
     if (reference())
         r += " reference";
-    if (const auto value = string::join(" ", lab_ids()); !value.empty())
+    if (const auto value = string::join(acmacs::string::join_space, lab_ids()); !value.empty())
         r += " lab_ids=\"" + value + '"';
     return r;
 
@@ -477,7 +477,7 @@ std::string acmacs::chart::Serum::full_name_with_fields() const
     std::string r{name()};
     if (const auto value = reassortant(); !value.empty())
         r += " reassortant=\"" + *value + '"';
-    if (const auto value = string::join(" ", annotations()); !value.empty())
+    if (const auto value = string::join(acmacs::string::join_space, annotations()); !value.empty())
         r += " annotations=\"" + value + '"';
     if (const auto value = serum_id(); !value.empty())
         r += " serum_id=\"" + *value + '"';
@@ -499,7 +499,7 @@ static inline std::string name_abbreviated(std::string_view aName)
     try {
         std::string virus_type, host, location, isolation, year, passage, extra;
         virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
-        return acmacs::string::join("/", acmacs::locationdb::get().abbreviation(location), isolation, year.substr(2));
+        return acmacs::string::join(acmacs::string::join_slash, acmacs::locationdb::get().abbreviation(location), isolation, year.substr(2));
     }
     catch (virus_name::Unrecognized&) {
         return std::string{aName};
@@ -524,7 +524,7 @@ static inline std::string name_without_subtype(std::string_view aName)
         virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
         if (virus_type.size() > 1 && virus_type[0] == 'A' && virus_type[1] == '(')
             virus_type.resize(1);
-        return acmacs::string::join("/", virus_type, host, location, isolation, year);
+        return acmacs::string::join(acmacs::string::join_slash, virus_type, host, location, isolation, year);
     }
     catch (virus_name::Unrecognized&) {
         return std::string{aName};
@@ -572,7 +572,7 @@ inline std::string abbreviated_location_year(std::string_view aName)
     try {
         std::string virus_type, host, location, isolation, year, passage, extra;
         virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
-        return acmacs::string::join("/", acmacs::locationdb::get().abbreviation(location), year.substr(2, 2));
+        return acmacs::string::join(acmacs::string::join_slash, acmacs::locationdb::get().abbreviation(location), year.substr(2, 2));
     }
     catch (virus_name::Unrecognized&) {
         return std::string{aName};

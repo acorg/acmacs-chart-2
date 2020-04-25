@@ -90,7 +90,7 @@ std::string format(const acmacs::chart::Chart& chart, const acmacs::chart::Antig
         fmt::arg("full_name_with_fields", antigen.full_name_with_fields()),
         fmt::arg("serum_species", ""),
         fmt::arg("date", *antigen.date()),
-        fmt::arg("lab_ids", acmacs::string::join(" ", antigen.lab_ids())),
+        fmt::arg("lab_ids", acmacs::string::join(acmacs::string::join_space, antigen.lab_ids())),
         fmt::arg("ref", antigen.reference() ? "Ref" : ""),
         fmt::arg("serum_id", ""),
         fmt::arg("reassortant", *antigen.reassortant()),

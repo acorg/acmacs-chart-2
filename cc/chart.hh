@@ -186,7 +186,7 @@ namespace acmacs::chart
 
         LabIds(const rjson::value& src) : acmacs::named_vector_t<std::string, struct chart_LabIds_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
 
-        std::string join() const { return string::join(" ", begin(), end()); }
+        std::string join() const { return string::join(acmacs::string::join_space, begin(), end()); }
 
     }; // class LabIds
 
@@ -197,7 +197,7 @@ namespace acmacs::chart
         Annotations(const rjson::value& src) : acmacs::named_vector_t<std::string, struct chart_Annotations_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
 
         bool distinct() const { return exists("DISTINCT"); }
-        std::string join() const { return string::join(" ", begin(), end()); }
+        std::string join() const { return string::join(acmacs::string::join_space, begin(), end()); }
         size_t total_length() const { return std::accumulate(begin(), end(), size_t{0}, [](size_t sum, const auto& element) { return sum + element.size(); }); }
 
         // returns if annotations of antigen and serum matches (e.g. ignores CONC for serum), used for homologous pairs finding
@@ -355,18 +355,18 @@ namespace acmacs::chart
         virtual bool reference() const = 0;
         virtual Continent continent() const { return {}; }
 
-        std::string full_name() const { return acmacs::string::join(" ", name(), reassortant(), string::join(" ", annotations()), passage()); }
-        std::string full_name_without_passage() const { return acmacs::string::join(" ", name(), reassortant(), string::join(" ", annotations())); }
+        std::string full_name() const { return acmacs::string::join(acmacs::string::join_space, name(), reassortant(), string::join(acmacs::string::join_space, annotations()), passage()); }
+        std::string full_name_without_passage() const { return acmacs::string::join(acmacs::string::join_space, name(), reassortant(), string::join(acmacs::string::join_space, annotations())); }
         std::string full_name_with_passage() const { return full_name(); }
         std::string full_name_with_fields() const;
         std::string full_name_for_seqdb_matching() const
         {
-            return acmacs::string::join(" ", name(), reassortant(), passage(), string::join(" ", annotations()));
+            return acmacs::string::join(acmacs::string::join_space, name(), reassortant(), passage(), string::join(acmacs::string::join_space, annotations()));
         } // annotations may part of the passage in seqdb (NIMR ISOLATE 1)
-        std::string abbreviated_name() const { return acmacs::string::join(" ", name_abbreviated(), reassortant(), string::join(" ", annotations())); }
-        std::string abbreviated_name_with_passage_type() const { return acmacs::string::join("-", name_abbreviated(), reassortant(), string::join(" ", annotations()), passage_type()); }
-        std::string abbreviated_location_with_passage_type() const { return acmacs::string::join(" ", location_abbreviated(), passage_type()); }
-        std::string designation() const { return acmacs::string::join(" ", name(), reassortant(), string::join(" ", annotations()), passage()); }
+        std::string abbreviated_name() const { return acmacs::string::join(acmacs::string::join_space, name_abbreviated(), reassortant(), string::join(acmacs::string::join_space, annotations())); }
+        std::string abbreviated_name_with_passage_type() const { return acmacs::string::join(acmacs::string::join_dash, name_abbreviated(), reassortant(), string::join(acmacs::string::join_space, annotations()), passage_type()); }
+        std::string abbreviated_location_with_passage_type() const { return acmacs::string::join(acmacs::string::join_space, location_abbreviated(), passage_type()); }
+        std::string designation() const { return acmacs::string::join(acmacs::string::join_space, name(), reassortant(), string::join(acmacs::string::join_space, annotations()), passage()); }
 
         std::string name_abbreviated() const;
         std::string name_without_subtype() const;
@@ -402,14 +402,14 @@ namespace acmacs::chart
         virtual PointIndexList homologous_antigens() const = 0;
         virtual void set_homologous(const std::vector<size_t>&, acmacs::debug) const {}
 
-        std::string full_name() const { return acmacs::string::join(" ", name(), reassortant(), acmacs::string::join(" ", annotations()), serum_id()); }
+        std::string full_name() const { return acmacs::string::join(acmacs::string::join_space, name(), reassortant(), acmacs::string::join(acmacs::string::join_space, annotations()), serum_id()); }
         std::string full_name_without_passage() const { return full_name(); }
-        std::string full_name_with_passage() const { return acmacs::string::join(" ", name(), reassortant(), acmacs::string::join(" ", annotations()), serum_id(), passage()); }
+        std::string full_name_with_passage() const { return acmacs::string::join(acmacs::string::join_space, name(), reassortant(), acmacs::string::join(acmacs::string::join_space, annotations()), serum_id(), passage()); }
         std::string full_name_with_fields() const;
-        std::string abbreviated_name() const { return acmacs::string::join(" ", name_abbreviated(), reassortant(), acmacs::string::join(" ", annotations())); }
-        std::string abbreviated_name_with_serum_id() const { return acmacs::string::join(" ", name_abbreviated(), reassortant(), serum_id(), acmacs::string::join(" ", annotations())); }
-        std::string designation() const { return acmacs::string::join(" ", name(), reassortant(), acmacs::string::join(" ", annotations()), serum_id()); }
-        std::string designation_without_serum_id() const { return acmacs::string::join(" ", name(), reassortant(), acmacs::string::join(" ", annotations())); }
+        std::string abbreviated_name() const { return acmacs::string::join(acmacs::string::join_space, name_abbreviated(), reassortant(), acmacs::string::join(acmacs::string::join_space, annotations())); }
+        std::string abbreviated_name_with_serum_id() const { return acmacs::string::join(acmacs::string::join_space, name_abbreviated(), reassortant(), serum_id(), acmacs::string::join(acmacs::string::join_space, annotations())); }
+        std::string designation() const { return acmacs::string::join(acmacs::string::join_space, name(), reassortant(), acmacs::string::join(acmacs::string::join_space, annotations()), serum_id()); }
+        std::string designation_without_serum_id() const { return acmacs::string::join(acmacs::string::join_space, name(), reassortant(), acmacs::string::join(acmacs::string::join_space, annotations())); }
 
         std::string name_abbreviated() const;
         std::string name_without_subtype() const;

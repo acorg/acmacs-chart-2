@@ -564,7 +564,7 @@ template <typename Field, typename Func> static inline Field info_modify_make_fi
     std::set<std::string> composition;
     std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(info.number_of_sources()), std::inserter(composition, composition.begin()),
                    [&info,&func](size_t index) { return static_cast<std::string>(std::invoke(func, *info.source(index), acmacs::chart::Info::Compute::No)); });
-    return Field{acmacs::string::join("+", composition)};
+    return Field{acmacs::string::join(acmacs::string::join_sep_t{"+"}, composition)};
 }
 
 Virus       InfoModify::virus(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_, &Info::virus); }
@@ -585,7 +585,7 @@ TableDate InfoModify::date(Compute aCompute) const
     std::vector<std::string> composition{number_of_sources()};
     std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(number_of_sources()), composition.begin(), [this](size_t index) { return source(index)->date(); });
     std::sort(std::begin(composition), std::end(composition));
-    return TableDate{acmacs::string::join("-", composition.front(), composition.back())};
+    return TableDate{acmacs::string::join(acmacs::string::join_dash, composition.front(), composition.back())};
 
 } // InfoModify::date
 

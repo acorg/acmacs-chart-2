@@ -17,7 +17,7 @@ std::string acmacs::chart::export_text(const Chart& chart)
 {
     fmt::memory_buffer result;
     fmt::format_to(result, "{}",
-                   acmacs::string::join("\n\n", export_info_to_text(chart), export_table_to_text(chart), export_forced_column_bases_to_text(chart), export_projections_to_text(chart),
+                   acmacs::string::join(acmacs::string::join_sep_t{"\n\n"}, export_info_to_text(chart), export_table_to_text(chart), export_forced_column_bases_to_text(chart), export_projections_to_text(chart),
                                         export_plot_spec_to_text(chart), export_extensions_to_text(chart)),
                    "\n", acmacs::string::Split::StripKeepEmpty);
     return fmt::to_string(result);
@@ -94,7 +94,7 @@ std::string acmacs::chart::export_info_to_text(const Chart& chart)
     fmt::memory_buffer result;
 
     const auto do_export = [&result](acmacs::chart::InfoP info) {
-        fmt::format_to(result, "{}", acmacs::string::join(" ", info->virus(), info->virus_type(), info->assay(), info->date(), info->name(), info->lab(), info->rbc_species(), info->subset()));
+        fmt::format_to(result, "{}", acmacs::string::join(acmacs::string::join_space, info->virus(), info->virus_type(), info->assay(), info->date(), info->name(), info->lab(), info->rbc_species(), info->subset()));
         // info->table_type()
     };
 

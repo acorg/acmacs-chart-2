@@ -137,12 +137,12 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
     std::vector<std::string> annotations(antigens->size()), reassortants(antigens->size()), passages(antigens->size()), dates(antigens->size()), lab_ids(antigens->size());
     for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
         if (all_fields) {
-            annotations[ag_no] = acmacs::string::join(" ", antigen->annotations());
+            annotations[ag_no] = acmacs::string::join(acmacs::string::join_space, antigen->annotations());
             reassortants[ag_no] = antigen->reassortant();
             passages[ag_no] = antigen->passage();
         }
         dates[ag_no] = antigen->date();
-        lab_ids[ag_no] = acmacs::string::join(" ", antigen->lab_ids());
+        lab_ids[ag_no] = acmacs::string::join(acmacs::string::join_space, antigen->lab_ids());
     }
     const AntigenFields antigen_fields{field_present(annotations), field_present(reassortants), field_present(passages), field_present(dates), field_present(lab_ids)};
 
@@ -173,7 +173,7 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
             //     std::vector<std::string> fields;
             //     for (auto field : acmacs::string::split(name, "/", acmacs::string::Split::RemoveEmpty))
             //         fields.emplace_back(field.substr(0, 2));
-            //     name = string::join("/", fields);
+            //     name = string::join(acmacs::string::join_slash, fields);
             // }
             output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << has_too_few_numeric_titers_class << "\"><div class=\"tooltip\">" << html_escape(name)
                    << "<span class=\"tooltiptext\">" << html_escape(antigen->full_name()) << "</span></div></td>";
@@ -244,11 +244,11 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
 
     // const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
     // for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-    //     std::cout << "AG " << std::setw(num_digits) << ag_no << " " << acmacs::string::join(" ", antigen->name(), acmacs::string::join(" ", antigen->annotations()), antigen->reassortant(), antigen->passage(), "["
-    //     + static_cast<std::string>(antigen->date()) + "]", string::join(" ", antigen->lab_ids())}) << (antigen->reference() ? " Ref" : "") << '\n';
+    //     std::cout << "AG " << std::setw(num_digits) << ag_no << " " << acmacs::string::join(acmacs::string::join_space, antigen->name(), acmacs::string::join(acmacs::string::join_space, antigen->annotations()), antigen->reassortant(), antigen->passage(), "["
+    //     + static_cast<std::string>(antigen->date()) + "]", string::join(acmacs::string::join_space, antigen->lab_ids())}) << (antigen->reference() ? " Ref" : "") << '\n';
     // }
     // for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
-    //     std::cout << "SR " << std::setw(num_digits) << sr_no << " " << acmacs::string::join(" ", serum->name(), acmacs::string::join(" ", serum->annotations()), serum->reassortant(), serum->passage(),
+    //     std::cout << "SR " << std::setw(num_digits) << sr_no << " " << acmacs::string::join(acmacs::string::join_space, serum->name(), acmacs::string::join(acmacs::string::join_space, serum->annotations()), serum->reassortant(), serum->passage(),
     //     serum->serum_id(), serum->serum_species()}) << '\n';
     // }
 
@@ -337,7 +337,7 @@ std::vector<size_t> serum_rows(std::ostream& output, const acmacs::chart::Chart&
         // serum annotations (e.g. CONC)
         std::vector<std::string> serum_annotations(number_of_sera);
         for (size_t sr_no = 0; sr_no < number_of_sera; ++sr_no)
-            serum_annotations[sr_no] = acmacs::string::join(" ", sera->at(sr_no)->annotations());
+            serum_annotations[sr_no] = acmacs::string::join(acmacs::string::join_space, sera->at(sr_no)->annotations());
         if (field_present(serum_annotations)) {
             auto show_annotations = [&output, &serum_annotations](size_t sr_no, const auto& /*serum*/, bool group_begin) {
                 output << "<td class=\"sr-annotations " << ("sr-" + std::to_string(sr_no)) << (group_begin ? " sr-group-begin" : "") << "\">" << html_escape(serum_annotations[sr_no]) << "</td>";
@@ -364,7 +364,7 @@ std::vector<size_t> serum_rows(std::ostream& output, const acmacs::chart::Chart&
                     else
                         fields.emplace_back(field);
                 }
-                name = acmacs::string::join("/", fields);
+                name = acmacs::string::join(acmacs::string::join_slash, fields);
             }
             const char* has_too_few_numeric_titers_class = having_too_few_numeric_titers.contains(sr_no + number_of_antigens) ? " too-few-numeric-titers" : "";
             output << "<td class=\"sr-name sr-" << sr_no << " passage-" << serum.passage().passage_type() << has_too_few_numeric_titers_class << (group_begin ? " sr-group-begin" : "")
