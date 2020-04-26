@@ -12,15 +12,15 @@
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
 #endif
 
-static std::string sEncodedSignature_strain_name_lc{"!b"};
-static std::string sEncodedSignature_strain_name_uc{"!B"};
-static std::string sEncodedSignature_table_name_lc{"@b"};
-static std::string sEncodedSignature_table_name_uc{"@B"};
+static const std::string sEncodedSignature_strain_name_lc{"!b"};
+static const std::string sEncodedSignature_strain_name_uc{"!B"};
+static const std::string sEncodedSignature_table_name_lc{"@b"};
+static const std::string sEncodedSignature_table_name_uc{"@B"};
 
-static std::string sEncodedSignature_strain_name_lc_v1{"/a"};
-static std::string sEncodedSignature_strain_name_uc_v1{"/A"};
-static std::string sEncodedSignature_table_name_lc_v1{"@a"};
-static std::string sEncodedSignature_table_name_uc_v1{"@A"};
+static const std::string sEncodedSignature_strain_name_lc_v1{"/a"};
+static const std::string sEncodedSignature_strain_name_uc_v1{"/A"};
+static const std::string sEncodedSignature_table_name_lc_v1{"@a"};
+static const std::string sEncodedSignature_table_name_uc_v1{"@A"};
 
 #pragma GCC diagnostic pop
 
@@ -43,7 +43,7 @@ static std::regex sPassageDate{".+ ([12][90][0-9][0-9]-[0-2][0-9]-[0-3][0-9])"};
 
 // ----------------------------------------------------------------------
 
-static inline std::string append_signature(std::string aSource, acmacs::chart::lispmds_encoding_signature signature)
+static inline std::string append_signature(const std::string& aSource, acmacs::chart::lispmds_encoding_signature signature)
 {
     using namespace acmacs::chart;
 
@@ -132,7 +132,11 @@ std::string acmacs::chart::lispmds_table_name_encode(std::string_view name)
 {
       // lispmds does not like / in the table name
       // it interprets / as being part of a file name when we doing procrustes (Blake 2018-06-11)
-    return lispmds_encode(name, lispmds_encoding_signature::table_name);
+    const auto encoded = lispmds_encode(name, lispmds_encoding_signature::no);
+    if (encoded == name)
+        return encoded;          // nothing encoded, no need in signature
+    else
+        return append_signature(encoded, lispmds_encoding_signature::table_name);
 
 } // acmacs::chart::lispmds_table_name_encode
 
@@ -147,7 +151,10 @@ std::string acmacs::chart::lispmds_antigen_name_encode(const acmacs::virus::name
         result += "_p!" + lispmds_encode(aPassage, lispmds_encoding_signature::no);
     for (const auto& anno: aAnnotations)
         result += "_a!" + lispmds_encode(anno, lispmds_encoding_signature::no);
-    return append_signature(result, signature);
+    if (result == *aName)
+        return result;          // nothing encoded, no need in signature
+    else
+        return append_signature(result, signature);
 
 } // acmacs::chart::lispmds_antigen_name_encode
 
@@ -162,7 +169,10 @@ std::string acmacs::chart::lispmds_serum_name_encode(const acmacs::virus::name_t
         result += "_a!" + lispmds_encode(anno, lispmds_encoding_signature::no);
     if (!aSerumId.empty())
         result += "_i!" + lispmds_encode(aSerumId, lispmds_encoding_signature::no);
-    return append_signature(result, signature);
+    if (result == *aName)
+        return result;          // nothing encoded, no need in signature
+    else
+        return append_signature(result, signature);
 
 } // acmacs::chart::lispmds_serum_name_encode
 
