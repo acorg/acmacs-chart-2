@@ -814,59 +814,59 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, size_t aPointNo
 void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::lispmds::list& aSource) const
 {
     try {
-        aTarget.size = Pixels{static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":DS"])) / acmacs::lispmds::DS_SCALE};
+        aTarget.size(Pixels{static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":DS"])) / acmacs::lispmds::DS_SCALE});
           // if antigen also divide size by 2 ?
     }
     catch (std::exception&) {
     }
 
     try {
-        aTarget.label_text = *std::get<acmacs::lispmds::string>(aSource[":WN"]);
-        aTarget.label.shown = !aTarget.label_text.empty();
+        aTarget.label_text(*std::get<acmacs::lispmds::string>(aSource[":WN"]));
+        aTarget.label().shown = !aTarget.label_text().empty();
     }
     catch (std::exception&) {
     }
 
     try {
-        aTarget.shape = *std::get<acmacs::lispmds::string>(aSource[":SH"]);
+        aTarget.shape(PointShape{*std::get<acmacs::lispmds::string>(aSource[":SH"])});
     }
     catch (std::exception&) {
     }
 
     try {
-        aTarget.label.size = Pixels{static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":NS"])) / acmacs::lispmds::NS_SCALE};
+        aTarget.label().size = Pixels{static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":NS"])) / acmacs::lispmds::NS_SCALE};
     }
     catch (std::exception&) {
     }
 
     try {
         if (const auto label_color = std::get<acmacs::lispmds::string>(aSource[":NC"]); label_color != acmacs::lispmds::string{"{}"})
-            aTarget.label.color = Color(*label_color);
+            aTarget.label().color = Color(*label_color);
     }
     catch (std::exception&) {
     }
 
     try {
         if (const auto fill_color = std::get<acmacs::lispmds::string>(aSource[":CO"]); fill_color != acmacs::lispmds::string{"{}"})
-            aTarget.fill = Color(*fill_color);
+            aTarget.fill(Color(*fill_color));
         else
-            aTarget.fill = TRANSPARENT;
+            aTarget.fill(TRANSPARENT);
     }
     catch (std::exception&) {
     }
 
     try {
         if (const auto outline_color = std::get<acmacs::lispmds::string>(aSource[":OC"]); outline_color != acmacs::lispmds::string{"{}"})
-            aTarget.outline = Color(*outline_color);
+            aTarget.outline(Color(*outline_color));
         else
-            aTarget.outline = TRANSPARENT;
+            aTarget.outline(TRANSPARENT);
     }
     catch (std::exception&) {
     }
 
     try {
         // acmacs::color::set_transparency(aTarget.fill.set(), std::get<acmacs::lispmds::number>(aSource[":TR"]));
-        aTarget.fill.set_transparency(std::get<acmacs::lispmds::number>(aSource[":TR"]));
+        aTarget.fill_transparency(std::get<acmacs::lispmds::number>(aSource[":TR"]));
     }
     catch (std::exception&) {
     }

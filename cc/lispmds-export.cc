@@ -343,24 +343,24 @@ std::string point_style(const acmacs::PointStyle& aStyle)
     };
 
     std::string result;
-    result.append(" :DS " + acmacs::to_string(aStyle.size.value() * acmacs::lispmds::DS_SCALE));
-    if (aStyle.label.shown)
-        result.append(" :WN \"" + static_cast<std::string>(aStyle.label_text) + "\"");
+    result.append(" :DS " + acmacs::to_string(aStyle.size().value() * acmacs::lispmds::DS_SCALE));
+    if (aStyle.label().shown)
+        result.append(" :WN \"" + static_cast<std::string>(aStyle.label_text()) + "\"");
     else
         result.append(" :WN \"\"");
-    result.append(" :SH \"" + point_shape(aStyle.shape) + '"');
-    result.append(" :NS " + acmacs::to_string(std::lround(aStyle.label.size.value() * acmacs::lispmds::NS_SCALE))); // :NS must be integer (otherwise tk complains)
-    result.append(make_color("NC", aStyle.label.color));
-    if (aStyle.fill == TRANSPARENT)
+    result.append(" :SH \"" + point_shape(aStyle.shape()) + '"');
+    result.append(" :NS " + acmacs::to_string(std::lround(aStyle.label().size.value() * acmacs::lispmds::NS_SCALE))); // :NS must be integer (otherwise tk complains)
+    result.append(make_color("NC", aStyle.label().color));
+    if (aStyle.fill() == TRANSPARENT)
         result.append(" :CO \"{}\"");
     else
-        result.append(make_color("CO", aStyle.fill));
-    if (aStyle.outline == TRANSPARENT)
+        result.append(make_color("CO", aStyle.fill()));
+    if (aStyle.outline() == TRANSPARENT)
         result.append(" :OC \"{}\"");
     else
-        result.append(make_color("OC", aStyle.outline));
+        result.append(make_color("OC", aStyle.outline()));
     // if (const auto alpha = acmacs::color::alpha(aStyle.fill); alpha < 1.0)
-    if (const auto alpha = aStyle.fill.alpha(); alpha < 1.0)
+    if (const auto alpha = aStyle.fill().alpha(); alpha < 1.0)
         result.append(" :TR " + acmacs::to_string(1.0 - alpha));
 
     return result;

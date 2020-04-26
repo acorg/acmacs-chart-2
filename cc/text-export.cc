@@ -219,11 +219,11 @@ std::string export_plot_spec_to_text(const acmacs::chart::Chart& chart)
 std::string export_style_to_text(const acmacs::PointStyle& aStyle)
 {
     fmt::memory_buffer result;
-    fmt::format_to(result, "shown:{} fill:\"{}\" outline:\"{}\" outline_width:{} size:{} rotation:{} aspect:{} shape:{}", aStyle.shown, aStyle.fill, aStyle.outline, aStyle.outline_width.value(),
-                   aStyle.size.value(), aStyle.rotation, aStyle.aspect, aStyle.shape);
+    fmt::format_to(result, "shown:{} fill:\"{}\" outline:\"{}\" outline_width:{} size:{} rotation:{} aspect:{} shape:{}", aStyle.shown(), aStyle.fill(), aStyle.outline(), aStyle.outline_width().value(),
+                   aStyle.size().value(), aStyle.rotation(), aStyle.aspect(), aStyle.shape());
     fmt::format_to(result, " label:{{ shown:{} text:\"{}\" font_family:\"{}\" slant:\"{}\" weight:\"{}\" size:{} color:\"{}\" rotation:{} interline:{} offset:{}",
-                   aStyle.label.shown, aStyle.label_text, aStyle.label.style.font_family, aStyle.label.style.slant, aStyle.label.style.weight, aStyle.label.size.value(), aStyle.label.color,
-                   aStyle.label.rotation, aStyle.label.interline, aStyle.label.offset);
+                   aStyle.label().shown, aStyle.label_text(), aStyle.label().style.font_family, aStyle.label().style.slant, aStyle.label().style.weight, aStyle.label().size.value(), aStyle.label().color,
+                   aStyle.label().rotation, aStyle.label().interline, aStyle.label().offset);
 
     return fmt::to_string(result);
 

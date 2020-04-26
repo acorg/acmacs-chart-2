@@ -359,26 +359,26 @@ void export_style(rjson::value& target_styles, const acmacs::PointStyle& aStyle)
 {
     const acmacs::PointStyle dflt;
     auto& st = target_styles.append(rjson::object{});
-    set_field(st, "+", aStyle.shown, aStyle.shown != dflt.shown);
-    set_field(st, "F", aStyle.fill, aStyle.fill != dflt.fill);
-    set_field(st, "O", aStyle.outline, aStyle.outline != dflt.outline);
-    set_field(st, "o", aStyle.outline_width, aStyle.outline_width != dflt.outline_width);
-    set_field(st, "s", aStyle.size.value() / acmacs::chart::ace::PointScale, aStyle.size != dflt.size);
-    set_field(st, "r", aStyle.rotation, aStyle.rotation != dflt.rotation);
-    set_field(st, "a", aStyle.aspect, aStyle.aspect != dflt.aspect);
-    set_field(st, "S", aStyle.shape, aStyle.shape != dflt.shape);
+    set_field(st, "+", aStyle.shown(), aStyle.shown() != dflt.shown());
+    set_field(st, "F", aStyle.fill(), aStyle.fill() != dflt.fill());
+    set_field(st, "O", aStyle.outline(), aStyle.outline() != dflt.outline());
+    set_field(st, "o", aStyle.outline_width(), aStyle.outline_width() != dflt.outline_width());
+    set_field(st, "s", aStyle.size().value() / acmacs::chart::ace::PointScale, aStyle.size() != dflt.size());
+    set_field(st, "r", aStyle.rotation(), aStyle.rotation() != dflt.rotation());
+    set_field(st, "a", aStyle.aspect(), aStyle.aspect() != dflt.aspect());
+    set_field(st, "S", aStyle.shape(), aStyle.shape() != dflt.shape());
 
     rjson::value ls{rjson::object{}};
-    set_field(ls, "+", aStyle.label.shown, aStyle.label.shown != dflt.label.shown);
-    set_field(ls, "t", aStyle.label_text, aStyle.label_text != dflt.label_text);
-    set_field(ls, "f", aStyle.label.style.font_family, aStyle.label.style.font_family != dflt.label.style.font_family);
-    set_field(ls, "S", aStyle.label.style.slant, aStyle.label.style.slant != dflt.label.style.slant);
-    set_field(ls, "W", aStyle.label.style.weight, aStyle.label.style.weight != dflt.label.style.weight);
-    set_field(ls, "s", aStyle.label.size.value() / acmacs::chart::ace::LabelScale, aStyle.label.size != dflt.label.size);
-    set_field(ls, "c", aStyle.label.color, aStyle.label.color != dflt.label.color);
-    set_field(ls, "r", aStyle.label.rotation, aStyle.label.rotation != dflt.label.rotation);
-    set_field(ls, "i", aStyle.label.interline, !float_equal(aStyle.label.interline, dflt.label.interline));
-    set_field(ls, "p", aStyle.label.offset, aStyle.label.offset != dflt.label.offset);
+    set_field(ls, "+", aStyle.label().shown, aStyle.label().shown != dflt.label().shown);
+    set_field(ls, "t", aStyle.label_text(), aStyle.label_text() != dflt.label_text());
+    set_field(ls, "f", aStyle.label().style.font_family, aStyle.label().style.font_family != dflt.label().style.font_family);
+    set_field(ls, "S", aStyle.label().style.slant, aStyle.label().style.slant != dflt.label().style.slant);
+    set_field(ls, "W", aStyle.label().style.weight, aStyle.label().style.weight != dflt.label().style.weight);
+    set_field(ls, "s", aStyle.label().size.value() / acmacs::chart::ace::LabelScale, aStyle.label().size != dflt.label().size);
+    set_field(ls, "c", aStyle.label().color, aStyle.label().color != dflt.label().color);
+    set_field(ls, "r", aStyle.label().rotation, aStyle.label().rotation != dflt.label().rotation);
+    set_field(ls, "i", aStyle.label().interline, !float_equal(aStyle.label().interline, dflt.label().interline));
+    set_field(ls, "p", aStyle.label().offset, aStyle.label().offset != dflt.label().offset);
     if (!ls.empty())
         st["l"] = std::move(ls);
 

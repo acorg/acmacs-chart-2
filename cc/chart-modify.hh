@@ -691,26 +691,26 @@ namespace acmacs::chart
         void lower_serum(size_t serum_no) { lower(serum_no + number_of_antigens_); }
         void lower_serum(const Indexes& sera) { std::for_each(sera.begin(), sera.end(), [this](size_t index) { this->lower(index + this->number_of_antigens_); }); }
 
-        void shown(size_t point_no, bool shown) { modify(); validate_point_no(point_no); styles_[point_no].shown = shown; }
-        void size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].size = size; }
-        void fill(size_t point_no, Color fill) { modify(); validate_point_no(point_no); styles_[point_no].fill = fill; }
-        void fill_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].fill.set_opacity(opacity); }
-        void outline(size_t point_no, Color outline) { modify(); validate_point_no(point_no); styles_[point_no].outline = outline; }
-        void outline_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].outline.set_opacity(opacity); }
-        void outline_width(size_t point_no, Pixels outline_width) { modify(); validate_point_no(point_no); styles_[point_no].outline_width = outline_width; }
-        void rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].rotation = rotation; }
-        void aspect(size_t point_no, Aspect aspect) { modify(); validate_point_no(point_no); styles_[point_no].aspect = aspect; }
-        void shape(size_t point_no, PointShape::Shape shape) { modify(); validate_point_no(point_no); styles_[point_no].shape = shape; }
-        void label_shown(size_t point_no, bool shown) { modify(); validate_point_no(point_no); styles_[point_no].label.shown = shown; }
-        void label_offset_x(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label.offset.x(offset); }
-        void label_offset_y(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label.offset.y(offset); }
-        void label_size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].label.size = size; }
-        void label_color(size_t point_no, Color color) { modify(); validate_point_no(point_no); styles_[point_no].label.color = color; }
-        void label_rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].label.rotation = rotation; }
-        void label_slant(size_t point_no, FontSlant slant) { modify(); validate_point_no(point_no); styles_[point_no].label.style.slant = slant; }
-        void label_weight(size_t point_no, FontWeight weight) { modify(); validate_point_no(point_no); styles_[point_no].label.style.weight = weight; }
-        void label_font_family(size_t point_no, std::string font_family) { modify(); validate_point_no(point_no); styles_[point_no].label.style.font_family = font_family; }
-        void label_text(size_t point_no, std::string text) { modify(); validate_point_no(point_no); styles_[point_no].label_text = text; }
+        void shown(size_t point_no, bool shown) { modify(); validate_point_no(point_no); styles_[point_no].shown(shown); }
+        void size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].size(size); }
+        void fill(size_t point_no, Color fill) { modify(); validate_point_no(point_no); styles_[point_no].fill(fill); }
+        void fill_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].fill_opacity(opacity); }
+        void outline(size_t point_no, Color outline) { modify(); validate_point_no(point_no); styles_[point_no].outline(outline); }
+        void outline_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].outline_opacity(opacity); }
+        void outline_width(size_t point_no, Pixels outline_width) { modify(); validate_point_no(point_no); styles_[point_no].outline_width(outline_width); }
+        void rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].rotation(rotation); }
+        void aspect(size_t point_no, Aspect aspect) { modify(); validate_point_no(point_no); styles_[point_no].aspect(aspect); }
+        void shape(size_t point_no, PointShape::Shape shape) { modify(); validate_point_no(point_no); styles_[point_no].shape(shape); }
+        void label_shown(size_t point_no, bool shown) { modify(); validate_point_no(point_no); styles_[point_no].label().shown = shown; }
+        void label_offset_x(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label().offset.x(offset); }
+        void label_offset_y(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label().offset.y(offset); }
+        void label_size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].label().size = size; }
+        void label_color(size_t point_no, Color color) { modify(); validate_point_no(point_no); styles_[point_no].label().color = color; }
+        void label_rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].label().rotation = rotation; }
+        void label_slant(size_t point_no, FontSlant slant) { modify(); validate_point_no(point_no); styles_[point_no].label().style.slant = slant; }
+        void label_weight(size_t point_no, FontWeight weight) { modify(); validate_point_no(point_no); styles_[point_no].label().style.weight = weight; }
+        void label_font_family(size_t point_no, std::string font_family) { modify(); validate_point_no(point_no); styles_[point_no].label().style.font_family = font_family; }
+        void label_text(size_t point_no, std::string text) { modify(); validate_point_no(point_no); styles_[point_no].label_text(text); }
 
         void scale_all(double point_scale, double outline_scale) { modify(); std::for_each(styles_.begin(), styles_.end(), [=](auto& style) { style.scale(point_scale).scale_outline(outline_scale); }); }
 

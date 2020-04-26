@@ -397,28 +397,28 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointN
             try {
                 switch (field_name[0]) {
                   case '+':
-                      result.shown = field_value.to<bool>();
+                      result.shown(field_value.to<bool>());
                       break;
                   case 'F':
-                      result.fill = Color(field_value.to<std::string_view>());
+                      result.fill(Color(field_value.to<std::string_view>()));
                       break;
                   case 'O':
-                      result.outline = Color(field_value.to<std::string_view>());
+                      result.outline(Color(field_value.to<std::string_view>()));
                       break;
                   case 'o':
-                      result.outline_width = Pixels{field_value.to<double>()};
+                      result.outline_width(Pixels{field_value.to<double>()});
                       break;
                   case 's':
-                      result.size = Pixels{field_value.to<double>() * acmacs::chart::ace::PointScale};
+                      result.size(Pixels{field_value.to<double>() * acmacs::chart::ace::PointScale});
                       break;
                   case 'r':
-                      result.rotation = Rotation{field_value.to<double>()};
+                      result.rotation(Rotation{field_value.to<double>()});
                       break;
                   case 'a':
-                      result.aspect = Aspect{field_value.to<double>()};
+                      result.aspect(Aspect{field_value.to<double>()});
                       break;
                   case 'S':
-                      result.shape = field_value.to<std::string_view>();
+                      result.shape(field_value.to<std::string_view>());
                       break;
                   case 'l':
                       this->label_style(result, field_value);
@@ -441,7 +441,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
     rjson::for_each(aData, [&aStyle](std::string_view field_name, const rjson::value& field_value) {
         if (!field_name.empty()) {
             try {
-                auto& label_style = aStyle.label;
+                auto& label_style = aStyle.label();
                 switch (field_name[0]) {
                   case '+':
                       label_style.shown = field_value.to<bool>();
@@ -471,7 +471,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
                       label_style.style.weight = field_value.to<std::string_view>();
                       break;
                   case 't':
-                      aStyle.label_text = field_value.to<std::string_view>();
+                      aStyle.label_text(field_value.to<std::string_view>());
                       break;
                 }
             }

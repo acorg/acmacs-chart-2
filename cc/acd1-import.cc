@@ -788,43 +788,43 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
         if (!field_name.empty()) {
             try {
                 if (field_name == "shown")
-                    result.shown = field_value.to<bool>();
+                    result.shown(field_value.to<bool>());
                 else if (field_name == "fill_color")
-                    result.fill = Color(field_value.to<size_t>());
+                    result.fill(Color(field_value.to<size_t>()));
                 else if (field_name == "outline_color")
-                    result.outline = Color(field_value.to<size_t>());
+                    result.outline(Color(field_value.to<size_t>()));
                 else if (field_name == "outline_width")
-                    result.outline_width = Pixels{field_value.to<double>()};
+                    result.outline_width(Pixels{field_value.to<double>()});
                 else if (field_name == "line_width") // acmacs-b3
-                    result.outline_width = Pixels{field_value.to<double>()};
+                    result.outline_width(Pixels{field_value.to<double>()});
                 else if (field_name == "shape")
-                    result.shape = field_value.to<std::string_view>();
+                    result.shape(field_value.to<std::string_view>());
                 else if (field_name == "size")
-                    result.size = Pixels{field_value.to<double>() * PointScale};
+                    result.size(Pixels{field_value.to<double>() * PointScale});
                 else if (field_name == "rotation")
-                    result.rotation = Rotation{field_value.to<double>()};
+                    result.rotation(Rotation{field_value.to<double>()});
                 else if (field_name == "aspect")
-                    result.aspect = Aspect{field_value.to<double>()};
+                    result.aspect(Aspect{field_value.to<double>()});
                 else if (field_name == "show_label")
-                    result.label.shown = field_value.to<bool>();
+                    result.label().shown = field_value.to<bool>();
                 else if (field_name == "label_position_x")
-                    result.label.offset.x(field_value.to<double>());
+                    result.label().offset.x(field_value.to<double>());
                 else if (field_name == "label_position_y")
-                    result.label.offset.y(field_value.to<double>());
+                    result.label().offset.y(field_value.to<double>());
                 else if (field_name == "label")
-                    result.label_text = field_value.to<std::string_view>();
+                    result.label_text(field_value.to<std::string_view>());
                 else if (field_name == "label_size")
-                    result.label.size = Pixels{field_value.to<double>() * LabelScale};
+                    result.label().size = Pixels{field_value.to<double>() * LabelScale};
                 else if (field_name == "label_color")
-                    result.label.color = Color(field_value.to<size_t>());
+                    result.label().color = Color(field_value.to<size_t>());
                 else if (field_name == "label_rotation")
-                    result.label.rotation = Rotation{field_value.to<double>()};
+                    result.label().rotation = Rotation{field_value.to<double>()};
                 else if (field_name == "label_font_face")
-                    result.label.style.font_family = field_value.to<std::string>();
+                    result.label().style.font_family = field_value.to<std::string>();
                 else if (field_name == "label_font_slant")
-                    result.label.style.slant = field_value.to<std::string_view>();
+                    result.label().style.slant = field_value.to<std::string_view>();
                 else if (field_name == "label_font_weight")
-                    result.label.style.weight = field_value.to<std::string_view>();
+                    result.label().style.weight = field_value.to<std::string_view>();
             }
             catch (std::exception& err) {
                 AD_WARNING("[acd1]: point {} style {} field \"{}\" value is wrong: {} value: {}", aPointNo, aStyleNo, field_name, err, field_value);

@@ -463,9 +463,9 @@ void test_insert_serum(acmacs::chart::ChartP chart, size_t before, const argc_ar
 
 inline std::string equality_report(const acmacs::PointStyle& s1, const acmacs::PointStyle& s2)
 {
-    return fmt::format("shown:{} fill:{} outline:{} outline_width:{} size:{} rotation:{} aspect:{} shape:{} label:{} label_text:{}", s1.shown == s2.shown, s1.fill == s2.fill, s1.outline == s2.outline,
-                       s1.outline_width == s2.outline_width, s1.size == s2.size, s1.rotation == s2.rotation, s1.aspect == s2.aspect, s1.shape == s2.shape, s1.label == s2.label,
-                       s1.label_text == s2.label_text);
+    return fmt::format("shown:{} fill:{} outline:{} outline_width:{} size:{} rotation:{} aspect:{} shape:{} label:{} label_text:{}", s1.shown() == s2.shown(), s1.fill() == s2.fill(),
+                       s1.outline() == s2.outline(), s1.outline_width() == s2.outline_width(), s1.size() == s2.size(), s1.rotation() == s2.rotation(), s1.aspect() == s2.aspect(),
+                       s1.shape() == s2.shape(), s1.label() == s2.label(), s1.label_text() == s2.label_text());
 }
 
 // ----------------------------------------------------------------------

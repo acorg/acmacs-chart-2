@@ -76,7 +76,7 @@ std::string field(const acmacs::chart::Chart& chart, std::string_view field_name
         else if (field_name == "name")
             return antigens->at(point_no)->full_name();
         else if (field_name == "fill")
-            return fmt::format("{}", chart.plot_spec()->all_styles()[point_no].fill);
+            return fmt::format("{}", chart.plot_spec()->all_styles()[point_no].fill());
         else
             return fmt::format("?{}", field_name);
     }
@@ -90,7 +90,7 @@ std::string field(const acmacs::chart::Chart& chart, std::string_view field_name
         else if (field_name == "name")
             return chart.sera()->at(point_no - antigens->size())->full_name();
         else if (field_name == "fill")
-            return fmt::format("{}", chart.plot_spec()->all_styles()[point_no].fill);
+            return fmt::format("{}", chart.plot_spec()->all_styles()[point_no].fill());
         else
             return fmt::format("?{}", field_name);
     }

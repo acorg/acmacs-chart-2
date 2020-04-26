@@ -170,22 +170,22 @@ void acmacs::chart::Chart::set_homologous(find_homologous options, SeraP aSera, 
 acmacs::PointStyle acmacs::chart::Chart::default_style(acmacs::chart::Chart::PointType aPointType) const
 {
     acmacs::PointStyle style;
-    style.outline = BLACK;
+    style.outline(BLACK);
     switch (aPointType) {
       case PointType::TestAntigen:
-          style.shape = acmacs::PointShape::Circle;
-          style.size = Pixels{5.0};
-          style.fill = GREEN;
+          style.shape(acmacs::PointShape::Circle);
+          style.size(Pixels{5.0});
+          style.fill(GREEN);
           break;
       case PointType::ReferenceAntigen:
-          style.shape = acmacs::PointShape::Circle;
-          style.size = Pixels{8.0};
-          style.fill = TRANSPARENT;
+          style.shape(acmacs::PointShape::Circle);
+          style.size(Pixels{8.0});
+          style.fill(TRANSPARENT);
           break;
       case PointType::Serum:
-          style.shape = acmacs::PointShape::Box;
-          style.size = Pixels{6.5};
-          style.fill = TRANSPARENT;
+          style.shape(acmacs::PointShape::Box);
+          style.size(Pixels{6.5});
+          style.fill(TRANSPARENT);
           break;
     }
     return style;
