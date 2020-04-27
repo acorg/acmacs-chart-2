@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "acmacs-base/argc-argv.hh"
-#include "acmacs-base/rjson.hh"
+#include "acmacs-base/rjson-v2.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart-modify.hh"

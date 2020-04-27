@@ -1,7 +1,7 @@
 #pragma once
 
 #include "acmacs-base/named-type.hh"
-#include "acmacs-base/rjson.hh"
+#include "acmacs-base/rjson-v2.hh"
 #include "acmacs-base/indexes.hh"
 #include "acmacs-base/algorithm.hh"
 

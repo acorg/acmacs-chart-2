@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "acmacs-base/rjson.hh"
+#include "acmacs-base/rjson-v2.hh"
 #include "acmacs-base/data-formatter.hh"
 
 // ----------------------------------------------------------------------
