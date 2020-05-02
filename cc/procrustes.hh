@@ -18,7 +18,7 @@ namespace acmacs::chart
         ProcrustesData(number_of_dimensions_t number_of_dimensions) : transformation(number_of_dimensions) {}
         ProcrustesData(const ProcrustesData&) = default;
         ProcrustesData(ProcrustesData&&) = default;
-        TransformationTranslation transformation;
+        Transformation transformation;
         double scale{1};
         double rms{0};
           // distance_summary = backend.ProcrustesDistancesSummaryResults

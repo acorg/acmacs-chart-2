@@ -289,7 +289,7 @@ void merge_projections_type3(acmacs::chart::ChartModify& result, const acmacs::c
     // re-orinet layout2 to layout1 using procrustes
     const auto procrustes_data = procrustes(*projection1, *projection2, report.common.points(acmacs::chart::CommonAntigensSera::subset::all), acmacs::chart::procrustes_scaling_t::no);
     auto layout1 = projection1->transformed_layout();
-    const auto transformation2 = procrustes_data.transformation.transformation();
+    const auto transformation2 = procrustes_data.transformation;
     // std::cout << "INFO: transformation for the secondary layout: " << transformation2 << '\n';
     auto layout2 = projection2->layout()->transform(transformation2);
 
@@ -335,7 +335,7 @@ void merge_projections_type5(acmacs::chart::ChartModify& result, const acmacs::c
     // re-orinet layout2 to layout1 using procrustes
     const auto procrustes_data = procrustes(*projection1, *projection2, report.common.points(acmacs::chart::CommonAntigensSera::subset::all), acmacs::chart::procrustes_scaling_t::no);
     auto layout1 = projection1->transformed_layout();
-    const auto transformation2 = procrustes_data.transformation.transformation();
+    const auto transformation2 = procrustes_data.transformation;
       // std::cout << "INFO: transformation for the secondary layout: " << transformation2 << '\n';
     auto layout2 = projection2->layout()->transform(transformation2);
 

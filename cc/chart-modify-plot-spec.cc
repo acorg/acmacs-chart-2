@@ -63,7 +63,7 @@ int main(int argc, char* const argv[])
 
         if (opt.size) {
             for (auto point_no : points)
-                plot_spec->size(point_no, Pixels{opt.size});
+                plot_spec->size(point_no, Pixels{*opt.size});
         }
         if (opt.fill) {
             for (auto point_no : points)

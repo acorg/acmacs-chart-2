@@ -1769,7 +1769,7 @@ ProcrustesData ProjectionModify::orient_to(const Projection& master)
 {
     acmacs::chart::CommonAntigensSera common(master.chart(), chart(), CommonAntigensSera::match_level_t::automatic);
     const auto procrustes_data = procrustes(master, *this, common.points(), procrustes_scaling_t::no);
-    transformation(procrustes_data.transformation.transformation());
+    transformation(procrustes_data.transformation);
     return procrustes_data;
 
 } // ProjectionModify::orient_to
