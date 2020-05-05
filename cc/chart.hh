@@ -47,6 +47,8 @@ namespace acmacs::chart
         all             // find all possible antigens with relaxed passage matching, use for serum circles
     };
 
+    enum class reassortant_as_egg { no, yes };
+
     class Chart;
 
     // ----------------------------------------------------------------------
@@ -375,8 +377,8 @@ namespace acmacs::chart
         std::string abbreviated_location_year() const;
         std::string passage_type() const { return passage().passage_type(); }
 
-        bool is_egg() const { return !reassortant().empty() || passage().is_egg(); }
-        bool is_cell() const { return !is_egg(); }
+        bool is_egg(reassortant_as_egg rae) const { return rae == reassortant_as_egg::yes ? (!reassortant().empty() || passage().is_egg()) : (reassortant().empty() && passage().is_egg()); }
+        bool is_cell() const { return !is_egg(reassortant_as_egg::yes); }
         bool distinct() const { return annotations().distinct(); }
 
     }; // class Antigen
@@ -416,17 +418,14 @@ namespace acmacs::chart
         std::string location() const;
         std::string location_abbreviated() const;
         std::string abbreviated_location_year() const;
-        std::string passage_type() const { return is_egg() ? "egg" : "cell"; } // note NIID passage cannot be used
+        std::string passage_type() const { return is_egg(reassortant_as_egg::yes) ? "egg" : "cell"; } // note NIID passage cannot be used
 
-        bool is_egg() const {
-            if (!reassortant().empty())
-                return true;
-            if (!passage().empty())
-                return passage().is_egg();
-            // NIID has egg/cell/siat in serum id
-            return serum_id().find("EGG") != std::string::npos;
+        bool is_egg(reassortant_as_egg rae) const
+        {
+            const auto egg = passage().is_egg() || serum_id().find("EGG") != std::string::npos;
+            return rae == reassortant_as_egg::yes ? (!reassortant().empty() || egg) : (reassortant().empty() && egg);
         }
-        bool is_cell() const { return !is_egg(); }
+        bool is_cell() const { return !is_egg(reassortant_as_egg::yes); }
 
     }; // class Serum
 
@@ -474,9 +473,9 @@ namespace acmacs::chart
         {
             remove(aIndexes, [](const auto& entry) -> bool { return entry.reference(); });
         }
-        void filter_egg(Indexes& aIndexes) const
+        void filter_egg(Indexes& aIndexes, reassortant_as_egg rae = reassortant_as_egg::yes) const
         {
-            remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_egg(); });
+            remove(aIndexes, [rae](const auto& entry) -> bool { return !entry.is_egg(rae); });
         }
         void filter_cell(Indexes& aIndexes) const
         {
@@ -556,9 +555,9 @@ namespace acmacs::chart
         {
             remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); });
         }
-        void filter_egg(Indexes& aIndexes) const
+        void filter_egg(Indexes& aIndexes, reassortant_as_egg rae = reassortant_as_egg::yes) const
         {
-            remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_egg(); });
+            remove(aIndexes, [rae](const auto& entry) -> bool { return !entry.is_egg(rae); });
         }
         void filter_cell(Indexes& aIndexes) const
         {
