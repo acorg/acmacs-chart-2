@@ -665,58 +665,6 @@ static inline bool not_in_continent(std::string_view aName, std::string_view aCo
 
 // ----------------------------------------------------------------------
 
-std::optional<size_t> acmacs::chart::Antigens::find_by_full_name(std::string_view aFullName) const
-{
-    const auto found = std::find_if(begin(), end(), [aFullName](auto antigen) -> bool { return antigen->full_name() == aFullName; });
-    if (found == end())
-        return {};
-    else
-        return found.index();
-
-} // acmacs::chart::Antigens::find_by_full_name
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string_view aName) const
-{
-    auto find = [this](auto name) -> Indexes {
-        Indexes indexes;
-        for (auto iter = this->begin(); iter != this->end(); ++iter) {
-            if ((*iter)->name() == acmacs::virus::name_t{name})
-                indexes.insert(iter.index());
-        }
-        return indexes;
-    };
-
-    Indexes indexes = find(aName);
-    if (indexes->empty() && aName.size() > 2) {
-        if (const auto first_name = (*begin())->name(); first_name.size() > 2) {
-        // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix (for A and B)
-            if ((aName[0] == 'A' && aName[1] == '/' && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos) || (aName[0] == 'B' && aName[1] == '/'))
-                indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/')), aName.substr(1)));
-            else if (aName[1] != '/' && aName[1] != '(')
-                indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/') + 1), aName));
-        }
-    }
-    return indexes;
-
-} // acmacs::chart::Antigens::find_by_name
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(const std::regex& aName) const
-{
-    Indexes indexes;
-    for (auto iter = begin(); iter != end(); ++iter) {
-        if (std::regex_search((*iter)->full_name(), aName))
-            indexes.insert(iter.index());
-    }
-    return indexes;
-
-} // acmacs::chart::Antigens::find_by_name
-
-// ----------------------------------------------------------------------
-
 template <typename AgSr> acmacs::chart::duplicates_t find_duplicates(const AgSr& ag_sr)
 {
     std::map<std::string, std::vector<size_t>> designations_to_indexes;
@@ -911,44 +859,6 @@ void acmacs::chart::Sera::set_homologous(find_homologous options, const Antigens
 
 // ----------------------------------------------------------------------
 
-std::optional<size_t> acmacs::chart::Sera::find_by_full_name(std::string_view aFullName) const
-{
-    const auto found = std::find_if(begin(), end(), [aFullName](auto serum) -> bool { return serum->full_name() == aFullName; });
-    if (found == end())
-        return {};
-    else
-        return found.index();
-
-} // acmacs::chart::Sera::find_by_full_name
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::Indexes acmacs::chart::Sera::find_by_name(std::string_view aName) const
-{
-    Indexes indexes;
-    for (auto iter = begin(); iter != end(); ++iter) {
-        if ((*iter)->name() == aName)
-            indexes.insert(iter.index());
-    }
-    return indexes;
-
-} // acmacs::chart::Sera::find_by_name
-
-// ----------------------------------------------------------------------
-
-acmacs::chart::Indexes acmacs::chart::Sera::find_by_name(const std::regex& aName) const
-{
-    Indexes indexes;
-    for (auto iter = begin(); iter != end(); ++iter) {
-        if (std::regex_search((*iter)->full_name(), aName))
-            indexes.insert(iter.index());
-    }
-    return indexes;
-
-} // acmacs::chart::Sera::find_by_name
-
-// ----------------------------------------------------------------------
-
 acmacs::chart::duplicates_t acmacs::chart::Sera::find_duplicates() const
 {
     return ::find_duplicates(*this);
@@ -1000,59 +910,102 @@ acmacs::PointStylesCompacted acmacs::chart::PlotSpec::compacted() const
 
 } // acmacs::chart::PlotSpec::compacted
 
+// ======================================================================
+
+template <typename AgSr> acmacs::chart::Indexes find_by_name(const AgSr& ag_sr, std::string_view aName)
+{
+    auto find = [&ag_sr](auto name) -> acmacs::chart::Indexes {
+        acmacs::chart::Indexes indexes;
+        for (auto iter = ag_sr.begin(); iter != ag_sr.end(); ++iter) {
+            if ((*iter)->name() == acmacs::virus::name_t{name})
+                indexes.insert(iter.index());
+        }
+        return indexes;
+    };
+
+    acmacs::chart::Indexes indexes = find(aName);
+    if (indexes->empty() && aName.size() > 2) {
+        if (const auto first_name = (*ag_sr.begin())->name(); first_name.size() > 2) {
+        // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix (for A and B)
+            if ((aName[0] == 'A' && aName[1] == '/' && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos) || (aName[0] == 'B' && aName[1] == '/'))
+                indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/')), aName.substr(1)));
+            else if (aName[1] != '/' && aName[1] != '(')
+                indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/') + 1), aName));
+        }
+    }
+    return indexes;
+}
+
 // ----------------------------------------------------------------------
 
-// acmacs::chart::Chart::~Chart()
-// {
-// } // acmacs::chart::Chart::~Chart
+acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string_view aName) const
+{
+    return ::find_by_name(*this, aName);
 
-// // ----------------------------------------------------------------------
+} // acmacs::chart::Antigens::find_by_name
 
-// acmacs::chart::Info::~Info()
-// {
-// } // acmacs::chart::Info::~Info
+// ----------------------------------------------------------------------
 
-// // ----------------------------------------------------------------------
+acmacs::chart::Indexes acmacs::chart::Sera::find_by_name(std::string_view aName) const
+{
+    return ::find_by_name(*this, aName);
 
-// acmacs::chart::Antigen::~Antigen()
-// {
-// } // acmacs::chart::Antigen::~Antigen
+} // acmacs::chart::Sera::find_by_name
 
-// // ----------------------------------------------------------------------
+// ======================================================================
 
-// acmacs::chart::Serum::~Serum()
-// {
-// } // acmacs::chart::Serum::~Serum
+template <typename AgSr> std::optional<size_t> find_by_full_name(const AgSr& ag_sr, std::string_view aFullName)
+{
+    const auto found = std::find_if(ag_sr.begin(), ag_sr.end(), [aFullName](auto antigen) -> bool { return antigen->full_name() == aFullName; });
+    if (found == ag_sr.end())
+        return {};
+    else
+        return found.index();
+}
 
-// // ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 
-// acmacs::chart::Antigens::~Antigens()
-// {
-// } // acmacs::chart::Antigens::~Antigens
+std::optional<size_t> acmacs::chart::Antigens::find_by_full_name(std::string_view aFullName) const
+{
+    return ::find_by_full_name(*this, aFullName);
 
-// // ----------------------------------------------------------------------
+} // acmacs::chart::Antigens::find_by_full_name
 
-// acmacs::chart::Sera::~Sera()
-// {
-// } // acmacs::chart::Sera::~Sera
+// ----------------------------------------------------------------------
 
-// // ----------------------------------------------------------------------
+std::optional<size_t> acmacs::chart::Sera::find_by_full_name(std::string_view aFullName) const
+{
+    return ::find_by_full_name(*this, aFullName);
 
-// acmacs::chart::ColumnBases::~ColumnBases()
-// {
-// } // acmacs::chart::ColumnBases::~ColumnBases
+} // acmacs::chart::Sera::find_by_full_name
 
-// // ----------------------------------------------------------------------
+// ======================================================================
 
-// acmacs::chart::Projection::~Projection()
-// {
-// } // acmacs::chart::Projection::~Projection
+template <typename AgSr> acmacs::chart::Indexes find_by_name(const AgSr& ag_sr, const std::regex& aName)
+{
+    acmacs::chart::Indexes indexes;
+    for (auto iter = ag_sr.begin(); iter != ag_sr.end(); ++iter) {
+        if (std::regex_search((*iter)->full_name(), aName))
+            indexes.insert(iter.index());
+    }
+    return indexes;
+}
 
-// // ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 
-// acmacs::chart::Projections::~Projections()
-// {
-// } // acmacs::chart::Projections::~Projections
+acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(const std::regex& aName) const
+{
+    return ::find_by_name(*this, aName);
+
+} // acmacs::chart::Antigens::find_by_name
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Indexes acmacs::chart::Sera::find_by_name(const std::regex& aName) const
+{
+    return ::find_by_name(*this, aName);
+
+} // acmacs::chart::Sera::find_by_name
 
 // ----------------------------------------------------------------------
 /// Local Variables:
