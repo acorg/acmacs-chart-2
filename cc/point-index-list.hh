@@ -85,6 +85,11 @@ namespace acmacs::chart
                         end());
         }
 
+        void clear()
+        {
+            get().clear();
+        }
+
     }; // class PointIndexList
 
     // ----------------------------------------------------------------------
