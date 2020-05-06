@@ -473,6 +473,7 @@ namespace acmacs::chart
         {
             remove(aIndexes, [](const auto& entry) -> bool { return entry.reference(); });
         }
+
         void filter_egg(Indexes& aIndexes, reassortant_as_egg rae = reassortant_as_egg::yes) const
         {
             remove(aIndexes, [rae](const auto& entry) -> bool { return !entry.is_egg(rae); });
@@ -485,6 +486,15 @@ namespace acmacs::chart
         {
             remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); });
         }
+        void filter_passage(Indexes& aIndexes, std::string_view passage) const
+        {
+            remove(aIndexes, [passage](const auto& entry) -> bool { return entry.passage().find(passage) == std::string::npos; });
+        }
+        void filter_passage(Indexes& aIndexes, const std::regex& passage) const
+        {
+            remove(aIndexes, [&passage](const auto& entry) -> bool { return !entry.passage().search(passage); });
+        }
+
         void filter_date_range(Indexes& aIndexes, std::string_view first_date, std::string_view after_last_date) const
         {
             remove(aIndexes, [=](const auto& entry) -> bool { return !entry.date().within_range(first_date, after_last_date); });
@@ -563,6 +573,15 @@ namespace acmacs::chart
         {
             remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_cell(); });
         }
+        void filter_passage(Indexes& aIndexes, std::string_view passage) const
+        {
+            remove(aIndexes, [passage](const auto& entry) -> bool { return entry.passage().find(passage) == std::string::npos; });
+        }
+        void filter_passage(Indexes& aIndexes, const std::regex& passage) const
+        {
+            remove(aIndexes, [&passage](const auto& entry) -> bool { return !entry.passage().search(passage); });
+        }
+
         void filter_reassortant(Indexes& aIndexes) const
         {
             remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); });
