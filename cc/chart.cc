@@ -704,6 +704,19 @@ acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(std::string_view aN
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::Indexes acmacs::chart::Antigens::find_by_name(const std::regex& aName) const
+{
+    Indexes indexes;
+    for (auto iter = begin(); iter != end(); ++iter) {
+        if (std::regex_search((*iter)->full_name(), aName))
+            indexes.insert(iter.index());
+    }
+    return indexes;
+
+} // acmacs::chart::Antigens::find_by_name
+
+// ----------------------------------------------------------------------
+
 template <typename AgSr> acmacs::chart::duplicates_t find_duplicates(const AgSr& ag_sr)
 {
     std::map<std::string, std::vector<size_t>> designations_to_indexes;
@@ -915,6 +928,19 @@ acmacs::chart::Indexes acmacs::chart::Sera::find_by_name(std::string_view aName)
     Indexes indexes;
     for (auto iter = begin(); iter != end(); ++iter) {
         if ((*iter)->name() == aName)
+            indexes.insert(iter.index());
+    }
+    return indexes;
+
+} // acmacs::chart::Sera::find_by_name
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Indexes acmacs::chart::Sera::find_by_name(const std::regex& aName) const
+{
+    Indexes indexes;
+    for (auto iter = begin(); iter != end(); ++iter) {
+        if (std::regex_search((*iter)->full_name(), aName))
             indexes.insert(iter.index());
     }
     return indexes;

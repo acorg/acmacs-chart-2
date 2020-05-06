@@ -512,6 +512,7 @@ namespace acmacs::chart
 
         virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const;
         virtual Indexes find_by_name(std::string_view aName) const;
+        virtual Indexes find_by_name(const std::regex& aName) const; // regex search in full name
         size_t max_full_name() const;
 
         duplicates_t find_duplicates() const;
@@ -589,6 +590,7 @@ namespace acmacs::chart
 
         virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const;
         virtual Indexes find_by_name(std::string_view aName) const;
+        virtual Indexes find_by_name(const std::regex& aName) const; // regex search in full name
         size_t max_full_name() const;
 
         void set_homologous(find_homologous options, const Antigens& aAntigens, acmacs::debug dbg = acmacs::debug::no);
