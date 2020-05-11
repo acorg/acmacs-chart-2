@@ -16,6 +16,7 @@
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/optimize.hh"
 #include "acmacs-chart-2/serum-circle.hh"
+#include "acmacs-chart-2/lab.hh"
 #include "acmacs-chart-2/blobs.hh"
 
 // ----------------------------------------------------------------------
@@ -65,12 +66,6 @@ namespace acmacs::chart
         using acmacs::named_string_t<struct chart_assay_tag_t>::named_string_t;
 
         std::string hi_or_neut() const { return (empty() || get() == "HI") ? "hi" : "neut"; }
-    };
-
-    class Lab : public acmacs::named_string_t<struct chart_lab_tag_t>
-    {
-      public:
-        using acmacs::named_string_t<struct chart_lab_tag_t>::named_string_t;
     };
 
     class RbcSpecies : public acmacs::named_string_t<struct chart_rbc_species_tag_t>

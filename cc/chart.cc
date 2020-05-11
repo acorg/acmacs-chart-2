@@ -7,6 +7,7 @@
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/range.hh"
 #include "locationdb/locdb.hh"
+#include "acmacs-whocc-data/labs.hh"
 #include "acmacs-chart-2/chart.hh"
 #include "acmacs-chart-2/serum-circle.hh"
 
@@ -341,12 +342,10 @@ acmacs::chart::Lab acmacs::chart::Info::fix_lab_name(Lab source, FixLab fix) con
         case FixLab::no:
             break;
         case FixLab::yes:
-            source = Lab{::string::replace(source, "NIMR", "Crick")};
-            source = Lab{::string::replace(source, "MELB", "VIDRL")};
+            source = acmacs::whocc::lab_name_normalize(source);
             break;
         case FixLab::reverse:
-            source = Lab{::string::replace(source, "Crick", "NIMR")};
-            source = Lab{::string::replace(source, "VIDRL", "MELB")};
+            source = acmacs::whocc::lab_name_old(source);
             break;
     }
     return source;
