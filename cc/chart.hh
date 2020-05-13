@@ -10,13 +10,12 @@
 #include "acmacs-base/point-style.hh"
 #include "acmacs-base/layout.hh"
 #include "acmacs-base/debug.hh"
-#include "acmacs-base/named-type.hh"
+#include "acmacs-base/lab.hh"
 #include "acmacs-virus/virus-name.hh"
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/optimize.hh"
 #include "acmacs-chart-2/serum-circle.hh"
-#include "acmacs-chart-2/lab.hh"
 #include "acmacs-chart-2/blobs.hh"
 
 // ----------------------------------------------------------------------

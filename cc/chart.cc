@@ -336,7 +336,7 @@ size_t acmacs::chart::Info::max_source_name() const
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Lab acmacs::chart::Info::fix_lab_name(Lab source, FixLab fix) const
+acmacs::Lab acmacs::chart::Info::fix_lab_name(Lab source, FixLab fix) const
 {
     switch (fix) {
         case FixLab::no:
