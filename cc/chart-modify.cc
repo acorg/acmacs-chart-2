@@ -431,10 +431,17 @@ void ChartModify::remove_layers()
 
 void ChartModify::remove_antigens(const ReverseSortedIndexes& indexes)
 {
-    antigens_modify()->remove(indexes);
-    titers_modify()->remove_antigens(indexes);
-    projections_modify()->remove_antigens(indexes);
-    plot_spec_modify()->remove_antigens(indexes);
+    // obtain *_modify pointers before removing antigens
+    // otherwise they are incrrectly created with the new number of antigens
+    auto antigens_mod = antigens_modify();
+    auto titers_mod = titers_modify();
+    auto projections_mod = projections_modify();
+    auto plot_spec_mod = plot_spec_modify();
+
+    antigens_mod->remove(indexes);
+    titers_mod->remove_antigens(indexes);
+    projections_mod->remove_antigens(indexes);
+    plot_spec_mod->remove_antigens(indexes);
 
 } // ChartModify::remove_antigens
 
@@ -462,12 +469,19 @@ AntigenModifyP ChartModify::insert_antigen(size_t before)
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     std::uniform_int_distribution<> dis(0, sNamesSize - 1);
 
-    titers_modify()->modifiable_check();
-    auto result = antigens_modify()->insert(before);
+    // obtain *_modify pointers before inserting antigens
+    // otherwise they are incrrectly created with the new number of antigens
+    auto antigens_mod = antigens_modify();
+    auto titers_mod = titers_modify();
+    auto projections_mod = projections_modify();
+    auto plot_spec_mod = plot_spec_modify();
+
+    titers_mod->modifiable_check();
+    auto result = antigens_mod->insert(before);
     result->name(sNames[dis(gen)]);
-    titers_modify()->insert_antigen(before);
-    projections_modify()->insert_antigen(before);
-    plot_spec_modify()->insert_antigen(before);
+    titers_mod->insert_antigen(before);
+    projections_mod->insert_antigen(before);
+    plot_spec_mod->insert_antigen(before);
     return result;
 
 } // ChartModify::insert_antigen
@@ -1793,6 +1807,7 @@ void ProjectionModifyNew::connect(const PointIndexList& to_connect)
 PlotSpecModify::PlotSpecModify(size_t number_of_antigens, size_t number_of_sera)
     : main_{nullptr}, number_of_antigens_(number_of_antigens), modified_{true}, styles_(number_of_antigens + number_of_sera, PointStyle{})
 {
+    AD_DEBUG("PlotSpecModify number_of_antigens:{}", number_of_antigens);
     for (size_t point_no : acmacs::range(number_of_antigens)) {
         styles_[point_no].fill(GREEN);
     }
