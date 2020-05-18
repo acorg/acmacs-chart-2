@@ -550,6 +550,12 @@ namespace acmacs::chart
         {
             remove(aIndexes, [&aSerumId](const auto& entry) -> bool { return entry.serum_id() != SerumId{aSerumId}; });
         }
+
+        void filter_serum_id(Indexes& aIndexes, const std::regex& re_serum_id) const
+        {
+            remove(aIndexes, [&re_serum_id](const auto& entry) -> bool { return !std::regex_search(*entry.serum_id(), re_serum_id); });
+        }
+
         void filter_country(Indexes& aIndexes, std::string_view aCountry) const;
         void filter_continent(Indexes& aIndexes, std::string_view aContinent) const;
         void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const
