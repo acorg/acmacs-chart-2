@@ -338,8 +338,8 @@ std::string point_shape(const acmacs::PointShape& aShape)
 
 std::string point_style(const acmacs::PointStyle& aStyle)
 {
-    const auto make_color = [](const char* key, const auto& color) {
-        return fmt::format(" :{} \"{:X}\"", key, acmacs::color::without_transparency(color));
+    const auto make_color = [](const char* key, Color color) {
+        return fmt::format(" :{} \"{:X}\"", key, color.without_transparency());
     };
 
     std::string result;
