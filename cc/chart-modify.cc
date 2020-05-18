@@ -1807,7 +1807,7 @@ void ProjectionModifyNew::connect(const PointIndexList& to_connect)
 PlotSpecModify::PlotSpecModify(size_t number_of_antigens, size_t number_of_sera)
     : main_{nullptr}, number_of_antigens_(number_of_antigens), modified_{true}, styles_(number_of_antigens + number_of_sera, PointStyle{})
 {
-    AD_DEBUG("PlotSpecModify number_of_antigens:{}", number_of_antigens);
+    // AD_DEBUG("PlotSpecModify number_of_antigens:{}", number_of_antigens);
     for (size_t point_no : acmacs::range(number_of_antigens)) {
         styles_[point_no].fill(GREEN);
     }
