@@ -816,7 +816,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                 else if (field_name == "label_size")
                     result.label().size = Pixels{field_value.to<double>() * LabelScale};
                 else if (field_name == "label_color")
-                    result.label().color = Color(field_value.to<size_t>());
+                    result.label().color = acmacs::color::Modifier{Color(field_value.to<size_t>())};
                 else if (field_name == "label_rotation")
                     result.label().rotation = Rotation{field_value.to<double>()};
                 else if (field_name == "label_font_face")

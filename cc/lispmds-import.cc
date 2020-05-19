@@ -841,7 +841,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
 
     try {
         if (const auto label_color = std::get<acmacs::lispmds::string>(aSource[":NC"]); label_color != acmacs::lispmds::string{"{}"})
-            aTarget.label().color = Color(*label_color);
+            aTarget.label().color = acmacs::color::Modifier{Color(*label_color)};
     }
     catch (std::exception&) {
     }

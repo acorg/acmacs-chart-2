@@ -219,7 +219,7 @@ acmacs::chart::ProjectionModifyP flip_relax(acmacs::chart::ChartModify& chart, a
 
     // mark bad side antigens
     acmacs::PointStyleModified style;
-    style.outline(ORANGE);
+    style.outline(acmacs::color::Modifier{ORANGE});
     style.outline_width(Pixels{2});
     chart.plot_spec_modify()->modify(split_data.on_the_wrong_side, style);
 

@@ -453,7 +453,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
                       label_style.size = Pixels{field_value.to<double>() * acmacs::chart::ace::LabelScale};
                       break;
                   case 'c':
-                      label_style.color.add(Color{field_value.to<std::string_view>()});
+                      label_style.color.add(acmacs::color::Modifier{Color{field_value.to<std::string_view>()}});
                       break;
                   case 'r':
                       label_style.rotation = Rotation{field_value.to<double>()};
