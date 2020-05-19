@@ -694,9 +694,9 @@ namespace acmacs::chart
         void shown(size_t point_no, bool shown) { modify(); validate_point_no(point_no); styles_[point_no].shown(shown); }
         void size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].size(size); }
         void fill(size_t point_no, Color fill) { modify(); validate_point_no(point_no); styles_[point_no].fill(fill); }
-        void fill_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].fill_opacity(opacity); }
+        void fill_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].fill(acmacs::color::Modifier{acmacs::color::Modifier::transparency_set{1.0 - opacity}}); }
         void outline(size_t point_no, Color outline) { modify(); validate_point_no(point_no); styles_[point_no].outline(outline); }
-        void outline_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].outline_opacity(opacity); }
+        void outline_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].outline(acmacs::color::Modifier{acmacs::color::Modifier::transparency_set{1.0 - opacity}}); }
         void outline_width(size_t point_no, Pixels outline_width) { modify(); validate_point_no(point_no); styles_[point_no].outline_width(outline_width); }
         void rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].rotation(rotation); }
         void aspect(size_t point_no, Aspect aspect) { modify(); validate_point_no(point_no); styles_[point_no].aspect(aspect); }
@@ -705,7 +705,7 @@ namespace acmacs::chart
         void label_offset_x(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label().offset.x(offset); }
         void label_offset_y(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label().offset.y(offset); }
         void label_size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].label().size = size; }
-        void label_color(size_t point_no, Color color) { modify(); validate_point_no(point_no); styles_[point_no].label().color = color; }
+        void label_color(size_t point_no, Color color) { modify(); validate_point_no(point_no); styles_[point_no].label().color.add(color); }
         void label_rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].label().rotation = rotation; }
         void label_slant(size_t point_no, FontSlant slant) { modify(); validate_point_no(point_no); styles_[point_no].label().style.slant = slant; }
         void label_weight(size_t point_no, FontWeight weight) { modify(); validate_point_no(point_no); styles_[point_no].label().style.weight = weight; }

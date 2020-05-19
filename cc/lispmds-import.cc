@@ -865,8 +865,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
     }
 
     try {
-        // acmacs::color::set_transparency(aTarget.fill.set(), std::get<acmacs::lispmds::number>(aSource[":TR"]));
-        aTarget.fill_transparency(std::get<acmacs::lispmds::number>(aSource[":TR"]));
+        aTarget.fill(acmacs::color::Modifier{acmacs::color::Modifier::transparency_set{static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":TR"]))}});
     }
     catch (std::exception&) {
     }
