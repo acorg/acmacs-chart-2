@@ -71,11 +71,32 @@ TARGETS = \
   $(DIST)/test-chart-relax
 
 SOURCES = \
-  chart-modify.cc acd1-import.cc ace-import.cc factory-import.cc chart.cc ace-export.cc lispmds-import.cc \
-  grid-test.cc map-resolution-test.cc text-export.cc lispmds-export.cc \
-  merge.cc optimize.cc rjson-import.cc common.cc titers.cc randomizer.cc \
-  procrustes.cc serum-line.cc lispmds-encode.cc serum-circle.cc factory-export.cc \
-  stress.cc column-bases.cc blobs.cc lispmds-token.cc bounding-ball.cc
+  chart-modify.cc         \
+  acd1-import.cc          \
+  chart.cc                \
+  ace-import.cc           \
+  ace-export.cc           \
+  lispmds-import.cc       \
+  merge.cc                \
+  rjson-import.cc         \
+  text-export.cc          \
+  map-resolution-test.cc  \
+  lispmds-encode.cc       \
+  optimize.cc             \
+  lispmds-export.cc       \
+  common.cc               \
+  titers.cc               \
+  randomizer.cc           \
+  procrustes.cc           \
+  stress.cc               \
+  serum-line.cc           \
+  factory-import.cc       \
+  serum-circle.cc         \
+  blobs.cc                \
+  factory-export.cc       \
+  lispmds-token.cc        \
+  bounding-ball.cc        \
+  column-bases.cc
 
 ALGLIB = alglib-3.13.0
 ALGLIB_SOURCES = optimization.cpp ap.cpp alglibinternal.cpp linalg.cpp alglibmisc.cpp \
