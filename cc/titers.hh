@@ -264,7 +264,7 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<acmacs::chart::TiterIterator::Data> : fmt::formatter<acmacs::fmt_default_formatter> {
+template <> struct fmt::formatter<acmacs::chart::TiterIterator::Data> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::TiterIterator::Data& value, FormatCtx& ctx)
     {
         return format_to(ctx.out(), "ag:{} sr:{} t:{}", value.antigen, value.serum, value.titer);

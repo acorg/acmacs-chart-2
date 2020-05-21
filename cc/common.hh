@@ -75,7 +75,7 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<acmacs::chart::CommonAntigensSera::common_t> : public fmt::formatter<acmacs::fmt_default_formatter>
+template <> struct fmt::formatter<acmacs::chart::CommonAntigensSera::common_t> : public fmt::formatter<acmacs::fmt_helper::default_formatter>
 {
     template <typename FormatContext> auto format(const acmacs::chart::CommonAntigensSera::common_t& common, FormatContext& ctx)
     {

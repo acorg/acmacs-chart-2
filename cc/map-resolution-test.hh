@@ -121,7 +121,7 @@ namespace acmacs
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::relax_from_full_table> : public fmt::formatter<acmacs::fmt_default_formatter>
+template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::relax_from_full_table> : public fmt::formatter<acmacs::fmt_helper::default_formatter>
 {
     template <typename FormatContext> auto format(const acmacs::chart::map_resolution_test_data::relax_from_full_table& rel, FormatContext& ctx)
     {
@@ -136,7 +136,7 @@ template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::relax
     }
 };
 
-template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::column_bases_from_master> : public fmt::formatter<acmacs::fmt_default_formatter>
+template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::column_bases_from_master> : public fmt::formatter<acmacs::fmt_helper::default_formatter>
 {
     template <typename FormatContext> auto format(const acmacs::chart::map_resolution_test_data::column_bases_from_master& rel, FormatContext& ctx)
     {
@@ -151,7 +151,7 @@ template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::colum
     }
 };
 
-template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::Parameters> : public fmt::formatter<acmacs::fmt_default_formatter>
+template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::Parameters> : public fmt::formatter<acmacs::fmt_helper::default_formatter>
 {
     template <typename FormatContext> auto format(const acmacs::chart::map_resolution_test_data::Parameters& param, FormatContext& ctx)
     {

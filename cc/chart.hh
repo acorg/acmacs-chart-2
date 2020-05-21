@@ -897,12 +897,12 @@ template <> struct std::iterator_traits<acmacs::chart::Projections::iterator>
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<acmacs::chart::BLineage> : fmt::formatter<acmacs::fmt_default_formatter> {
+template <> struct fmt::formatter<acmacs::chart::BLineage> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::BLineage& lineage, FormatCtx& ctx) { return format_to(ctx.out(), "{}", lineage.to_string()); }
 };
 
 
-template <> struct fmt::formatter<acmacs::chart::Antigen> : fmt::formatter<acmacs::fmt_default_formatter> {
+template <> struct fmt::formatter<acmacs::chart::Antigen> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::Antigen& antigen, FormatCtx& ctx)
     {
         format_to(ctx.out(), "{}", antigen.full_name());
@@ -916,7 +916,7 @@ template <> struct fmt::formatter<acmacs::chart::Antigen> : fmt::formatter<acmac
     }
 };
 
-template <> struct fmt::formatter<acmacs::chart::Serum> : fmt::formatter<acmacs::fmt_default_formatter> {
+template <> struct fmt::formatter<acmacs::chart::Serum> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::Serum& serum, FormatCtx& ctx)
     {
         format_to(ctx.out(), "{}", serum.full_name());

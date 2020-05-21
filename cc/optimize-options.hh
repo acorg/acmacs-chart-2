@@ -77,7 +77,7 @@ namespace acmacs
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<acmacs::chart::optimization_method> : public fmt::formatter<acmacs::fmt_default_formatter>
+template <> struct fmt::formatter<acmacs::chart::optimization_method> : public fmt::formatter<acmacs::fmt_helper::default_formatter>
 {
     template <typename FormatContext> auto format(const acmacs::chart::optimization_method& method, FormatContext& ctx)
     {
@@ -92,7 +92,7 @@ template <> struct fmt::formatter<acmacs::chart::optimization_method> : public f
     }
 };
 
-template <> struct fmt::formatter<acmacs::chart::optimization_precision> : public fmt::formatter<acmacs::fmt_default_formatter>
+template <> struct fmt::formatter<acmacs::chart::optimization_precision> : public fmt::formatter<acmacs::fmt_helper::default_formatter>
 {
     template <typename FormatContext> auto format(const acmacs::chart::optimization_precision& precision, FormatContext& ctx)
     {
@@ -109,7 +109,7 @@ template <> struct fmt::formatter<acmacs::chart::optimization_precision> : publi
     }
 };
 
-template <> struct fmt::formatter<acmacs::chart::multiply_antigen_titer_until_column_adjust> : public fmt::formatter<acmacs::fmt_default_formatter>
+template <> struct fmt::formatter<acmacs::chart::multiply_antigen_titer_until_column_adjust> : public fmt::formatter<acmacs::fmt_helper::default_formatter>
 {
     template <typename FormatContext> auto format(const acmacs::chart::multiply_antigen_titer_until_column_adjust& mul, FormatContext& ctx)
     {
@@ -124,7 +124,7 @@ template <> struct fmt::formatter<acmacs::chart::multiply_antigen_titer_until_co
     }
 };
 
-template <> struct fmt::formatter<acmacs::chart::dodgy_titer_is_regular> : public fmt::formatter<acmacs::fmt_default_formatter>
+template <> struct fmt::formatter<acmacs::chart::dodgy_titer_is_regular> : public fmt::formatter<acmacs::fmt_helper::default_formatter>
 {
     template <typename FormatContext> auto format(const acmacs::chart::dodgy_titer_is_regular& dod, FormatContext& ctx)
     {
