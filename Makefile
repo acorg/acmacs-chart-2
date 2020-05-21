@@ -83,6 +83,7 @@ SOURCES = \
   map-resolution-test.cc  \
   lispmds-encode.cc       \
   optimize.cc             \
+  grid-test.cc            \
   lispmds-export.cc       \
   common.cc               \
   titers.cc               \
