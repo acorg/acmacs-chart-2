@@ -90,6 +90,13 @@ namespace acmacs::chart
             get().clear();
         }
 
+        PointIndexList& serum_index_to_point(size_t to_add)
+        {
+            for (auto& no : get())
+                no += to_add;
+            return *this;
+        }
+
     }; // class PointIndexList
 
     // ----------------------------------------------------------------------
