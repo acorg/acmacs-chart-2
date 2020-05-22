@@ -1,7 +1,5 @@
 #pragma once
 
-#include "acmacs-base/log.hh"
-#include "acmacs-base/stream.hh"
 #include "acmacs-base/layout.hh"
 
 // ----------------------------------------------------------------------
@@ -66,10 +64,10 @@ namespace acmacs
 
 // ----------------------------------------------------------------------
 
-inline std::ostream& operator<<(std::ostream& out, const acmacs::BoundingBall& a)
-{
-    return out << "BoundingBall(" << a.center() << ", " << a.diameter() << ")";
-}
+// inline std::ostream& operator<<(std::ostream& out, const acmacs::BoundingBall& a)
+// {
+//     return out << "BoundingBall(" << a.center() << ", " << a.diameter() << ")";
+// }
 
 // ----------------------------------------------------------------------
 /// Local Variables:
