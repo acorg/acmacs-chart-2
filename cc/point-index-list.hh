@@ -85,6 +85,11 @@ namespace acmacs::chart
                         end());
         }
 
+        template <typename Pred> void remove_if(Pred pred)
+        {
+            get().erase(std::remove_if(begin(), end(), pred), end());
+        }
+
         void clear()
         {
             get().clear();
