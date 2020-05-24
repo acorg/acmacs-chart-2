@@ -27,7 +27,7 @@ int main(int argc, char* const argv[])
         auto titers = chart->titers();
         if (titers->number_of_layers() < 2)
             throw std::runtime_error("chart has no layers");
-        const auto max_antigen_name = static_cast<int>(chart->antigens()->max_full_name());
+        const auto max_antigen_name = static_cast<int>(max_full_name(*chart->antigens()));
 
         std::cout << "SR " << opt.serum_no << ' ' << chart->serum(opt.serum_no)->full_name() << ' ' << static_cast<std::string_view>(chart->serum(opt.serum_no)->passage()) << '\n';
         if (chart->number_of_projections() > 0) {

@@ -38,7 +38,7 @@ std::string acmacs::chart::export_table_to_text(const Chart& chart, std::optiona
     auto antigens = chart.antigens();
     auto sera = chart.sera();
     auto titers = chart.titers();
-    const auto max_antigen_name = antigens->max_full_name();
+    const auto max_antigen_name = max_full_name(*antigens);
 
     if (just_layer.has_value()) {
         if (*just_layer >= titers->number_of_layers())

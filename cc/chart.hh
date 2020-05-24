@@ -507,7 +507,8 @@ namespace acmacs::chart
         virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const;
         virtual Indexes find_by_name(std::string_view aName) const;
         virtual Indexes find_by_name(const std::regex& aName) const; // regex search in full name
-        size_t max_full_name() const;
+
+        // max_full_name() - see global template below
 
         duplicates_t find_duplicates() const;
 
@@ -591,7 +592,7 @@ namespace acmacs::chart
         virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const;
         virtual Indexes find_by_name(std::string_view aName) const;
         virtual Indexes find_by_name(const std::regex& aName) const; // regex search in full name
-        size_t max_full_name() const;
+        // max_full_name() - see global template below
 
         void set_homologous(find_homologous options, const Antigens& aAntigens, acmacs::debug dbg = acmacs::debug::no);
 
@@ -849,6 +850,16 @@ namespace acmacs::chart
     // returns if sets of antigens, sera are the same in both charts and titers are the same.
     // charts may have different sets of projections and different plot specs
     bool same_tables(const Chart& c1, const Chart& c2, bool verbose = false);
+
+    template <typename AgSr> inline size_t max_full_name(const AgSr& ag_sr)
+    {
+        return std::accumulate(std::begin(ag_sr), std::end(ag_sr), 0ul, [](size_t max_name, const auto& en) { return std::max(max_name, en->full_name().size()); });
+    }
+
+    template <typename AgSr> inline size_t max_full_name(const AgSr& ag_sr, const acmacs::chart::PointIndexList& indexes)
+    {
+        return std::accumulate(std::begin(indexes), std::end(indexes), 0ul, [&ag_sr](size_t max_name, size_t index) { return std::max(max_name, ag_sr->at(index)->full_name().size()); });
+    }
 
 } // namespace acmacs::chart
 

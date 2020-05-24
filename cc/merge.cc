@@ -429,7 +429,7 @@ void acmacs::chart::MergeReport::titer_merge_report(std::string_view filename, c
 
 void acmacs::chart::MergeReport::titer_merge_report(std::ostream& output, const ChartModify& chart) const
 {
-    const auto max_field = std::max(static_cast<int>(std::max(chart.antigens()->max_full_name(), chart.info()->max_source_name())), 20);
+    const auto max_field = std::max(static_cast<int>(std::max(max_full_name(*chart.antigens()), chart.info()->max_source_name())), 20);
     const auto hr = std::string(100, '-') + '\n';
 
     output << hr << chart.description() << '\n';

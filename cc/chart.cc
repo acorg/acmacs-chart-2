@@ -226,7 +226,7 @@ void acmacs::chart::Chart::show_table(std::ostream& output, std::optional<size_t
         serum_indexes = PointIndexList{filled_with_indexes(srs->size())};
     }
 
-    const auto max_ag_name = static_cast<int>(ags->max_full_name());
+    const auto max_ag_name = static_cast<int>(max_full_name(*ags));
 
     output << std::setw(max_ag_name + 6) << std::right << ' ' << "Serum full names are under the table\n";
     output << std::setw(max_ag_name) << ' ';
@@ -707,17 +707,6 @@ void acmacs::chart::Antigens::filter_continent(Indexes& aIndexes, std::string_vi
 
 // ----------------------------------------------------------------------
 
-size_t acmacs::chart::Antigens::max_full_name() const
-{
-    size_t max_name = 0;
-    for (auto ag : *this)
-        max_name = std::max(max_name, ag->full_name().size());
-    return max_name;
-
-} // acmacs::chart::Antigens::max_full_name
-
-// ----------------------------------------------------------------------
-
 #include "acmacs-base/global-constructors-push.hh"
 static const std::regex sAnntotationToIgnore{"(CONC|RDE@|BOOST|BLEED|LAIV|^CDC$)"};
 #include "acmacs-base/diagnostics-pop.hh"
@@ -879,17 +868,6 @@ void acmacs::chart::Sera::filter_continent(Indexes& aIndexes, std::string_view a
     remove(aIndexes, [aContinent](const auto& entry) { return not_in_continent(entry.name(), aContinent); });
 
 } // acmacs::chart::Sera::filter_continent
-
-// ----------------------------------------------------------------------
-
-size_t acmacs::chart::Sera::max_full_name() const
-{
-    size_t max_name = 0;
-    for (auto sr : *this)
-        max_name = std::max(max_name, sr->full_name().size());
-    return max_name;
-
-} // acmacs::chart::Sera::max_full_name
 
 // ----------------------------------------------------------------------
 
