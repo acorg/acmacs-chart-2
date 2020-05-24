@@ -97,6 +97,7 @@ SOURCES = \
   factory-export.cc       \
   lispmds-token.cc        \
   bounding-ball.cc        \
+  name-format.cc          \
   column-bases.cc
 
 ALGLIB = alglib-3.13.0
