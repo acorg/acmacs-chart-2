@@ -5,6 +5,7 @@ TARGETS = \
   $(ACMACS_CHART_LIB) \
   $(DIST)/chart-info \
   $(DIST)/chart-names \
+  $(DIST)/chart-name-format-help \
   $(DIST)/chart-countries \
   $(DIST)/chart-locations \
   $(DIST)/chart-dates-range \
