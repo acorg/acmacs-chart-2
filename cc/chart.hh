@@ -858,7 +858,7 @@ namespace acmacs::chart
 
     template <typename AgSr> inline size_t max_full_name(const AgSr& ag_sr, const acmacs::chart::PointIndexList& indexes)
     {
-        return std::accumulate(std::begin(indexes), std::end(indexes), 0ul, [&ag_sr](size_t max_name, size_t index) { return std::max(max_name, ag_sr->at(index)->full_name().size()); });
+        return std::accumulate(std::begin(indexes), std::end(indexes), 0ul, [&ag_sr](size_t max_name, size_t index) { return std::max(max_name, ag_sr.at(index)->full_name().size()); });
     }
 
 } // namespace acmacs::chart
