@@ -14,7 +14,7 @@ namespace acmacs::chart
 {
     class SerumCircle;
 
-    enum class serum_circle_failure_reason { not_calculated, non_regular_homologous_titer, titer_too_low };
+    enum class serum_circle_failure_reason { not_calculated, non_regular_homologous_titer, titer_too_low, serum_disconnected, antigen_disconnected };
 
     namespace detail
     {

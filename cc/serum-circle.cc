@@ -48,7 +48,11 @@ const char* acmacs::chart::detail::SerumCirclePerAntigen::report_reason() const
         case serum_circle_failure_reason::non_regular_homologous_titer:
             return "non-regular homologous titer";
         case serum_circle_failure_reason::titer_too_low:
-            return "protectionboundary titer is too low, protects everything";
+            return "titer is too low, protects everything";
+        case serum_circle_failure_reason::serum_disconnected:
+            return "serum disconnected";
+        case serum_circle_failure_reason::antigen_disconnected:
+            return "antigen disconnected";
     }
 
 } // acmacs::chart::detail::SerumCirclePerAntigen::report_reason
@@ -139,6 +143,15 @@ void acmacs::chart::detail::serum_circle_empirical(const SerumCircle& circle_dat
 {
     if (verbose == acmacs::verbose::yes) {
         std::cerr << "======================================================================\nSerum circle empirical for SR " << circle_data.serum_no() << "\n======================================================================\n";
+    }
+
+    if (!layout.point_has_coordinates(circle_data.serum_no() + titers.number_of_antigens())) {
+        per_antigen.failure_reason = serum_circle_failure_reason::serum_disconnected;
+        return;
+    }
+    if (!layout.point_has_coordinates(per_antigen.antigen_no)) {
+        per_antigen.failure_reason = serum_circle_failure_reason::antigen_disconnected;
+        return;
     }
 
     std::vector<TiterDistance> titers_and_distances(titers.number_of_antigens());
