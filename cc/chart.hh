@@ -412,7 +412,19 @@ namespace acmacs::chart
         std::string location() const;
         std::string location_abbreviated() const;
         std::string abbreviated_location_year() const;
-        std::string passage_type() const { return is_egg(reassortant_as_egg::yes) ? "egg" : "cell"; } // note NIID passage cannot be used
+
+        std::string_view passage_type(reassortant_as_egg rae = reassortant_as_egg::yes) const
+        {
+            using namespace std::string_view_literals;
+            if (is_egg(reassortant_as_egg::yes)) { // note NIID passage cannot be used
+                if (reassortant().empty() || rae == reassortant_as_egg::yes)
+                    return "egg"sv;
+                else
+                    return "reassortant"sv;
+            }
+            else
+                return "cell"sv;
+        }
 
         bool is_egg(reassortant_as_egg rae) const
         {
