@@ -369,7 +369,19 @@ namespace acmacs::chart
         std::string location() const;
         std::string location_abbreviated() const;
         std::string abbreviated_location_year() const;
-        std::string passage_type() const { return passage().passage_type(); }
+
+        std::string_view passage_type(reassortant_as_egg rae = reassortant_as_egg::yes) const
+        {
+            using namespace std::string_view_literals;
+            if (passage().is_egg()) {
+                if (reassortant().empty() || rae == reassortant_as_egg::yes)
+                    return "egg"sv;
+                else
+                    return "reassortant"sv;
+            }
+            else
+                return "cell"sv;
+        }
 
         bool is_egg(reassortant_as_egg rae) const { return rae == reassortant_as_egg::yes ? (!reassortant().empty() || passage().is_egg()) : (reassortant().empty() && passage().is_egg()); }
         bool is_cell() const { return !is_egg(reassortant_as_egg::yes); }
