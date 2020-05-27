@@ -92,7 +92,7 @@ namespace acmacs::chart
         friend void detail::serum_circle_empirical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen, const Layout& layout, const Titers& titers, double fold, acmacs::verbose verbose);
         friend void detail::serum_circle_theoretical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen, double fold);
         friend SerumCircle serum_circle_empirical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold, acmacs::verbose verbose);
-        friend SerumCircle serum_circle_theoretical(Titer homologous_titer, size_t serum_no, double column_basis, double fold);
+        friend SerumCircle serum_circle_theoretical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, double column_basis, double fold);
         friend SerumCircle serum_circle_empirical(size_t antigen_no, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold, acmacs::verbose verbose);
         friend SerumCircle serum_circle_theoretical(size_t antigen_no, size_t serum_no, double column_basis, const Titers& titers, double fold);
         friend SerumCircle serum_circle_empirical(const PointIndexList& antigens, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold, acmacs::verbose verbose);
@@ -100,7 +100,7 @@ namespace acmacs::chart
     };
 
     SerumCircle serum_circle_empirical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold = 2.0, acmacs::verbose verbose = acmacs::verbose::no);
-    SerumCircle serum_circle_theoretical(Titer homologous_titer, size_t serum_no, double column_basis, double fold = 2.0);
+    SerumCircle serum_circle_theoretical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, double column_basis, double fold = 2.0);
     SerumCircle serum_circle_empirical(size_t antigen_no, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold = 2.0, acmacs::verbose verbose = acmacs::verbose::no);
     SerumCircle serum_circle_theoretical(size_t antigen_no, size_t serum_no, double column_basis, const Titers& titers, double fold = 2.0);
     SerumCircle serum_circle_empirical(const PointIndexList& antigens, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold = 2.0, acmacs::verbose verbose = acmacs::verbose::no);

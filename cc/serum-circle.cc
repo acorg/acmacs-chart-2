@@ -305,9 +305,9 @@ void acmacs::chart::detail::serum_circle_theoretical(const SerumCircle& circle_d
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::SerumCircle acmacs::chart::serum_circle_theoretical(Titer homologous_titer, size_t serum_no, double column_basis, double fold)
+acmacs::chart::SerumCircle acmacs::chart::serum_circle_theoretical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, double column_basis, double fold)
 {
-    SerumCircle circle_data(static_cast<size_t>(-1), serum_no, column_basis, homologous_titer, fold);
+    SerumCircle circle_data(antigens, serum_no, column_basis, homologous_titer, fold);
     if (circle_data.failure_reason() == serum_circle_failure_reason::not_calculated)
         serum_circle_theoretical(circle_data, circle_data.per_antigen_.front(), fold);
     return circle_data;

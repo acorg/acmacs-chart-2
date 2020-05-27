@@ -801,9 +801,9 @@ namespace acmacs::chart
         {
             return serum_circle_empirical(antigens, aSerumNo, *projection(aProjectionNo)->layout(), column_basis(aSerumNo, aProjectionNo), *titers(), fold, verbose);
         }
-        SerumCircle serum_circle_radius_theoretical(Titer aHomologousTiter, size_t aSerumNo, size_t aProjectionNo, double fold = 2) const
+        SerumCircle serum_circle_radius_theoretical(const Indexes& antigens, Titer aHomologousTiter, size_t aSerumNo, size_t aProjectionNo, double fold = 2) const
         {
-            return serum_circle_theoretical(aHomologousTiter, aSerumNo, column_basis(aSerumNo, aProjectionNo), fold);
+            return serum_circle_theoretical(antigens, aHomologousTiter, aSerumNo, column_basis(aSerumNo, aProjectionNo), fold);
         }
         SerumCircle serum_circle_radius_theoretical(size_t aAntigenNo, size_t aSerumNo, size_t aProjectionNo, double fold = 2) const
         {
