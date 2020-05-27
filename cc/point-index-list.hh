@@ -26,6 +26,8 @@ namespace acmacs::chart
 
         PointIndexList(const rjson::value& src) : base_t::named_vector_t(src.size()) { rjson::copy(src, begin()); }
 
+        PointIndexList(std::initializer_list<size_t> src) : base_t::named_vector_t{src} {}
+
         template <typename Iter, typename Convert> PointIndexList(Iter first, Iter last, Convert convert) : base_t::named_vector_t(static_cast<size_t>(last - first))
         {
             std::transform(first, last, begin(), convert);
