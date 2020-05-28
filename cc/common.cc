@@ -92,7 +92,7 @@ class CommonAntigensSera::Impl
         size_t primary_index;
         size_t secondary_index;
         score_t score;
-        bool use = false;
+        bool use{false};
 
     }; // class MatchEntry
 
@@ -110,11 +110,13 @@ class CommonAntigensSera::Impl
         void keep_only(const PointIndexList& indexes)
         {
             number_of_common_ = 0;
-            for (auto en : match_) {
-                if (!indexes.contains(en.primary_index))
-                    en.use = false;
-                else if (en.use)
-                    ++number_of_common_;
+            for (auto& en : match_) {
+                if (en.use) {
+                    if (!indexes.contains(en.primary_index))
+                        en.use = false;
+                    else
+                        ++number_of_common_;
+                }
             }
         }
 
