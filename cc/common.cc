@@ -107,6 +107,14 @@ class CommonAntigensSera::Impl
         std::optional<size_t> secondary_by_primary(size_t primary_no) const;
         void clear() { number_of_common_ = 0; match_.clear(); }
 
+        void keep_only(const PointIndexList& indexes)
+        {
+            for (auto en : match_) {
+                if (!indexes.contains(en.primary_index))
+                    en.use = false;
+            }
+        }
+
         std::vector<AgSrEntry> primary_;
         std::vector<AgSrEntry> secondary_;
         std::vector<MatchEntry> match_;
@@ -482,6 +490,17 @@ acmacs::chart::CommonAntigensSera::operator bool() const
     return impl_->antigens_.number_of_common_ > 0 || impl_->sera_.number_of_common_ > 0;
 
 } // bool
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::CommonAntigensSera::keep_only(const PointIndexList& antigens, const PointIndexList& sera)
+{
+    if (!antigens.empty())
+        impl_->antigens_.keep_only(antigens);
+    if (!sera.empty())
+        impl_->sera_.keep_only(sera);
+
+} // acmacs::chart::CommonAntigensSera::keep_only
 
 // ----------------------------------------------------------------------
 

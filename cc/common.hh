@@ -32,6 +32,7 @@ namespace acmacs::chart
         size_t common_antigens() const;
         size_t common_sera() const;
 
+        void keep_only(const PointIndexList& antigens, const PointIndexList& sera); // if a list is empty, all are kept
         void antigens_only();   // remove sera from common lists
         void sera_only();   // remove antigens from common lists
 
