@@ -184,7 +184,7 @@ std::string acmacs::chart::format_help()
     serum.serum_id(SerumId{"2020-031"});
     serum.serum_species(SerumSpecies{"RAT"});
 
-    fmt::print("{}\n\n{}\n", format_antigen(pattern, chart, 67), format_serum(pattern, chart, 12));
+    return fmt::format("{}\n\n{}\n", format_antigen(pattern, chart, 67), format_serum(pattern, chart, 12));
 
 } // acmacs::chart::format_help
 

@@ -635,7 +635,8 @@ acmacs::chart::CommonAntigensSera::match_level_t acmacs::chart::CommonAntigensSe
                 match_level = match_level_t::automatic;
                 break;
             default:
-                throw std::runtime_error(acmacs::string::concat("unrecognized match_level: ", source));
+              AD_WARNING(fmt::format("unrecognized match level: \"{}\", automatic assumed", source));
+              break;
         }
     }
     return match_level;
