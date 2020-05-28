@@ -109,9 +109,12 @@ class CommonAntigensSera::Impl
 
         void keep_only(const PointIndexList& indexes)
         {
+            number_of_common_ = 0;
             for (auto en : match_) {
                 if (!indexes.contains(en.primary_index))
                     en.use = false;
+                else if (en.use)
+                    ++number_of_common_;
             }
         }
 
@@ -495,9 +498,13 @@ acmacs::chart::CommonAntigensSera::operator bool() const
 
 void acmacs::chart::CommonAntigensSera::keep_only(const PointIndexList& antigens, const PointIndexList& sera)
 {
-    if (!antigens.empty())
+    if (antigens.empty())
+        impl_->antigens_.clear();
+    else
         impl_->antigens_.keep_only(antigens);
-    if (!sera.empty())
+    if (sera.empty())
+        impl_->sera_.clear();
+    else
         impl_->sera_.keep_only(sera);
 
 } // acmacs::chart::CommonAntigensSera::keep_only
