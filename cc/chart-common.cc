@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/timeit.hh"
@@ -29,17 +27,17 @@ int main(int argc, char* const argv[])
         if (*opt.chart1 == *opt.chart2) {
             auto chart1 = acmacs::chart::import_from_file(*opt.chart1, acmacs::chart::Verify::None);
             acmacs::chart::CommonAntigensSera common(*chart1);
-            common.report();
+            fmt::print("{}\n", common.report());
         }
         else {
             auto chart1 = acmacs::chart::import_from_file(opt.chart1, acmacs::chart::Verify::None);
             auto chart2 = acmacs::chart::import_from_file(opt.chart2, acmacs::chart::Verify::None);
             acmacs::chart::CommonAntigensSera common(*chart1, *chart2, match_level);
-            common.report();
+            fmt::print("{}\n", common.report());
         }
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;

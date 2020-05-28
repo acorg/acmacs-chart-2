@@ -59,14 +59,12 @@ int main(int argc, const char* const argv[])
         auto chart2 = read((*opt.source_charts)[1]);
         auto [result, merge_report] = acmacs::chart::merge(chart1, chart2, settings);
         std::cout << chart1.description() << '\n' << chart2.description() << "\n\n";
-        merge_report.common.report();
-        std::cout << "----------\n\n";
+        fmt::print("{}\n----------\n\n", merge_report.common.report());
         for (size_t c_no = 2; c_no < opt.source_charts->size(); ++c_no) {
             auto chart3 = read((*opt.source_charts)[c_no]);
             std::cout << result->description() << '\n' << chart3.description() << "\n\n";
             std::tie(result, merge_report) = acmacs::chart::merge(*result, chart3, settings);
-            merge_report.common.report();
-            std::cout << "----------\n\n";
+            fmt::print("{}\n----------\n\n", merge_report.common.report());
         }
         if (opt.output_chart.has_value())
             acmacs::chart::export_factory(*result, opt.output_chart, opt.program_name(), report);

@@ -101,7 +101,7 @@ class CommonAntigensSera::Impl
      public:
         ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level, acmacs::debug dbg);
         ChartData(const acmacs::chart::Chart& primary);
-        void report(std::ostream& stream, const char* prefix, const char* ignored_key) const;
+        std::string report(size_t indent, std::string_view prefix, std::string_view ignored_key, verbose vrb) const;
         std::vector<CommonAntigensSera::common_t> common() const;
         std::optional<size_t> primary_by_secondary(size_t secondary_no) const;
         std::optional<size_t> secondary_by_primary(size_t primary_no) const;
@@ -252,7 +252,6 @@ template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry
               break;
           case match_level_t::automatic:
               if (previous_score == match_entry.score || number_of_common_ < automatic_level_threshold) {
-                  // std::cout << match_entry.primary_index << ' ' << match_entry.secondary_index << ' ' << static_cast<size_t>(match_entry.score) << ' ' << static_cast<size_t>(previous_score) << number_of_common_ << ' ' << automatic_level_threshold << '\n';
                   use_entry(match_entry);
                   previous_score = match_entry.score;
               }
@@ -329,20 +328,25 @@ template <> CommonAntigensSera::Impl::score_t CommonAntigensSera::Impl::ChartDat
 
 // ----------------------------------------------------------------------
 
-template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry>::report(std::ostream& stream, const char* prefix, const char* ignored_key) const
+template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<AgSrEntry>::report(size_t indent, std::string_view prefix, std::string_view ignored_key, verbose vrb) const
 {
-    const char* const score_names[] = {"no-match", ignored_key, "egg", "no-date", "full"};
+    using namespace std::string_view_literals;
+    const std::array score_names{"no-match"sv, ignored_key, "egg"sv, "no-date"sv, "full"sv};
+    const auto score_names_max = std::accumulate(std::begin(score_names), std::end(score_names), 0ul, [](size_t mx, std::string_view nam) { return std::max(mx, nam.size()); });
 
+    fmt::memory_buffer output;
     if (number_of_common_) {
-        auto find_primary = [this](size_t index) -> const auto& { return *std::find_if(this->primary_.begin(), this->primary_.end(), [index](const auto& element) { return element.index == index; }); };
+        auto find_primary = [this](size_t index) -> const auto&
+        {
+            return *std::find_if(this->primary_.begin(), this->primary_.end(), [index](const auto& element) { return element.index == index; });
+        };
         size_t primary_name_size = 0,
-                  // secondary_name_size = 0,
-                max_number_primary = 0,
-                max_number_secondary = 0;
-        for (const auto& m: match_) {
+               // secondary_name_size = 0,
+            max_number_primary = 0, max_number_secondary = 0;
+        for (const auto& m : match_) {
             if (m.use) {
                 primary_name_size = std::max(primary_name_size, find_primary(m.primary_index).full_name_length());
-                  // secondary_name_size = std::max(secondary_name_size, secondary_[m.secondary_index].full_name_length());
+                // secondary_name_size = std::max(secondary_name_size, secondary_[m.secondary_index].full_name_length());
                 max_number_primary = std::max(max_number_primary, m.primary_index);
                 max_number_secondary = std::max(max_number_secondary, m.secondary_index);
             }
@@ -350,28 +354,32 @@ template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry
         const auto num_digits_primary = static_cast<int>(std::log10(max_number_primary)) + 1;
         const auto num_digits_secondary = static_cast<int>(std::log10(max_number_secondary)) + 1;
 
-        stream << "common " << prefix << ": " << number_of_common_ << " (total primary: " << primary_.size() << " secondary: " << secondary_.size() << ")\n";
+        fmt::format_to(output, "{:{}}common {}: {} (total primary: {} secondary: {})\n", ' ', indent, prefix, number_of_common_, primary_.size(), secondary_.size());
         std::vector<size_t> common_in_primary, common_in_secondary;
-        for (const auto& m: match_) {
+        for (const auto& m : match_) {
             if (m.use) {
-                stream << std::setw(static_cast<int>(std::strlen(ignored_key) + 1)) << std::left << score_names[static_cast<size_t>(m.score)]
-                       << std::setw(num_digits_primary) << std::right << m.primary_index << ' ' << std::setw(static_cast<int>(primary_name_size)) << std::left << find_primary(m.primary_index).full_name()
-                       << "|" << std::setw(num_digits_secondary) << std::right << m.secondary_index << ' ' << /* std::setw(static_cast<int>(secondary_name_size)) << std::left << */ secondary_[m.secondary_index].full_name() << '\n';
+                fmt::format_to(output, "{:{}}{:<{}s} {:{}d} {:<{}s} | {:{}d} {}\n", ' ', indent, score_names[static_cast<size_t>(m.score)], score_names_max, m.primary_index, num_digits_primary,
+                               find_primary(m.primary_index).full_name(), primary_name_size, m.secondary_index, num_digits_secondary, secondary_[m.secondary_index].full_name());
                 common_in_primary.push_back(m.primary_index);
                 common_in_secondary.push_back(m.secondary_index);
             }
         }
-        stream << "common in primary " << prefix << ": " << common_in_primary << '\n';
-        stream << "common in secondary " << prefix << ": " << common_in_secondary << '\n';
-        std::vector<size_t> unique_in_primary(primary_.size() - common_in_primary.size()), unique_in_secondary(secondary_.size() - common_in_secondary.size());
-        std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(primary_.size()), unique_in_primary.begin(), [&common_in_primary](size_t index) { return std::find(std::begin(common_in_primary), std::end(common_in_primary), index) == std::end(common_in_primary); });
-        std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(secondary_.size()), unique_in_secondary.begin(), [&common_in_secondary](size_t index) { return std::find(std::begin(common_in_secondary), std::end(common_in_secondary), index) == std::end(common_in_secondary); });
-        stream << "unique in primary " << prefix << ": " << unique_in_primary << '\n';
-        stream << "unique in secondary " << prefix << ": " << unique_in_secondary << '\n';
+        if (vrb == verbose::yes) {
+            fmt::format_to(output, "{:{}}common in primary {}: {}\n", ' ', indent, prefix, common_in_primary);
+            fmt::format_to(output, "{:{}}common in secondary {}: {}\n", ' ', indent, prefix, common_in_secondary);
+            std::vector<size_t> unique_in_primary(primary_.size() - common_in_primary.size()), unique_in_secondary(secondary_.size() - common_in_secondary.size());
+            std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(primary_.size()), unique_in_primary.begin(),
+                         [&common_in_primary](size_t index) { return std::find(std::begin(common_in_primary), std::end(common_in_primary), index) == std::end(common_in_primary); });
+            std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(secondary_.size()), unique_in_secondary.begin(),
+                         [&common_in_secondary](size_t index) { return std::find(std::begin(common_in_secondary), std::end(common_in_secondary), index) == std::end(common_in_secondary); });
+            fmt::format_to(output, "{:{}}unique in primary {}: {}\n", ' ', indent, prefix, unique_in_primary);
+            fmt::format_to(output, "{:{}}unique in secondary {}: {}\n", ' ', indent, prefix, unique_in_secondary);
+        }
     }
     else {
-        stream << "WARNING: no common " << prefix << '\n';
+        fmt::format_to(output, "{:{}}no common {}\n", ' ', indent, prefix);
     }
+    return fmt::to_string(output);
 
 } // CommonAntigensSera::Impl::ChartData<AgSrEntry>::report
 
@@ -460,12 +468,10 @@ acmacs::chart::CommonAntigensSera::~CommonAntigensSera()
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::CommonAntigensSera::report() const
+std::string acmacs::chart::CommonAntigensSera::report(size_t indent, verbose vrb) const
 {
-    auto& stream = std::cout;
-    impl_->antigens_.report(stream, "antigens", "no-passage");
-    stream << '\n';
-    impl_->sera_.report(stream, "sera", "no-serum-id");
+    using namespace std::string_view_literals;
+    return fmt::format("{}\n{}", impl_->antigens_.report(indent, "antigens"sv, "no-passage"sv, vrb), impl_->sera_.report(indent, "sera"sv, "no-serum-id"sv, vrb));
 
 } // CommonAntigensSera::report
 
