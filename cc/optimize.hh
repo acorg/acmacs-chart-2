@@ -31,6 +31,7 @@ namespace acmacs::chart
         std::chrono::microseconds time;
         double initial_stress;
         double final_stress;
+
     }; // struct optimization_status
 
     std::ostream& operator<<(std::ostream& out, const optimization_status& status);
