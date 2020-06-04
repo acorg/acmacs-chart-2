@@ -707,12 +707,14 @@ void acmacs::chart::Antigens::filter_continent(Indexes& aIndexes, std::string_vi
 
 // ----------------------------------------------------------------------
 
-std::vector<acmacs::chart::Date> acmacs::chart::Antigens::all_dates() const
+std::vector<acmacs::chart::Date> acmacs::chart::Antigens::all_dates(include_reference inc_ref) const
 {
     std::vector<acmacs::chart::Date> dates;
     for (auto antigen : *this) {
-        if (auto date{antigen->date()}; !date.empty())
-            dates.push_back(std::move(date));
+        if (inc_ref == include_reference::yes || !antigen->reference()) {
+            if (auto date{antigen->date()}; !date.empty())
+                dates.push_back(std::move(date));
+        }
     }
     std::sort(std::begin(dates), std::end(dates));
     dates.erase(std::unique(std::begin(dates), std::end(dates)), std::end(dates));
