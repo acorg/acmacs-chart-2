@@ -515,7 +515,11 @@ namespace acmacs::chart
 
         void filter_date_range(Indexes& aIndexes, std::string_view first_date, std::string_view after_last_date) const
         {
-            remove(aIndexes, [=](const auto& entry) -> bool { return !entry.date().within_range(first_date, after_last_date); });
+            remove(aIndexes, [first_date, after_last_date](const auto& entry) { return !entry.date().within_range(first_date, after_last_date); });
+        }
+        void filter_date_not_in_range(Indexes& aIndexes, std::string_view first_date, std::string_view after_last_date) const
+        {
+            remove(aIndexes, [first_date, after_last_date](const auto& entry) { return entry.date().within_range(first_date, after_last_date); });
         }
         void filter_country(Indexes& aIndexes, std::string_view aCountry) const;
         void filter_continent(Indexes& aIndexes, std::string_view aContinent) const;
@@ -539,6 +543,11 @@ namespace acmacs::chart
         enum class include_reference { no, yes };
         std::vector<Date> all_dates(include_reference inc_ref) const; // list of unique dates of the antigens of a chart
 
+        void remove(Indexes& aIndexes, std::function<bool(const Antigen&)> aFilter) const
+        {
+            aIndexes.get().erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
+        }
+
       private:
         Indexes make_indexes(std::function<bool(const Antigen& ag)> test) const
         {
@@ -547,11 +556,6 @@ namespace acmacs::chart
                 if (test(*operator[](no)))
                     result.insert(no);
             return result;
-        }
-
-        void remove(Indexes& aIndexes, std::function<bool(const Antigen&)> aFilter) const
-        {
-            aIndexes.get().erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
         }
 
     }; // class Antigens
@@ -625,12 +629,12 @@ namespace acmacs::chart
 
         duplicates_t find_duplicates() const;
 
-      private:
         void remove(Indexes& aIndexes, std::function<bool(const Serum&)> aFilter) const
         {
             aIndexes.get().erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
         }
 
+      private:
         using homologous_canditate_t = Indexes;                              // indexes of antigens
         using homologous_canditates_t = std::vector<homologous_canditate_t>; // for each serum
         homologous_canditates_t find_homologous_canditates(const Antigens& aAntigens, acmacs::debug dbg) const;
