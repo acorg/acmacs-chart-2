@@ -707,6 +707,21 @@ void acmacs::chart::Antigens::filter_continent(Indexes& aIndexes, std::string_vi
 
 // ----------------------------------------------------------------------
 
+std::vector<acmacs::chart::Date> acmacs::chart::Antigens::all_dates() const
+{
+    std::vector<acmacs::chart::Date> dates;
+    for (auto antigen : *this) {
+        if (auto date{antigen->date()}; !date.empty())
+            dates.push_back(std::move(date));
+    }
+    std::sort(std::begin(dates), std::end(dates));
+    dates.erase(std::unique(std::begin(dates), std::end(dates)), std::end(dates));
+    return dates;
+
+} // acmacs::chart::Antigens::all_dates
+
+// ----------------------------------------------------------------------
+
 #include "acmacs-base/global-constructors-push.hh"
 static const std::regex sAnntotationToIgnore{"(CONC|RDE@|BOOST|BLEED|LAIV|^CDC$)"};
 #include "acmacs-base/diagnostics-pop.hh"

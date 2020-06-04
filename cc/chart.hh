@@ -535,6 +535,7 @@ namespace acmacs::chart
         // max_full_name() - see global template below
 
         duplicates_t find_duplicates() const;
+        std::vector<Date> all_dates() const; // list of unique dates of the antigens of a chart
 
       private:
         Indexes make_indexes(std::function<bool(const Antigen& ag)> test) const
