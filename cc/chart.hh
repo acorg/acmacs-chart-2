@@ -590,11 +590,11 @@ namespace acmacs::chart
 
         void filter_country(Indexes& aIndexes, std::string_view aCountry) const;
         void filter_continent(Indexes& aIndexes, std::string_view aContinent) const;
-        void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const
+        void filter_found_in(Indexes& aIndexes, const Sera& aNother) const
         {
             remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); });
         }
-        void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const
+        void filter_not_found_in(Indexes& aIndexes, const Sera& aNother) const
         {
             remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); });
         }
