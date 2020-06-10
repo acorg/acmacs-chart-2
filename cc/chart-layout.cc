@@ -140,7 +140,7 @@ void write_csv(std::string_view aFilename, const Options& opt, const acmacs::cha
 
 // ----------------------------------------------------------------------
 
-void write_text(std::string_view aFilename, const Options& opt, const acmacs::chart::Chart& chart, const std::vector<std::string>& prepend_fields, const std::vector<std::string>& append_fields)
+void write_text(std::string_view aFilename, const Options& opt, const acmacs::chart::Chart& chart, const std::vector<std::string>& /*prepend_fields*/, const std::vector<std::string>& /*append_fields*/)
 {
     auto antigens = chart.antigens();
     auto sera = chart.sera();

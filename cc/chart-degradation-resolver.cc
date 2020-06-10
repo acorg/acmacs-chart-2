@@ -45,7 +45,7 @@ struct SplitData
 
 static acmacs::chart::ProjectionModifyP flip_relax(acmacs::chart::ChartModify& chart, acmacs::chart::ProjectionModifyP original_projection, const Options& options);
 static acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line_recursive(acmacs::chart::ChartModify& chart, acmacs::chart::ProjectionModifyP original_projection, size_t level, std::string level_path, const Options& options);
-static acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line(acmacs::chart::ChartModify& chart, acmacs::chart::ProjectionModifyP original_projection, const Options& options);
+// static acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line(acmacs::chart::ChartModify& chart, acmacs::chart::ProjectionModifyP original_projection, const Options& options);
 static acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line_parallel(acmacs::chart::ChartModify& chart, acmacs::chart::ProjectionModifyP original_projection, const Options& options);
 
 // ----------------------------------------------------------------------
@@ -118,30 +118,30 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line(acmacs::chart::ChartModify& chart, acmacs::chart::ProjectionModifyP original_projection, const Options& options)
-{
-    acmacs::chart::ProjectionModifyP result;
-    size_t wrong_side = 100000;
-    const SplitData split_data(*original_projection);
-    acmacs::chart::ProjectionModifyP projection_for_randomizer = chart.projections_modify()->new_by_cloning(*original_projection, false);
-    auto randomizer = acmacs::chart::randomizer_border_with_current_layout_area(*projection_for_randomizer, 1.0, {split_data.serum_line.line(), split_data.good_side});
-    for (size_t attempt = 0; attempt < options.number_of_attempts; ++attempt) {
-        acmacs::chart::ProjectionModifyP new_projection = chart.projections_modify()->new_by_cloning(*original_projection, false);
-        new_projection->randomize_layout(split_data.on_the_wrong_side, randomizer);
-        new_projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
-        const SplitData new_split_data(*new_projection);
-        const auto on_the_wrong_side = new_split_data.on_the_wrong_side->size();
-        if (!result || on_the_wrong_side < wrong_side || (on_the_wrong_side == wrong_side && new_projection->stress() < result->stress())) {
-            result = new_projection;
-            result->comment("resolver random, wrong_side:" + std::to_string(on_the_wrong_side));
-            wrong_side = on_the_wrong_side;
-            std::cerr << "wrong_side: " << std::setw(3) << on_the_wrong_side << "  stress: " << std::setw(8) << result->stress() << " line-sera-sd: " << new_split_data.serum_line.standard_deviation() << '\n';
-        }
-    }
-    result->orient_to(*original_projection);
-    return result;
+// acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line(acmacs::chart::ChartModify& chart, acmacs::chart::ProjectionModifyP original_projection, const Options& options)
+// {
+//     acmacs::chart::ProjectionModifyP result;
+//     size_t wrong_side = 100000;
+//     const SplitData split_data(*original_projection);
+//     acmacs::chart::ProjectionModifyP projection_for_randomizer = chart.projections_modify()->new_by_cloning(*original_projection, false);
+//     auto randomizer = acmacs::chart::randomizer_border_with_current_layout_area(*projection_for_randomizer, 1.0, {split_data.serum_line.line(), split_data.good_side});
+//     for (size_t attempt = 0; attempt < options.number_of_attempts; ++attempt) {
+//         acmacs::chart::ProjectionModifyP new_projection = chart.projections_modify()->new_by_cloning(*original_projection, false);
+//         new_projection->randomize_layout(split_data.on_the_wrong_side, randomizer);
+//         new_projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
+//         const SplitData new_split_data(*new_projection);
+//         const auto on_the_wrong_side = new_split_data.on_the_wrong_side->size();
+//         if (!result || on_the_wrong_side < wrong_side || (on_the_wrong_side == wrong_side && new_projection->stress() < result->stress())) {
+//             result = new_projection;
+//             result->comment("resolver random, wrong_side:" + std::to_string(on_the_wrong_side));
+//             wrong_side = on_the_wrong_side;
+//             std::cerr << "wrong_side: " << std::setw(3) << on_the_wrong_side << "  stress: " << std::setw(8) << result->stress() << " line-sera-sd: " << new_split_data.serum_line.standard_deviation() << '\n';
+//         }
+//     }
+//     result->orient_to(*original_projection);
+//     return result;
 
-} // randomize_found_on_the_wrong_side_of_serum_line
+// } // randomize_found_on_the_wrong_side_of_serum_line
 
 // ----------------------------------------------------------------------
 
