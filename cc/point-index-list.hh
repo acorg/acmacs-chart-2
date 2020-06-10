@@ -78,13 +78,12 @@ namespace acmacs::chart
 
         void remove(const ReverseSortedIndexes& indexes, size_t base_index = 0)
         {
-            get().erase(std::remove_if(begin(), end(),
-                                       [&indexes, base_index](size_t index) {
-                                           if (index < base_index)
-                                               return false;
-                                           return indexes.contains(index - base_index);
-                                       }),
-                        end());
+            get().erase(std::remove_if(begin(), end(), [&indexes, base_index](size_t index) { return index >= base_index && indexes.contains(index - base_index); }), end());
+        }
+
+        void keep(const ReverseSortedIndexes& indexes, size_t base_index = 0)
+        {
+            get().erase(std::remove_if(begin(), end(), [&indexes, base_index](size_t index) { return index >= base_index && !indexes.contains(index - base_index); }), end());
         }
 
         template <typename Pred> void remove_if(Pred pred)
