@@ -40,15 +40,15 @@ acmacs::chart::ChartP acmacs::chart::import_from_data(std::string aData, Verify 
 
 acmacs::chart::ChartP acmacs::chart::import_from_file(std::string aFilename, Verify aVerify, report_time aReport)
 {
-    Timeit ti("reading chart from " + aFilename + ": ", aReport);
+    Timeit ti(fmt::format("reading chart from \"{}\": ", aFilename), aReport);
     try {
         return import_from_decompressed_data(acmacs::file::read(aFilename), aVerify, report_time::no);
     }
     catch (acmacs::file::not_found&) {
-        throw import_error{"[acmacs::chart::import_from_file]: file not found: " + aFilename};
+        throw import_error{fmt::format("[acmacs::chart::import_from_file]: file not found: \"{}\"", aFilename)};
     }
     catch (std::exception& err) {
-        throw import_error{"[acmacs::chart::import_from_file]: unrecognized file content: " + aFilename + ": " + err.what()};
+        throw import_error{fmt::format("[acmacs::chart::import_from_file]: unrecognized file content: \"{}\": {}", aFilename, err)};
     }
 
 } // acmacs::chart::import_from_file
