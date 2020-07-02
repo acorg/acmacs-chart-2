@@ -1,4 +1,4 @@
-# Time-stamp: <2020-07-02 18:22:58 eu>
+# Time-stamp: <2020-07-02 18:34:50 eu>
 
 * Description
 
@@ -11,22 +11,22 @@ delimiter) are parsed. Other lines are ignored.
 
 Lines starting with - provide meta information, format is:
 
-- <field-name>: <field-value>
+  - <field-name>: <field-value>
 
 Available field names (case insensitive):
 
-- Lab: <lab-name>
-- Date: 2020-07-02
-- Subtype: A(H3N2)
-- Assay: HI, FRA, PRN
-- Rbc: turkey
-- Lineage: VICTORIA VIC YAMAGATA YAM
+  - Lab: <lab-name>
+  - Date: 2020-07-02 or 20170727
+  - Subtype: A(H3N2)
+  - Assay: HI, FRA, PRN
+  - Rbc: turkey
+  - Lineage: VICTORIA VIC YAMAGATA YAM
 
 ** Table
 
-- Table rows begin with |
+. Table rows begin with |
 
-- The first row keeps column names, all columns except the first one
+. The first row keeps column names, all columns except the first one
   (see below) and columns corresponding to sera must have names. All
   names in the first row must be unique.
 
@@ -40,7 +40,7 @@ Available field names (case insensitive):
   - attribute
   - clade
 
-- The first column keeps row names, all rows except the first one (see
+. The first column keeps row names, all rows except the first one (see
   above) and rows corresponding to antigens must have names. All
   names in the first column must be unique.
 
@@ -54,6 +54,13 @@ Available field names (case insensitive):
   - species
 
 * Example
+This file can be parsed using chart-org-table-to-ace
+
+- Lab: CDC
+- Assay: HI
+- Rbc: turkey
+- Date: 20170727
+- Subtype: B
 
 |           | name                      | passage                                 |               |                       |                   |                                |                   |                           |                           |                    |                    |                    |                   |                   |                  |
 | name      |                           |                                         | B/OHIO/1/2017 |     B/BRISBANE/2/2017 | B/BRISBANE/3/2017 |                 B/TEXAS/2/2017 | B/FLORIDA/33/2017 | B/SAINT PETERSBURG/4/2017 | B/SAINT PETERSBURG/5/2017 | B/MARYLAND/15/2017 | B/MARYLAND/15/2017 | B/MARYLAND/15/2017 | B/MARYLAND/6/2017 | B/MARYLAND/7/2017 | B/ALABAMA/2/2017 |

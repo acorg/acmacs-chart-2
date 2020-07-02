@@ -1,0 +1,55 @@
+#! /usr/bin/env python3
+
+import sys, os, json, datetime, pprint
+
+# ----------------------------------------------------------------------
+
+def main(input_file, output_file):
+    lines = [line.strip() for line in open(input_file) if line and line[0] in ["-", "|"]]
+    num_antigens = 0
+    num_sera = 0
+    ace = {
+        "_":"-*- js-indent-level: 2 -*-",
+        "  version": "acmacs-ace-v1",
+        "?created": f"imported from {os.path.basename(input_file)} by {os.path.basename(sys.argv[0])} on {datetime.date.today()}",
+        "c": {
+            "i": {}, "a": {}, "s": {}, "t": {"l": []}
+            }
+    }
+    for line in lines:
+        if line[0] == '-':
+            field, value = line[1:].strip().split(":")
+            field = field.strip().lower()
+            value = value.strip()
+            if field == "lab":
+                ace["c"]["i"]["l"] = value
+            elif field == "date":
+                ace["c"]["i"]["D"] = value
+            elif field == "subtype":
+                ace["c"]["i"]["V"] = value
+            elif field == "assay":
+                ace["c"]["i"]["A"] = value
+            elif field == "rbc":
+                ace["c"]["i"]["r"] = value
+            elif field == "lineage":
+                ace["c"]["i"]["s"] = value
+            else:
+                raise RuntimeError(f"Unrecognized meta field name: \"{field}\"")
+
+    ace_antigen_fields = {}
+    print(json.dumps(ace, indent=2))
+    # pprint.pprint(lines)
+    
+# ----------------------------------------------------------------------
+
+if len(sys.argv) != 3:
+    print("Usage:", sys.argv[0], "<input.org> <output.ace>", file=sys.stderr)
+    exit(1)
+
+try:
+    main(sys.argv[1], sys.argv[2])
+    exit(0)
+except Exception as err:
+    print(f"ERROR: {err}", file=sys.stderr)
+    exit(2)
+    
