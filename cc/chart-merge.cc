@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/timeit.hh"
@@ -58,11 +56,10 @@ int main(int argc, const char* const argv[])
         auto chart1 = read((*opt.source_charts)[0]);
         auto chart2 = read((*opt.source_charts)[1]);
         auto [result, merge_report] = acmacs::chart::merge(chart1, chart2, settings);
-        std::cout << chart1.description() << '\n' << chart2.description() << "\n\n";
-        fmt::print("{}\n----------\n\n", merge_report.common.report());
+        fmt::print("{}\n{}\n\n{}\n----------\n\n", chart1.description(), chart2.description(), merge_report.common.report());
         for (size_t c_no = 2; c_no < opt.source_charts->size(); ++c_no) {
             auto chart3 = read((*opt.source_charts)[c_no]);
-            std::cout << result->description() << '\n' << chart3.description() << "\n\n";
+            fmt::print("{}\n{}\n\n", result->description(), chart3.description());
             std::tie(result, merge_report) = acmacs::chart::merge(*result, chart3, settings);
             fmt::print("{}\n----------\n\n", merge_report.common.report());
         }
@@ -72,13 +69,13 @@ int main(int argc, const char* const argv[])
             merge_report.titer_merge_report(opt.report_titers, *result, opt.program_name());
         }
         else {
-            std::cout << result->make_info() << '\n';
+            fmt::print("{}\n", result->make_info());
             if (const auto having_too_few_numeric_titers = result->titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers->empty())
-                std::cout << fmt::format("Points having too few numeric titers: {} {}\n", having_too_few_numeric_titers->size(), having_too_few_numeric_titers);
+                fmt::print("Points having too few numeric titers: {} {}\n", having_too_few_numeric_titers->size(), having_too_few_numeric_titers);
         }
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        fmt::print(stderr, "> ERROR {}\n", err);
         exit_code = 2;
     }
     return exit_code;

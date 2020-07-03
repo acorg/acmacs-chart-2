@@ -364,14 +364,15 @@ template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<Ag
                 max_number_secondary = std::max(max_number_secondary, m.secondary_index);
             }
         }
-        const auto num_digits_primary = static_cast<int>(std::log10(max_number_primary)) + 1;
-        const auto num_digits_secondary = static_cast<int>(std::log10(max_number_secondary)) + 1;
+        const auto num_digits_primary = max_number_primary ? static_cast<int>(std::log10(max_number_primary)) + 1 : 1;
+        const auto num_digits_secondary = max_number_secondary ? static_cast<int>(std::log10(max_number_secondary)) + 1 : 1;
+        // AD_DEBUG("report 1 score_names_max:{} num_digits_primary:{} max_number_primary:{} primary_name_size:{} max_number_secondary:{} num_digits_secondary:{}", score_names_max, num_digits_primary, max_number_primary, primary_name_size, max_number_secondary, num_digits_secondary);
 
-        fmt::format_to(output, "{:{}}common {}: {} (total primary: {} secondary: {})\n", ' ', indent, prefix, number_of_common_, primary_.size(), secondary_.size());
+        fmt::format_to(output, "{:{}c}common {}: {} (total primary: {} secondary: {})\n", ' ', indent, prefix, number_of_common_, primary_.size(), secondary_.size());
         std::vector<size_t> common_in_primary, common_in_secondary;
         for (const auto& m : match_) {
             if (m.use) {
-                fmt::format_to(output, "{:{}}{:<{}s} {:{}d} {:<{}s} | {:{}d} {}\n", ' ', indent, score_names[static_cast<size_t>(m.score)], score_names_max, m.primary_index, num_digits_primary,
+                fmt::format_to(output, "{:{}c}{:<{}s} {:{}d} {:<{}s} | {:{}d} {}\n", ' ', indent, score_names[static_cast<size_t>(m.score)], score_names_max, m.primary_index, num_digits_primary,
                                find_primary(m.primary_index).full_name(), primary_name_size, m.secondary_index, num_digits_secondary, secondary_[m.secondary_index].full_name());
                 common_in_primary.push_back(m.primary_index);
                 common_in_secondary.push_back(m.secondary_index);
