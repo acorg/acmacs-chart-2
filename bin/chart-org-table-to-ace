@@ -204,6 +204,6 @@ try:
     main(sys.argv[1], sys.argv[2])
     exit(0)
 except Exception as err:
-    print(f"ERROR: cannot parse {sys.argv[1]}: {err}", file=sys.stderr)
+    print(f"ERROR: {err} @@ {sys.argv[1]}:1", file=sys.stderr)
     # raise
     exit(2)
