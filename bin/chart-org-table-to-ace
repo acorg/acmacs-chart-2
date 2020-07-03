@@ -96,6 +96,8 @@ def antigen_field(no, cell):
 
 # ----------------------------------------------------------------------
 
+sReDelim = re.compile(r"^[\-\+]+$")
+
 def serum_field(no, cell):
     if cell == "name":
         return "N", no
@@ -109,7 +111,7 @@ def serum_field(no, cell):
         return "a", no
     elif cell == "species":
         return "s", no
-    elif cell[0] == "#":
+    elif cell[0] == "#" or sReDelim.match(cell):
         return None, no
     else:
         raise RuntimeError(f"Unrecognized serum (first column, row {no}) field name: \"{cell}\"")

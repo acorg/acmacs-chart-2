@@ -1,4 +1,4 @@
-# Time-stamp: <2020-07-03 14:23:13 eu>
+# Time-stamp: <2020-07-03 15:49:55 eu>
 
 * Description
 
@@ -46,6 +46,8 @@ Available field names (case insensitive):
   names in the first column must be unique. If a row name begins #,
   its content is ignored.
 
+  If a row contains |---+---, it is a separator and it is ignored
+
   Available names (case insensitive):
 
   - name (mandatory)
@@ -68,6 +70,7 @@ This file can be parsed using chart-org-table-to-ace
 | name       |                           |                                         | B/OHIO/1/2017 |     B/BRISBANE/2/2017 | B/BRISBANE/3/2017 |                 B/TEXAS/2/2017 | B/FLORIDA/33/2017 | B/SAINT PETERSBURG/4/2017 | B/SAINT PETERSBURG/5/2017 | B/MARYLAND/15/2017 | B/MARYLAND/15/2017 | B/MARYLAND/15/2017 | B/MARYLAND/6/2017 | B/MARYLAND/7/2017 | B/ALABAMA/2/2017 |
 | annotation |                           |                                         |       BOOSTED |               BOOSTED |           BOOSTED |                                |                   |                   BOOSTED |         CONC 2:1 RDE@1::5 |                    |                    |                    |           BOOSTED |           BOOSTED |                  |
 | serum_id   |                           |                                         |  CDC 2017-016 | CDC 2013-029,2013-030 |      CDC 2016-065 | CDC 2014-042,2014-043,2014-044 |      CDC 2015-109 |              CDC 2017-018 |              CDC 2017-028 |       CDC 2017-041 |       CDC 2017-045 |       CDC 2017-087 |      CDC 2017-088 |      CDC 2017-089 |     CDC 2017-085 |
+|------------+---------------------------+-----------------------------------------+---------------+-----------------------+-------------------+--------------------------------+-------------------+---------------------------+---------------------------+--------------------+--------------------+--------------------+-------------------+-------------------+------------------|
 |            | B/OHIO/1/2017             | E3 (2017-01-10)                         |          1280 |                   160 |                40 |                             40 |                20 |                       320 |                        20 |                160 |                <10 |                <10 |                20 |                40 |               80 |
 |            | B/BRISBANE/2/2017         | E4/E4 (2016-04-04)                      |           640 |                   640 |               640 |                            320 |               160 |                       640 |                       320 |                320 |                 10 |                 20 |                40 |                80 |              160 |
 |            | B/BRISBANE/3/2017         | MDCK?/MDCK4/MDCK2 (2012-08-29)          |            40 |                   320 |               640 |                            160 |               320 |                       640 |                       160 |                 80 |                 10 |                 20 |                20 |                80 |               40 |
