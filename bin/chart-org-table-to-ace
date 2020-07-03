@@ -66,7 +66,9 @@ def main(input_file, output_file):
         ace["c"]["a"].append({field: rows[row_no][column_no] for field, column_no in ace_antigen_fields.items()})
         ace["c"]["t"]["l"].append([check_titer(rows[row_no][column_no], row_no, column_no) for column_no in serum_columns])
 
-    print(json_dumps(ace, indent=2))
+    # print(json_dumps(ace, indent=2))
+    with open(output_file, "wb") as output:
+        output.write(lzma.compress(json_dumps(ace, indent=2).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
 
 # ----------------------------------------------------------------------
 
