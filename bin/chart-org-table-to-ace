@@ -63,9 +63,9 @@ def main(input_file, output_file):
     # pprint.pprint(ace_antigen_fields)
 
     for column_no in serum_columns:
-        ace["c"]["s"].append({field: rows[row_no][column_no] for field, row_no in ace_serum_fields.items()})
+        ace["c"]["s"].append({field: make_antigen_serum_field(field, rows[row_no][column_no]) for field, row_no in ace_serum_fields.items()})
     for row_no in antigen_rows:
-        ace["c"]["a"].append({field: rows[row_no][column_no] for field, column_no in ace_antigen_fields.items()})
+        ace["c"]["a"].append({field: make_antigen_serum_field(field, rows[row_no][column_no]) for field, column_no in ace_antigen_fields.items()})
         ace["c"]["t"]["l"].append([check_titer(rows[row_no][column_no], row_no, column_no) for column_no in serum_columns])
 
     # print(json_dumps(ace, indent=2))
@@ -93,6 +93,14 @@ def antigen_field(no, cell):
         return None, no
     else:
         raise RuntimeError(f"Unrecognized antigen (first row, column {no}) field name: \"{cell}\"")
+
+# ----------------------------------------------------------------------
+
+def make_antigen_serum_field(key, value):
+    if key in ["l", "a"]:
+        return [value]
+    else:
+        return value
 
 # ----------------------------------------------------------------------
 
