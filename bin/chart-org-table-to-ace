@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import sys, os, json, datetime, pprint
+import sys, os, json, re, datetime, lzma, pprint
 
 # ----------------------------------------------------------------------
 
@@ -9,11 +9,10 @@ def main(input_file, output_file):
     num_antigens = 0
     num_sera = 0
     ace = {
-        "_":"-*- js-indent-level: 2 -*-",
         "  version": "acmacs-ace-v1",
         "?created": f"imported from {os.path.basename(input_file)} by {os.path.basename(sys.argv[0])} on {datetime.date.today()}",
         "c": {
-            "i": {}, "a": {}, "s": {}, "t": {"l": []}
+            "i": {}, "a": [], "s": [], "t": {"l": []}
             }
     }
     for line in lines:
@@ -38,10 +37,36 @@ def main(input_file, output_file):
 
     rows = [[cell.strip() for cell in line[1:-1].split("|")] for line in lines if line[0] == "|"]
     # pprint.pprint(rows)
-    ace_antigen_fields = {k: v for k, v in (antigen_field(no, cell.lower()) for no, cell in enumerate(rows[0]) if cell)}
-    pprint.pprint(ace_antigen_fields)
-    print(json.dumps(ace, indent=2))
-    # pprint.pprint(lines)
+    ace_antigen_fields = {}
+    serum_columns = []
+    for no, cell in enumerate(rows[0][1:], start=1):
+        if not cell:
+            serum_columns.append(no)
+        else:
+            k, v = antigen_field(no, cell.lower())
+            if k:
+                ace_antigen_fields[k] = v
+    ace_serum_fields = {}
+    antigen_rows = []
+    for no, row in enumerate(rows[1:], start=1):
+        cell = row[0]
+        if not cell:
+            antigen_rows.append(no)
+        else:
+            k, v = serum_field(no, cell.lower())
+            if k:
+                ace_serum_fields[k] = v
+    # print(f"antigens: {ace_antigen_fields} {len(antigen_rows)} {antigen_rows}")
+    # print(f"sera: {ace_serum_fields} {len(serum_columns)} {serum_columns}")
+    # pprint.pprint(ace_antigen_fields)
+
+    for column_no in serum_columns:
+        ace["c"]["s"].append({field: rows[row_no][column_no] for field, row_no in ace_serum_fields.items()})
+    for row_no in antigen_rows:
+        ace["c"]["a"].append({field: rows[row_no][column_no] for field, column_no in ace_antigen_fields.items()})
+        ace["c"]["t"]["l"].append([check_titer(rows[row_no][column_no], row_no, column_no) for column_no in serum_columns])
+
+    print(json_dumps(ace, indent=2))
 
 # ----------------------------------------------------------------------
 
@@ -56,12 +81,112 @@ def antigen_field(no, cell):
         return "R", no
     elif cell == "lab_id":
         return "l", no
-    elif cell == "attribute":
+    elif cell == "annotation":
         return "a", no
     elif cell == "clade":
         return "c", no
+    elif cell[0] == "#":
+        return None, no
     else:
-        raise RuntimeError(f"Unrecognized antigen (first row) field name: \"{cell}\"")
+        raise RuntimeError(f"Unrecognized antigen (first row, column {no}) field name: \"{cell}\"")
+
+# ----------------------------------------------------------------------
+
+def serum_field(no, cell):
+    if cell == "name":
+        return "N", no
+    elif cell == "passage":
+        return "P", no
+    elif cell == "reassortant":
+        return "R", no
+    elif cell == "serum_id":
+        return "I", no
+    elif cell == "annotation":
+        return "a", no
+    elif cell == "species":
+        return "s", no
+    elif cell[0] == "#":
+        return None, no
+    else:
+        raise RuntimeError(f"Unrecognized serum (first column, row {no}) field name: \"{cell}\"")
+
+# ----------------------------------------------------------------------
+
+sReTiter = re.compile(r"^[><]?\d+$", re.I)
+
+def check_titer(titer, row_no, column_no):
+    if sReTiter.match(titer):
+        return titer
+    else:
+        raise RuntimeError(f"Unrecognized titer \"{titer}\" at {row_no}:{column_no}")
+
+
+# ----------------------------------------------------------------------
+
+def json_dumps(data, indent=2, indent_increment=None, toplevel=True, one_line_max_width=200, object_fields_sorting_key=None):
+    """More compact dumper with wide lines."""
+
+    def simple(d):
+        r = True
+        if isinstance(d, dict):
+            r = not any(isinstance(v, (list, tuple, set, dict)) for v in d.values()) and len(d) < 17
+        elif isinstance(d, (tuple, list)):
+            r = not any(isinstance(v, (list, tuple, set, dict)) for v in d)
+        return r
+
+    def end(symbol, indent):
+        if indent > indent_increment:
+            r = "{:{}s}{}".format("", indent - indent_increment, symbol)
+        else:
+            r = symbol
+        return r
+
+    def make_one_line(data):
+        if isinstance(data, set):
+            s = json.dumps(sorted(data, key=object_fields_sorting_key))
+        elif isinstance(data, dict):
+            s = "{"
+            for no, k in enumerate(sorted(data, key=object_fields_sorting_key), start=1):
+                comma = ", " if no < len(data) else ""
+                s += "{}: {}{}".format(json.dumps(k), json_dumps(data[k], indent=0, indent_increment=None, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma)
+            s += "}"
+        else:
+            s = json.dumps(data, sort_keys=True)
+        return s
+
+    def make_object(data):
+        if toplevel:
+            r = ["{{{:<{}s}\"_\":\"-*- js-indent-level: {} -*-\",".format("", indent_increment - 1, indent_increment)]
+        else:
+            r = ["{"]
+        for no, k in enumerate(sorted(data, key=object_fields_sorting_key), start=1):
+            comma = "," if no < len(data) else ""
+            r.append("{:{}s}{}: {}{}".format("", indent, json.dumps(k), json_dumps(data[k], indent + indent_increment, indent_increment, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma))
+        r.append(end("}", indent))
+        return r
+
+    # --------------------------------------------------
+
+    if indent_increment is None:
+        indent_increment = indent
+    if indent == 0 or simple(data):
+        s = make_one_line(data)
+    else:
+        r = []
+        if isinstance(data, dict):
+            r.extend(make_object(data))
+        elif isinstance(data, (tuple, list)):
+            r.append("[")
+            for no, v in enumerate(data, start=1):
+                comma = "," if no < len(data) else ""
+                r.append("{:{}s}{}{}".format("", indent, json_dumps(v, indent + indent_increment, indent_increment, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma))
+            r.append(end("]", indent))
+        else:
+            raise ValueError("Cannot serialize: {!r}".format(data))
+        s = "\n".join(r)
+        if "\n" in s and len(s) < one_line_max_width:
+            s = make_one_line(data)
+    return s
 
 # ----------------------------------------------------------------------
 
