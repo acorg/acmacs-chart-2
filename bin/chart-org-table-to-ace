@@ -63,9 +63,19 @@ def main(input_file, output_file):
     # pprint.pprint(ace_antigen_fields)
 
     for column_no in serum_columns:
-        ace["c"]["s"].append({field: make_antigen_serum_field(field, rows[row_no][column_no]) for field, row_no in ace_serum_fields.items()})
+        entry = {}
+        for field, row_no in ace_serum_fields.items():
+            value = make_antigen_serum_field(field, rows[row_no][column_no])
+            if value is not None:
+                entry[field] = value
+        ace["c"]["s"].append(entry)
     for row_no in antigen_rows:
-        ace["c"]["a"].append({field: make_antigen_serum_field(field, rows[row_no][column_no]) for field, column_no in ace_antigen_fields.items()})
+        entry = {}
+        for field, column_no in ace_antigen_fields.items():
+            value = make_antigen_serum_field(field, rows[row_no][column_no])
+            if value is not None:
+                entry[field] = value
+        ace["c"]["a"].append(entry)
         ace["c"]["t"]["l"].append([check_titer(rows[row_no][column_no], row_no, column_no) for column_no in serum_columns])
 
     # print(json_dumps(ace, indent=2))
@@ -96,14 +106,6 @@ def antigen_field(no, cell):
 
 # ----------------------------------------------------------------------
 
-def make_antigen_serum_field(key, value):
-    if key in ["l", "a"]:
-        return [value]
-    else:
-        return value
-
-# ----------------------------------------------------------------------
-
 sReDelim = re.compile(r"^[\-\+]+$")
 
 def serum_field(no, cell):
@@ -123,6 +125,16 @@ def serum_field(no, cell):
         return None, no
     else:
         raise RuntimeError(f"Unrecognized serum (first column, row {no}) field name: \"{cell}\"")
+
+# ----------------------------------------------------------------------
+
+def make_antigen_serum_field(key, value):
+    if key in ["l", "a"]:
+        return [value]
+    elif key == "D" and not value:
+        return None
+    else:
+        return value
 
 # ----------------------------------------------------------------------
 
