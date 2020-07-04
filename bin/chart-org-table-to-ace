@@ -130,7 +130,10 @@ def serum_field(no, cell):
 
 def make_antigen_serum_field(key, value):
     if key in ["l", "a"]:
-        return [value]
+        if value:
+            return [value]
+        else:
+            return None
     elif key == "D" and not value:
         return None
     else:
