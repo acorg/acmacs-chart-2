@@ -31,6 +31,7 @@ int main(int argc, char* const argv[])
         for (size_t layer_no{0}; layer_no < titers->number_of_layers(); ++layer_no) {
             auto [antigen_indexes, serum_indexes] = titers->antigens_sera_of_layer(layer_no);
             acmacs::chart::ChartNew output{antigen_indexes.size(), serum_indexes.size()};
+            AD_INFO("Layer {}  antigens {}  sera {}", layer_no, antigen_indexes, serum_indexes);
             if (info->number_of_sources() > layer_no)
                 output.info_modify()->replace_with(*info->source(layer_no));
             auto output_antigens = output.antigens_modify();
@@ -40,9 +41,10 @@ int main(int argc, char* const argv[])
             for (size_t sr_ind{0}; sr_ind < serum_indexes.size(); ++sr_ind)
                 output_sera->at(sr_ind).replace_with(*sera->at(serum_indexes[sr_ind]));
             auto output_titers = output.titers_modify();
+            AD_DEBUG("Layer {}", layer_no);
             for (size_t ag_ind{0}; ag_ind < antigen_indexes.size(); ++ag_ind) {
                 for (size_t sr_ind{0}; sr_ind < serum_indexes.size(); ++sr_ind)
-                    output_titers->titer(ag_ind, sr_ind, titers->titer_of_layer(antigen_indexes[ag_ind], serum_indexes[sr_ind], layer_no));
+                    output_titers->titer(ag_ind, sr_ind, titers->titer_of_layer(layer_no, antigen_indexes[ag_ind], serum_indexes[sr_ind]));
             }
             const auto output_filename{fmt::format("{}.{:0{}d}.ace", opt.output_prefix, layer_no, layer_no_width)};
             AD_INFO("Generating {}: {}", output_filename, output.description());
