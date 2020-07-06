@@ -50,6 +50,7 @@ TARGETS = \
   $(DIST)/chart-column-bases \
   $(DIST)/chart-list-antigens-without-titers \
   $(DIST)/chart-remove-layers \
+  $(DIST)/chart-split-into-layers \
   $(DIST)/chart-remove-projections \
   $(DIST)/chart-merge \
   $(DIST)/chart-combine-projections \

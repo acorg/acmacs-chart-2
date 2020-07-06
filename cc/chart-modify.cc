@@ -570,6 +570,29 @@ InfoModify::InfoModify(InfoP main)
 
 // ----------------------------------------------------------------------
 
+void InfoModify::replace_with(const Info& main)
+{
+     name_ = main.name(Compute::No);
+      computed_name_ = main.name(Compute::Yes);
+      virus_ = main.virus(Compute::Yes);
+      virus_type_ = main.virus_type(Compute::Yes);
+      subset_ = main.subset(Compute::Yes);
+      assay_ = main.assay(Compute::Yes);
+      lab_ = main.lab(Compute::Yes);
+      rbc_species_ = main.rbc_species(Compute::Yes);
+      date_ = main.date(Compute::Yes);
+      if (main.number_of_sources() > 1) {
+          sources_.resize(main.number_of_sources());
+          for (size_t source_no = 0; source_no < main.number_of_sources(); ++source_no)
+              sources_[source_no] = main.source(source_no);
+      }
+      else
+          sources_.clear();
+
+} // InfoModify::replace_with
+
+// ----------------------------------------------------------------------
+
 template <typename Field, typename Func> static inline Field info_modify_make_field(acmacs::chart::Info::Compute aCompute, const acmacs::chart::InfoModify& info, const Field& field, Func func)
 {
     if (!field.empty() || aCompute == acmacs::chart::Info::Compute::No)

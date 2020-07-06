@@ -137,6 +137,7 @@ namespace acmacs::chart
      public:
         explicit InfoModify() = default;
         explicit InfoModify(InfoP main);
+        void replace_with(const Info& main);
 
         std::string name(Compute aCompute = Compute::No) const override { return aCompute == Compute::No ? name_ : computed_name_; }
         Virus       virus(Compute aCompute = Compute::No) const override;
