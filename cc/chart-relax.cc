@@ -26,6 +26,7 @@ struct Options : public argv
     option<bool>   no_dimension_annealing{*this, "no-dimension-annealing"};
     option<str>    method{*this, "method", dflt{"cg"}, desc{"method: lbfgs, cg"}};
     option<double> max_distance_multiplier{*this, "md", dflt{2.0}, desc{"randomization diameter multiplier"}};
+    option<bool>   remove_original_projections{*this, "remove-original-projections", desc{"remove projections found in the source chart"}};
     option<size_t> keep_projections{*this, "keep-projections", dflt{0UL}, desc{"number of projections to keep, 0 - keep all"}};
     option<bool>   no_disconnect_having_few_titers{*this, "no-disconnect-having-few-titers"};
     option<str>    disconnect_antigens{*this, "disconnect-antigens", dflt{""}, desc{"comma or space separated list of antigen/point indexes (0-based) to disconnect for the new projections"}};
@@ -48,6 +49,9 @@ int main(int argc, char* const argv[])
 
         const Timeit ti("performing " + std::to_string(opt.number_of_optimizations) + " optimizations: ", report);
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source_chart, acmacs::chart::Verify::None, report)};
+        auto projections = chart.projections_modify();
+        if (opt.remove_original_projections)
+            projections->remove_all();
         const auto precision = (opt.rough || opt.fine > 0) ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
         const auto method{acmacs::chart::optimization_method_from_string(opt.method)};
         auto disconnected{get_disconnected(opt.disconnect_antigens, opt.disconnect_sera, chart.number_of_antigens(), chart.number_of_sera())};
@@ -67,7 +71,6 @@ int main(int argc, char* const argv[])
             options.num_threads = opt.threads;
             chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
         }
-        auto projections = chart.projections_modify();
         projections->sort();
         for (size_t p_no = 0; p_no < opt.fine; ++p_no)
             chart.projection_modify(p_no)->relax(acmacs::chart::optimization_options(method, acmacs::chart::optimization_precision::fine));
