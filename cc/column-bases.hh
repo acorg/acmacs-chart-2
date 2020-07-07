@@ -112,27 +112,6 @@ template <> struct fmt::formatter<acmacs::chart::MinimumColumnBasis> : fmt::form
 };
 
 // ----------------------------------------------------------------------
-
-// namespace acmacs
-// {
-//     std::string to_string(const acmacs::chart::ColumnBases& aColumnBases);
-
-//     inline std::string to_string(std::shared_ptr<acmacs::chart::ColumnBases> aColumnBases)
-//     {
-//         if (aColumnBases)
-//             return to_string(*aColumnBases);
-//         else
-//             return "<none>";
-//     }
-
-//     inline std::string to_string(acmacs::chart::MinimumColumnBasis aMinimumColumnBasis)
-//     {
-//         return static_cast<std::string>(aMinimumColumnBasis);
-//     }
-
-// } // namespace acmacs
-
-// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
