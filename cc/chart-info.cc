@@ -20,7 +20,7 @@ struct Options : public argv
     option<bool> show_assay{*this, "assay", desc{"just show assay"}};
     option<bool> show_number_of_antigens{*this, "antigens", desc{"just show number of antigens"}};
     option<bool> show_number_of_sera{*this, "sera", desc{"just show number of sera"}};
-    option<bool> column_bases{*this, "column-bases"};
+    option<bool> column_bases{*this, 'c', "column-bases"};
     option<bool> list_tables{*this, "list-tables"};
     option<bool> list_tables_for_sera{*this, "list-tables-for-sera"};
     option<bool> dates{*this, "dates", desc{"show isolation dates stats"}};
@@ -96,10 +96,17 @@ int main(int argc, char* const argv[])
                 if (opt.column_bases) {
                     // Timeit ti("column bases computing ");
                     auto cb = chart->computed_column_bases(acmacs::chart::MinimumColumnBasis{});
-                    fmt::print("computed column bases: {}\n", *cb);
+                    fmt::print("computed column bases:                 {:.2f}\n", *cb);
                     for (auto projection_no : acmacs::range(chart->number_of_projections())) {
-                        if (auto fcb = chart->projection(projection_no)->forced_column_bases(); fcb)
-                            fmt::print("forced column bases for projection {}: {}\n", projection_no, *fcb);
+                        if (auto fcb = chart->projection(projection_no)->forced_column_bases(); fcb) {
+                            fmt::print("forced column bases for projection {:2d}: {:.2f}\n", projection_no, *fcb);
+                            fmt::print("                                       diff:");
+                            for (size_t sr_no{0}; sr_no < cb->size(); ++sr_no) {
+                                if (!float_equal(cb->column_basis(sr_no), fcb->column_basis(sr_no)))
+                                    fmt::print("  {}:{:.2f} - {:.2f} = {}", sr_no, cb->column_basis(sr_no), fcb->column_basis(sr_no), cb->column_basis(sr_no) - fcb->column_basis(sr_no));
+                            }
+                            fmt::print("\n");
+                        }
                     }
                 }
                 if (opt.list_tables && info->number_of_sources() > 0) {

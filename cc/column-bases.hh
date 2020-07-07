@@ -86,34 +86,51 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
-namespace acmacs
-{
-    std::string to_string(const acmacs::chart::ColumnBases& aColumnBases);
+template <> struct fmt::formatter<acmacs::chart::ColumnBases> : fmt::formatter<acmacs::fmt_helper::float_formatter> {
+    template <typename FormatCtx> auto format(const acmacs::chart::ColumnBases& cb, FormatCtx& ctx) {
+        format_to(ctx.out(), "[");
+        for (size_t sr_no{0}; sr_no < cb.size(); ++sr_no) {
+            if (sr_no)
+                fmt::format_to(ctx.out(), " ");
+            format_val(cb.column_basis(sr_no), ctx);
+        }
+        return format_to(ctx.out(), "]");
+    }
+};
 
-    inline std::string to_string(std::shared_ptr<acmacs::chart::ColumnBases> aColumnBases)
-    {
-        if (aColumnBases)
-            return to_string(*aColumnBases);
+template <> struct fmt::formatter<std::shared_ptr<acmacs::chart::ColumnBases>> : fmt::formatter<acmacs::chart::ColumnBases> {
+    template <typename FormatCtx> auto format(const std::shared_ptr<acmacs::chart::ColumnBases>& cb, FormatCtx& ctx) {
+        if (cb)
+            return fmt::formatter<acmacs::chart::ColumnBases>::format(*cb, ctx);
         else
-            return "<none>";
+            return format_to(ctx.out(), "<none>");
     }
-
-    inline std::string to_string(acmacs::chart::MinimumColumnBasis aMinimumColumnBasis)
-    {
-        return static_cast<std::string>(aMinimumColumnBasis);
-    }
-
-} // namespace acmacs
-
-// ----------------------------------------------------------------------
-
-template <> struct fmt::formatter<acmacs::chart::ColumnBases> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::ColumnBases& cb, FormatCtx& ctx) { return fmt::formatter<std::string>::format(acmacs::to_string(cb), ctx); }
 };
 
 template <> struct fmt::formatter<acmacs::chart::MinimumColumnBasis> : fmt::formatter<std::string> {
     template <typename FormatCtx> auto format(const acmacs::chart::MinimumColumnBasis& mcb, FormatCtx& ctx) { return fmt::formatter<std::string>::format(static_cast<std::string>(mcb), ctx); }
 };
+
+// ----------------------------------------------------------------------
+
+// namespace acmacs
+// {
+//     std::string to_string(const acmacs::chart::ColumnBases& aColumnBases);
+
+//     inline std::string to_string(std::shared_ptr<acmacs::chart::ColumnBases> aColumnBases)
+//     {
+//         if (aColumnBases)
+//             return to_string(*aColumnBases);
+//         else
+//             return "<none>";
+//     }
+
+//     inline std::string to_string(acmacs::chart::MinimumColumnBasis aMinimumColumnBasis)
+//     {
+//         return static_cast<std::string>(aMinimumColumnBasis);
+//     }
+
+// } // namespace acmacs
 
 // ----------------------------------------------------------------------
 /// Local Variables:

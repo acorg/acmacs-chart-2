@@ -6,19 +6,19 @@
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::to_string(const acmacs::chart::ColumnBases& aColumnBases)
-{
-    fmt::memory_buffer result;
-    fmt::format_to(result, "[");
-    for (auto serum_no: acmacs::range(0, aColumnBases.size())) {
-        if (serum_no)
-            fmt::format_to(result, " ");
-        fmt::format_to(result, "{}", aColumnBases.column_basis(serum_no));
-    }
-    fmt::format_to(result, "]");
-    return fmt::to_string(result);
+// std::string acmacs::to_string(const acmacs::chart::ColumnBases& aColumnBases)
+// {
+//     fmt::memory_buffer result;
+//     fmt::format_to(result, "[");
+//     for (auto serum_no: acmacs::range(0, aColumnBases.size())) {
+//         if (serum_no)
+//             fmt::format_to(result, " ");
+//         fmt::format_to(result, "{}", aColumnBases.column_basis(serum_no));
+//     }
+//     fmt::format_to(result, "]");
+//     return fmt::to_string(result);
 
-} // acmacs::to_string
+// } // acmacs::to_string
 
 // ----------------------------------------------------------------------
 
