@@ -1746,8 +1746,11 @@ std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(std::shared_p
     modify();
     auto layout = layout_modified();
     const auto number_of_dimensions = layout->number_of_dimensions();
-    for (auto point_no : acmacs::range(layout->number_of_points()))
-        layout->update(point_no, randomizer->get(number_of_dimensions));
+    for (auto point_no : acmacs::range(layout->number_of_points())) {
+        const auto point{randomizer->get(number_of_dimensions)};
+        // AD_DEBUG("{:3d} {}", point_no, point);
+        layout->update(point_no, point);
+    }
     return layout;
 
 } // ProjectionModify::randomize_layout

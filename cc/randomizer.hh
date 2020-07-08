@@ -12,6 +12,21 @@
 
 namespace acmacs::chart
 {
+    class mt19937_2002
+    {
+      public:
+        mt19937_2002(unsigned long seed) { init(seed); }
+
+        unsigned long operator()();
+
+      private:
+        constexpr static size_t N{624};
+        std::array<unsigned long, N> mt_;
+        size_t mti_{N + 1};
+
+        void init(unsigned long seed);
+    };
+
     class LayoutRandomizer
     {
      public:
@@ -35,6 +50,7 @@ namespace acmacs::chart
      private:
         // std::random_device rd_;
         std::mt19937 generator_;
+        // mt19937_2002 generator_;
 
     }; // class LayoutRandomizer
 
@@ -44,18 +60,27 @@ namespace acmacs::chart
     {
      public:
         LayoutRandomizerPlain(double diameter, seed_t seed = std::nullopt)
-            : LayoutRandomizer(seed), distribution_(-diameter / 2, diameter / 2) {}
+            : LayoutRandomizer(seed), diameter_{diameter}, distribution_(-diameter / 2, diameter / 2) {}
           // LayoutRandomizerPlain(LayoutRandomizerPlain&&) = default;
 
-        void diameter(double diameter) { distribution_ = std::uniform_real_distribution<>(-diameter / 2, diameter / 2); }
-        double diameter() const { return std::abs(distribution_.a() - distribution_.b()); }
+        void diameter(double diameter) { diameter_ = diameter; distribution_ = std::uniform_real_distribution<>(-diameter / 2, diameter / 2); }
+        double diameter() const { return diameter_; } // std::abs(distribution_.a() - distribution_.b()); }
 
         using LayoutRandomizer::get;
 
      protected:
-        double get() override { return distribution_(generator()); }
+        double get() override {
+            std::lock_guard<std::mutex> guard(generator_access_);
+            return distribution_(generator());
+        }
+        // double get() override {  // c2
+        //     std::lock_guard<std::mutex> guard(generator_access_);
+        //     return (static_cast<double>(generator()()) * (1.0 / 4294967296.0) - 0.5) * diameter_;
+        // }
 
-     private:
+      private:
+        double diameter_;
+        std::mutex generator_access_;
         std::uniform_real_distribution<> distribution_;
 
     }; // class LayoutRandomizerPlain
