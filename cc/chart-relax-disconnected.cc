@@ -59,7 +59,7 @@ int main(int argc, char* const argv[])
                 projection->connect(disconnected);
                 projection->randomize_layout(disconnected, acmacs::chart::randomizer_plain_with_table_max_distance(*projection));
                 const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
-                std::cout << attempt << ' ' << status << '\n';
+                fmt::print("{} {}\n", attempt, status );
             }
             if (args["--remove-source-projections"])
                 chart.projections_modify()->remove(0);
@@ -72,7 +72,7 @@ int main(int argc, char* const argv[])
         }
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;

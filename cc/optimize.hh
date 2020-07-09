@@ -1,12 +1,11 @@
 #pragma once
 
-#include <iostream>
 #include <stdexcept>
-#include <string>
 #include <chrono>
 
 #include "acmacs-base/layout.hh"
 #include "acmacs-chart-2/optimize-options.hh"
+#include "acmacs-chart-2/column-bases.hh"
 
 // ----------------------------------------------------------------------
 
@@ -16,6 +15,7 @@ namespace acmacs::chart
 
     class optimization_error : public std::runtime_error { public: inline optimization_error(std::string msg) : std::runtime_error("invalid_data: " + msg) {} };
 
+    class Projection;
     class ChartModify;
     class ProjectionModify;
 
@@ -33,8 +33,6 @@ namespace acmacs::chart
         double final_stress;
 
     }; // struct optimization_status
-
-    std::ostream& operator<<(std::ostream& out, const optimization_status& status);
 
     struct DimensionAnnelingStatus
     {
@@ -86,7 +84,27 @@ namespace acmacs::chart
 
     ErrorLines error_lines(const Projection& projection);
 
+    // ----------------------------------------------------------------------
+
+    struct OptimiserCallbackData
+    {
+        OptimiserCallbackData(const Stress& a_stress) : stress{a_stress}, intermediate_layouts{nullptr} {}
+        OptimiserCallbackData(const Stress& a_stress, acmacs::chart::IntermediateLayouts& a_intermediate_layouts) : stress{a_stress}, intermediate_layouts{&a_intermediate_layouts} {}
+        const acmacs::chart::Stress& stress;
+        acmacs::chart::IntermediateLayouts* intermediate_layouts = nullptr;
+    };
+
 } // namespace acmacs::chart
+
+// ----------------------------------------------------------------------
+
+template <> struct fmt::formatter<acmacs::chart::optimization_status> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const acmacs::chart::optimization_status& status, FormatCtx& ctx)
+    {
+        return format_to(ctx.out(), "{} {:.12f} <- {:.12f}\n time: {}\n iter: {}\n nstress: {}", status.method, status.final_stress, status.initial_stress, status.time, status.number_of_iterations, status.number_of_stress_calculations);
+    }
+};
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:

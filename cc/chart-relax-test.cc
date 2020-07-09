@@ -176,12 +176,12 @@ void test_lbfgs_cg(acmacs::chart::ChartModify& chart, std::string min_col_basis,
     acmacs::Layout starting{*layout};
 
     const auto status1 = acmacs::chart::optimize(*projection, schedule, acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_lbfgs_pca, precision));
-    std::cout << status1 << '\n';
+    fmt::print("{}\n", status1);
 
     projection->set_layout(starting, true);
 
     const auto status2 = acmacs::chart::optimize(*projection, schedule, acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_cg_pca, precision));
-    std::cout << status2 << '\n';
+    fmt::print("{}\n", status2);
 
 } // test_lbfgs_cg
 
@@ -194,7 +194,7 @@ void optimize_n(acmacs::chart::optimization_method method, acmacs::chart::ChartM
         auto projection = chart.projections_modify()->new_from_scratch(num_dims, min_col_basis);
         projection->randomize_layout(randomizer_plain_with_table_max_distance(*projection));
         const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
-        std::cout << status << '\n';
+        fmt::print("{}\n", status);
     }
 
 } // optimize_n

@@ -6,13 +6,18 @@
 
 #include "acmacs-base/named-type.hh"
 #include "acmacs-base/number-of-dimensions.hh"
+#include "acmacs-chart-2/optimization-precision.hh"
 
 // ----------------------------------------------------------------------
 
 namespace acmacs::chart
 {
-    enum class optimization_method { alglib_lbfgs_pca, alglib_cg_pca };
-    enum class optimization_precision { rough, very_rough, fine };
+    enum class optimization_method
+    {
+        alglib_lbfgs_pca,
+        alglib_cg_pca,
+        optimlib_bfgs_pca
+    };
     enum class multiply_antigen_titer_until_column_adjust { no, yes };
     enum class dodgy_titer_is_regular { no, yes };
 
@@ -87,6 +92,8 @@ template <> struct fmt::formatter<acmacs::chart::optimization_method> : public f
               return format_to(ctx.out(), "alglib_lbfgs_pca");
           case optimization_method::alglib_cg_pca:
               return format_to(ctx.out(), "alglib_cg_pca");
+          case optimization_method::optimlib_bfgs_pca:
+              return format_to(ctx.out(), "optimlib_bfgs_pca");
         }
         return format_to(ctx.out(), "unknown"); // g++9
     }

@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/rjson-v2.hh"
 #include "acmacs-base/read-file.hh"
@@ -27,7 +25,7 @@ int main(int argc, char* const argv[])
                 {"-v", false},
                         });
         if (args["-h"] || args["--help"] || args.number_of_arguments() < 2) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file> <output-layouts.json>\n" << args.usage_options() << '\n';
+            fmt::print(stderr, "Usage: {} [options] <chart-file> <output-layouts.json>\n{}\n", args.program(), args.usage_options());
             exit_code = 1;
         }
         else {
@@ -43,8 +41,8 @@ int main(int argc, char* const argv[])
             projection->randomize_layout(acmacs::chart::ProjectionModify::randomizer::plain_from_sample_optimization, 2.0);
             acmacs::chart::IntermediateLayouts intermediate_layouts;
             const auto status = projection->relax(acmacs::chart::optimization_options(method, precision, args["--md"]), intermediate_layouts);
-            std::cout << "INFO: " << status << '\n';
-            std::cout << "INFO: intermediate_layouts: " << intermediate_layouts.size() << '\n';
+            AD_INFO("{}", status);
+            AD_INFO("intermediate_layouts: {}", intermediate_layouts.size());
             rjson::value rj_intermediate_layouts = rjson::array{};
             std::for_each(intermediate_layouts.begin(), intermediate_layouts.end(), [&rj_intermediate_layouts](const auto& entry) {
                 rjson::value layout = rjson::array{};
@@ -59,7 +57,7 @@ int main(int argc, char* const argv[])
         }
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;

@@ -85,6 +85,7 @@ SOURCES = \
   map-resolution-test.cc  \
   lispmds-encode.cc       \
   optimize.cc             \
+  alglib.cc               \
   grid-test.cc            \
   lispmds-export.cc       \
   common.cc               \

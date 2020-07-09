@@ -42,7 +42,7 @@ int main(int argc, char* const argv[])
         auto relax = [&chart, method, precision](size_t proj_no) {
             auto projection = chart.projection_modify(proj_no);
             const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
-            std::cout << status << '\n';
+            fmt::print("{}\n", status);
         };
         if (opt.projection >= 0) {
             if (static_cast<size_t>(opt.projection) >= chart.number_of_projections())
