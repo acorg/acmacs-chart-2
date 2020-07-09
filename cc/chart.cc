@@ -952,7 +952,7 @@ template <typename AgSr> std::optional<size_t> find_by_full_name(const AgSr& ag_
 {
     const auto found = std::find_if(ag_sr.begin(), ag_sr.end(), [aFullName](auto antigen) -> bool { return antigen->full_name() == aFullName; });
     if (found == ag_sr.end())
-        return {};
+        return std::nullopt;
     else
         return found.index();
 }

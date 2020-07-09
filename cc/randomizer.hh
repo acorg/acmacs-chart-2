@@ -4,6 +4,7 @@
 #include <memory>
 #include <algorithm>
 #include <optional>
+#include <mutex>
 
 #include "acmacs-base/line.hh"
 #include "acmacs-chart-2/column-bases.hh"
