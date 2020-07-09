@@ -89,9 +89,6 @@ void alglib::lbfgs_optimize(acmacs::chart::optimization_status& status, acmacs::
         const double stpmax = 0.1;
         const ae_int_t max_iterations = 0;
 
-        // alglib does not like NaN coordinates of disconnected points, set them to 0
-        callback_data.stress.set_coordinates_of_disconnected(arg_first, 0.0, callback_data.stress.number_of_dimensions());
-
         real_1d_array x;
         x.attach_to_ptr(arg_last - arg_first, arg_first);
 
@@ -104,9 +101,6 @@ void alglib::lbfgs_optimize(acmacs::chart::optimization_status& status, acmacs::
         minlbfgsreport rep;
         minlbfgsresultsbuf(state, x, rep);
 
-        // return back NaN for disconnected points
-        callback_data.stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), callback_data.stress.number_of_dimensions());
-
         if (rep.terminationtype < 0) {
             const char* msg = lbfgs_optimize_errors[static_cast<size_t>(std::abs(rep.terminationtype) <= 8 ? (std::abs(rep.terminationtype) - 1) : 8)];
             fmt::print(stderr, "> ERROR alglib_lbfgs_optimize: {}\n", msg);
@@ -116,7 +110,6 @@ void alglib::lbfgs_optimize(acmacs::chart::optimization_status& status, acmacs::
         status.termination_report = lbfgs_optimize_termination_types[static_cast<size_t>((rep.terminationtype > 0 && rep.terminationtype < 9) ? rep.terminationtype - 1 : 8)];
         status.number_of_iterations = static_cast<size_t>(rep.iterationscount);
         status.number_of_stress_calculations = static_cast<size_t>(rep.nfev);
-        // std::cerr << "iter: " << rep.iterationscount << " str: " << rep.nfev << '\n';
     }
     catch (ap_error& err) {
         throw acmacs::chart::optimization_error(fmt::format("alglib error: {}", err.msg));
@@ -156,9 +149,6 @@ void alglib::cg_optimize(acmacs::chart::optimization_status& status, acmacs::cha
         const double epsf = 0;
         const ae_int_t max_iterations = 0;
 
-        // alglib does not like NaN coordinates of disconnected points, set them to 0
-        callback_data.stress.set_coordinates_of_disconnected(arg_first, 0.0, callback_data.stress.number_of_dimensions());
-
         real_1d_array x;
         x.attach_to_ptr(arg_last - arg_first, arg_first);
 
@@ -170,12 +160,9 @@ void alglib::cg_optimize(acmacs::chart::optimization_status& status, acmacs::cha
         mincgreport rep;
         mincgresultsbuf(state, x, rep);
 
-        // return back NaN for disconnected points
-        callback_data.stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), callback_data.stress.number_of_dimensions());
-
         if (rep.terminationtype < 0) {
             const char* msg = lbfgs_optimize_errors[static_cast<size_t>(std::abs(rep.terminationtype) <= 8 ? (std::abs(rep.terminationtype) - 1) : 8)];
-            std::cerr << "alglib_cg_optimize error: " << msg << '\n';
+            fmt::print(stderr, "> ERROR alglib_cg_optimize: {}\n", msg);
             throw acmacs::chart::optimization_error(msg);
         }
 

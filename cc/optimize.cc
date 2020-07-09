@@ -6,7 +6,9 @@
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/randomizer.hh"
+#include "acmacs-chart-2/disconnected-points-handler.hh"
 #include "acmacs-chart-2/alglib.hh"
+#include "acmacs-chart-2/optim.hh"
 
 // ----------------------------------------------------------------------
 
@@ -98,7 +100,8 @@ acmacs::chart::optimization_status acmacs::chart::optimize(optimization_method o
 acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::optimization_method optimization_method, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last,
                                                            acmacs::chart::optimization_precision precision)
 {
-    acmacs::chart::optimization_status status(optimization_method);
+    DisconnectedPointsHandler disconnected_point_handler{callback_data.stress, arg_first};
+    optimization_status status(optimization_method);
     status.initial_stress = callback_data.stress.value(arg_first);
     const auto start = std::chrono::high_resolution_clock::now();
     switch (optimization_method) {
@@ -108,9 +111,9 @@ acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::optimi
         case acmacs::chart::optimization_method::alglib_cg_pca:
             alglib::cg_optimize(status, callback_data, arg_first, arg_last, precision);
             break;
-            // case acmacs::chart::optimization_method::optimlib_bfgs_pca:
-            //     optimlib_bfgs_optimize(status, callback_data, arg_first, arg_last, precision);
-            //     break;
+        case acmacs::chart::optimization_method::optimlib_bfgs_pca:
+            optim::bfgs(status, callback_data, arg_first, arg_last, precision);
+            break;
     }
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
     status.final_stress = callback_data.stress.value(arg_first);

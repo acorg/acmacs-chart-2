@@ -86,6 +86,7 @@ SOURCES = \
   lispmds-encode.cc       \
   optimize.cc             \
   alglib.cc               \
+  optim.cc                \
   grid-test.cc            \
   lispmds-export.cc       \
   common.cc               \
@@ -113,7 +114,10 @@ endif
 
 all: install
 
+CONFIGURE_ARMADILLO = 1
 include $(ACMACSD_ROOT)/share/Makefile.config
+
+CXXFLAGS += $(LIBARMADILLO_INCLUDES)
 
 # ----------------------------------------------------------------------
 
@@ -126,6 +130,7 @@ LDLIBS = \
   $(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
   $(AD_LIB)/$(call shared_lib_name,libacmacsvirus,1,0) \
   $(AD_LIB)/$(call shared_lib_name,libacmacswhoccdata,1,0) \
+  $(LIBARMADILLO_LIBS) \
   $(XZ_LIBS) $(BZ2_LIBS) $(CXX_LIBS)
 
 # ----------------------------------------------------------------------
