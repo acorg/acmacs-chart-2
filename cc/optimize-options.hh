@@ -58,17 +58,7 @@ namespace acmacs::chart
 
     }; // struct dimension_schedule
 
-    inline optimization_method optimization_method_from_string(std::string_view source)
-    {
-        optimization_method method{optimization_method::alglib_cg_pca};
-        if (source == "lbfgs")
-            method = acmacs::chart::optimization_method::alglib_lbfgs_pca;
-        else if (source == "cg")
-            method = acmacs::chart::optimization_method::alglib_cg_pca;
-        else
-            throw std::runtime_error("unrecognized method: \"" + std::string(source) + "\", lbfgs or cg expected");
-        return method;
-    }
+    optimization_method optimization_method_from_string(std::string_view source); // optimize.cc
 
 } // namespace acmacs::chart
 

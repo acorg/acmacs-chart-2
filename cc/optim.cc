@@ -3,7 +3,9 @@
 #include "acmacs-chart-2/stress.hh"
 
 #pragma GCC diagnostic push
+
 #ifdef __clang__
+
 #pragma GCC diagnostic ignored "-Wreserved-id-macro"
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
@@ -26,6 +28,11 @@
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 #pragma GCC diagnostic ignored "-Wdouble-promotion"
 #pragma GCC diagnostic ignored "-Wunused-template"
+
+#else
+
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 #endif
 
 #include "optim/optim.hpp"
@@ -43,8 +50,13 @@ void optim::bfgs(acmacs::chart::optimization_status& status, acmacs::chart::Opti
 {
     algo_settings_t settings;
     arma::vec vals(static_cast<arma::uword>(arg_last - arg_first));
-    std::copy(arg_first, arg_first, vals.begin());
+    std::copy(arg_first, arg_last, vals.begin());
+    callback_data.iteration_no = 0;
     if (bfgs(vals, &objective_function, reinterpret_cast<void*>(&callback_data), settings)) {
+        std::copy(vals.begin(), vals.end(), arg_first);
+
+        status.number_of_iterations = callback_data.iteration_no;
+        status.number_of_stress_calculations = callback_data.iteration_no;
     }
     else
         throw acmacs::chart::optimization_error("optim::bfgs failed");
@@ -56,6 +68,7 @@ void optim::bfgs(acmacs::chart::optimization_status& status, acmacs::chart::Opti
 double objective_function(const arma::vec& vals_inp, arma::vec* grad_out, void* opt_data)
 {
     auto* callback_data = reinterpret_cast<acmacs::chart::OptimiserCallbackData*>(opt_data);
+    ++callback_data->iteration_no;
     if (grad_out)
         return callback_data->stress.value_gradient(vals_inp.begin(), vals_inp.end(), grad_out->begin());
     else

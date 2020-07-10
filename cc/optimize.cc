@@ -19,6 +19,23 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::optimization_method acmacs::chart::optimization_method_from_string(std::string_view source)
+{
+    optimization_method method{optimization_method::alglib_cg_pca};
+    if (source == "alglib-lbfgs")
+        method = acmacs::chart::optimization_method::alglib_lbfgs_pca;
+    else if (source == "alglib-cg")
+        method = acmacs::chart::optimization_method::alglib_cg_pca;
+    else if (source == "optim-bfgs")
+        method = acmacs::chart::optimization_method::optimlib_bfgs_pca;
+    else
+        throw std::runtime_error{fmt::format("unrecognized method: \"{}\", expected: alglib-lbfgs, alglib-cg, optim-bfgs", source)};
+    return method;
+
+} // acmacs::chart::optimization_method_from_string
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::ProjectionModify& projection, acmacs::chart::optimization_options options)
 {
     auto layout = projection.layout_modified();

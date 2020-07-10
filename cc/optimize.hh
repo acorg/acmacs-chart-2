@@ -91,7 +91,8 @@ namespace acmacs::chart
         OptimiserCallbackData(const Stress& a_stress) : stress{a_stress}, intermediate_layouts{nullptr} {}
         OptimiserCallbackData(const Stress& a_stress, acmacs::chart::IntermediateLayouts& a_intermediate_layouts) : stress{a_stress}, intermediate_layouts{&a_intermediate_layouts} {}
         const acmacs::chart::Stress& stress;
-        acmacs::chart::IntermediateLayouts* intermediate_layouts = nullptr;
+        acmacs::chart::IntermediateLayouts* intermediate_layouts{nullptr};
+        size_t iteration_no{0};
     };
 
 } // namespace acmacs::chart

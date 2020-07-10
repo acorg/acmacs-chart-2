@@ -24,7 +24,7 @@ struct Options : public argv
     option<bool>   rough{*this, "rough"};
     option<size_t> fine{*this, "fine", dflt{0UL}, desc{"relax roughly, then relax finely N best projections"}};
     option<bool>   no_dimension_annealing{*this, "no-dimension-annealing"};
-    option<str>    method{*this, "method", dflt{"cg"}, desc{"method: lbfgs, cg"}};
+    option<str>    method{*this, "method", dflt{"alglib-cg"}, desc{"method: alglib-lbfgs, alglib-cg, optim-bfgs"}};
     option<double> max_distance_multiplier{*this, "md", dflt{2.0}, desc{"randomization diameter multiplier"}};
     option<bool>   remove_original_projections{*this, "remove-original-projections", desc{"remove projections found in the source chart"}};
     option<size_t> keep_projections{*this, "keep-projections", dflt{0UL}, desc{"number of projections to keep, 0 - keep all"}};
