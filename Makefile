@@ -118,6 +118,7 @@ CONFIGURE_ARMADILLO = 1
 include $(ACMACSD_ROOT)/share/Makefile.config
 
 CXXFLAGS += $(LIBARMADILLO_INCLUDES)
+CXX_LIBS += $(LIBARMADILLO_LIBS)
 
 # ----------------------------------------------------------------------
 
@@ -130,7 +131,6 @@ LDLIBS = \
   $(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
   $(AD_LIB)/$(call shared_lib_name,libacmacsvirus,1,0) \
   $(AD_LIB)/$(call shared_lib_name,libacmacswhoccdata,1,0) \
-  $(LIBARMADILLO_LIBS) \
   $(XZ_LIBS) $(BZ2_LIBS) $(CXX_LIBS)
 
 # ----------------------------------------------------------------------
