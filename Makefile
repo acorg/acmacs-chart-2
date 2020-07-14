@@ -60,6 +60,7 @@ TARGETS = \
   $(DIST)/chart-antigens-without-passages \
   $(DIST)/chart-find-chart-with-antigens \
   $(DIST)/chart-time-series-for-country \
+  $(DIST)/chart-titers-compare \
   $(DIST)/test-titer-iterator \
   $(DIST)/test-chart-modify \
   $(DIST)/test-chart-create-from-scratch \

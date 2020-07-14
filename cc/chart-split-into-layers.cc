@@ -11,8 +11,8 @@ struct Options : public argv
     Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
 
     std::string_view help_pre() const override { return "generate individual tables from the layers of the chart"; }
-    argument<str> chart{*this, arg_name{"chart"}};
-    argument<str> output_prefix{*this, arg_name{"output_prefix"}};
+    argument<str> chart{*this, arg_name{"chart"}, mandatory};
+    argument<str> output_prefix{*this, arg_name{"output_prefix"}, mandatory};
 };
 
 int main(int argc, char* const argv[])
