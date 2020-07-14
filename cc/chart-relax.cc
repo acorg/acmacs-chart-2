@@ -24,7 +24,7 @@ struct Options : public argv
     option<bool>   rough{*this, "rough"};
     option<size_t> fine{*this, "fine", dflt{0UL}, desc{"relax roughly, then relax finely N best projections"}};
     option<bool>   no_dimension_annealing{*this, "no-dimension-annealing"};
-    option<str>    method{*this, "method", dflt{"alglib-cg"}, desc{"method: alglib-lbfgs, alglib-cg, optim-bfgs"}};
+    option<str>    method{*this, "method", dflt{"alglib-cg"}, desc{"method: alglib-lbfgs, alglib-cg, optim-bfgs, optim-differential-evolution"}};
     option<double> max_distance_multiplier{*this, "md", dflt{2.0}, desc{"randomization diameter multiplier"}};
     option<bool>   remove_original_projections{*this, "remove-original-projections", desc{"remove projections found in the source chart"}};
     option<size_t> keep_projections{*this, "keep-projections", dflt{0UL}, desc{"number of projections to keep, 0 - keep all"}};
@@ -61,7 +61,7 @@ int main(int argc, char* const argv[])
             std::cerr << fmt::format("INFO: disconnected points: ({}) {}\n", disconnected->size(), disconnected);
 
         acmacs::chart::optimization_options options(method, precision, opt.max_distance_multiplier);
-        const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(!opt.no_dimension_annealing);
+        const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(!opt.no_dimension_annealing && method != acmacs::chart::optimization_method::optimlib_differential_evolution);
         if (opt.seed.has_value()) {
             if (opt.number_of_optimizations != 1UL)
                 fmt::print(stderr, "WARNING: can only perform one optimization when seed is used\n");

@@ -45,8 +45,20 @@ static double objective_function(const arma::vec& vals_inp, arma::vec* grad_out,
 
 // ----------------------------------------------------------------------
 
+double objective_function(const arma::vec& vals_inp, arma::vec* grad_out, void* opt_data)
+{
+    auto* callback_data = reinterpret_cast<acmacs::chart::OptimiserCallbackData*>(opt_data);
+    ++callback_data->iteration_no;
+    if (grad_out)
+        return callback_data->stress.value_gradient(vals_inp.begin(), vals_inp.end(), grad_out->begin());
+    else
+        return callback_data->stress.value(vals_inp.begin());
 
-void optim::bfgs(acmacs::chart::optimization_status& status, acmacs::chart::OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision precision)
+} // objective_function
+
+// ----------------------------------------------------------------------
+
+void optim::bfgs(acmacs::chart::optimization_status& status, acmacs::chart::OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision /*precision*/)
 {
     algo_settings_t settings;
     arma::vec vals(static_cast<arma::uword>(arg_last - arg_first));
@@ -65,19 +77,24 @@ void optim::bfgs(acmacs::chart::optimization_status& status, acmacs::chart::Opti
 
 // ----------------------------------------------------------------------
 
-double objective_function(const arma::vec& vals_inp, arma::vec* grad_out, void* opt_data)
+void optim::differential_evolution(acmacs::chart::optimization_status& status, acmacs::chart::OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision /*precision*/)
 {
-    auto* callback_data = reinterpret_cast<acmacs::chart::OptimiserCallbackData*>(opt_data);
-    ++callback_data->iteration_no;
-    if (grad_out)
-        return callback_data->stress.value_gradient(vals_inp.begin(), vals_inp.end(), grad_out->begin());
-    else
-        return callback_data->stress.value(vals_inp.begin());
+    algo_settings_t settings{.de_n_pop=200, .de_n_pop_best=6, .de_n_gen=10000, .de_mutation_method=1, .de_par_F=0.8, .de_par_CR=0.9};
+    arma::vec vals(static_cast<arma::uword>(arg_last - arg_first));
+    std::copy(arg_first, arg_last, vals.begin());
+    callback_data.iteration_no = 0;
+    if (de(vals, &objective_function, reinterpret_cast<void*>(&callback_data), settings)) {
+        std::copy(vals.begin(), vals.end(), arg_first);
 
-} // objective_function
+        status.number_of_iterations = callback_data.iteration_no;
+        status.number_of_stress_calculations = callback_data.iteration_no;
+    }
+    else
+        throw acmacs::chart::optimization_error("optim::differential_evolution failed");
+
+} // optim::differential_evolution
 
 // ----------------------------------------------------------------------
-
 
 
 // ----------------------------------------------------------------------

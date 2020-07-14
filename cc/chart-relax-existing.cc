@@ -19,7 +19,7 @@ struct Options : public argv
     option<int>    projection{*this, "projection", dflt{0}, desc{"-1 to relax all"}};
     option<bool>   rough{*this, "rough"};
     option<bool>   sort{*this, "sort", desc{"sort projections"}};
-    option<str>    method{*this, "method", dflt{"cg"}, desc{"method: lbfgs, cg"}};
+    option<str>    method{*this, "method", dflt{"alglib-cg"}, desc{"method: alglib-lbfgs, alglib-cg, optim-bfgs, optim-differential-evolution"}};
     option<double> max_distance_multiplier{*this, "md", dflt{1.0}, desc{"max distance multiplier"}};
     option<bool>   report_time{*this, "time", desc{"report time of loading chart"}};
 

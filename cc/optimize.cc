@@ -23,11 +23,13 @@ acmacs::chart::optimization_method acmacs::chart::optimization_method_from_strin
 {
     optimization_method method{optimization_method::alglib_cg_pca};
     if (source == "alglib-lbfgs")
-        method = acmacs::chart::optimization_method::alglib_lbfgs_pca;
+        method = optimization_method::alglib_lbfgs_pca;
     else if (source == "alglib-cg")
-        method = acmacs::chart::optimization_method::alglib_cg_pca;
+        method = optimization_method::alglib_cg_pca;
     else if (source == "optim-bfgs")
-        method = acmacs::chart::optimization_method::optimlib_bfgs_pca;
+        method = optimization_method::optimlib_bfgs_pca;
+    else if (source == "optim-differential-evolution")
+        method = optimization_method::optimlib_differential_evolution;
     else
         throw std::runtime_error{fmt::format("unrecognized method: \"{}\", expected: alglib-lbfgs, alglib-cg, optim-bfgs", source)};
     return method;
@@ -122,14 +124,17 @@ acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::optimi
     status.initial_stress = callback_data.stress.value(arg_first);
     const auto start = std::chrono::high_resolution_clock::now();
     switch (optimization_method) {
-        case acmacs::chart::optimization_method::alglib_lbfgs_pca:
+        case optimization_method::alglib_lbfgs_pca:
             alglib::lbfgs_optimize(status, callback_data, arg_first, arg_last, precision);
             break;
-        case acmacs::chart::optimization_method::alglib_cg_pca:
+        case optimization_method::alglib_cg_pca:
             alglib::cg_optimize(status, callback_data, arg_first, arg_last, precision);
             break;
-        case acmacs::chart::optimization_method::optimlib_bfgs_pca:
+        case optimization_method::optimlib_bfgs_pca:
             optim::bfgs(status, callback_data, arg_first, arg_last, precision);
+            break;
+        case optimization_method::optimlib_differential_evolution:
+            optim::differential_evolution(status, callback_data, arg_first, arg_last, precision);
             break;
     }
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
@@ -174,6 +179,8 @@ acmacs::chart::DimensionAnnelingStatus acmacs::chart::dimension_annealing(optimi
         case optimization_method::optimlib_bfgs_pca:
             alglib::pca(callback_data, source_number_of_dimensions, target_number_of_dimensions, arg_first, arg_last);
             break;
+      case optimization_method::optimlib_differential_evolution:
+          throw std::runtime_error{"optimlib_differential_evolution method does not support dimension annealing"};
     }
 
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);

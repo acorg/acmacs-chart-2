@@ -12,11 +12,11 @@
 
 namespace acmacs::chart
 {
-    enum class optimization_method
-    {
+    enum class optimization_method {
         alglib_lbfgs_pca,
         alglib_cg_pca,
-        optimlib_bfgs_pca
+        optimlib_bfgs_pca,
+        optimlib_differential_evolution,
     };
     enum class multiply_antigen_titer_until_column_adjust { no, yes };
     enum class dodgy_titer_is_regular { no, yes };
@@ -84,6 +84,8 @@ template <> struct fmt::formatter<acmacs::chart::optimization_method> : public f
               return format_to(ctx.out(), "alglib_cg_pca");
           case optimization_method::optimlib_bfgs_pca:
               return format_to(ctx.out(), "optimlib_bfgs_pca");
+          case optimization_method::optimlib_differential_evolution:
+              return format_to(ctx.out(), "optimlib_differential_evolution");
         }
         return format_to(ctx.out(), "unknown"); // g++9
     }
