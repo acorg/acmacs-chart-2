@@ -1,5 +1,4 @@
 #include "acmacs-base/argv.hh"
-#include "acmacs-base/range.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -28,21 +27,24 @@ class Titers
         }
         std::sort(std::begin(all_antigens), std::end(all_antigens));
         all_antigens.erase(std::unique(std::begin(all_antigens), std::end(all_antigens)), std::end(all_antigens));
-        const auto serum_order = [](const auto& e1, const auto& e2) { return e1.first < e2.first; };
-        std::sort(std::begin(all_sera), std::end(all_sera), serum_order);
-        all_sera.erase(std::unique(std::begin(all_sera), std::end(all_sera), serum_order), std::end(all_sera));
+        std::sort(std::begin(all_sera), std::end(all_sera), [](const auto& e1, const auto& e2) { return e1.first < e2.first; });
+        all_sera.erase(std::unique(std::begin(all_sera), std::end(all_sera), [](const auto& e1, const auto& e2) { return e1.first == e2.first; }), std::end(all_sera));
 
         fmt::memory_buffer result;
         const auto column_width = 8;
         const auto table_prefix = 5;
         fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix);
         for (auto serum_no : acmacs::range(all_sera.size()))
-            fmt::format_to(result, "{: ^{}d}", serum_no, column_width);
+            fmt::format_to(result, "{: ^{}d}", serum_no + 1, column_width);
         fmt::format_to(result, "\n");
         fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix);
         for (auto serum : all_sera)
             fmt::format_to(result, "{: ^8s}", serum.second, column_width);
         fmt::format_to(result, "\n\n");
+
+        fmt::format_to(result, "\n");
+        for (auto [sr_no, serum] : acmacs::enumerate(all_sera, 1ul))
+            fmt::format_to(result, "{: >{}s} {:3d} {}\n", "", max_antigen_name + table_prefix, sr_no, serum.first);
 
         fmt::print("{}\n", fmt::to_string(result));
     }
@@ -89,8 +91,9 @@ int main(int argc, char* const argv[])
             auto sera = chart->sera();
             auto titers = chart->titers();
             for (size_t ag_no{0}; ag_no < antigens->size(); ++ag_no) {
-                for (size_t sr_no{0}; sr_no < sera->size(); ++sr_no)
+                for (size_t sr_no{0}; sr_no < sera->size(); ++sr_no) {
                     titer_data.add(table_no, antigens->at(ag_no)->full_name(), sera->at(sr_no)->full_name(), sera->at(sr_no)->abbreviated_location_year(), titers->titer(ag_no, sr_no));
+                }
             }
             ++table_no;
         }
