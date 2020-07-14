@@ -135,6 +135,7 @@ acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::optimi
             break;
         case optimization_method::optimlib_differential_evolution:
             optim::differential_evolution(status, callback_data, arg_first, arg_last, precision);
+            alglib::cg_optimize(status, callback_data, arg_first, arg_last, precision);
             break;
     }
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);

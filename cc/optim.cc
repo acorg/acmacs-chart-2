@@ -79,11 +79,12 @@ void optim::bfgs(acmacs::chart::optimization_status& status, acmacs::chart::Opti
 
 void optim::differential_evolution(acmacs::chart::optimization_status& status, acmacs::chart::OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision /*precision*/)
 {
-    algo_settings_t settings{.de_n_pop=200, .de_n_pop_best=6, .de_n_gen=10000, .de_mutation_method=1, .de_par_F=0.8, .de_par_CR=0.9};
+    // algo_settings_t settings{.de_n_pop=200, .de_n_pop_best=6, .de_n_gen=10000, .de_mutation_method=2, .de_par_F=0.8, .de_par_CR=0.9};
+    algo_settings_t settings{.de_n_pop=2000, .de_n_pop_best=6, .de_n_gen=100000, .de_mutation_method=2, .de_par_F=0.8, .de_par_CR=0.9};
     arma::vec vals(static_cast<arma::uword>(arg_last - arg_first));
     std::copy(arg_first, arg_last, vals.begin());
     callback_data.iteration_no = 0;
-    if (de(vals, &objective_function, reinterpret_cast<void*>(&callback_data), settings)) {
+    if (de_prmm(vals, &objective_function, reinterpret_cast<void*>(&callback_data), settings)) {
         std::copy(vals.begin(), vals.end(), arg_first);
 
         status.number_of_iterations = callback_data.iteration_no;
