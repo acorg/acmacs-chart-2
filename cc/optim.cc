@@ -80,7 +80,7 @@ void optim::bfgs(acmacs::chart::optimization_status& status, acmacs::chart::Opti
 void optim::differential_evolution(acmacs::chart::optimization_status& status, acmacs::chart::OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, acmacs::chart::optimization_precision /*precision*/)
 {
     // algo_settings_t settings{.de_n_pop=200, .de_n_pop_best=6, .de_n_gen=10000, .de_mutation_method=2, .de_par_F=0.8, .de_par_CR=0.9};
-    algo_settings_t settings{.de_n_pop=2000, .de_n_pop_best=6, .de_n_gen=100000, .de_mutation_method=2, .de_par_F=0.8, .de_par_CR=0.9};
+    algo_settings_t settings{.de_n_pop=20000, .de_n_pop_best=50, .de_n_gen=1000000, .de_mutation_method=2, .de_par_F=0.8, .de_par_CR=0.6};
     arma::vec vals(static_cast<arma::uword>(arg_last - arg_first));
     std::copy(arg_first, arg_last, vals.begin());
     callback_data.iteration_no = 0;
