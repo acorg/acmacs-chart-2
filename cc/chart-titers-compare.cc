@@ -39,11 +39,11 @@ class Titers
         const auto column_width = 8;
         const auto table_prefix = 5;
         const auto table_no_width = 4;
-        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + table_no_width);
+        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + table_no_width + 3);
         for (auto serum_no : acmacs::range(all_sera.size()))
             fmt::format_to(result, "{: ^{}d}", serum_no + 1, column_width);
         fmt::format_to(result, "\n");
-        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + table_no_width);
+        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + table_no_width + 3);
         for (auto serum : all_sera)
             fmt::format_to(result, "{: ^8s}", serum.second, column_width);
         fmt::format_to(result, "\n\n");
@@ -83,7 +83,7 @@ class Titers
 
         fmt::format_to(result, "\n");
         for (auto [sr_no, serum] : acmacs::enumerate(all_sera, 1ul))
-            fmt::format_to(result, "{: >{}s} {:3d} {}\n", "", max_antigen_name + table_prefix, sr_no, serum.first);
+            fmt::format_to(result, "{: >{}s} {:3d} {}\n", "", max_antigen_name + table_prefix + table_no_width, sr_no, serum.first);
 
         fmt::print("{}\n", fmt::to_string(result));
     }
