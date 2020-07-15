@@ -57,14 +57,16 @@ class Titers
                 }
             }
 
+            bool first_table{true};
             for (size_t table_no{0}; table_no <= max_table; ++table_no) {
-                if (table_no == 0)
-                    fmt::format_to(result, "{:3d}  {: <{}s} ", ag_no + 1, antigen, max_antigen_name);
-                else
-                    fmt::format_to(result, "{: >{}s} ", "", max_antigen_name + table_prefix);
-                fmt::format_to(result, "{:{}d} ", table_no + 1, table_no_width);
 
                 if (std::any_of(std::begin(per_table_per_serum[table_no]), std::end(per_table_per_serum[table_no]), [](const auto* titer) { return bool{titer}; })) {
+                    if (first_table)
+                        fmt::format_to(result, "{:3d}  {: <{}s} ", ag_no + 1, antigen, max_antigen_name);
+                    else
+                        fmt::format_to(result, "{: >{}s} ", "", max_antigen_name + table_prefix);
+                    fmt::format_to(result, "{:{}d} ", table_no + 1, table_no_width);
+
                     for (const auto [sr_no, titer] : acmacs::enumerate(per_table_per_serum[table_no])) {
                         if (titer) {
                             if (const auto* titer1 = per_table_per_serum[0][sr_no]; table_no == 0 || !titer1 || *titer1 != *titer)
@@ -75,10 +77,9 @@ class Titers
                         else
                             fmt::format_to(result, "{: >{}s}", "", column_width);
                     }
+                    first_table = false;
+                    fmt::format_to(result, "\n");
                 }
-                else
-                    fmt::format_to(result, "-");
-                fmt::format_to(result, "\n");
             }
             fmt::format_to(result, "\n\n");
         }
@@ -125,8 +126,7 @@ int main(int argc, char* const argv[])
     try {
         Options opt(argc, argv);
         Titers titer_data;
-        size_t table_no{0};
-        for (const auto& chart_filename : *opt.charts) {
+        for (const auto [table_no, chart_filename] : acmacs::enumerate(*opt.charts)) {
             auto chart = acmacs::chart::import_from_file(chart_filename);
             auto antigens = chart->antigens();
             auto sera = chart->sera();
@@ -136,7 +136,7 @@ int main(int argc, char* const argv[])
                     titer_data.add(table_no, antigens->at(ag_no)->full_name(), sera->at(sr_no)->full_name(), sera->at(sr_no)->abbreviated_location_year(), titers->titer(ag_no, sr_no));
                 }
             }
-            ++table_no;
+            fmt::print("{:3d} {}\n", table_no, chart_filename);
         }
         titer_data.report();
     }
