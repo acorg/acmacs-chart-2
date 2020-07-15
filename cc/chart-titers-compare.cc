@@ -76,6 +76,8 @@ class Titers
                             fmt::format_to(result, "{: >{}s}", "", column_width);
                     }
                 }
+                else
+                    fmt::format_to(result, "-");
                 fmt::format_to(result, "\n");
             }
             fmt::format_to(result, "\n\n");
