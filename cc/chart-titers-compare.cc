@@ -14,7 +14,7 @@ class Titers
         data_.emplace_back(table_no, antigen, serum, serum_abbreviated, titer);
     }
 
-    void report() const
+    void report(bool omit_if_not_in_first) const
     {
         std::vector<std::string_view> all_antigens;
         std::vector<std::pair<std::string_view, std::string_view>> all_sera;
@@ -56,11 +56,17 @@ class Titers
                         per_table_per_serum[table_no][serum_index(entry.serum)] = &entry.titer;
                 }
             }
+            const auto present_in_table = [&per_table_per_serum](size_t table_no) {
+                return std::any_of(std::begin(per_table_per_serum[table_no]), std::end(per_table_per_serum[table_no]), [](const auto* titer) { return bool{titer}; });
+            };
+
+            if (omit_if_not_in_first && !present_in_table(0))
+                continue;
 
             bool first_table{true};
             for (size_t table_no{0}; table_no <= max_table; ++table_no) {
 
-                if (std::any_of(std::begin(per_table_per_serum[table_no]), std::end(per_table_per_serum[table_no]), [](const auto* titer) { return bool{titer}; })) {
+                if (present_in_table(table_no)) {
                     if (first_table)
                         fmt::format_to(result, "{:3d}  {: <{}s} ", ag_no + 1, antigen, max_antigen_name);
                     else
@@ -118,6 +124,8 @@ struct Options : public argv
 
     std::string_view help_pre() const override { return "compare titers of mutiple charts"; }
     argument<str_array> charts{*this, arg_name{"chart"}, mandatory};
+
+    option<bool> omit_if_not_in_first{*this, "omit-not-first", desc{"omit antigen if it is not found in the first table"}};
 };
 
 int main(int argc, char* const argv[])
@@ -138,7 +146,7 @@ int main(int argc, char* const argv[])
             }
             fmt::print("{:3d} {}\n", table_no, chart_filename);
         }
-        titer_data.report();
+        titer_data.report(opt.omit_if_not_in_first);
     }
     catch (std::exception& err) {
         fmt::print(stderr, "ERROR: {}\n", err);
