@@ -48,23 +48,31 @@ class Titers
         fmt::format_to(result, "\n\n");
 
         for (const auto [ag_no, antigen] : acmacs::enumerate(all_antigens)) {
+            fmt::format_to(result, "{:3d}  {: <{}s} ", ag_no + 1, antigen, max_antigen_name);
+            bool newline{false};
             for (size_t table_no{0}; table_no <= max_table; ++table_no) {
-                if (table_no == 0)
-                    fmt::format_to(result, "{:3d} {: <{}s} ", ag_no + 1, antigen, max_antigen_name);
-                else
-                    fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix);
+                if (newline) {
+                    fmt::format_to(result, "{: >{}s} ", "", max_antigen_name + table_prefix);
+                    newline = false;
+                }
                 std::vector<const acmacs::chart::Titer*> per_serum(all_sera.size(), nullptr);
+                bool has_titer{false};
                 for (const auto& entry : data_) {
-                    if (entry.table_no == table_no && entry.antigen == antigen)
+                    if (entry.table_no == table_no && entry.antigen == antigen) {
                         per_serum[serum_index(entry.serum)] = &entry.titer;
+                        has_titer = true;
+                    }
                 }
-                for (const auto* titer : per_serum) {
-                    if (titer)
-                        fmt::format_to(result, "{: >{}s}", *titer, column_width);
-                    else
-                        fmt::format_to(result, "{: >{}s}", "", column_width);
+                if (has_titer) {
+                    for (const auto* titer : per_serum) {
+                        if (titer)
+                            fmt::format_to(result, "{: >{}s}", *titer, column_width);
+                        else
+                            fmt::format_to(result, "{: >{}s}", "*", column_width);
+                    }
+                    fmt::format_to(result, "\n");
+                    newline = true;
                 }
-                fmt::format_to(result, "\n");
             }
             fmt::format_to(result, "\n");
         }
