@@ -38,43 +38,47 @@ class Titers
         fmt::memory_buffer result;
         const auto column_width = 8;
         const auto table_prefix = 5;
-        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix);
+        const auto table_no_width = 4;
+        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + table_no_width);
         for (auto serum_no : acmacs::range(all_sera.size()))
             fmt::format_to(result, "{: ^{}d}", serum_no + 1, column_width);
         fmt::format_to(result, "\n");
-        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix);
+        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + table_no_width);
         for (auto serum : all_sera)
             fmt::format_to(result, "{: ^8s}", serum.second, column_width);
         fmt::format_to(result, "\n\n");
 
         for (const auto [ag_no, antigen] : acmacs::enumerate(all_antigens)) {
-            fmt::format_to(result, "{:3d}  {: <{}s} ", ag_no + 1, antigen, max_antigen_name);
-            bool newline{false};
+            std::vector<std::vector<const acmacs::chart::Titer*>> per_table_per_serum(max_table + 1, std::vector<const acmacs::chart::Titer*>(all_sera.size(), nullptr));
             for (size_t table_no{0}; table_no <= max_table; ++table_no) {
-                if (newline) {
-                    fmt::format_to(result, "{: >{}s} ", "", max_antigen_name + table_prefix);
-                    newline = false;
-                }
-                std::vector<const acmacs::chart::Titer*> per_serum(all_sera.size(), nullptr);
-                bool has_titer{false};
                 for (const auto& entry : data_) {
-                    if (entry.table_no == table_no && entry.antigen == antigen) {
-                        per_serum[serum_index(entry.serum)] = &entry.titer;
-                        has_titer = true;
-                    }
-                }
-                if (has_titer) {
-                    for (const auto* titer : per_serum) {
-                        if (titer)
-                            fmt::format_to(result, "{: >{}s}", *titer, column_width);
-                        else
-                            fmt::format_to(result, "{: >{}s}", "*", column_width);
-                    }
-                    fmt::format_to(result, "\n");
-                    newline = true;
+                    if (entry.table_no == table_no && entry.antigen == antigen)
+                        per_table_per_serum[table_no][serum_index(entry.serum)] = &entry.titer;
                 }
             }
-            fmt::format_to(result, "\n");
+
+            for (size_t table_no{0}; table_no <= max_table; ++table_no) {
+                if (table_no == 0)
+                    fmt::format_to(result, "{:3d}  {: <{}s} ", ag_no + 1, antigen, max_antigen_name);
+                else
+                    fmt::format_to(result, "{: >{}s} ", "", max_antigen_name + table_prefix);
+                fmt::format_to(result, "{:{}d} ", table_no + 1, table_no_width);
+
+                if (std::any_of(std::begin(per_table_per_serum[table_no]), std::end(per_table_per_serum[table_no]), [](const auto* titer) { return bool{titer}; })) {
+                    for (const auto [sr_no, titer] : acmacs::enumerate(per_table_per_serum[table_no])) {
+                        if (titer) {
+                            if (const auto* titer1 = per_table_per_serum[0][sr_no]; table_no == 0 || !titer1 || *titer1 != *titer)
+                                fmt::format_to(result, "{: >{}s}", *titer, column_width);
+                            else
+                                fmt::format_to(result, "{: >{}s}", "^", column_width);
+                        }
+                        else
+                            fmt::format_to(result, "{: >{}s}", "", column_width);
+                    }
+                }
+                fmt::format_to(result, "\n");
+            }
+            fmt::format_to(result, "\n\n");
         }
 
         fmt::format_to(result, "\n");
