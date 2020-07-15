@@ -14,7 +14,7 @@ class Titers
         data_.emplace_back(table_no, antigen, serum, serum_abbreviated, titer);
     }
 
-    void report()
+    void report() const
     {
         std::vector<std::string_view> all_antigens;
         std::vector<std::pair<std::string_view, std::string_view>> all_sera;
@@ -30,6 +30,11 @@ class Titers
         std::sort(std::begin(all_sera), std::end(all_sera), [](const auto& e1, const auto& e2) { return e1.first < e2.first; });
         all_sera.erase(std::unique(std::begin(all_sera), std::end(all_sera), [](const auto& e1, const auto& e2) { return e1.first == e2.first; }), std::end(all_sera));
 
+        // const auto antigen_index = [&all_antigens](std::string_view antigen) { return std::find(std::begin(all_antigens), std::end(all_antigens), antigen) - std::begin(all_antigens); };
+        const auto serum_index = [&all_sera](std::string_view serum) {
+            return static_cast<size_t>(std::find_if(std::begin(all_sera), std::end(all_sera), [serum](const auto& en) { return en.first == serum; }) - std::begin(all_sera));
+        };
+
         fmt::memory_buffer result;
         const auto column_width = 8;
         const auto table_prefix = 5;
@@ -41,6 +46,28 @@ class Titers
         for (auto serum : all_sera)
             fmt::format_to(result, "{: ^8s}", serum.second, column_width);
         fmt::format_to(result, "\n\n");
+
+        for (const auto [ag_no, antigen] : acmacs::enumerate(all_antigens)) {
+            for (size_t table_no{0}; table_no <= max_table; ++table_no) {
+                if (table_no == 0)
+                    fmt::format_to(result, "{:3d} {: <{}s} ", ag_no + 1, antigen, max_antigen_name);
+                else
+                    fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix);
+                std::vector<const acmacs::chart::Titer*> per_serum(all_sera.size(), nullptr);
+                for (const auto& entry : data_) {
+                    if (entry.table_no == table_no && entry.antigen == antigen)
+                        per_serum[serum_index(entry.serum)] = &entry.titer;
+                }
+                for (const auto* titer : per_serum) {
+                    if (titer)
+                        fmt::format_to(result, "{: >{}s}", *titer, column_width);
+                    else
+                        fmt::format_to(result, "{: >{}s}", "", column_width);
+                }
+                fmt::format_to(result, "\n");
+            }
+            fmt::format_to(result, "\n");
+        }
 
         fmt::format_to(result, "\n");
         for (auto [sr_no, serum] : acmacs::enumerate(all_sera, 1ul))
