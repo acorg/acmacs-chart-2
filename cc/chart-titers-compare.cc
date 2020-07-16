@@ -14,43 +14,44 @@ class Titers
         data_.emplace_back(table_no, antigen, serum, serum_abbreviated, titer);
     }
 
+    void collect()
+    {
+        for (const auto& en : data_) {
+            all_antigens_.emplace_back(en.antigen);
+            all_sera_.emplace_back(en.serum, en.serum_abbreviated);
+            num_tables_ = std::max(num_tables_, en.table_no);
+            max_antigen_name_ = std::max(max_antigen_name_, en.antigen.size());
+        }
+        ++num_tables_;
+        std::sort(std::begin(all_antigens_), std::end(all_antigens_));
+        all_antigens_.erase(std::unique(std::begin(all_antigens_), std::end(all_antigens_)), std::end(all_antigens_));
+        std::sort(std::begin(all_sera_), std::end(all_sera_), [](const auto& e1, const auto& e2) { return e1.first < e2.first; });
+        all_sera_.erase(std::unique(std::begin(all_sera_), std::end(all_sera_), [](const auto& e1, const auto& e2) { return e1.first == e2.first; }), std::end(all_sera_));
+    }
+
+    size_t serum_index(std::string_view serum) const
+    {
+            return static_cast<size_t>(std::find_if(std::begin(all_sera_), std::end(all_sera_), [serum](const auto& en) { return en.first == serum; }) - std::begin(all_sera_));
+    }
+
     void report(bool omit_if_not_in_first) const
     {
-        std::vector<std::string_view> all_antigens;
-        std::vector<std::pair<std::string_view, std::string_view>> all_sera;
-        size_t max_table{0}, max_antigen_name{0};
-        for (const auto& en : data_) {
-            all_antigens.emplace_back(en.antigen);
-            all_sera.emplace_back(en.serum, en.serum_abbreviated);
-            max_table = std::max(max_table, en.table_no);
-            max_antigen_name = std::max(max_antigen_name, en.antigen.size());
-        }
-        std::sort(std::begin(all_antigens), std::end(all_antigens));
-        all_antigens.erase(std::unique(std::begin(all_antigens), std::end(all_antigens)), std::end(all_antigens));
-        std::sort(std::begin(all_sera), std::end(all_sera), [](const auto& e1, const auto& e2) { return e1.first < e2.first; });
-        all_sera.erase(std::unique(std::begin(all_sera), std::end(all_sera), [](const auto& e1, const auto& e2) { return e1.first == e2.first; }), std::end(all_sera));
-
-        // const auto antigen_index = [&all_antigens](std::string_view antigen) { return std::find(std::begin(all_antigens), std::end(all_antigens), antigen) - std::begin(all_antigens); };
-        const auto serum_index = [&all_sera](std::string_view serum) {
-            return static_cast<size_t>(std::find_if(std::begin(all_sera), std::end(all_sera), [serum](const auto& en) { return en.first == serum; }) - std::begin(all_sera));
-        };
-
         fmt::memory_buffer result;
         const auto column_width = 8;
         const auto table_prefix = 5;
         const auto table_no_width = 4;
-        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + table_no_width + 5);
-        for (auto serum_no : acmacs::range(all_sera.size()))
+        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name_ + table_prefix + table_no_width + 5);
+        for (auto serum_no : acmacs::range(all_sera_.size()))
             fmt::format_to(result, "{: ^{}d}", serum_no + 1, column_width);
         fmt::format_to(result, "\n");
-        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + table_no_width + 5);
-        for (auto serum : all_sera)
+        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name_ + table_prefix + table_no_width + 5);
+        for (auto serum : all_sera_)
             fmt::format_to(result, "{: ^8s}", serum.second, column_width);
         fmt::format_to(result, "\n\n");
 
-        for (const auto [ag_no, antigen] : acmacs::enumerate(all_antigens)) {
-            std::vector<std::vector<const acmacs::chart::Titer*>> per_table_per_serum(max_table + 1, std::vector<const acmacs::chart::Titer*>(all_sera.size(), nullptr));
-            for (size_t table_no{0}; table_no <= max_table; ++table_no) {
+        for (const auto [ag_no, antigen] : acmacs::enumerate(all_antigens_)) {
+            std::vector<std::vector<const acmacs::chart::Titer*>> per_table_per_serum(num_tables_, std::vector<const acmacs::chart::Titer*>(all_sera_.size(), nullptr));
+            for (size_t table_no{0}; table_no < num_tables_; ++table_no) {
                 for (const auto& entry : data_) {
                     if (entry.table_no == table_no && entry.antigen == antigen)
                         per_table_per_serum[table_no][serum_index(entry.serum)] = &entry.titer;
@@ -64,18 +65,18 @@ class Titers
                 continue;
 
             bool first_table{true};
-            for (size_t table_no{0}; table_no <= max_table; ++table_no) {
+            for (size_t table_no{0}; table_no < num_tables_; ++table_no) {
 
                 if (present_in_table(table_no)) {
                     if (first_table) {
-                        fmt::format_to(result, "{:3d}  {: <{}s} ", ag_no + 1, antigen, max_antigen_name);
+                        fmt::format_to(result, "{:3d}  {: <{}s} ", ag_no + 1, antigen, max_antigen_name_);
                         fmt::format_to(result, "{:{}d}{:<2s} ", table_no + 1, table_no_width, "");
                     }
                     else {
                         bool matches{true};
                         for (const auto [sr_no, titer] : acmacs::enumerate(per_table_per_serum[table_no]))
                             matches &= !titer || !per_table_per_serum[0][sr_no] || *titer == *per_table_per_serum[0][sr_no];
-                        fmt::format_to(result, "{: >{}s} ", "", max_antigen_name + table_prefix);
+                        fmt::format_to(result, "{: >{}s} ", "", max_antigen_name_ + table_prefix);
                         fmt::format_to(result, "{:{}d}{:<2s} ", table_no + 1, table_no_width, matches ? "^" : "**");
                     }
 
@@ -97,8 +98,8 @@ class Titers
         }
 
         fmt::format_to(result, "\n");
-        for (auto [sr_no, serum] : acmacs::enumerate(all_sera, 1ul))
-            fmt::format_to(result, "{: >{}s} {:3d} {}\n", "", max_antigen_name + table_prefix + table_no_width, sr_no, serum.first);
+        for (auto [sr_no, serum] : acmacs::enumerate(all_sera_, 1ul))
+            fmt::format_to(result, "{: >{}s} {:3d} {}\n", "", max_antigen_name_ + table_prefix + table_no_width, sr_no, serum.first);
 
         fmt::print("{}\n", fmt::to_string(result));
     }
@@ -118,6 +119,11 @@ class Titers
     };
 
     std::vector<Entry> data_;
+
+    std::vector<std::string_view> all_antigens_;
+    std::vector<std::pair<std::string_view, std::string_view>> all_sera_;
+    size_t num_tables_{0};
+    size_t max_antigen_name_{0};
 
 };
 
@@ -152,6 +158,7 @@ int main(int argc, char* const argv[])
             }
             fmt::print("{:3d} {}\n", table_no, chart_filename);
         }
+        titer_data.collect();
         titer_data.report(opt.omit_if_not_in_first);
     }
     catch (std::exception& err) {
