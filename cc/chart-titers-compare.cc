@@ -39,11 +39,11 @@ class Titers
         const auto column_width = 8;
         const auto table_prefix = 5;
         const auto table_no_width = 4;
-        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + table_no_width + 3);
+        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + table_no_width + 5);
         for (auto serum_no : acmacs::range(all_sera.size()))
             fmt::format_to(result, "{: ^{}d}", serum_no + 1, column_width);
         fmt::format_to(result, "\n");
-        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + table_no_width + 3);
+        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + table_no_width + 5);
         for (auto serum : all_sera)
             fmt::format_to(result, "{: ^8s}", serum.second, column_width);
         fmt::format_to(result, "\n\n");
@@ -67,11 +67,17 @@ class Titers
             for (size_t table_no{0}; table_no <= max_table; ++table_no) {
 
                 if (present_in_table(table_no)) {
-                    if (first_table)
+                    if (first_table) {
                         fmt::format_to(result, "{:3d}  {: <{}s} ", ag_no + 1, antigen, max_antigen_name);
-                    else
+                        fmt::format_to(result, "{:{}d}{:<2s} ", table_no + 1, table_no_width, "");
+                    }
+                    else {
+                        bool matches{true};
+                        for (const auto [sr_no, titer] : acmacs::enumerate(per_table_per_serum[table_no]))
+                            matches &= !titer || !per_table_per_serum[0][sr_no] || *titer == *per_table_per_serum[0][sr_no];
                         fmt::format_to(result, "{: >{}s} ", "", max_antigen_name + table_prefix);
-                    fmt::format_to(result, "{:{}d} ", table_no + 1, table_no_width);
+                        fmt::format_to(result, "{:{}d}{:<2s} ", table_no + 1, table_no_width, matches ? "^" : "**");
+                    }
 
                     for (const auto [sr_no, titer] : acmacs::enumerate(per_table_per_serum[table_no])) {
                         if (titer) {
