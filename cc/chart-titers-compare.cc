@@ -9,9 +9,11 @@ class Titers
   public:
     Titers() = default;
 
-    void add(size_t table_no, std::string_view antigen, std::string_view serum, std::string_view serum_abbreviated, const acmacs::chart::Titer& titer)
+    void add_table(std::string_view table) { all_tables_.push_back(table); }
+
+    void add(std::string_view antigen, std::string_view serum, std::string_view serum_abbreviated, const acmacs::chart::Titer& titer)
     {
-        data_.emplace_back(table_no, antigen, serum, serum_abbreviated, titer);
+        data_.emplace_back(all_tables_.size() - 1, antigen, serum, serum_abbreviated, titer);
     }
 
     void collect()
@@ -40,6 +42,10 @@ class Titers
         const auto column_width = 8;
         const auto table_prefix = 5;
         const auto table_no_width = 4;
+
+        for (const auto [table_no, table] : acmacs::enumerate(all_tables_))
+            fmt::print("{:3d} {}\n", table_no, table);
+
         fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name_ + table_prefix + table_no_width + 5);
         for (auto serum_no : acmacs::range(all_sera_.size()))
             fmt::format_to(result, "{: ^{}d}", serum_no + 1, column_width);
@@ -48,6 +54,7 @@ class Titers
         for (auto serum : all_sera_)
             fmt::format_to(result, "{: ^8s}", serum.second, column_width);
         fmt::format_to(result, "\n\n");
+
 
         for (const auto [ag_no, antigen] : acmacs::enumerate(all_antigens_)) {
             std::vector<std::vector<const acmacs::chart::Titer*>> per_table_per_serum(num_tables_, std::vector<const acmacs::chart::Titer*>(all_sera_.size(), nullptr));
@@ -120,11 +127,12 @@ class Titers
 
     std::vector<Entry> data_;
 
+    std::vector<std::string_view> all_tables_;
     std::vector<std::string_view> all_antigens_;
     std::vector<std::pair<std::string_view, std::string_view>> all_sera_;
     size_t num_tables_{0};
     size_t max_antigen_name_{0};
-
+    std::vector<std::vector<const acmacs::chart::Titer*>> all_titers; // [antigen_no][table_no][serum_no]
 };
 
 // ----------------------------------------------------------------------
@@ -146,17 +154,17 @@ int main(int argc, char* const argv[])
     try {
         Options opt(argc, argv);
         Titers titer_data;
-        for (const auto [table_no, chart_filename] : acmacs::enumerate(*opt.charts)) {
+        for (const auto& chart_filename : *opt.charts) {
+            titer_data.add_table(chart_filename);
             auto chart = acmacs::chart::import_from_file(chart_filename);
             auto antigens = chart->antigens();
             auto sera = chart->sera();
             auto titers = chart->titers();
             for (size_t ag_no{0}; ag_no < antigens->size(); ++ag_no) {
                 for (size_t sr_no{0}; sr_no < sera->size(); ++sr_no) {
-                    titer_data.add(table_no, antigens->at(ag_no)->full_name(), sera->at(sr_no)->full_name(), sera->at(sr_no)->abbreviated_location_year(), titers->titer(ag_no, sr_no));
+                    titer_data.add(antigens->at(ag_no)->full_name(), sera->at(sr_no)->full_name(), sera->at(sr_no)->abbreviated_location_year(), titers->titer(ag_no, sr_no));
                 }
             }
-            fmt::print("{:3d} {}\n", table_no, chart_filename);
         }
         titer_data.collect();
         titer_data.report(opt.omit_if_not_in_first);
