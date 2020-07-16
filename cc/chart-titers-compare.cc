@@ -72,9 +72,11 @@ class Titers
                 continue;
 
             bool first_table{true};
+            size_t present_in_tables{0};
             for (size_t table_no{0}; table_no < num_tables_; ++table_no) {
 
                 if (present_in_table(table_no)) {
+                    ++present_in_tables;
                     if (first_table) {
                         fmt::format_to(result, "{:3d}  {: <{}s} ", ag_no + 1, antigen, max_antigen_name_);
                         fmt::format_to(result, "{:{}d}{:<2s} ", table_no + 1, table_no_width, "");
@@ -101,6 +103,8 @@ class Titers
                     fmt::format_to(result, "\n");
                 }
             }
+            if (present_in_tables < 2 && present_in_table(0))
+                fmt::format_to(result, "!!!!\n");
             fmt::format_to(result, "\n\n");
         }
 
