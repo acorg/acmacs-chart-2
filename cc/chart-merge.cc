@@ -1,6 +1,7 @@
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/timeit.hh"
+#include "acmacs-base/read-file.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -66,7 +67,7 @@ int main(int argc, const char* const argv[])
         if (opt.output_chart.has_value())
             acmacs::chart::export_factory(*result, opt.output_chart, opt.program_name(), report);
         if (opt.report_titers.has_value()) {
-            merge_report.titer_merge_report(opt.report_titers, *result, opt.program_name());
+            acmacs::file::write(opt.report_titers, merge_report.titer_merge_report(*result));
         }
         else {
             fmt::print("{}\n", result->make_info());

@@ -210,9 +210,12 @@ std::vector<acmacs::PointStyle> acmacs::chart::Chart::default_all_styles() const
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Chart::show_table(std::ostream& output, std::optional<size_t> layer_no) const
+std::string acmacs::chart::Chart::show_table(std::optional<size_t> layer_no) const
 {
-    auto sr_label = [](size_t sr_no) -> char { return static_cast<char>('A' + sr_no); };
+    fmt::memory_buffer output;
+
+    // auto sr_label = [](size_t sr_no) -> char { return static_cast<char>('A' + sr_no); };
+    auto sr_label = [](size_t sr_no) -> size_t { return sr_no + 1; };
 
     auto ags = antigens();
     auto srs = sera();
@@ -228,27 +231,28 @@ void acmacs::chart::Chart::show_table(std::ostream& output, std::optional<size_t
 
     const auto max_ag_name = static_cast<int>(max_full_name(*ags));
 
-    output << std::setw(max_ag_name + 6) << std::right << ' ' << "Serum full names are under the table\n";
-    output << std::setw(max_ag_name) << ' ';
+    fmt::format_to(output, "{:>{}s}erum full names are under the table\n{:>{}s}", "", max_ag_name + 6, "", max_ag_name);
     for (auto sr_ind : acmacs::range(serum_indexes->size()))
-        output << std::setw(7) << std::right << sr_label(sr_ind);
-    output << '\n';
+        fmt::format_to(output, "{:>7d}", sr_label(sr_ind));
+    fmt::format_to(output, "\n");
 
-    output << std::setw(max_ag_name + 2) << ' ';
+    fmt::format_to(output, "{:{}s}", "", max_ag_name + 2);
     for (auto sr_no : serum_indexes)
-        output << std::setw(7) << std::right << srs->at(sr_no)->abbreviated_location_year();
-    output << '\n';
+        fmt::format_to(output, "{:>7s}", srs->at(sr_no)->abbreviated_location_year());
+    fmt::format_to(output, "\n");
 
     for (auto ag_no : antigen_indexes) {
-        output << std::setw(max_ag_name + 2) << std::left << ags->at(ag_no)->full_name();
+        fmt::format_to(output, "{:<{}s}", ags->at(ag_no)->full_name(), max_ag_name + 2);
         for (auto sr_no : serum_indexes)
-            output << std::setw(7) << std::right << *tt->titer(ag_no, sr_no);
-        output << '\n';
+            fmt::format_to(output, "{:>7s}", *tt->titer(ag_no, sr_no));
+        fmt::format_to(output, "\n");
     }
-    output << '\n';
+    fmt::format_to(output, "\n");
 
     for (auto [sr_ind, sr_no] : acmacs::enumerate(serum_indexes))
-        output << sr_label(sr_ind) << std::setw(7) << std::right << srs->at(sr_no)->abbreviated_location_year() << "  " << srs->at(sr_no)->full_name() << '\n';
+        fmt::format_to(output, "{:3d} {} {}\n", sr_label(sr_ind), srs->at(sr_no)->abbreviated_location_year(), srs->at(sr_no)->full_name());
+
+    return fmt::to_string(output);
 
 } // acmacs::chart::Chart::show_table
 

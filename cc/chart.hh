@@ -834,7 +834,7 @@ namespace acmacs::chart
 
         Stress make_stress(size_t aProjectionNo) const { return make_stress(*projection(aProjectionNo)); }
 
-        void show_table(std::ostream& output, std::optional<size_t> layer_no = {}) const;
+        std::string show_table(std::optional<size_t> layer_no = {}) const;
 
       private:
         mutable std::map<MinimumColumnBasis, std::shared_ptr<ColumnBases>> computed_column_bases_; // cache, computing might be slow for big charts
