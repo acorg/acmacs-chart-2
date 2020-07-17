@@ -462,8 +462,13 @@ std::string acmacs::chart::MergeReport::titer_merge_report(const ChartModify& ch
     fmt::format_to(output, "                                   DIAGNOSTICS\n         (common titers, and how they merged, and the individual tables)\n\n");
     fmt::format_to(output, "{}\n", titer_merge_diagnostics(chart, PointIndexList{filled_with_indexes(chart.antigens()->size())}, PointIndexList{filled_with_indexes(chart.sera()->size())}, max_field));
 
-    for (auto layer_no : acmacs::range(chart.titers()->number_of_layers()))
-        fmt::format_to(output, "{}\n{}\n\n", chart.info()->source(layer_no)->name_non_empty(), chart.show_table(layer_no));
+    for (auto layer_no : acmacs::range(chart.titers()->number_of_layers())) {
+        if (layer_no < chart.info()->number_of_sources())
+            fmt::format_to(output, "{}\n", chart.info()->source(layer_no)->name_non_empty());
+        else
+            fmt::format_to(output, "layer {}\n", layer_no);
+        fmt::format_to(output, "{}\n\n", chart.show_table(layer_no));
+    }
 
     fmt::format_to(output, "    Table merge subset showing only rows and columns that have merged values\n        (same as first diagnostic output, but subsetted for changes only)\n");
     const auto [antigens, sera] = chart.titers()->antigens_sera_in_multiple_layers();
@@ -530,7 +535,7 @@ std::string acmacs::chart::MergeReport::titer_merge_diagnostics(const ChartModif
         }
         fmt::format_to(output, "\n\n");
     }
-    AD_DEBUG("done");
+
     fmt::format_to(output, "{}\n", TitersModify::titer_merge_report_description());
 
     return fmt::to_string(output);
