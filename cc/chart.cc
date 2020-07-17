@@ -231,7 +231,7 @@ std::string acmacs::chart::Chart::show_table(std::optional<size_t> layer_no) con
 
     const auto max_ag_name = static_cast<int>(max_full_name(*ags));
 
-    fmt::format_to(output, "{:>{}s}erum full names are under the table\n{:>{}s}", "", max_ag_name + 6, "", max_ag_name);
+    fmt::format_to(output, "{:>{}s}Serum full names are under the table\n{:>{}s}", "", max_ag_name + 6, "", max_ag_name);
     for (auto sr_ind : acmacs::range(serum_indexes->size()))
         fmt::format_to(output, "{:>7d}", sr_label(sr_ind));
     fmt::format_to(output, "\n");
