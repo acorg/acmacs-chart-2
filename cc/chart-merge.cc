@@ -21,6 +21,7 @@ struct Options : public argv
     option<str>  merge_type{*this, 'm', "merge-type", dflt{"simple"}, desc{"merge type: \"type1\"..\"type5\", \"incremental\" (type2), \"overlay\" (type3), \"simple\" (type1)"}};
     option<bool> duplicates_distinct{*this, "duplicates-distinct", desc{"make duplicates distinct"}};
     option<str>  report_titers{*this, "report", desc{"titer merge report"}};
+    option<bool> report_common_only{*this, "common-only", desc{"titer merge report for common antigens and sera only"}};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
 
     argument<str_array> source_charts{*this, arg_name{"source-chart"}, mandatory};
@@ -67,7 +68,10 @@ int main(int argc, const char* const argv[])
         if (opt.output_chart.has_value())
             acmacs::chart::export_factory(*result, opt.output_chart, opt.program_name(), report);
         if (opt.report_titers.has_value()) {
-            acmacs::file::write(opt.report_titers, merge_report.titer_merge_report(*result));
+            if (opt.report_common_only)
+                acmacs::file::write(opt.report_titers, merge_report.titer_merge_report_common_only(*result));
+            else
+                acmacs::file::write(opt.report_titers, merge_report.titer_merge_report(*result));
         }
         else {
             fmt::print("{}\n", result->make_info());

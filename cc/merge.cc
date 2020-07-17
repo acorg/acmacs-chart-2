@@ -416,13 +416,11 @@ void merge_info(acmacs::chart::ChartModify& target, const acmacs::chart::Chart& 
 
 std::string acmacs::chart::MergeReport::titer_merge_report(const ChartModify& chart) const
 {
-    fmt::memory_buffer output;
-    fmt::format_to(output, "Acmacs merge table and diagnositics (in Derek's style)\n\n");
-
     const auto max_field = std::max(static_cast<int>(std::max(max_full_name(*chart.antigens()), chart.info()->max_source_name())), 20);
-    // const auto hr = std::string(100, '-') + '\n';
 
-    fmt::format_to(output, "{}\n{}\n\n", chart.description(), chart.show_table());
+    fmt::memory_buffer output;
+    fmt::format_to(output, "Acmacs merge table and diagnositics (in Derek's style)\n\n{}\n{}\n\n", chart.description(), chart.show_table());
+
     fmt::format_to(output, "                                   DIAGNOSTICS\n         (common titers, and how they merged, and the individual tables)\n\n");
     fmt::format_to(output, "{}\n", titer_merge_diagnostics(chart, PointIndexList{filled_with_indexes(chart.antigens()->size())}, PointIndexList{filled_with_indexes(chart.sera()->size())}, max_field));
 
@@ -441,6 +439,38 @@ std::string acmacs::chart::MergeReport::titer_merge_report(const ChartModify& ch
     return fmt::to_string(output);
 
 } // acmacs::chart::MergeReport::titer_merge_report
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::MergeReport::titer_merge_report_common_only(const ChartModify& chart) const
+{
+    const auto max_field = std::max(static_cast<int>(std::max(max_full_name(*chart.antigens()), chart.info()->max_source_name())), 20);
+
+    fmt::memory_buffer output;
+    fmt::format_to(output, "Acmacs merge diagnositics for common antigens and sera (in Derek's style)\n\n{}\n\n", chart.description());
+
+    if (common.common_antigens() && common.common_sera()) {
+        fmt::format_to(output, "                                   DIAGNOSTICS\n         (common titers, and how they merged, and the individual tables)\n\n");
+        fmt::format_to(output, "{}\n", titer_merge_diagnostics(chart, common.common_primary_antigens(), common.common_primary_sera(), max_field));
+
+        // for (auto layer_no : acmacs::range(chart.titers()->number_of_layers())) {
+        //     if (layer_no < chart.info()->number_of_sources())
+        //         fmt::format_to(output, "{}\n", chart.info()->source(layer_no)->name_non_empty());
+        //     else
+        //         fmt::format_to(output, "layer {}\n", layer_no);
+        //     fmt::format_to(output, "{}\n\n", chart.show_table(layer_no));
+        // }
+
+        // fmt::format_to(output, "    Table merge subset showing only rows and columns that have merged values\n        (same as first diagnostic output, but subsetted for changes only)\n");
+        // const auto [antigens, sera] = chart.titers()->antigens_sera_in_multiple_layers();
+        // fmt::format_to(output, "{}\n", titer_merge_diagnostics(chart, antigens, sera, max_field));
+    }
+    else
+        fmt::format_to(output, ">> WARNING: common only report cannot be done: common antigens: {} common sera: {}", common.common_antigens(), common.common_sera());
+
+    return fmt::to_string(output);
+
+} // acmacs::chart::MergeReport::titer_merge_report_common_only
 
 // ----------------------------------------------------------------------
 

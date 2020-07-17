@@ -39,6 +39,7 @@ namespace acmacs::chart
         MergeReport(const Chart& primary, const Chart& secondary, const MergeSettings& settings);
 
         std::string titer_merge_report(const ChartModify& chart) const;
+        std::string titer_merge_report_common_only(const ChartModify& chart) const;
         std::string titer_merge_diagnostics(const ChartModify& chart, const PointIndexList& antigens, const PointIndexList& sera, int max_field_size) const;
 
         CommonAntigensSera::match_level_t match_level;

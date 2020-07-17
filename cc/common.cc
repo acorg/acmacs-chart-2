@@ -562,6 +562,31 @@ std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAn
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::Indexes acmacs::chart::CommonAntigensSera::common_primary_antigens() const
+{
+    const auto ags{antigens()};
+    Indexes result(ags.size());
+    std::transform(std::begin(ags), std::end(ags), std::begin(result), [](const auto& en) { return en.primary; });
+    std::sort(std::begin(result), std::end(result));
+    return result;
+
+} // acmacs::chart::CommonAntigensSera::common_primary_antigens
+
+// ----------------------------------------------------------------------
+
+// returns serum indexes (NOT point indexes)!
+acmacs::chart::Indexes acmacs::chart::CommonAntigensSera::common_primary_sera() const
+{
+    const auto srs{sera()};
+    Indexes result(srs.size());
+    std::transform(std::begin(srs), std::end(srs), std::begin(result), [](const auto& en) { return en.primary; });
+    std::sort(std::begin(result), std::end(result));
+    return result;
+
+} // acmacs::chart::CommonAntigensSera::common_primary_sera
+
+// ----------------------------------------------------------------------
+
 std::vector<acmacs::chart::CommonAntigensSera::common_t> acmacs::chart::CommonAntigensSera::sera_as_point_indexes() const
 {
     auto result = impl_->sera_.common();

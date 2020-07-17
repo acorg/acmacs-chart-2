@@ -48,6 +48,9 @@ namespace acmacs::chart
         std::vector<common_t> sera_as_point_indexes() const;
         std::vector<common_t> points() const;
 
+        Indexes common_primary_antigens() const;
+        Indexes common_primary_sera() const;  // returns serum indexes (NOT point indexes)!
+
           // common antigen/serum mapping
         std::optional<size_t> antigen_primary_by_secondary(size_t secondary_no) const;
         std::optional<size_t> antigen_secondary_by_primary(size_t primary_no) const;
