@@ -17,7 +17,7 @@ int main(int argc, char* const argv[])
         chart.relax(number_of_optimizations_t{1}, "none", acmacs::number_of_dimensions_t{2}, use_dimension_annealing::yes, optimization_options{}, report_stresses::no);
         auto projections = chart.projections_modify();
         fmt::print(stderr, "no: {}\n", projections->size());
-        fmt::print(stderr, "tr {}: {}\n", 0, (*projections)[0]->transformation());
+        fmt::print(stderr, "tr {}: {}\n", 0, projections->at(0)->transformation());
         for (size_t no = 0; no < projections->size(); ++no)
             fmt::print(stderr, "tr {}: {}\n", no, projections->at(no)->transformation());
     }
