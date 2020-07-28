@@ -22,6 +22,7 @@ struct Options : public argv
     option<str>    reorient{*this, "reorient", dflt{""}, desc{"chart to re-orient resulting projections to"}};
     option<double> grid_step{*this, "step", dflt{0.1}};
     option<str>    method{*this, "method", dflt{"cg"}, desc{"method: alglib-lbfgs, alglib-cg, optim-bfgs"}};
+    option<bool>   dimension_annealing{*this, "dimension-annealing"};
     option<double> max_distance_multiplier{*this, "md", dflt{2.0}, desc{"randomization diameter multiplier"}};
     option<size_t> keep_projections{*this, "keep-projections", dflt{0UL}, desc{"number of projections to keep, 0 - keep all"}};
     option<bool>   keep_original_projections{*this, "keep-original-projections"};
@@ -63,8 +64,9 @@ int main(int argc, char* const argv[])
             // relax
             const Timeit ti_relax(fmt::format("{} rough optimizations: ", opt.number_of_optimizations), report_time::yes);
             acmacs::chart::optimization_options options(method, acmacs::chart::optimization_precision::rough, opt.max_distance_multiplier);
+            const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(opt.dimension_annealing && method != acmacs::chart::optimization_method::optimlib_differential_evolution);
             options.num_threads = opt.threads;
-            chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, acmacs::chart::use_dimension_annealing::yes, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
+            chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
             projections->sort();
             chart.projection_modify(0)->relax(acmacs::chart::optimization_options(method, acmacs::chart::optimization_precision::fine));
         }
