@@ -36,7 +36,7 @@ class Titers
             return static_cast<size_t>(std::find_if(std::begin(all_sera_), std::end(all_sera_), [serum](const auto& en) { return en.first == serum; }) - std::begin(all_sera_));
     }
 
-    void report(bool omit_if_not_in_first) const
+    void report(bool omit_if_not_in_first, bool common_only) const
     {
         fmt::memory_buffer result;
         const auto column_width = 8;
@@ -58,10 +58,13 @@ class Titers
 
         for (const auto [ag_no, antigen] : acmacs::enumerate(all_antigens_)) {
             std::vector<std::vector<const acmacs::chart::Titer*>> per_table_per_serum(num_tables_, std::vector<const acmacs::chart::Titer*>(all_sera_.size(), nullptr));
+            std::set<size_t> tables;
             for (size_t table_no{0}; table_no < num_tables_; ++table_no) {
                 for (const auto& entry : data_) {
-                    if (entry.table_no == table_no && entry.antigen == antigen)
+                    if (entry.table_no == table_no && entry.antigen == antigen) {
                         per_table_per_serum[table_no][serum_index(entry.serum)] = &entry.titer;
+                        tables.insert(table_no);
+                    }
                 }
             }
             const auto present_in_table = [&per_table_per_serum](size_t table_no) {
@@ -69,6 +72,8 @@ class Titers
             };
 
             if (omit_if_not_in_first && !present_in_table(0))
+                continue;
+            if (common_only && tables.size() < 2)
                 continue;
 
             bool first_table{true};
@@ -150,6 +155,7 @@ struct Options : public argv
     argument<str_array> charts{*this, arg_name{"chart"}, mandatory};
 
     option<bool> omit_if_not_in_first{*this, "omit-not-first", desc{"omit antigen if it is not found in the first table"}};
+    option<bool> common_only{*this, "common", desc{"omit antigen if it is found in just one table"}};
 };
 
 int main(int argc, char* const argv[])
@@ -171,7 +177,7 @@ int main(int argc, char* const argv[])
             }
         }
         titer_data.collect();
-        titer_data.report(opt.omit_if_not_in_first);
+        titer_data.report(opt.omit_if_not_in_first, opt.common_only);
     }
     catch (std::exception& err) {
         fmt::print(stderr, "ERROR: {}\n", err);
