@@ -1,6 +1,7 @@
 #include "acmacs-base/argv.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
+#include "acmacs-chart-2/common.hh"
 
 // ----------------------------------------------------------------------
 
@@ -146,6 +147,75 @@ class Titers
 
 // ----------------------------------------------------------------------
 
+class Compare
+{
+  public:
+    bool operator()(const acmacs::chart::CommonAntigensSera::common_t& lhs, const acmacs::chart::CommonAntigensSera::common_t& rhs) const
+    {
+        return lhs.primary == rhs.primary ? lhs.secondary < rhs.secondary : lhs.primary < rhs.primary;
+    }
+};
+
+class Titers2
+{
+  public:
+    using common_t = acmacs::chart::CommonAntigensSera::common_t;
+
+    void add(common_t a_antigen, common_t a_serum, const std::array<acmacs::chart::Titer, 2>& a_titers)
+    {
+        data_.emplace_back(a_antigen, a_serum, a_titers);
+    }
+
+    void report(const std::array<acmacs::chart::ChartP, 2>& charts) const
+    {
+        std::set<common_t, Compare> all_antigens;
+        std::set<common_t, Compare> all_sera;
+        for (const auto& en : data_) {
+            all_antigens.insert(en.antigen);
+            all_sera.insert(en.serum);
+        }
+        for (const auto& antigen : all_antigens) {
+            fmt::print("{} {} -- {} {}\n", antigen.primary, charts[0]->antigens()->at(antigen.primary)->full_name(), antigen.secondary, charts[1]->antigens()->at(antigen.secondary)->full_name());
+            for (const auto& serum : all_sera)
+                fmt::print("   {:3d}   ", serum.primary);
+            fmt::print("\n");
+            for (const auto& serum : all_sera) {
+                for (const auto& en : data_) {
+                    if (en.antigen.primary == antigen.primary && en.antigen.secondary == antigen.secondary && en.serum.primary == serum.primary && en.serum.secondary == serum.secondary)
+                        fmt::print(" {:>7s} ", en.titers[0]);
+                }
+            }
+            fmt::print("\n");
+            for (const auto& serum : all_sera) {
+                for (const auto& en : data_) {
+                    if (en.antigen.primary == antigen.primary && en.antigen.secondary == antigen.secondary && en.serum.primary == serum.primary && en.serum.secondary == serum.secondary)
+                        fmt::print(" {:>7s} ", en.titers[1]);
+                }
+            }
+            fmt::print("\n\n");
+        }
+        for (const auto& serum : all_sera)
+            fmt::print("{} {} -- {} {}\n", serum.primary, charts[0]->sera()->at(serum.primary)->full_name(), serum.secondary, charts[1]->sera()->at(serum.secondary)->full_name());
+    }
+
+  private:
+    struct Entry
+    {
+        Entry(common_t a_antigen, common_t a_serum, const std::array<acmacs::chart::Titer, 2>& a_titers)
+            : antigen{a_antigen}, serum{a_serum}, titers{a_titers}
+        {
+        }
+        common_t antigen;
+        common_t serum;
+        std::array<acmacs::chart::Titer, 2> titers;
+    };
+
+    std::vector<Entry> data_;
+
+};
+
+// ----------------------------------------------------------------------
+
 using namespace acmacs::argv;
 struct Options : public argv
 {
@@ -163,21 +233,35 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         Options opt(argc, argv);
-        Titers titer_data;
-        for (const auto& chart_filename : *opt.charts) {
-            titer_data.add_table(chart_filename);
-            auto chart = acmacs::chart::import_from_file(chart_filename);
-            auto antigens = chart->antigens();
-            auto sera = chart->sera();
-            auto titers = chart->titers();
-            for (size_t ag_no{0}; ag_no < antigens->size(); ++ag_no) {
-                for (size_t sr_no{0}; sr_no < sera->size(); ++sr_no) {
-                    titer_data.add(antigens->at(ag_no)->full_name(), sera->at(sr_no)->full_name(), sera->at(sr_no)->abbreviated_location_year(), titers->titer(ag_no, sr_no));
+        if (opt.charts->size() == 2) {
+            const std::array charts{acmacs::chart::import_from_file(opt.charts->at(0)), acmacs::chart::import_from_file(opt.charts->at(1))};
+            const std::array titers{charts[0]->titers(), charts[1]->titers()};
+            acmacs::chart::CommonAntigensSera common(*charts[0], *charts[1], acmacs::chart::CommonAntigensSera::match_level_t::automatic);
+            Titers2 titer_data;
+            for (const auto& common_antigen : common.antigens()) {
+                for (const auto& common_serum : common.sera()) {
+                    titer_data.add(common_antigen, common_serum, {titers[0]->titer(common_antigen.primary, common_serum.primary), titers[0]->titer(common_antigen.secondary, common_serum.secondary)});
                 }
             }
+            titer_data.report(charts);
         }
-        titer_data.collect();
-        titer_data.report(opt.omit_if_not_in_first, opt.common_only);
+        else {
+            Titers titer_data;
+            for (const auto& chart_filename : *opt.charts) {
+                titer_data.add_table(chart_filename);
+                auto chart = acmacs::chart::import_from_file(chart_filename);
+                auto antigens = chart->antigens();
+                auto sera = chart->sera();
+                auto titers = chart->titers();
+                for (size_t ag_no{0}; ag_no < antigens->size(); ++ag_no) {
+                    for (size_t sr_no{0}; sr_no < sera->size(); ++sr_no) {
+                        titer_data.add(antigens->at(ag_no)->full_name(), sera->at(sr_no)->full_name(), sera->at(sr_no)->abbreviated_location_year(), titers->titer(ag_no, sr_no));
+                    }
+                }
+            }
+            titer_data.collect();
+            titer_data.report(opt.omit_if_not_in_first, opt.common_only);
+        }
     }
     catch (std::exception& err) {
         fmt::print(stderr, "ERROR: {}\n", err);
