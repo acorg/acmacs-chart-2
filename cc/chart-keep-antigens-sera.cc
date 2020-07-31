@@ -15,6 +15,7 @@ struct Options : public argv
     option<str>  antigens_to_keep{*this, 'a', "antigens", desc{"comma or space separated list of antigen indexes to keep (0-based), keep all if empty"}};
     option<str>  sera_to_keep{*this, 's', "sera", desc{"comma or space separated list of serum indexes to keep (0-based), keep all if empty"}};
     option<size_t> keep_recent{*this, "reference-and-recent", desc{"keep all reference and few recent antigens to have specified number of antigens in the output"}};
+    option<bool> remove_projections{*this, "remove-projections"};
 
     argument<str> source{*this, arg_name{"source-chart"}, mandatory};
     argument<str> output{*this, arg_name{"output-chart"}, mandatory};
@@ -47,17 +48,20 @@ int main(int argc, char* const argv[])
             fmt::print(stderr, "DEBUG: antigens_to_keep {} test_antigens {}\n", antigens_to_keep.size(), test_antigens.size());
         }
 
+        if (opt.remove_projections)
+            chart.projections_modify()->remove_all();
+
         if (!antigens_to_keep->empty()) {
             acmacs::ReverseSortedIndexes antigens_to_remove(chart.number_of_antigens());
             antigens_to_remove.remove(*antigens_to_keep);
-            std::cout << "INFO: antigens_to_remove: " << antigens_to_remove.size() << ' ' << antigens_to_remove << '\n';
+            AD_INFO("antigens_to_remove:  {} {}", antigens_to_remove.size(), antigens_to_remove);
             chart.remove_antigens(antigens_to_remove);
         }
 
         if (!sera_to_keep->empty()) {
             acmacs::ReverseSortedIndexes sera_to_remove(chart.number_of_sera());
             sera_to_remove.remove(*sera_to_keep);
-            std::cout << "INFO: sera_to_remove: " << sera_to_remove.size() << ' ' << sera_to_remove << '\n';
+            AD_INFO("sera_to_remove: {} {}", sera_to_remove.size(), sera_to_remove);
             chart.remove_sera(sera_to_remove);
         }
 
