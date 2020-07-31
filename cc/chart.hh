@@ -65,6 +65,7 @@ namespace acmacs::chart
         using acmacs::named_string_t<struct chart_assay_tag_t>::named_string_t;
 
         std::string hi_or_neut() const { return (empty() || get() == "HI") ? "hi" : "neut"; }
+        std::string HI_or_Neut() const { return (empty() || get() == "HI") ? "HI" : "Neut"; }
     };
 
     class RbcSpecies : public acmacs::named_string_t<struct chart_rbc_species_tag_t>
