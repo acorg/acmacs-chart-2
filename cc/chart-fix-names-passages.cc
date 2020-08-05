@@ -1,6 +1,7 @@
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-virus/virus-name-normalize.hh"
+#include "acmacs-virus/passage.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -29,26 +30,44 @@ int main(int argc, char* const argv[])
         auto antigens = chart.antigens_modify();
         for (size_t ag_no{0}; ag_no < antigens->size(); ++ag_no) {
             auto& antigen = antigens->at(ag_no);
-            auto parsed = acmacs::virus::name::parse(antigen.name());
-            if (*parsed.subtype == "A")
-                parsed.subtype = subtype;
-            const auto new_name = parsed.name();
+
+            auto parsed_name = acmacs::virus::name::parse(antigen.name());
+            if (*parsed_name.subtype == "A")
+                parsed_name.subtype = subtype;
+            const auto new_name = parsed_name.name();
             if (antigen.name() != new_name) {
                 // fmt::print("\"{}\" <- \"{}\"\n", new_name, antigen.name());
                 antigen.name(*new_name);
+            }
+
+            auto [passage, extra] = acmacs::virus::parse_passage(antigen.passage(), acmacs::virus::passage_only::yes);
+            if (!extra.empty())
+                fmt::print(stderr, ">> WARNING extra in passage ignored \"{}\" <- \"{}\"\n", extra, antigen.passage());
+            if (passage != antigen.passage()) {
+                // fmt::print("\"{}\" <- \"{}\"\n", passage, antigen.passage());
+                antigen.passage(passage);
             }
         }
 
         auto sera = chart.sera_modify();
         for (size_t sr_no{0}; sr_no < sera->size(); ++sr_no) {
             auto& serum = sera->at(sr_no);
-            auto parsed = acmacs::virus::name::parse(serum.name());
-            if (*parsed.subtype == "A")
-                parsed.subtype = subtype;
-            const auto new_name = parsed.name();
+
+            auto parsed_name = acmacs::virus::name::parse(serum.name());
+            if (*parsed_name.subtype == "A")
+                parsed_name.subtype = subtype;
+            const auto new_name = parsed_name.name();
             if (serum.name() != new_name) {
                 // fmt::print("\"{}\" <- \"{}\"\n", new_name, serum.name());
                 serum.name(*new_name);
+            }
+
+            auto [passage, extra] = acmacs::virus::parse_passage(serum.passage(), acmacs::virus::passage_only::yes);
+            if (!extra.empty())
+                fmt::print(stderr, ">> WARNING extra in passage ignored \"{}\" <- \"{}\"\n", extra, serum.passage());
+            if (passage != serum.passage()) {
+                // fmt::print("\"{}\" <- \"{}\"\n", passage, serum.passage());
+                serum.passage(passage);
             }
         }
 
