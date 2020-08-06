@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import sys, os, csv, json, re, datetime, lzma, pprint, functools, statistics, math
+import sys, os, csv, json, re, datetime, lzma, pprint, functools, statistics, math, subprocess
 
 # ----------------------------------------------------------------------
 
@@ -23,8 +23,12 @@ def main(input_file, output_dir):
         merge_titers(table_name, ace["c"]["t"]["l"])
         populate_missing_titers(table_name, ace["c"]["t"]["l"], number_of_sera=len(ace["c"]["s"]))
         print(f"""{table_name:25s}   a:{len(ace["c"]["a"]):3d}   s:{len(ace["c"]["s"]):3d}""")
-        with open(f"{output_dir}/{table_name}.ace", "wb") as output:
+        orig_name = f"{output_dir}/{table_name}.orig.ace"
+        final_name = f"{output_dir}/{table_name}.ace"
+        with open(orig_name, "wb") as output:
             output.write(lzma.compress(json_dumps(ace, indent=2).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
+        subprocess.check_call(f"chart-fix-names-passages '{orig_name}' '{final_name}'", shell=True)
+        subprocess.check_call(f"rm '{orig_name}'", shell=True)
 
 # ----------------------------------------------------------------------
 
