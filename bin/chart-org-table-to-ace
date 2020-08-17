@@ -78,6 +78,8 @@ def main(input_file, output_file):
         ace["c"]["a"].append(entry)
         ace["c"]["t"]["l"].append([check_titer(rows[row_no][column_no], row_no, column_no) for column_no in serum_columns])
 
+    detect_reference(ace["c"]["a"], ace["c"]["s"])
+
     # print(json_dumps(ace, indent=2))
     with open(output_file, "wb") as output:
         output.write(lzma.compress(json_dumps(ace, indent=2).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
@@ -149,6 +151,13 @@ def check_titer(titer, row_no, column_no):
     else:
         raise RuntimeError(f"Unrecognized titer \"{titer}\" at {row_no}:{column_no}")
 
+
+# ----------------------------------------------------------------------
+
+def detect_reference(antigens, sera):
+    for antigen in antigens:
+        if any(serum["N"].upper() == antigen["N"].upper() for serum in sera):
+            antigen["S"] = "R"
 
 # ----------------------------------------------------------------------
 
