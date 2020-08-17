@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
-import sys, os, json, re, datetime, lzma, pprint
+import sys, os, json, re, datetime, lzma, pprint, subprocess
+
 
 # ----------------------------------------------------------------------
 
@@ -83,6 +84,8 @@ def main(input_file, output_file):
     # print(json_dumps(ace, indent=2))
     with open(output_file, "wb") as output:
         output.write(lzma.compress(json_dumps(ace, indent=2).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
+
+    subprocess.check_call(["chart-fix-names-passages", output_file, output_file])
 
 # ----------------------------------------------------------------------
 
