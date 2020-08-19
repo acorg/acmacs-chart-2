@@ -6,7 +6,7 @@ import sys, os, json, re, datetime, lzma, pprint, subprocess
 # ----------------------------------------------------------------------
 
 def main(input_file, output_file):
-    lines = [line.strip() for line in open(input_file) if line and line[0] in ["-", "|"]]
+    lines = [line.strip() for line in open(input_file)] #  if line and line[0] in ["-", "|"]]
     num_antigens = 0
     num_sera = 0
     ace = {
@@ -17,7 +17,7 @@ def main(input_file, output_file):
             }
     }
     for line in lines:
-        if line[0] == '-':
+        if line and line[0] == '-':
             field, value = line[1:].strip().split(":")
             field = field.strip().lower()
             value = value.strip()
@@ -36,7 +36,8 @@ def main(input_file, output_file):
             else:
                 raise RuntimeError(f"Unrecognized meta field name: \"{field}\"")
 
-    rows = [[cell.strip() for cell in line[1:-1].split("|")] for line in lines if line[0] == "|"]
+    table_rows = [no for no, line in enumerate(lines, start=1) if line and line[0] == "|"]
+    rows = [[cell.strip() for cell in line[1:-1].split("|")] for line in lines if line and line[0] == "|"]
     if not rows:
         raise RuntimeError("no table present")
     # pprint.pprint(rows)
@@ -63,6 +64,7 @@ def main(input_file, output_file):
     # print(f"sera: {ace_serum_fields} {len(serum_columns)} {serum_columns}")
     # pprint.pprint(ace_antigen_fields)
 
+    # Lineage (sera)
     for column_no in serum_columns:
         entry = {}
         for field, row_no in ace_serum_fields.items():
@@ -72,6 +74,8 @@ def main(input_file, output_file):
         if ace["c"]["i"]["V"] == "B" and ace["c"]["i"].get("s"): # lineage
             entry["L"] = ace["c"]["i"]["s"][0]
         ace["c"]["s"].append(entry)
+
+    # Lineage (antigens) and Titers
     for row_no in antigen_rows:
         entry = {}
         for field, column_no in ace_antigen_fields.items():
@@ -81,7 +85,7 @@ def main(input_file, output_file):
         if ace["c"]["i"]["V"] == "B" and ace["c"]["i"].get("s"): # lineage
             entry["L"] = ace["c"]["i"]["s"][0]
         ace["c"]["a"].append(entry)
-        ace["c"]["t"]["l"].append([check_titer(rows[row_no][column_no], row_no, column_no) for column_no in serum_columns])
+        ace["c"]["t"]["l"].append([check_titer(rows[row_no][column_no], input_file, table_rows[row_no], column_no) for column_no in serum_columns])
 
     detect_reference(ace["c"]["a"], ace["c"]["s"])
     if ace["c"]["i"]["l"] == "MELB":
@@ -153,12 +157,17 @@ def make_antigen_serum_field(key, value):
 # ----------------------------------------------------------------------
 
 sReTiter = re.compile(r"^[><]?\d+$", re.I)
+sNormalTiters = ["10", "20", "40", "80", "160", "320", "640", "1280", "2560", "5120", "10240",
+                 "<10", "<20", "<40", "<80",
+                 ">2560", ">5120", ">10240"]
 
-def check_titer(titer, row_no, column_no):
+def check_titer(titer, filename, row_no, column_no):
     if sReTiter.match(titer):
+        if titer not in sNormalTiters:
+            print(f">> WARNING: unusual titer \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}", file=sys.stderr)
         return titer
     else:
-        raise RuntimeError(f"Unrecognized titer \"{titer}\" at {row_no}:{column_no}")
+        raise RuntimeError(f"Unrecognized titer \"{titer}\" @@ filename:{row_no} column {column_no + 1}")
 
 
 # ----------------------------------------------------------------------
@@ -497,5 +506,5 @@ try:
     exit(0)
 except Exception as err:
     print(f"ERROR: {err} @@ {sys.argv[1]}:1", file=sys.stderr)
-    # raise
+    raise
     exit(2)
