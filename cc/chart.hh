@@ -550,6 +550,11 @@ namespace acmacs::chart
             remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); });
         }
 
+        void filter_out_distinct(Indexes& aIndexes) const
+        {
+            remove(aIndexes, [&](const auto& entry) -> bool { return entry.annotations().distinct(); });
+        }
+
         virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const;
         virtual Indexes find_by_name(std::string_view aName) const;
         virtual Indexes find_by_name(const std::regex& aName) const; // regex search in full name
@@ -636,6 +641,11 @@ namespace acmacs::chart
         void filter_reassortant(Indexes& aIndexes) const
         {
             remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); });
+        }
+
+        void filter_out_distinct(Indexes& aIndexes) const
+        {
+            remove(aIndexes, [&](const auto& entry) -> bool { return entry.annotations().distinct(); });
         }
 
         virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const;
