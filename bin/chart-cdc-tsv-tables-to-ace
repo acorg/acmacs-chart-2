@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import sys, os, csv, json, re, datetime, lzma, pprint, functools, statistics, math, subprocess
+import sys, os, csv, json, re, datetime, lzma, pprint, subprocess
 
 # ----------------------------------------------------------------------
 
@@ -103,6 +103,7 @@ def make_ace(input_file, lab, assay_date, subtype, assay, rbc, lineage):
 def read_titer(table_name, table, antigen, serum, titer): # cdc_id, date, antigen_name, antigen_passage, serum_name, ferret_id, serum_id, serum_passage, serum_boosted :bool, titer):
     ag_no = antigen_index(table=table, antigen=antigen) # _name=antigen_name, antigen_passage=antigen_passage, cdc_id=cdc_id, date=date)
     sr_no = serum_index(table=table, serum=serum) # serum_name=serum_name, serum_id=serum_id, serum_passage=serum_passage, serum_boosted=serum_boosted)
+    titer = check_titer(titer, ag_no, sr_no)
     titers = table["c"]["t"]["l"]
     while len(titers) <= ag_no:
         titers.append([])
@@ -116,7 +117,7 @@ def read_titer(table_name, table, antigen, serum, titer): # cdc_id, date, antige
             row[sr_no] = [row[sr_no], titer]
         # print(f">> WARNING: {table_name}: titer mismatch [AG {ag_no} {antigen_name} {antigen_passage} {cdc_id}   SR {sr_no} {serum_name} {serum_id}]: new: {titer}, old: {row[sr_no]}", file=sys.stderr)
     else:
-        row[sr_no] = check_titer(titer, ag_no, sr_no)
+        row[sr_no] = titer
 
 # ----------------------------------------------------------------------
 
@@ -124,12 +125,7 @@ def merge_titers(table_name, titers, ace):
     for ag_no, row in enumerate(titers):
         for sr_no in range(len(row)):
             if isinstance(row[sr_no], list):
-                data = [float(t1) for t1 in row[sr_no]]
-                sd = statistics.stdev(math.log2(t2) for t2 in data)
-                tt = round(statistics.geometric_mean(data))
-                if sd >= 1.0:
-                    print(f">>> {table_name} AG {ag_no} {ace['c']['a'][ag_no]['N']}  SR {sr_no} {ace['c']['s'][sr_no]['N']}: sd: {sd:4.2f} titer: {tt:5d} <-- {row[sr_no]}")
-                row[sr_no] = str(tt)
+                row[sr_no] = subprocess.check_output(["chart-titer-merge"] + row[sr_no]).decode("utf-8").strip()
 
 # ----------------------------------------------------------------------
 

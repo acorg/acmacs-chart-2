@@ -25,7 +25,8 @@ int main(int argc, char* const argv[])
         std::transform(std::begin(opt.titers), std::end(opt.titers), std::begin(titers), [](std::string_view src) { return acmacs::chart::Titer{src}; });
         const auto [merged, report] = acmacs::chart::TitersModify::merge_titers(titers, acmacs::chart::TitersModify::more_than_thresholded::adjust_to_next, standard_deviation_threshold);
         fmt::print("{}\n", merged);
-        AD_INFO("{} -> {}: {}", titers, merged, acmacs::chart::TitersModify::titer_merge_report_long(report));
+        if (report != acmacs::chart::TitersModify::titer_merge::regular_only)
+            AD_INFO("{} -> {}: {}", titers, merged, acmacs::chart::TitersModify::titer_merge_report_long(report));
     }
     catch (std::exception& err) {
         fmt::print(stderr, "ERROR: {}\n", err);
