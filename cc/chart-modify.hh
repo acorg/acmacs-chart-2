@@ -362,6 +362,10 @@ namespace acmacs::chart
 
         using titer_merge_report = std::vector<titer_merge_data>;
 
+        enum class more_than_thresholded {adjust_to_next, to_dont_care};
+
+        // ----------------------------------------------------------------------
+
         explicit TitersModify(size_t number_of_antigens, size_t number_of_sera);
         explicit TitersModify(TitersP main);
 
@@ -396,6 +400,7 @@ namespace acmacs::chart
         void titer(size_t aAntigenNo, size_t aSerumNo, size_t aLayerNo, const Titer& aTiter);
         std::unique_ptr<titer_merge_report> set_from_layers(ChartModify& chart);
 
+        static std::pair<Titer, titer_merge> merge_titers(const std::vector<Titer>& titers, more_than_thresholded mtt, double standard_deviation_threshold);
         static std::string titer_merge_report_brief(titer_merge data);
         static std::string titer_merge_report_long(titer_merge data);
         static std::string titer_merge_report_description();
@@ -412,8 +417,6 @@ namespace acmacs::chart
 
         void set_titer(dense_t& titers, size_t aAntigenNo, size_t aSerumNo, const Titer& aTiter) { titers[aAntigenNo * number_of_sera_ + aSerumNo] = aTiter; }
         void set_titer(sparse_t& titers, size_t aAntigenNo, size_t aSerumNo, const Titer& aTiter);
-
-        enum class more_than_thresholded {adjust_to_next, to_dont_care};
 
         std::unique_ptr<titer_merge_report> set_titers_from_layers(more_than_thresholded mtt);
         std::pair<Titer, titer_merge> titer_from_layers(size_t ag_no, size_t sr_no, more_than_thresholded mtt, double standard_deviation_threshold) const;

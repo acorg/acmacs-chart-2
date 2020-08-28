@@ -1040,47 +1040,44 @@ std::unique_ptr<TitersModify::titer_merge_report> TitersModify::set_titers_from_
 
 // ----------------------------------------------------------------------
 
-  // lispmds algorithm 2014-12-06 (from mds/src/mds/mds/hi-table.lisp)
-  // lispmds does not support > at all, it is added to acmacs
-  // 1. If there are > and < titers, result is *
-  // 2. If there are just *, result is *
-  // 3. If there are just thresholded titers, result is min (<) or max (>) of them
-  // 4. Convert > and < titers to their next values, i.e. <40 to 20, >10240 to 20480, etc.
-  // 5. Compute SD, if SD > 1, result is *
-  // 6. If there are no < nor >, result is mean.
-  // 7. if max(<) of thresholded is more than max on non-thresholded (e.g. <40 20), then find minimum of thresholded which is more than max on non-thresholded, it is the result with <
-  // 8. if min(>) of thresholded is less than min on non-thresholded (e.g. >1280 2560), then find maximum of thresholded which is less than min on non-thresholded, it is the result with >
-  // 9. otherwise result is next of of max/min non-thresholded with </> (e.g. <20 40 --> <80, <20 80 --> <160) "min-more-than >= min-regular", "max-less-than <= max-regular"
+// lispmds algorithm 2014-12-06 (from mds/src/mds/mds/hi-table.lisp)
+// lispmds does not support > at all, it is added to acmacs
+// 1. If there are > and < titers, result is *
+// 2. If there are just *, result is *
+// 3. If there are just thresholded titers, result is min (<) or max (>) of them
+// 4. Convert > and < titers to their next values, i.e. <40 to 20, >10240 to 20480, etc.
+// 5. Compute SD, if SD > 1, result is *
+// 6. If there are no < nor >, result is mean.
+// 7. if max(<) of thresholded is more than max on non-thresholded (e.g. <40 20), then find minimum of thresholded which is more than max on non-thresholded, it is the result with <
+// 8. if min(>) of thresholded is less than min on non-thresholded (e.g. >1280 2560), then find maximum of thresholded which is less than min on non-thresholded, it is the result with >
+// 9. otherwise result is next of of max/min non-thresholded with </> (e.g. <20 40 --> <80, <20 80 --> <160) "min-more-than >= min-regular", "max-less-than <= max-regular"
 
-std::pair<Titer, TitersModify::titer_merge> TitersModify::titer_from_layers(size_t ag_no, size_t sr_no, more_than_thresholded mtt, double standard_deviation_threshold) const
+// backend/antigenic-table.hh:1087
+
+std::pair<Titer, TitersModify::titer_merge> TitersModify::merge_titers(const std::vector<Titer>& titers, more_than_thresholded mtt, double standard_deviation_threshold)
 {
-    // backend/antigenic-table.hh:1087
-    std::vector<Titer> titers;
     constexpr auto max_limit = std::numeric_limits<decltype(std::declval<Titer>().value())>::max();
     size_t min_less_than = max_limit, min_more_than = max_limit, min_regular = max_limit;
     size_t max_less_than = 0, max_more_than = 0, max_regular = 0;
-    for (auto layer_no : acmacs::range(layers_.size())) {
-        if (auto titer = titer_in_sparse_t(layers_[layer_no], ag_no, sr_no); !titer.is_dont_care()) {
-            const auto val = titer.value();
-            switch (titer.type()) {
-                case Titer::Regular:
-                    min_regular = std::min(min_regular, val);
-                    max_regular = std::max(max_regular, val);
-                    break;
-                case Titer::LessThan:
-                    min_less_than = std::min(min_less_than, val);
-                    max_less_than = std::max(max_less_than, val);
-                    break;
-                case Titer::MoreThan:
-                    min_more_than = std::min(min_more_than, val);
-                    max_more_than = std::max(max_more_than, val);
-                    break;
-                case Titer::Dodgy:
-                case Titer::Invalid:
-                case Titer::DontCare:
-                    break;
-            }
-            titers.emplace_back(std::move(titer));
+    for (const auto& titer : titers) {
+        const auto val = titer.value();
+        switch (titer.type()) {
+            case Titer::Regular:
+                min_regular = std::min(min_regular, val);
+                max_regular = std::max(max_regular, val);
+                break;
+            case Titer::LessThan:
+                min_less_than = std::min(min_less_than, val);
+                max_less_than = std::max(max_less_than, val);
+                break;
+            case Titer::MoreThan:
+                min_more_than = std::min(min_more_than, val);
+                max_more_than = std::max(max_more_than, val);
+                break;
+            case Titer::Dodgy:
+            case Titer::Invalid:
+            case Titer::DontCare:
+                throw std::invalid_argument{"TitersModify::merge_titers cannot handle dont-care, dodgy, invalid titers"};
         }
     }
 
@@ -1089,7 +1086,6 @@ std::pair<Titer, TitersModify::titer_merge> TitersModify::titer_from_layers(size
     if (max_less_than != 0 && min_more_than != max_limit) // 1. both thresholded
         return {{}, titer_merge::less_and_more_than};
     if (min_regular == max_limit) { // 3. no regular, just thresholded
-        // std::cerr << "DEBUG: no regular " << titers << '\n';
         if (min_less_than != max_limit)
             return {Titer('<', min_less_than), titer_merge::less_than_only};
         if (mtt == more_than_thresholded::adjust_to_next)
@@ -1098,12 +1094,12 @@ std::pair<Titer, TitersModify::titer_merge> TitersModify::titer_from_layers(size
             return {{}, titer_merge::more_than_only_to_dontcare};
     }
 
-      // compute SD
+    // compute SD
     std::vector<double> adjusted_log(titers.size());
     std::transform(titers.begin(), titers.end(), adjusted_log.begin(), [](const auto& titer) -> double { return titer.logged_with_thresholded(); }); // 4.
     const auto sd_mean = acmacs::statistics::standard_deviation(adjusted_log.begin(), adjusted_log.end());
     if (sd_mean.population_sd() > standard_deviation_threshold)
-        return {Titer{}, titer_merge::sd_too_big}; // 5. if SD > 1, result is *
+        return {Titer{}, titer_merge::sd_too_big};        // 5. if SD > 1, result is *
     if (max_less_than == 0 && min_more_than == max_limit) // 6. just regular
         return {Titer::from_logged(sd_mean.mean()), titer_merge::regular_only};
     if (max_less_than) { // 7.
@@ -1130,6 +1126,21 @@ std::pair<Titer, TitersModify::titer_merge> TitersModify::titer_from_layers(size
     }
     else
         return {Titer('>', min_regular / 2), titer_merge::more_than_and_regular};
+
+} // TitersModify::merge_titers
+
+// ----------------------------------------------------------------------
+
+std::pair<Titer, TitersModify::titer_merge> TitersModify::titer_from_layers(size_t ag_no, size_t sr_no, more_than_thresholded mtt, double standard_deviation_threshold) const
+{
+    std::vector<Titer> titers;
+    for (auto layer_no : acmacs::range(layers_.size())) {
+        if (auto titer = titer_in_sparse_t(layers_[layer_no], ag_no, sr_no); !titer.is_dont_care()) {
+            titers.emplace_back(std::move(titer));
+        }
+    }
+
+    return merge_titers(titers, mtt, standard_deviation_threshold);
 
 } // TitersModify::titer_from_layers
 
