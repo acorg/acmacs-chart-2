@@ -9,24 +9,62 @@ def main(input_file, output_dir):
     tables = {}                 # table -> ace
     for row in reader:
         assay_date = datetime.datetime.strptime(row["assay_date"], "%Y-%m-%d").strftime("%Y%m%d")
+        date_suffix = ""
+        lineage = None
+        assay = (row.get("assay_type") or row.get("assay-type")).upper()
+        assay_infix = f"""-{assay.lower()}"""
+        if assay == "HI":
+            assay_infix = ""
+            rbc = "-turkey"
+        else:
+            rbc = None
         if row["subtype"].lower() == "h3":
             subtype = "A(H3N2)"
+            name_prefix = "a-h3n2"
+            if assay == "HI":
+                rbc = "-guinea-pig"
+        elif row["subtype"].lower() == "h1 swl":
+            subtype = "A(H1N1)"
+            name_prefix = "a-h1n1"
+            lineage = "2009pdm"
+        elif row["subtype"].lower() == "b vic":
+            subtype = "B"
+            name_prefix = "b"
+            lineage = "VICTORIA"
+        elif row["subtype"].lower() == "b yam":
+            subtype = "B"
+            name_prefix = "b"
+            lineage = "YAMAGATA"
+            date_suffix = "_002"
         else:
             raise RuntimeError(f"""unrecognized subtype: {row["subtype"]}""")
-        table_name = f"""a-{row["subtype"].lower()}-cdc-{row["assay_type"].lower()}-{assay_date}"""
+        table_name = f"""{name_prefix}-cdc{assay_infix}{rbc}-{assay_date}{date_suffix}"""
         if table_name not in tables:
-            tables[table_name] = make_ace(input_file, assay_date=assay_date, subtype=subtype, assay=row["assay_type"].upper())
-        if row.get("virus_harvest_date"):
-            antigen_passage = f"""{row["virus_strain_passage"]} ({row["virus_harvest_date"]})"""
+            tables[table_name] = make_ace(input_file, lab="CDC", assay_date=assay_date, subtype=subtype, assay=assay, rbc=rbc, lineage=lineage)
+
+        antigen = {"N": row["virus_strain"], "l": [f"CDC#{row['virus_cdc_id']}"], "D": row["virus_collection_date"], }
+        if row.get("virus_harvest_date") not in [None, "None"]:
+            antigen["P"] = f"""{row["virus_strain_passage"]} ({row["virus_harvest_date"]})"""
         else:
-            antigen_passage = row["virus_strain_passage"]
-        read_titer(table_name, tables[table_name], cdc_id=row["virus_cdc_id"], date=row["virus_collection_date"], antigen_name=row["virus_strain"], antigen_passage=antigen_passage,
-                   serum_name=row["serum_strain"], ferret_id=row["ferret_id"], serum_id=row["lot #"], serum_passage=row["serum_antigen_passage"],
-                   serum_boosted=row.get("Boosted") and row["Boosted"].lower() != "false",
-                   titer=row["titer"])
+            antigen["P"] = row["virus_strain_passage"]
+
+        serum = {"N": row["serum_strain"], "I": f"CDC {row['lot #']}", "P": row["serum_antigen_passage"], }
+        if row.get("Boosted") and row["Boosted"].lower() != "false":
+            serum["a"] = ["BOOSTED"]
+        # row["ferret_id"] is unused
+
+        for extra_field in ["reported_by_fra", "tested_by_fra"]:
+            if row.get(extra_field):
+                print(f">> WARNING extra field \"{extra_field}\" has value: \"{row[extra_field]}\"", file=sys.sdterr)
+
+        if subtype == "B" and lineage:
+            antigen["L"] = serum["L"] = lineage
+
+        read_titer(table_name, tables[table_name], antigen=antigen, serum=serum, titer=row["titer"])
+
     os.makedirs(output_dir, exist_ok=True)
     for table_name, ace in tables.items():
-        merge_titers(table_name, ace["c"]["t"]["l"])
+        merge_titers(table_name, ace["c"]["t"]["l"], ace)
         populate_missing_titers(table_name, ace["c"]["t"]["l"], number_of_sera=len(ace["c"]["s"]))
         print(f"""{table_name:25s}   a:{len(ace["c"]["a"]):3d}   s:{len(ace["c"]["s"]):3d}""")
         orig_name = f"{output_dir}/{table_name}.orig.ace"
@@ -38,28 +76,33 @@ def main(input_file, output_dir):
 
 # ----------------------------------------------------------------------
 
-def make_ace(input_file, assay_date, subtype, assay):
-    return {
+def make_ace(input_file, lab, assay_date, subtype, assay, rbc, lineage):
+    ace = {
         "  version": "acmacs-ace-v1",
         "?created": f"imported from {os.path.basename(input_file)} by {os.path.basename(sys.argv[0])} on {datetime.date.today()}",
         "c": {
             "i": {
-                "l": "CDC",
+                "l": lab,
                 "D": assay_date,
                 "V": subtype,
                 "A": assay,
-                #"r": rbc,
-                #"s": lineage,
             },
             "a": [], "s": [], "t": {"l": []}
         }
     }
+    if rbc:
+        ace["c"]["i"]["r"] = rbc
+    if lineage:
+        ace["c"]["i"]["s"] = lineage
+        if lineage == "YAMAGATA":
+            ace["c"]["i"]["D"] += ".002"
+    return ace
 
 # ----------------------------------------------------------------------
 
-def read_titer(table_name, table, cdc_id, date, antigen_name, antigen_passage, serum_name, ferret_id, serum_id, serum_passage, serum_boosted :bool, titer):
-    ag_no = antigen_index(table=table, antigen_name=antigen_name, antigen_passage=antigen_passage, cdc_id=cdc_id, date=date)
-    sr_no = serum_index(table=table, serum_name=serum_name, serum_id=serum_id, serum_passage=serum_passage, serum_boosted=serum_boosted)
+def read_titer(table_name, table, antigen, serum, titer): # cdc_id, date, antigen_name, antigen_passage, serum_name, ferret_id, serum_id, serum_passage, serum_boosted :bool, titer):
+    ag_no = antigen_index(table=table, antigen=antigen) # _name=antigen_name, antigen_passage=antigen_passage, cdc_id=cdc_id, date=date)
+    sr_no = serum_index(table=table, serum=serum) # serum_name=serum_name, serum_id=serum_id, serum_passage=serum_passage, serum_boosted=serum_boosted)
     titers = table["c"]["t"]["l"]
     while len(titers) <= ag_no:
         titers.append([])
@@ -77,15 +120,15 @@ def read_titer(table_name, table, cdc_id, date, antigen_name, antigen_passage, s
 
 # ----------------------------------------------------------------------
 
-def merge_titers(table_name, titers):
-    for row in titers:
+def merge_titers(table_name, titers, ace):
+    for ag_no, row in enumerate(titers):
         for sr_no in range(len(row)):
             if isinstance(row[sr_no], list):
                 data = [float(t1) for t1 in row[sr_no]]
                 sd = statistics.stdev(math.log2(t2) for t2 in data)
                 tt = round(statistics.geometric_mean(data))
                 if sd >= 1.0:
-                    print(sd, tt, "<--", row[sr_no])
+                    print(f">>> {table_name} AG {ag_no} {ace['c']['a'][ag_no]['N']}  SR {sr_no} {ace['c']['s'][sr_no]['N']}: sd: {sd:4.2f} titer: {tt:5d} <-- {row[sr_no]}")
                 row[sr_no] = str(tt)
 
 # ----------------------------------------------------------------------
@@ -97,25 +140,24 @@ def populate_missing_titers(table_name, titers, number_of_sera):
 
 # ----------------------------------------------------------------------
 
-def antigen_index(table, antigen_name, antigen_passage, cdc_id, date):
+def antigen_index(table, antigen):
     for no, entry in enumerate(table["c"]["a"]):
-        if entry["N"] == antigen_name and entry["P"] == antigen_passage and entry["l"][0][4:] == cdc_id:
-            if entry["D"] != date:
-                print(f">> WARNING: antigen date mismatch: new: {date}, old: {entry}", file=sys.stderr)
+        if entry["N"] == antigen["N"] and entry["P"] == antigen["P"] and entry["l"] == antigen["l"]:
+            if entry["D"] != antigen["D"]:
+                print(f">> WARNING: antigen date mismatch: new: {antigen['D']}, old: {entry}", file=sys.stderr)
             return no
-    table["c"]["a"].append({"N": antigen_name, "P": antigen_passage, "l": [f"CDC#{cdc_id}"], "D": date})
+    table["c"]["a"].append(antigen)
     return len(table["c"]["a"]) - 1
 
 # ----------------------------------------------------------------------
 
-def serum_index(table, serum_name, serum_id, serum_passage, serum_boosted :bool):
-    annotations = ["BOOSTED"] if serum_boosted else None
+def serum_index(table, serum):
     for no, entry in enumerate(table["c"]["s"]):
-        if entry["N"] == serum_name and entry["I"][4:] == serum_id and entry.get("a") == annotations:
-            if entry["P"] != serum_passage:
-                print(f">> WARNING: serum passage mismatch: new: {serum_passage}, old: {entry}", file=sys.stderr)
+        if entry["N"] == serum["N"] and entry["I"] == serum["I"] and entry.get("a") == serum.get("a"):
+            if entry["P"] != serum["P"]:
+                print(f">> WARNING: serum passage mismatch: new: {serum['P']}, old: {entry}", file=sys.stderr)
             return no
-    table["c"]["s"].append({"N": serum_name, "I": f"CDC {serum_id}", "P": serum_passage, "a": annotations})
+    table["c"]["s"].append(serum)
     return len(table["c"]["s"]) - 1
 
 # ----------------------------------------------------------------------
@@ -123,6 +165,8 @@ def serum_index(table, serum_name, serum_id, serum_passage, serum_boosted :bool)
 sReTiter = re.compile(r"^[><]?\d+$", re.I)
 
 def check_titer(titer, row_no, column_no):
+    if titer == "5":
+        return "<10"
     if sReTiter.match(titer):
         return titer
     else:
@@ -319,5 +363,5 @@ try:
     exit(0)
 except Exception as err:
     print(f"ERROR: {err} @@ {sys.argv[1]}:1", file=sys.stderr)
-    # raise
+    raise
     exit(2)
