@@ -62,6 +62,7 @@ TARGETS = \
   $(DIST)/chart-find-chart-with-antigens \
   $(DIST)/chart-time-series-for-country \
   $(DIST)/chart-titers-compare \
+  $(DIST)/chart-titer-merge \
   $(DIST)/test-titer-iterator \
   $(DIST)/test-chart-modify \
   $(DIST)/test-chart-create-from-scratch \
