@@ -6,24 +6,6 @@
 
 // ----------------------------------------------------------------------
 
-size_t acmacs::chart::RjsonTiters::number_of_sera() const
-{
-    if (!number_of_sera_) {
-        if (const auto& list = data_[keys_.list]; !list.is_null()) {
-            number_of_sera_ = list[0].size();
-        }
-        else {
-            size_t max_serum_index = 0;
-            rjson::for_each(data_[keys_.dict], [&max_serum_index](const rjson::value& row) { max_serum_index = std::max(max_serum_index, row.max_index()); });
-            number_of_sera_ = max_serum_index + 1;
-        }
-    }
-    return *number_of_sera_;
-
-} // acmacs::chart::RjsonTiters::number_of_sera
-
-// ----------------------------------------------------------------------
-
 std::vector<acmacs::chart::Titer> acmacs::chart::RjsonTiters::titers_for_layers(const rjson::value& layers, size_t aAntigenNo, size_t aSerumNo, include_dotcare inc) const
 {
     if (layers.empty())

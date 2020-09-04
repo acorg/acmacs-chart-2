@@ -82,18 +82,8 @@ namespace acmacs::chart
 
         size_t number_of_layers() const override { return data_[keys_.layers].size(); }
 
-        size_t number_of_antigens() const override
-        {
-            if (!number_of_antigens_) {
-                if (const auto& list = data_[keys_.list]; !list.is_null())
-                    number_of_antigens_ = list.size();
-                else
-                    number_of_antigens_ = data_[keys_.dict].size();
-            }
-            return *number_of_antigens_;
-        }
-
-        size_t number_of_sera() const override;
+        size_t number_of_antigens() const override { return number_of_antigens_; }
+        size_t number_of_sera() const override { return number_of_sera_; }
 
         size_t number_of_non_dont_cares() const override;
 
@@ -139,7 +129,11 @@ namespace acmacs::chart
             std::string layers;
         };
 
-        RjsonTiters(const rjson::value& data, const Keys& keys) : data_{data}, keys_{keys} {}
+        // cannot correctly infer num of antigens and sera from titers when there are sera without titers at the end of the table
+        RjsonTiters(const rjson::value& data, const Keys& keys, size_t number_of_antigens, size_t number_of_sera)
+            : data_{data}, keys_{keys}, number_of_antigens_{number_of_antigens}, number_of_sera_{number_of_sera}
+        {
+        }
 
         // const rjson::value& data() const { return data_; }
         const rjson::value& layer(size_t aLayerNo) const { return rjson_layers()[aLayerNo]; }
@@ -161,8 +155,8 @@ namespace acmacs::chart
       private:
         const rjson::value& data_;
         const Keys& keys_;
-        mutable std::optional<size_t> number_of_antigens_;
-        mutable std::optional<size_t> number_of_sera_;
+        const size_t number_of_antigens_;
+        const size_t number_of_sera_;
 
     }; // class RjsonTiters
 

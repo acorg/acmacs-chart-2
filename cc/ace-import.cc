@@ -123,7 +123,7 @@ const rjson::value& AceChart::extension_fields() const
 
 TitersP AceChart::titers() const
 {
-    return std::make_shared<AceTiters>(data_.get("c", "t"));
+    return std::make_shared<AceTiters>(data_.get("c", "t"), data_.get("c", "a").size(), data_.get("c", "s").size());
 
 } // AceChart::titers
 

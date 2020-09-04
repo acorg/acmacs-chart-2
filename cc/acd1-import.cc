@@ -310,7 +310,7 @@ SeraP Acd1Chart::sera() const
 
 TitersP Acd1Chart::titers() const
 {
-    return std::make_shared<Acd1Titers>(data_.get("table", "titers"));
+    return std::make_shared<Acd1Titers>(data_.get("table", "titers"), data_.get("table", "antigens").size(), data_.get("table", "sera").size());
 
 } // Acd1Chart::titers
 

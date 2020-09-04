@@ -153,7 +153,7 @@ namespace acmacs::chart
     class AceTiters : public RjsonTiters
     {
       public:
-        AceTiters(const rjson::value& data) : RjsonTiters(data, s_keys_) {}
+        AceTiters(const rjson::value& data, size_t number_of_antigens, size_t number_of_sera) : RjsonTiters(data, s_keys_, number_of_antigens, number_of_sera) {}
 
      private:
         static const Keys s_keys_;

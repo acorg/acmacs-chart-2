@@ -162,7 +162,7 @@ namespace acmacs::chart
     class Acd1Titers : public RjsonTiters
     {
       public:
-        Acd1Titers(const rjson::value& data) : RjsonTiters(data, s_keys_) {}
+        Acd1Titers(const rjson::value& data, size_t number_of_antigens, size_t number_of_sera) : RjsonTiters(data, s_keys_, number_of_antigens, number_of_sera) {}
 
           // old acd1 files have minimum_column_basis inside titers instead of projection
         std::optional<MinimumColumnBasis> minimum_column_basis() const
