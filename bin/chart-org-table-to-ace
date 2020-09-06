@@ -171,9 +171,24 @@ def check_titer(titer, filename, row_no, column_no):
 
 # ----------------------------------------------------------------------
 
+def fix_name_for_comparison(name):
+    fields = name.upper().split("/")
+    try:
+        year = int(fields[-1])
+    except ValueError:
+        year = None
+    if year:
+        if year < 50:
+            year += 2000
+        elif year < 100:
+            year += 1900
+        fields[-1] = str(year)
+    return "/".join(fields)
+
 def detect_reference(antigens, sera):
+    # print("\n".join(fix_name_for_comparison(antigen["N"]) for antigen in antigens), "\n\n", "\n".join(fix_name_for_comparison(serum["N"]) for serum in sera), sep="")
     for antigen in antigens:
-        if any(serum["N"].upper() == antigen["N"].upper() for serum in sera):
+        if any(fix_name_for_comparison(serum["N"]) == fix_name_for_comparison(antigen["N"]) for serum in sera):
             antigen["S"] = "R"
 
 # ----------------------------------------------------------------------

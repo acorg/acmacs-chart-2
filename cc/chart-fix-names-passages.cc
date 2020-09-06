@@ -40,12 +40,14 @@ int main(int argc, char* const argv[])
                 antigen.name(*new_name);
             }
 
-            auto [passage, extra] = acmacs::virus::parse_passage(antigen.passage(), acmacs::virus::passage_only::yes);
+            auto [passage, extra] = acmacs::virus::parse_passage(antigen.passage(), acmacs::virus::passage_only::no);
             if (!extra.empty())
-                fmt::print(stderr, ">> WARNING extra in passage ignored \"{}\" <- \"{}\"\n", extra, antigen.passage());
+                fmt::print(stderr, ">> WARNING extra in passage \"{}\" \"{}\" <- \"{}\"\n", passage, extra, antigen.passage());
             if (passage != antigen.passage()) {
                 // fmt::print("\"{}\" <- \"{}\"\n", passage, antigen.passage());
                 antigen.passage(passage);
+                if (!extra.empty())
+                    antigen.add_annotation(extra);
             }
         }
 
@@ -62,12 +64,14 @@ int main(int argc, char* const argv[])
                 serum.name(*new_name);
             }
 
-            auto [passage, extra] = acmacs::virus::parse_passage(serum.passage(), acmacs::virus::passage_only::yes);
+            auto [passage, extra] = acmacs::virus::parse_passage(serum.passage(), acmacs::virus::passage_only::no);
             if (!extra.empty())
-                fmt::print(stderr, ">> WARNING extra in passage ignored \"{}\" <- \"{}\"\n", extra, serum.passage());
+                fmt::print(stderr, ">> WARNING extra in passage \"{}\" \"{}\" <- \"{}\"\n", passage, extra, serum.passage());
             if (passage != serum.passage()) {
                 // fmt::print("\"{}\" <- \"{}\"\n", passage, serum.passage());
                 serum.passage(passage);
+                if (!extra.empty())
+                    serum.add_annotation(extra);
             }
         }
 
