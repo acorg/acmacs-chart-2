@@ -35,6 +35,9 @@
 
 #endif
 
+#if 0 /* 2020-09-09 optim temporary disabled untile its API is stable */
+
+#define OPTIM_ENABLE_ARMA_WRAPPERS
 #include "optim/optim.hpp"
 
 #pragma GCC diagnostic pop
@@ -97,6 +100,19 @@ void optim::differential_evolution(acmacs::chart::optimization_status& status, a
 
 // ----------------------------------------------------------------------
 
+#else
+
+void optim::bfgs(acmacs::chart::optimization_status&, acmacs::chart::OptimiserCallbackData&, double*, double*, acmacs::chart::optimization_precision /*precision*/)
+{
+    throw std::runtime_error{"optim disabled"};
+}
+
+void optim::differential_evolution(acmacs::chart::optimization_status&, acmacs::chart::OptimiserCallbackData&, double*, double*, acmacs::chart::optimization_precision /*precision*/)
+{
+    throw std::runtime_error{"optim disabled"};
+}
+
+#endif
 
 // ----------------------------------------------------------------------
 /// Local Variables:
