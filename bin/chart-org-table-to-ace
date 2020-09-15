@@ -155,10 +155,12 @@ def make_antigen_serum_field(key, value):
 
 # ----------------------------------------------------------------------
 
-sReTiter = re.compile(r"^[><]?\d+$", re.I)
+sReTiter = re.compile(r"^([><]?\d+|\*)$", re.I)
 sNormalTiters = ["10", "20", "40", "80", "160", "320", "640", "1280", "2560", "5120", "10240",
                  "<10", "<20", "<40", "<80",
-                 ">2560", ">5120", ">10240"]
+                 ">2560", ">5120", ">10240",
+                 "*"
+                 ]
 
 def check_titer(titer, filename, row_no, column_no):
     if sReTiter.match(titer):
@@ -166,7 +168,7 @@ def check_titer(titer, filename, row_no, column_no):
             print(f">> WARNING: unusual titer \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}", file=sys.stderr)
         return titer
     else:
-        raise RuntimeError(f"Unrecognized titer \"{titer}\" @@ filename:{row_no} column {column_no + 1}")
+        raise RuntimeError(f"Unrecognized titer \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}")
 
 
 # ----------------------------------------------------------------------

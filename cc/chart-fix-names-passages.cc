@@ -24,7 +24,6 @@ int main(int argc, char* const argv[])
     try {
         Options opt(argc, argv);
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.input_chart)};
-        // fmt::print("{}\n", chart->make_info());
         const auto subtype = chart.info()->virus_type();
 
         auto antigens = chart.antigens_modify();
@@ -36,15 +35,19 @@ int main(int argc, char* const argv[])
                 parsed_name.subtype = subtype;
             const auto new_name = parsed_name.name();
             if (antigen.name() != new_name) {
-                // fmt::print("\"{}\" <- \"{}\"\n", new_name, antigen.name());
+                if (!parsed_name.mutations.empty())
+                    AD_WARNING("Name has mutations: \"{}\" <-- \"{}\"", parsed_name.mutations, antigen.name());
                 antigen.name(*new_name);
+                if (!parsed_name.reassortant.empty())
+                    antigen.reassortant(parsed_name.reassortant);
+                if (!parsed_name.extra.empty())
+                    antigen.add_annotation(parsed_name.extra);
             }
 
             auto [passage, extra] = acmacs::virus::parse_passage(antigen.passage(), acmacs::virus::passage_only::no);
             if (!extra.empty())
-                fmt::print(stderr, ">> WARNING extra in passage \"{}\" \"{}\" <- \"{}\"\n", passage, extra, antigen.passage());
+                AD_WARNING("extra in passage \"{}\" \"{}\" <- \"{}\"", passage, extra, antigen.passage());
             if (passage != antigen.passage()) {
-                // fmt::print("\"{}\" <- \"{}\"\n", passage, antigen.passage());
                 antigen.passage(passage);
                 if (!extra.empty())
                     antigen.add_annotation(extra);
@@ -60,15 +63,13 @@ int main(int argc, char* const argv[])
                 parsed_name.subtype = subtype;
             const auto new_name = parsed_name.name();
             if (serum.name() != new_name) {
-                // fmt::print("\"{}\" <- \"{}\"\n", new_name, serum.name());
                 serum.name(*new_name);
             }
 
             auto [passage, extra] = acmacs::virus::parse_passage(serum.passage(), acmacs::virus::passage_only::no);
             if (!extra.empty())
-                fmt::print(stderr, ">> WARNING extra in passage \"{}\" \"{}\" <- \"{}\"\n", passage, extra, serum.passage());
+                AD_WARNING("extra in passage \"{}\" \"{}\" <- \"{}\"", passage, extra, serum.passage());
             if (passage != serum.passage()) {
-                // fmt::print("\"{}\" <- \"{}\"\n", passage, serum.passage());
                 serum.passage(passage);
                 if (!extra.empty())
                     serum.add_annotation(extra);
@@ -78,7 +79,7 @@ int main(int argc, char* const argv[])
         acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name());
     }
     catch (std::exception& err) {
-        fmt::print(stderr, "ERROR: {}\n", err);
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;
