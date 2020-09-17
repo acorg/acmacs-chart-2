@@ -59,7 +59,7 @@ namespace acmacs::chart
         double radius() const
         {
             sort();
-            return *per_antigen_.front().radius;
+            return std::max(*per_antigen_.front().radius, min_radius);
         }
 
         constexpr size_t serum_no() const { return serum_no_; }
@@ -78,6 +78,7 @@ namespace acmacs::chart
         size_t serum_no_;
         double fold_ = 2.0;
         double column_basis_;
+        double min_radius{2.0}; // Derek 2020-09-16 13:16 (Influenza B report and sig pages)
         mutable std::vector<detail::SerumCirclePerAntigen> per_antigen_;
         mutable bool sorted_ = false;
 
