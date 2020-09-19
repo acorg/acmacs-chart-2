@@ -17,6 +17,8 @@ struct Options : public argv
     option<str>  format{*this, 'f', "format", dflt{"{ag_sr} {no0} {full_name_with_passage} {serum_species} [{date}] {lab_ids} {ref}"}, desc{"\n          run chart-name-format-help to list available formats"}};
                         // desc{"\n          supported fields:\n            {ag_sr} {no0} {<no0} {no1} {<no1}\n            {name} {full_name_with_passage} {full_name_with_fields} {abbreviated_name}\n            {abbreviated_name_with_passage_type} {abbreviated_location_with_passage_type}\n            {abbreviated_name_with_serum_id} {designation} {name_abbreviated} {name_without_subtype}\n            {abbreviated_location_year} {location_abbreviated}\n            {location} {country} {continent} {latitude} {longitude}\n            {serum_id} {serum_species} {sera_with_titrations}\n            {ref} {date} {lab_ids} {reassortant} {passage} {passage_type} {annotations} {lineage}"}};
     option<str>  antigens{*this, 'a', "antigens", desc{"comma or space separated list of antigens (zero based indexes) to report for them only"}};
+    option<bool> antigens_only{*this, "antigens-only", desc{"report just antigens"}};
+    option<bool> sera_only{*this, "sera-only", desc{"report just sera"}};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
     option<bool> verbose{*this, 'v', "verbose"};
     argument<str_array> charts{*this, arg_name{"chart"}, mandatory};
@@ -38,10 +40,15 @@ int main(int argc, char* const argv[])
                     fmt::print("{}\n", acmacs::string::strip(acmacs::chart::format_antigen(pattern, *chart, ag_no)));
             }
             else {
-                for (const auto ag_no : acmacs::range(chart->number_of_antigens()))
-                    fmt::print("{}\n", acmacs::string::strip(format_antigen(pattern, *chart, ag_no)));
-                for (const auto sr_no : acmacs::range(chart->number_of_sera()))
-                    fmt::print("{}\n", acmacs::string::strip(format_serum(pattern, *chart, sr_no)));
+                const bool antigens_and_sera = !opt.antigens_only && !opt.sera_only;
+                if (antigens_and_sera || opt.antigens_only) {
+                    for (const auto ag_no : acmacs::range(chart->number_of_antigens()))
+                        fmt::print("{}\n", acmacs::string::strip(format_antigen(pattern, *chart, ag_no)));
+                }
+                if (antigens_and_sera || opt.sera_only) {
+                    for (const auto sr_no : acmacs::range(chart->number_of_sera()))
+                        fmt::print("{}\n", acmacs::string::strip(format_serum(pattern, *chart, sr_no)));
+                }
             }
         }
     }
