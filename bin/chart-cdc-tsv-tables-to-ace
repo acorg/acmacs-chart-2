@@ -10,14 +10,14 @@ def main(input_file, output_dir):
     for row in reader:
         assay_date = get_date(row["assay_date"])
         date_suffix = ""
-        lineage = None
+        lineage = ""
         assay = (row.get("assay_type") or row.get("assay-type") or "HINT").upper()
         assay_infix = f"""-{assay.lower()}"""
         if assay == "HI":
             assay_infix = ""
             rbc = "-turkey"
         else:
-            rbc = None
+            rbc = ""
         if not row.get("subtype") or row["subtype"].lower() == "h3":
             subtype = "A(H3N2)"
             name_prefix = "a-h3n2"
