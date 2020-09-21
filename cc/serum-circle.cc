@@ -310,6 +310,11 @@ acmacs::chart::SerumCircle acmacs::chart::serum_circle_empirical(const PointInde
 void acmacs::chart::detail::serum_circle_theoretical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen, double fold)
 {
     per_antigen.radius = fold + circle_data.column_basis() - per_antigen.titer.logged_for_column_bases();
+    if (per_antigen.radius.has_value() && *per_antigen.radius <= 0) {
+        AD_WARNING("Negative theoretical serum circle radius: {} <-- fold:{} column_basis:{} titer:{} logged-titer:{}", //
+                   *per_antigen.radius,                                                                             //
+                   fold, circle_data.column_basis(), per_antigen.titer, per_antigen.titer.logged_for_column_bases());
+    }
 
 } // acmacs::chart::detail::serum_circle_theoretical
 
