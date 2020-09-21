@@ -8,17 +8,17 @@ def main(input_file, output_dir):
     reader = csv.DictReader(open(input_file), dialect="excel-tab")
     tables = {}                 # table -> ace
     for row in reader:
-        assay_date = datetime.datetime.strptime(row["assay_date"], "%Y-%m-%d").strftime("%Y%m%d")
+        assay_date = get_date(row["assay_date"])
         date_suffix = ""
         lineage = None
-        assay = (row.get("assay_type") or row.get("assay-type")).upper()
+        assay = (row.get("assay_type") or row.get("assay-type") or "HINT").upper()
         assay_infix = f"""-{assay.lower()}"""
         if assay == "HI":
             assay_infix = ""
             rbc = "-turkey"
         else:
             rbc = None
-        if row["subtype"].lower() == "h3":
+        if not row.get("subtype") or row["subtype"].lower() == "h3":
             subtype = "A(H3N2)"
             name_prefix = "a-h3n2"
             if assay == "HI":
@@ -73,6 +73,20 @@ def main(input_file, output_dir):
             output.write(lzma.compress(json_dumps(ace, indent=2).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
         subprocess.check_call(f"chart-fix-names-passages '{orig_name}' '{final_name}'", shell=True)
         subprocess.check_call(f"rm '{orig_name}'", shell=True)
+
+# ----------------------------------------------------------------------
+
+def get_date(field):
+    date = None
+    for fmt in ["%Y-%m-%d", "%d/%m/%Y"]:
+        try:
+            date = datetime.datetime.strptime(field, fmt)
+            break
+        except:
+            pass
+    if not date:
+        raise RuntimeError(f"Cannot parse date from {field!r}")
+    return date.strftime("%Y%m%d")
 
 # ----------------------------------------------------------------------
 
@@ -158,13 +172,14 @@ def serum_index(table, serum):
 
 # ----------------------------------------------------------------------
 
-sReTiter = re.compile(r"^[><]?\d+$", re.I)
+sReTiter = re.compile(r"^([><])?(\d+(?:\.\d*)?)$", re.I)
 
 def check_titer(titer, row_no, column_no):
     if titer == "5":
         return "<10"
-    if sReTiter.match(titer):
-        return titer
+    m = sReTiter.match(titer)
+    if m:
+        return f"{m.group(1)}{round(float(m.group(2)))}"
     else:
         raise RuntimeError(f"Unrecognized titer \"{titer}\" at {row_no}:{column_no}")
 
