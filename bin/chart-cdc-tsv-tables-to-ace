@@ -42,11 +42,11 @@ def main(input_file, output_dir):
         if table_name not in tables:
             tables[table_name] = make_ace(input_file, lab="CDC", assay_date=assay_date, subtype=subtype, assay=assay, rbc=rbc, lineage=lineage)
 
-        antigen = {"N": row["virus_strain"], "l": [f"CDC#{row['virus_cdc_id']}"], "D": row["virus_collection_date"], }
+        antigen = {"N": row["virus_strain"], "l": [f"CDC#{row['virus_cdc_id']}"], "D": row["virus_collection_date"].strip(), }
         if row.get("virus_harvest_date") not in [None, "None"]:
-            antigen["P"] = f"""{row["virus_strain_passage"]} ({row["virus_harvest_date"]})"""
+            antigen["P"] = normalize_passage(f"""{row["virus_strain_passage"]} ({row["virus_harvest_date"]})""")
         else:
-            antigen["P"] = row["virus_strain_passage"]
+            antigen["P"] = normalize_passage(row["virus_strain_passage"])
 
         serum = {"N": row["serum_strain"], "I": f"CDC {row['lot #']}", "P": row["serum_antigen_passage"], }
         if row.get("Boosted") and row["Boosted"].lower() != "false":
@@ -73,20 +73,6 @@ def main(input_file, output_dir):
             output.write(lzma.compress(json_dumps(ace, indent=2).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
         subprocess.check_call(f"chart-fix-names-passages '{orig_name}' '{final_name}'", shell=True)
         subprocess.check_call(f"rm '{orig_name}'", shell=True)
-
-# ----------------------------------------------------------------------
-
-def get_date(field):
-    date = None
-    for fmt in ["%Y-%m-%d", "%d/%m/%Y"]:
-        try:
-            date = datetime.datetime.strptime(field, fmt)
-            break
-        except:
-            pass
-    if not date:
-        raise RuntimeError(f"Cannot parse date from {field!r}")
-    return date.strftime("%Y%m%d")
 
 # ----------------------------------------------------------------------
 
@@ -135,6 +121,34 @@ def read_titer(table_name, table, antigen, serum, titer): # cdc_id, date, antige
 
 # ----------------------------------------------------------------------
 
+def get_date(field, month_first=False, output_fmt="%Y%m%d"):
+    date = None
+    if month_first:
+        fmts = ["%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y", "%d/%m/%Y", "%d/%m/%y"]
+    else:
+        fmts = ["%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y"]
+    for fmt in fmts:
+        try:
+            date = datetime.datetime.strptime(field, fmt)
+            break
+        except:
+            pass
+    if not date:
+        raise RuntimeError(f"Cannot parse date from {field!r}")
+    return date.strftime(output_fmt)
+
+# ----------------------------------------------------------------------
+
+sRePassage1 = re.compile(r"^([^\(\s]+)\s*\(([^\)]+)\)[A-Z]{0,3}$", re.I)
+
+def normalize_passage(passage):
+    m = sRePassage1.match(passage)
+    if m:
+        passage = f"{m.group(1)} ({get_date(m.group(2), month_first=True, output_fmt='%Y-%m-%d')})"
+    return passage
+
+# ----------------------------------------------------------------------
+
 def merge_titers(table_name, titers, ace):
     for ag_no, row in enumerate(titers):
         for sr_no in range(len(row)):
@@ -153,8 +167,8 @@ def populate_missing_titers(table_name, titers, number_of_sera):
 def antigen_index(table, antigen):
     for no, entry in enumerate(table["c"]["a"]):
         if entry["N"] == antigen["N"] and entry["P"] == antigen["P"] and entry["l"] == antigen["l"]:
-            if entry["D"] != antigen["D"]:
-                print(f">> WARNING: antigen date mismatch: new: {antigen['D']}, old: {entry}", file=sys.stderr)
+            if antigen["D"] and entry["D"] != antigen["D"]:
+                print(f">> WARNING: antigen date mismatch: new: {antigen['D']!r}, old: {entry!r}", file=sys.stderr)
             return no
     table["c"]["a"].append(antigen)
     return len(table["c"]["a"]) - 1
@@ -179,7 +193,10 @@ def check_titer(titer, row_no, column_no):
         return "<10"
     m = sReTiter.match(titer)
     if m:
-        return f"{m.group(1)}{round(float(m.group(2)))}"
+        if m.group(1):
+            return f"{m.group(1)}{round(float(m.group(2)))}"
+        else:
+            return str(round(float(m.group(2))))
     else:
         raise RuntimeError(f"Unrecognized titer \"{titer}\" at {row_no}:{column_no}")
 
