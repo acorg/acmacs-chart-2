@@ -18,9 +18,15 @@ acmacs::chart::SerumCircle::SerumCircle(size_t antigen_no, size_t serum_no, doub
 acmacs::chart::SerumCircle::SerumCircle(const PointIndexList& antigens, size_t serum_no, double column_basis, const Titers& titers, double fold)
     : serum_no_{serum_no}, fold_{fold}, column_basis_{column_basis}, per_antigen_(antigens->size())
 {
-    std::transform(std::begin(antigens), std::end(antigens), per_antigen_.begin(), [serum_no,&titers](size_t ag_no) {
-        return detail::SerumCirclePerAntigen(ag_no, titers.titer(ag_no, serum_no));
-    });
+    if (antigens.empty()) {
+        // forced homologous titer
+        AD_ERROR("SerumCircle::SerumCircle misuse with forced homologous titer");
+        per_antigen_.push_back(detail::SerumCirclePerAntigen(static_cast<size_t>(-1), Titer{}));
+    }
+    else {
+        std::transform(std::begin(antigens), std::end(antigens), per_antigen_.begin(),
+                       [serum_no, &titers](size_t ag_no) { return detail::SerumCirclePerAntigen(ag_no, titers.titer(ag_no, serum_no)); });
+    }
 
 } // acmacs::chart::SerumCircle::SerumCircle
 
@@ -29,9 +35,13 @@ acmacs::chart::SerumCircle::SerumCircle(const PointIndexList& antigens, size_t s
 acmacs::chart::SerumCircle::SerumCircle(const PointIndexList& antigens, size_t serum_no, double column_basis, Titer homologous_titer, double fold)
     : serum_no_{serum_no}, fold_{fold}, column_basis_{column_basis}, per_antigen_(antigens->size())
 {
-    std::transform(std::begin(antigens), std::end(antigens), per_antigen_.begin(), [&homologous_titer](size_t ag_no) {
-        return detail::SerumCirclePerAntigen(ag_no, homologous_titer);
-    });
+    if (antigens.empty()) {
+        // forced homologous titer
+        per_antigen_.push_back(detail::SerumCirclePerAntigen(static_cast<size_t>(-1), homologous_titer));
+    }
+    else {
+        std::transform(std::begin(antigens), std::end(antigens), per_antigen_.begin(), [&homologous_titer](size_t ag_no) { return detail::SerumCirclePerAntigen(ag_no, homologous_titer); });
+    }
 
 } // acmacs::chart::SerumCircle::SerumCircle
 
