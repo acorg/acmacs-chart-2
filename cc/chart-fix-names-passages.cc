@@ -36,7 +36,7 @@ int main(int argc, char* const argv[])
             const auto new_name = parsed_name.name();
             if (antigen.name() != new_name) {
                 if (!parsed_name.mutations.empty())
-                    AD_WARNING("Name has mutations: \"{}\" <-- \"{}\"", parsed_name.mutations, antigen.name());
+                    AD_WARNING("Name has mutations: {} <-- \"{}\"", parsed_name.mutations, antigen.name());
                 antigen.name(*new_name);
                 if (!parsed_name.reassortant.empty())
                     antigen.reassortant(parsed_name.reassortant);

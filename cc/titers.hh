@@ -271,6 +271,22 @@ template <> struct fmt::formatter<acmacs::chart::TiterIterator::Data> : fmt::for
     }
 };
 
+template <> struct fmt::formatter<std::vector<acmacs::chart::Titer>> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const std::vector<acmacs::chart::Titer>& titers, FormatCtx& ctx)
+    {
+        format_to(ctx.out(), "[");
+        bool first{true};
+        for (const auto& titer: titers) {
+            if (first)
+                first = false;
+            else
+                format_to(ctx.out(), ", ");
+            format_to(ctx.out(), "{}", titer);
+        }
+        return format_to(ctx.out(), "]");
+    }
+};
+
 // ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
