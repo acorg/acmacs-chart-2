@@ -42,12 +42,13 @@ std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_
 
 std::string acmacs::chart::Chart::make_name(std::optional<size_t> aProjectionNo) const
 {
-    std::string n = info()->make_name();
+    fmt::memory_buffer name;
+    fmt::format_to(name, "{}", info()->make_name());
     if (auto prjs = projections(); !prjs->empty() && (!aProjectionNo || *aProjectionNo < prjs->size())) {
         auto prj = (*prjs)[aProjectionNo ? *aProjectionNo : 0];
-        n += " >=" + static_cast<std::string>(prj->minimum_column_basis()) + " " + std::to_string(prj->stress());
+        fmt::format_to(name, " {}{:.4f}", prj->minimum_column_basis().format(">={} ", MinimumColumnBasis::use_none::no), prj->stress());
     }
-    return n;
+    return fmt::to_string(name);
 
 } // acmacs::chart::Chart::make_name
 
@@ -55,17 +56,18 @@ std::string acmacs::chart::Chart::make_name(std::optional<size_t> aProjectionNo)
 
 std::string acmacs::chart::Chart::description() const
 {
-    auto n = info()->make_name();
+    fmt::memory_buffer desc;
+    fmt::format_to(desc, "{}", info()->make_name());
     if (auto prjs = projections(); !prjs->empty()) {
         auto prj = (*prjs)[0];
-        n += acmacs::string::concat(" >=", prj->minimum_column_basis(), " ", prj->stress());
+        fmt::format_to(desc, "{}{:.4f}", prj->minimum_column_basis().format(">={} ", MinimumColumnBasis::use_none::yes), prj->stress());
     }
     if (info()->virus_type() == acmacs::virus::type_subtype_t{"B"})
-        n += acmacs::string::concat(' ', lineage());
-    n += acmacs::string::concat(" Ag:", number_of_antigens(), " Sr:", number_of_sera());
+        fmt::format_to(desc, " {}", lineage());
+    fmt::format_to(desc, " AG:{} Sr:{}", number_of_antigens(), number_of_sera());
     if (const auto layers = titers()->number_of_layers(); layers > 1)
-        n += acmacs::string::concat(" (", layers, " source tables)");
-    return n;
+        fmt::format_to(desc, " ({} source tables)", layers);
+    return fmt::to_string(desc);
 
 } // acmacs::chart::Chart::description
 
@@ -323,8 +325,11 @@ std::string acmacs::chart::Info::make_info() const
 std::string acmacs::chart::Info::make_name() const
 {
     std::string n = name(Compute::No);
-    if (n.empty())
-        n = acmacs::string::join(acmacs::string::join_space, lab(Compute::Yes), *virus_not_influenza(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), assay(Compute::Yes), rbc_species(Compute::Yes), date(Compute::Yes));
+    if (n.empty()) {
+        const auto vt = virus_type(Compute::Yes);
+        n = acmacs::string::join(acmacs::string::join_space, lab(Compute::Yes), *virus_not_influenza(Compute::Yes), vt, subset(Compute::Yes), assay(Compute::Yes).HI_or_Neut(Assay::no_hi::yes),
+                                 rbc_species(Compute::Yes), date(Compute::Yes));
+    }
     return n;
 
 } // acmacs::chart::Info::make_name

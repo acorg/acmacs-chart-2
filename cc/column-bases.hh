@@ -29,9 +29,11 @@ namespace acmacs::chart
         constexpr operator double() const noexcept { return value_; }
         double apply(double column_basis) const noexcept { return std::max(column_basis, value_); }
 
-        operator std::string() const noexcept;
+        enum class use_none { no, yes };
+        std::string format(std::string_view format, use_none un) const noexcept;
+        operator std::string() const noexcept { return format("{}", use_none::yes); }
 
-     private:
+      private:
         double value_;
 
         void from(std::string_view value);

@@ -42,14 +42,18 @@ void acmacs::chart::MinimumColumnBasis::from(std::string_view value)
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::MinimumColumnBasis::operator std::string() const noexcept
+std::string acmacs::chart::MinimumColumnBasis::format(std::string_view format, use_none un) const noexcept
 {
-    if (is_none())
-        return "none";
+    if (is_none()) {
+        if (un == use_none::yes)
+            return fmt::format(format, "none");
+        else
+            return {};
+    }
     else
-        return fmt::format("{}", std::lround(std::exp2(value_) * 10.0));
+        return fmt::format(format, std::lround(std::exp2(value_) * 10.0));
 
-} // operator std::string
+} // acmacs::chart::MinimumColumnBasis::format
 
 // ----------------------------------------------------------------------
 /// Local Variables:

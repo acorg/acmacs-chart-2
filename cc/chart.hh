@@ -63,21 +63,30 @@ namespace acmacs::chart
     {
       public:
         using acmacs::named_string_t<struct chart_assay_tag_t>::named_string_t;
+        enum class no_hi { no, yes };
 
-        std::string hi_or_neut() const
+        std::string hi_or_neut(no_hi nh = no_hi::no) const
         {
-            if (empty() || get() == "HI")
-                return "hi";
+            if (empty() || get() == "HI") {
+                if (nh == no_hi::no)
+                    return "hi";
+                else
+                    return "";
+            }
             else if (get() == "HINT")
                 return "hint";
             else
                 return "neut";
         }
 
-        std::string HI_or_Neut() const
+        std::string HI_or_Neut(no_hi nh = no_hi::no) const
         {
-            if (empty() || get() == "HI")
-                return "HI";
+            if (empty() || get() == "HI") {
+                if (nh == no_hi::no)
+                    return "HI";
+                else
+                    return "";
+            }
             else if (get() == "HINT")
                 return "HINT";
             else
