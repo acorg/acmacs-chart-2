@@ -563,8 +563,9 @@ namespace acmacs::chart
             remove(aIndexes, [&](const auto& entry) -> bool { return entry.annotations().distinct(); });
         }
 
+        virtual bool name_matches(size_t index, std::string_view aName) const; // if aName starts with ~, then search by regex in full name
         virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const;
-        virtual Indexes find_by_name(std::string_view aName) const;
+        virtual Indexes find_by_name(std::string_view aName) const; // if aName starts with ~, then search by regex in full name
         virtual Indexes find_by_name(const std::regex& aName) const; // regex search in full name
 
         // max_full_name() - see global template below
@@ -656,8 +657,9 @@ namespace acmacs::chart
             remove(aIndexes, [&](const auto& entry) -> bool { return entry.annotations().distinct(); });
         }
 
+        virtual bool name_matches(size_t index, std::string_view aName) const; // if aName starts with ~, then search by regex in full name
         virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const;
-        virtual Indexes find_by_name(std::string_view aName) const;
+        virtual Indexes find_by_name(std::string_view aName) const; // if aName starts with ~, then search by regex in full name
         virtual Indexes find_by_name(const std::regex& aName) const; // regex search in full name
         // max_full_name() - see global template below
 
