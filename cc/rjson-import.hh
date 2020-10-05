@@ -86,6 +86,8 @@ namespace acmacs::chart
         size_t number_of_sera() const override { return number_of_sera_; }
 
         size_t number_of_non_dont_cares() const override;
+        size_t titrations_for_antigen(size_t antigen_no) const override;
+        size_t titrations_for_serum(size_t serum_no) const override;
 
         // support for fast exporting into ace, if source was ace or acd1
         const rjson::value& rjson_list_list() const override

@@ -1254,6 +1254,49 @@ size_t TitersModify::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
+size_t TitersModify::titrations_for_antigen(size_t antigen_no) const
+{
+    auto num_non_dont_cares = [antigen_no, this](const auto& titers) -> size_t {
+        using T = std::decay_t<decltype(titers)>;
+        if constexpr (std::is_same_v<T, dense_t>)
+            return static_cast<size_t>(
+                std::count_if(&titers[antigen_no * this->number_of_sera_], &titers[(antigen_no + 1) * this->number_of_sera_], [](const Titer& titer) { return !titer.is_dont_care(); }));
+        else
+            return titers[antigen_no].size();
+    };
+    return std::visit(num_non_dont_cares, titers_);
+
+} // TitersModify::titrations_for_antigen
+
+// ----------------------------------------------------------------------
+
+size_t TitersModify::titrations_for_serum(size_t serum_no) const
+{
+    auto num_non_dont_cares = [serum_no, this](const auto& titers) -> size_t {
+        using T = std::decay_t<decltype(titers)>;
+        size_t result{0};
+        if constexpr (std::is_same_v<T, dense_t>) {
+            for (auto antigen_no = 0ul; antigen_no < (titers.size() / this->number_of_sera_); ++antigen_no) {
+                if (!titers[antigen_no * this->number_of_sera_ + serum_no].is_dont_care())
+                    ++result;
+            }
+        }
+        else {
+            for (auto& row : titers) {
+                if (auto found = std::lower_bound(row.begin(), row.end(), serum_no, [](const auto& e1, size_t sr_no) { return e1.first < sr_no; }); found != row.end() && found->first == serum_no) {
+                    if (!found->second.is_dont_care())
+                        ++result;
+                }
+            }
+        }
+        return result;
+    };
+    return std::visit(num_non_dont_cares, titers_);
+
+} // TitersModify::titrations_for_serum
+
+// ----------------------------------------------------------------------
+
 void TitersModify::titer(size_t aAntigenNo, size_t aSerumNo, const acmacs::chart::Titer& aTiter)
 {
     modifiable_check();

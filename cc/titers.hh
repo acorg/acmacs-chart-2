@@ -181,6 +181,8 @@ namespace acmacs::chart
         virtual size_t number_of_antigens() const = 0;
         virtual size_t number_of_sera() const = 0;
         virtual size_t number_of_non_dont_cares() const = 0;
+        virtual size_t titrations_for_antigen(size_t antigen_no) const = 0;
+        virtual size_t titrations_for_serum(size_t serum_no) const = 0;
         virtual double percent_of_non_dont_cares() const { return static_cast<double>(number_of_non_dont_cares()) / static_cast<double>(number_of_antigens() * number_of_sera()); }
         virtual bool is_dense() const noexcept;
 

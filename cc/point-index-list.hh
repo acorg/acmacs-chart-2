@@ -28,6 +28,12 @@ namespace acmacs::chart
 
         PointIndexList(std::initializer_list<size_t> src) : base_t::named_vector_t{src} {}
 
+        template <typename Iter> PointIndexList(Iter first, Iter last) : base_t::named_vector_t(static_cast<size_t>(last - first))
+        {
+            std::copy(first, last, begin());
+            std::sort(begin(), end());
+        }
+
         template <typename Iter, typename Convert> PointIndexList(Iter first, Iter last, Convert convert) : base_t::named_vector_t(static_cast<size_t>(last - first))
         {
             std::transform(first, last, begin(), convert);

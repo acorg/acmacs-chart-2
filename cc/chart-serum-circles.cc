@@ -7,6 +7,7 @@
 #include "acmacs-base/csv.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
+#include "acmacs-chart-2/serum-circle.hh"
 
 // ----------------------------------------------------------------------
 
@@ -113,10 +114,8 @@ std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t project
         for (auto ag_no : serum->homologous_antigens()) {
             auto& antigen_data = serum_data.antigens.emplace_back(ag_no, (*antigens)[ag_no], titers->titer(ag_no, sr_no));
             if (antigen_data.titer.is_regular()) {
-                antigen_data.theoretical = chart.serum_circle_radius_theoretical(ag_no, sr_no, projection_no);
-                antigen_data.empirical = chart.serum_circle_radius_empirical(ag_no, sr_no, projection_no, 2.0,
-                                                                             // sr_no == 19 ? acmacs::verbose::yes :
-                                                                             verbose);
+                antigen_data.theoretical = acmacs::chart::serum_circle_theoretical(ag_no, sr_no, chart, projection_no, 2.0, verbose);
+                antigen_data.empirical = acmacs::chart::serum_circle_empirical(ag_no, sr_no, chart, projection_no, 2.0, verbose);
             }
         }
     }

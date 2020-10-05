@@ -87,6 +87,46 @@ size_t acmacs::chart::RjsonTiters::number_of_non_dont_cares() const
 
 // ----------------------------------------------------------------------
 
+size_t acmacs::chart::RjsonTiters::titrations_for_antigen(size_t antigen_no) const
+{
+    size_t result = 0;
+    if (const auto& list = data_[keys_.list]; !list.is_null()) {
+        const rjson::value& row = list[antigen_no];
+        rjson::for_each(row, [&result](const rjson::value& titer) {
+            if (!Titer(titer.to<std::string_view>()).is_dont_care())
+                ++result;
+        });
+    }
+    else {
+        result += data_[keys_.dict][antigen_no].size();
+    }
+    return result;
+
+} // acmacs::chart::RjsonTiters::titrations_for_antigen
+
+// ----------------------------------------------------------------------
+
+size_t acmacs::chart::RjsonTiters::titrations_for_serum(size_t serum_no) const
+{
+    size_t result = 0;
+    if (const auto& list = data_[keys_.list]; !list.is_null()) {
+        rjson::for_each(list, [&result, serum_no](const rjson::value& row) {
+            if (!Titer(row[serum_no].to<std::string_view>()).is_dont_care())
+                ++result;
+        });
+    }
+    else {
+        rjson::for_each(data_[keys_.dict], [&result, serum_no](const rjson::value& row) {
+            if (const auto& titer = row[serum_no]; !titer.is_null() && !Titer{titer.to<std::string_view>()}.is_dont_care())
+                ++result;
+        });
+    }
+    return result;
+
+} // acmacs::chart::RjsonTiters::titrations_for_serum
+
+// ----------------------------------------------------------------------
+
 namespace
 {
     class TiterGetterExistingBase : public acmacs::chart::TiterIterator::TiterGetter

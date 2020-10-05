@@ -470,27 +470,62 @@ size_t LispmdsTiters::number_of_sera() const
 
 // ----------------------------------------------------------------------
 
+inline bool is_dontcare(const acmacs::lispmds::value& titer)
+{
+    return std::visit(
+        [](auto&& arg) -> bool {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, acmacs::lispmds::symbol>)
+                return arg[0] == '*';
+            else if constexpr (std::is_same_v<T, acmacs::lispmds::number>)
+                return false;
+            else
+                throw acmacs::lispmds::type_mismatch{fmt::format("Unexpected titer type: {}", typeid(T).name())};
+        },
+        titer);
+}
+
+// ----------------------------------------------------------------------
+
 size_t LispmdsTiters::number_of_non_dont_cares() const
 {
     size_t result = 0;
-    for (const auto& row: std::get<acmacs::lispmds::list>(acmacs::lispmds::get(mData, 0, 3))) {
-        for (const auto& titer: std::get<acmacs::lispmds::list>(row)) {
-            std::visit([&result](auto&& arg) {
-                using T = std::decay_t<decltype(arg)>;
-                if constexpr (std::is_same_v<T, acmacs::lispmds::symbol>) {
-                    if (arg[0] != '*')
-                        ++result;
-                }
-                else if constexpr (std::is_same_v<T, acmacs::lispmds::number>)
-                    ++result;
-                else
-                    throw acmacs::lispmds::type_mismatch{fmt::format("Unexpected titer type: {}", typeid(T).name())};
-            }, titer);
+    for (const auto& row : std::get<acmacs::lispmds::list>(acmacs::lispmds::get(mData, 0, 3))) {
+        for (const auto& titer : std::get<acmacs::lispmds::list>(row)) {
+            if (!is_dontcare(titer))
+                ++result;
         }
     }
     return result;
 
 } // LispmdsTiters::number_of_non_dont_cares
+
+// ----------------------------------------------------------------------
+
+size_t LispmdsTiters::titrations_for_antigen(size_t antigen_no) const
+{
+    size_t result = 0;
+    const auto& row = std::get<acmacs::lispmds::list>(acmacs::lispmds::get(mData, 0, 3))[antigen_no];
+    for (const auto& titer : std::get<acmacs::lispmds::list>(row)) {
+        if (!is_dontcare(titer))
+            ++result;
+    }
+    return result;
+
+} // LispmdsTiters::titrations_for_antigen
+
+// ----------------------------------------------------------------------
+
+size_t LispmdsTiters::titrations_for_serum(size_t serum_no) const
+{
+    size_t result = 0;
+    for (const auto& row : std::get<acmacs::lispmds::list>(acmacs::lispmds::get(mData, 0, 3))) {
+        if (!is_dontcare(std::get<acmacs::lispmds::list>(row)[serum_no]))
+            ++result;
+    }
+    return result;
+
+} // LispmdsTiters::titrations_for_serum
 
 // ----------------------------------------------------------------------
 

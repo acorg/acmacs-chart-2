@@ -163,6 +163,8 @@ namespace acmacs::chart
         size_t number_of_antigens() const override;
         size_t number_of_sera() const override;
         size_t number_of_non_dont_cares() const override;
+        size_t titrations_for_antigen(size_t antigen_no) const override;
+        size_t titrations_for_serum(size_t serum_no) const override;
 
      private:
         const acmacs::lispmds::value& mData;
