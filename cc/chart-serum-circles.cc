@@ -130,7 +130,7 @@ void report_text(const acmacs::chart::Chart& chart, const std::vector<SerumData>
     const auto antigen_no_num_digits = static_cast<int>(std::log10(chart.number_of_antigens())) + 1;
     const auto serum_no_num_digits = static_cast<int>(std::log10(chart.number_of_sera())) + 1;
     for (const auto& serum_data : sera_data) {
-        std::cout << "SR " << std::setw(serum_no_num_digits) << serum_data.serum_no << ' ' << serum_data.serum->full_name_with_fields() << '\n';
+        std::cout << "SR " << std::setw(serum_no_num_digits) << serum_data.serum_no << ' ' << serum_data.serum->full_name_with_fields() << " titrations:" << chart.titers()->titrations_for_serum(serum_data.serum_no) << '\n';
         if (!serum_data.antigens.empty()) {
             std::cout << "   titer theor empir\n";
             for (const auto& antigen_data : serum_data.antigens) {
