@@ -69,7 +69,7 @@ class Titers
                 }
             }
             const auto present_in_table = [&per_table_per_serum](size_t table_no) {
-                return std::any_of(std::begin(per_table_per_serum[table_no]), std::end(per_table_per_serum[table_no]), [](const auto* titer) { return bool{titer}; });
+                return std::any_of(std::begin(per_table_per_serum[table_no]), std::end(per_table_per_serum[table_no]), [](const auto* titer) { return titer != nullptr; });
             };
 
             if (omit_if_not_in_first && !present_in_table(0))
