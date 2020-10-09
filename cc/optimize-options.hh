@@ -20,6 +20,7 @@ namespace acmacs::chart
     };
     enum class multiply_antigen_titer_until_column_adjust { no, yes };
     enum class dodgy_titer_is_regular { no, yes };
+    enum class disconnect_few_numeric_titers { no, yes };
 
     using number_of_optimizations_t = named_size_t<struct number_of_optimizations_tag>;
 
@@ -27,15 +28,20 @@ namespace acmacs::chart
     {
         optimization_options() = default;
         optimization_options(optimization_precision a_precision, double a_randomization_diameter_multiplier = 2.0)
-            : precision{a_precision}, randomization_diameter_multiplier{a_randomization_diameter_multiplier} {}
+            : precision{a_precision}, randomization_diameter_multiplier{a_randomization_diameter_multiplier}
+        {
+        }
         optimization_options(optimization_method a_method, optimization_precision a_precision = optimization_precision::fine, double a_randomization_diameter_multiplier = 2.0)
-            : method{a_method}, precision{a_precision}, randomization_diameter_multiplier{a_randomization_diameter_multiplier} {}
+            : method{a_method}, precision{a_precision}, randomization_diameter_multiplier{a_randomization_diameter_multiplier}
+        {
+        }
 
-        optimization_method method = optimization_method::alglib_cg_pca;
-        optimization_precision precision = optimization_precision::fine;
-        multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes;
-        double randomization_diameter_multiplier = 2.0; // for layout randomizations
-        int num_threads = 0;                            // 0 - omp_get_max_threads()
+        optimization_method method{optimization_method::alglib_cg_pca};
+        optimization_precision precision{optimization_precision::fine};
+        disconnect_few_numeric_titers disconnect_too_few_numeric_titers{disconnect_few_numeric_titers::yes};
+        multiply_antigen_titer_until_column_adjust mult{multiply_antigen_titer_until_column_adjust::yes};
+        double randomization_diameter_multiplier{2.0}; // for layout randomizations
+        int num_threads{0};                            // 0 - omp_get_max_threads()
 
     }; // struct optimization_options
 

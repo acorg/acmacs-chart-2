@@ -2,13 +2,11 @@
 
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
-#include "acmacs-base/string-split.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
-
-static acmacs::chart::DisconnectedPoints get_disconnected(std::string_view antigens, std::string_view sera, size_t number_of_antigens, size_t number_of_sera);
+#include "acmacs-chart-2/command-helper.hh"
 
 // ----------------------------------------------------------------------
 
@@ -55,13 +53,11 @@ int main(int argc, char* const argv[])
             projections->remove_all();
         const auto precision = (opt.rough || opt.fine > 0) ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
         const auto method{acmacs::chart::optimization_method_from_string(opt.method)};
-        auto disconnected{get_disconnected(opt.disconnect_antigens, opt.disconnect_sera, chart.number_of_antigens(), chart.number_of_sera())};
-        if (!opt.no_disconnect_having_few_titers)
-            disconnected.extend(chart.titers()->having_too_few_numeric_titers());
-        if (!disconnected->empty())
-            std::cerr << fmt::format("INFO: disconnected points: ({}) {}\n", disconnected->size(), disconnected);
+        auto disconnected{acmacs::chart::get_disconnected(opt.disconnect_antigens, opt.disconnect_sera, chart.number_of_antigens(), chart.number_of_sera())};
 
         acmacs::chart::optimization_options options(method, precision, opt.max_distance_multiplier);
+        options.disconnect_too_few_numeric_titers = opt.no_disconnect_having_few_titers ? acmacs::chart::disconnect_few_numeric_titers::no : acmacs::chart::disconnect_few_numeric_titers::yes;
+
         if (opt.no_dimension_annealing)
             AD_WARNING("option --no-dimension-annealing is deprectaed, dimension annealing is disabled by default, use --dimension-annealing to enable");
         const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(opt.dimension_annealing && method != acmacs::chart::optimization_method::optimlib_differential_evolution);
@@ -90,27 +86,6 @@ int main(int argc, char* const argv[])
     return exit_code;
 }
 
-// ----------------------------------------------------------------------
-
-inline void extend(acmacs::chart::PointIndexList& target, std::vector<size_t>&& source, size_t aIncrementEach, size_t aMax)
-{
-    for (const auto no : source) {
-        if (no >= aMax)
-            throw std::runtime_error("invalid index " + acmacs::to_string(no) + ", expected in range 0.." + acmacs::to_string(aMax - 1) + " inclusive");
-        target.insert(no + aIncrementEach);
-    }
-}
-
-acmacs::chart::DisconnectedPoints get_disconnected(std::string_view antigens, std::string_view sera, size_t number_of_antigens, size_t number_of_sera)
-{
-    acmacs::chart::DisconnectedPoints points;
-    if (!antigens.empty())
-        extend(points, acmacs::string::split_into_size_t(antigens), 0, number_of_antigens + number_of_sera);
-    if (!sera.empty())
-        extend(points, acmacs::string::split_into_size_t(sera), number_of_antigens, number_of_sera);
-    return points;
-
-} // get_disconnected
 
 // ----------------------------------------------------------------------
 /// Local Variables:

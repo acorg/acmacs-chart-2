@@ -7,6 +7,7 @@
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/grid-test.hh"
+#include "acmacs-chart-2/command-helper.hh"
 
 // ----------------------------------------------------------------------
 
@@ -27,6 +28,8 @@ struct Options : public argv
     option<size_t> keep_projections{*this, "keep-projections", dflt{0UL}, desc{"number of projections to keep, 0 - keep all"}};
     option<bool>   keep_original_projections{*this, "keep-original-projections"};
     option<bool>   no_disconnect_having_few_titers{*this, "no-disconnect-having-few-titers"};
+    option<str>    disconnect_antigens{*this, "disconnect-antigens", dflt{""}, desc{"comma or space separated list of antigen/point indexes (0-based) to disconnect for the new projections"}};
+    option<str>    disconnect_sera{*this, "disconnect-sera", dflt{""}, desc{"comma or space separated list of serum indexes (0-based) to disconnect for the new projections"}};
     option<int>    threads{*this, "threads", dflt{0}, desc{"number of threads to use for optimization (omp): 0 - autodetect, 1 - sequential"}};
     option<bool>   report_time{*this, "time", desc{"report time of loading chart"}};
     option<bool>   verbose{*this, 'v', "verbose"};
@@ -47,9 +50,7 @@ int main(int argc, char* const argv[])
         if (!opt.keep_original_projections)
             chart.projections_modify()->remove_all();
         const auto method{acmacs::chart::optimization_method_from_string(opt.method)};
-        acmacs::chart::DisconnectedPoints disconnected;
-        if (!opt.no_disconnect_having_few_titers)
-            disconnected.extend(chart.titers()->having_too_few_numeric_titers());
+        auto disconnected{acmacs::chart::get_disconnected(opt.disconnect_antigens, opt.disconnect_sera, chart.number_of_antigens(), chart.number_of_sera())};
 
         std::shared_ptr<acmacs::chart::Chart> master;
         if (opt.output_chart.has_value() && !opt.reorient->empty()) {
@@ -65,10 +66,12 @@ int main(int argc, char* const argv[])
             const Timeit ti_relax(fmt::format("{} rough optimizations: ", opt.number_of_optimizations), report_time::yes);
             acmacs::chart::optimization_options options(method, acmacs::chart::optimization_precision::rough, opt.max_distance_multiplier);
             const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(opt.dimension_annealing && method != acmacs::chart::optimization_method::optimlib_differential_evolution);
+            options.disconnect_too_few_numeric_titers = opt.no_disconnect_having_few_titers ? acmacs::chart::disconnect_few_numeric_titers::no : acmacs::chart::disconnect_few_numeric_titers::yes;
             options.num_threads = opt.threads;
             chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
             projections->sort();
-            chart.projection_modify(0)->relax(acmacs::chart::optimization_options(method, acmacs::chart::optimization_precision::fine));
+            options.precision = acmacs::chart::optimization_precision::fine;
+            chart.projection_modify(0)->relax(options);
         }
 
         size_t grid_projections = 0;

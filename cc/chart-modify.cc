@@ -261,6 +261,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     const auto start_num_dim = dimension_annealing == use_dimension_annealing::yes && *number_of_dimensions < 5 ? number_of_dimensions_t{5} : number_of_dimensions;
     auto projection = projections_modify()->new_from_scratch(start_num_dim, minimum_column_basis);
     projection->set_disconnected(disconnect_points);
+    projection->disconnect_having_too_few_numeric_titers(options, *titers());
     auto layout = projection->layout_modified();
     auto stress = acmacs::chart::stress_factory(*projection, options.mult);
     auto rnd = randomizer_plain_from_sample_optimization(*projection, stress, options.randomization_diameter_multiplier, seed);
@@ -287,19 +288,22 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
 
 // ----------------------------------------------------------------------
 
-void ChartModify::relax(number_of_optimizations_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options,
-                        enum report_stresses report_stresses, const DisconnectedPoints& disconnect_points)
+void ChartModify::relax(number_of_optimizations_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions,
+                        use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, enum report_stresses report_stresses, const DisconnectedPoints& disconnect_points)
 {
     const auto start_num_dim = dimension_annealing == use_dimension_annealing::yes && *number_of_dimensions < 5 ? number_of_dimensions_t{5} : number_of_dimensions;
+    auto titrs = titers();
     auto stress = acmacs::chart::stress_factory(*this, start_num_dim, minimum_column_basis, options.mult, dodgy_titer_is_regular::no);
     stress.set_disconnected(disconnect_points);
+    if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
+        stress.extend_disconnected(titrs->having_too_few_numeric_titers());
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
-    std::transform(projections.begin(), projections.end(), projections.begin(), [start_num_dim, minimum_column_basis, &disconnect_points, pp = projections_modify()](const auto&) {
+    std::transform(projections.begin(), projections.end(), projections.begin(), [start_num_dim, minimum_column_basis, pp = projections_modify(), &stress](const auto&) {
         auto projection = pp->new_from_scratch(start_num_dim, minimum_column_basis);
-        if (!disconnect_points->empty())
-            projection->set_disconnected(disconnect_points);
+        projection->set_disconnected(stress.parameters().disconnected);
+        projection->set_unmovable(stress.parameters().unmovable);
         return projection;
     });
 
@@ -313,7 +317,8 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
         projection->randomize_layout(rnd);
         auto layout = projection->layout_modified();
         stress.change_number_of_dimensions(start_num_dim);
-        const auto status1 = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), start_num_dim > number_of_dimensions ? optimization_precision::rough : options.precision);
+        const auto status1 =
+            acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), start_num_dim > number_of_dimensions ? optimization_precision::rough : options.precision);
         if (start_num_dim > number_of_dimensions) {
             acmacs::chart::dimension_annealing(options.method, stress, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
             layout->change_number_of_dimensions(number_of_dimensions);
@@ -335,8 +340,8 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
 
 // ----------------------------------------------------------------------
 
-void ChartModify::relax_incremental(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options,
-                                    disconnect_having_too_few_titers disconnect, remove_source_projection rsp, unmovable_non_nan_points unnp)
+void ChartModify::relax_incremental(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options, remove_source_projection rsp,
+                                    unmovable_non_nan_points unnp)
 {
     auto source_projection = projection_modify(source_projection_no);
     const auto num_dim = source_projection->number_of_dimensions();
@@ -351,9 +356,6 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
     }
 
     DisconnectedPoints disconnected_points;
-    if (disconnect == disconnect_having_too_few_titers::yes)
-        disconnected_points.extend(titers()->having_too_few_numeric_titers());
-
     // remove unmovable points from disconnected, it affects stress
     // value but keeping them is ambiguous: if after merge one of the
     // unmovable point (i.e. from the primary chart) has too few
@@ -364,6 +366,12 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
         if (!unmovable_points.empty())
             disconnected_points.remove(ReverseSortedIndexes{*unmovable_points});
         stress.set_disconnected(disconnected_points);
+        if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes) {
+            auto to_disconnect = titers()->having_too_few_numeric_titers();
+            if (!unmovable_points.empty())
+                to_disconnect.remove(ReverseSortedIndexes{*unmovable_points});
+            stress.extend_disconnected(to_disconnect);
+        }
     }
 
     // AD_DEBUG("relax_incremental: {}", number_of_points());
@@ -382,12 +390,10 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
     // fmt::print("INFO: about to randomize coordinates of {} points\n", points_with_nan_coordinates.size());
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
-    std::transform(projections.begin(), projections.end(), projections.begin(), [&disconnected_points, &unmovable_points, &source_projection, pp = projections_modify()](const auto&) {
+    std::transform(projections.begin(), projections.end(), projections.begin(), [&stress, &source_projection, pp = projections_modify()](const auto&) {
         auto projection = pp->new_by_cloning(*source_projection);
-        if (!disconnected_points->empty())
-            projection->set_disconnected(disconnected_points);
-        if (!unmovable_points.empty())
-            projection->set_unmovable(unmovable_points);
+        projection->set_disconnected(stress.parameters().disconnected);
+        projection->set_unmovable(stress.parameters().unmovable);
         return projection;
     });
 
@@ -1832,6 +1838,19 @@ void ProjectionModify::set_layout(const acmacs::Layout& layout, bool allow_size_
     *target_layout = layout;
 
 } // ProjectionModify::set_layout
+
+// ----------------------------------------------------------------------
+
+void ProjectionModify::disconnect_having_too_few_numeric_titers(optimization_options options, const Titers& titers)
+{
+    if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes) {
+        if (const auto having_too_few_numeric_titers = titers.having_too_few_numeric_titers(); !having_too_few_numeric_titers.empty()) {
+            modify();
+            disconnected_.extend(having_too_few_numeric_titers);
+        }
+    }
+
+} // ProjectionModify::disconnect_having_too_few_numeric_titers
 
 // ----------------------------------------------------------------------
 
