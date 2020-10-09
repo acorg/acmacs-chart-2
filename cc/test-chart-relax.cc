@@ -14,7 +14,7 @@ int main(int argc, char* const argv[])
         using namespace acmacs::chart;
 
         ChartModify chart{acmacs::chart::import_from_file(argv[1])};
-        chart.relax(number_of_optimizations_t{1}, "none", acmacs::number_of_dimensions_t{2}, use_dimension_annealing::yes, optimization_options{}, report_stresses::no);
+        chart.relax(number_of_optimizations_t{1}, "none", acmacs::number_of_dimensions_t{2}, use_dimension_annealing::yes, optimization_options{});
         auto projections = chart.projections_modify();
         fmt::print(stderr, "no: {}\n", projections->size());
         fmt::print(stderr, "tr {}: {}\n", 0, projections->at(0)->transformation());

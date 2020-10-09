@@ -5,6 +5,7 @@
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart-modify.hh"
+#include "acmacs-chart-2/log.hh"
 
 // ----------------------------------------------------------------------
 
@@ -23,13 +24,18 @@ struct Options : public argv
 
 int main(int argc, char* const argv[])
 {
+    using namespace std::string_view_literals;
     int exit_code = 0;
     try {
+        acmacs::log::register_enabler_acmacs_chart();
         Options opt(argc, argv);
+        acmacs::log::enable("relax"sv);
+        acmacs::log::enable("report-stresses"sv);
+
         auto chart = import_from_file(opt.table);
         std::cout << chart->make_info() << '\n';
         chart->relax(acmacs::chart::number_of_optimizations_t{20}, acmacs::chart::MinimumColumnBasis("none"), acmacs::number_of_dimensions_t{2}, acmacs::chart::use_dimension_annealing::yes,
-                     acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_cg_pca, acmacs::chart::optimization_precision::rough), acmacs::chart::report_stresses::yes);
+                     acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_cg_pca, acmacs::chart::optimization_precision::rough));
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';

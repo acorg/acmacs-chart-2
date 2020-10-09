@@ -7,6 +7,7 @@
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/grid-test.hh"
+#include "acmacs-chart-2/log.hh"
 #include "acmacs-chart-2/command-helper.hh"
 
 // ----------------------------------------------------------------------
@@ -31,8 +32,7 @@ struct Options : public argv
     option<str>    disconnect_antigens{*this, "disconnect-antigens", dflt{""}, desc{"comma or space separated list of antigen/point indexes (0-based) to disconnect for the new projections"}};
     option<str>    disconnect_sera{*this, "disconnect-sera", dflt{""}, desc{"comma or space separated list of serum indexes (0-based) to disconnect for the new projections"}};
     option<int>    threads{*this, "threads", dflt{0}, desc{"number of threads to use for optimization (omp): 0 - autodetect, 1 - sequential"}};
-    option<bool>   report_time{*this, "time", desc{"report time of loading chart"}};
-    option<bool>   verbose{*this, 'v', "verbose"};
+    option<str_array> verbose{*this, 'v', "verbose", desc{"comma separated list (or multiple switches) of enablers"}};
 
     argument<str>  source_chart{*this, arg_name{"source-chart"}, mandatory};
     argument<str>  output_chart{*this, arg_name{"output-chart"}};
@@ -40,13 +40,15 @@ struct Options : public argv
 
 int main(int argc, char* const argv[])
 {
+    using namespace std::string_view_literals;
     int exit_code = 0;
     try {
+        acmacs::log::register_enabler_acmacs_chart();
         Options opt(argc, argv);
-        const auto report = do_report_time(opt.report_time);
+        acmacs::log::enable(opt.verbose);
+        acmacs::log::enable("relax"sv);
 
-        const Timeit ti("performing " + std::to_string(opt.number_of_optimizations) + " optimizations: ", report);
-        acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source_chart, acmacs::chart::Verify::None, report)};
+        acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source_chart, acmacs::chart::Verify::None)};
         if (!opt.keep_original_projections)
             chart.projections_modify()->remove_all();
         const auto method{acmacs::chart::optimization_method_from_string(opt.method)};
@@ -54,7 +56,7 @@ int main(int argc, char* const argv[])
 
         std::shared_ptr<acmacs::chart::Chart> master;
         if (opt.output_chart.has_value() && !opt.reorient->empty()) {
-            master = acmacs::chart::import_from_file(opt.reorient, acmacs::chart::Verify::None, report);
+            master = acmacs::chart::import_from_file(opt.reorient, acmacs::chart::Verify::None);
             if (master->number_of_projections() == 0)
                 throw std::runtime_error(fmt::format("chart for reorienting has no projections: {}", *opt.reorient));
         }
@@ -68,7 +70,7 @@ int main(int argc, char* const argv[])
             const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(opt.dimension_annealing && method != acmacs::chart::optimization_method::optimlib_differential_evolution);
             options.disconnect_too_few_numeric_titers = opt.no_disconnect_having_few_titers ? acmacs::chart::disconnect_few_numeric_titers::no : acmacs::chart::disconnect_few_numeric_titers::yes;
             options.num_threads = opt.threads;
-            chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
+            chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, disconnected);
             projections->sort();
             options.precision = acmacs::chart::optimization_precision::fine;
             chart.projection_modify(0)->relax(options);
@@ -84,12 +86,12 @@ int main(int argc, char* const argv[])
                 acmacs::chart::GridTest test(chart, projection_no_to_test, opt.grid_step);
                 const auto results = test.test_all(opt.threads);
                 fmt::print("{}\n", results.report());
-                if (opt.verbose) {
-                    for (const auto& entry : results) {
-                        if (entry)
-                            fmt::print("{}\n", entry.report(chart));
-                    }
-                }
+                // if (opt.verbose) {
+                //     for (const auto& entry : results) {
+                //         if (entry)
+                //             fmt::print("{}\n", entry.report(chart));
+                //     }
+                // }
                 auto projection = test.make_new_projection_and_relax(results, true);
                 ++grid_projections;
                 projection->comment("grid-test-" + acmacs::to_string(attempt));
@@ -115,7 +117,7 @@ int main(int argc, char* const argv[])
 
         fmt::print("{}\n", chart.make_info());
         if (opt.output_chart.has_value())
-            acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name(), report);
+            acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name());
     }
     catch (std::exception& err) {
         fmt::print(stderr, "ERROR: {}\n", err);

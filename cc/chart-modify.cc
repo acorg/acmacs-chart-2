@@ -12,6 +12,7 @@
 #include "acmacs-base/statistics.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart-modify.hh"
+#include "acmacs-chart-2/log.hh"
 
 using namespace std::string_literals;
 using namespace acmacs::chart;
@@ -289,7 +290,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
 // ----------------------------------------------------------------------
 
 void ChartModify::relax(number_of_optimizations_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions,
-                        use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, enum report_stresses report_stresses, const DisconnectedPoints& disconnect_points)
+                        use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points)
 {
     const auto start_num_dim = dimension_annealing == use_dimension_annealing::yes && *number_of_dimensions < 5 ? number_of_dimensions_t{5} : number_of_dimensions;
     auto titrs = titers();
@@ -332,8 +333,7 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
                 projection->stress_ = status1.final_stress;
         }
         projection->transformation_reset();
-        if (report_stresses == report_stresses::yes)
-            fmt::print("{:3d} {:.4f}\n", p_no, *projection->stress_);
+        AD_LOG(acmacs::log::report_stresses, "{:3d} {:.4f}", p_no, *projection->stress_);
     }
 
 } // ChartModify::relax

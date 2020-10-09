@@ -6,6 +6,7 @@
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
+#include "acmacs-chart-2/log.hh"
 #include "acmacs-chart-2/command-helper.hh"
 
 // ----------------------------------------------------------------------
@@ -31,8 +32,7 @@ struct Options : public argv
     option<str>    disconnect_antigens{*this, "disconnect-antigens", dflt{""}, desc{"comma or space separated list of antigen/point indexes (0-based) to disconnect for the new projections"}};
     option<str>    disconnect_sera{*this, "disconnect-sera", dflt{""}, desc{"comma or space separated list of serum indexes (0-based) to disconnect for the new projections"}};
     option<int>    threads{*this, "threads", dflt{0}, desc{"number of threads to use for optimization (omp): 0 - autodetect, 1 - sequential"}};
-    option<bool>   report_time{*this, "time", desc{"report time of loading chart"}};
-    option<bool>   verbose{*this, 'v', "verbose"};
+    option<str_array> verbose{*this, 'v', "verbose", desc{"comma separated list (or multiple switches) of enablers"}};
     option<unsigned> seed{*this, "seed", desc{"seed for randomization, -n 1 implied"}};
 
     argument<str>  source_chart{*this, arg_name{"source-chart"}, mandatory};
@@ -41,13 +41,16 @@ struct Options : public argv
 
 int main(int argc, char* const argv[])
 {
+    using namespace std::string_view_literals;
     int exit_code = 0;
     try {
-        Options opt(argc, argv);
-        const auto report = do_report_time(opt.report_time);
+        acmacs::log::register_enabler_acmacs_chart();
 
-        const Timeit ti("performing " + std::to_string(opt.number_of_optimizations) + " optimizations: ", report);
-        acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source_chart, acmacs::chart::Verify::None, report)};
+        Options opt(argc, argv);
+        acmacs::log::enable(opt.verbose);
+        acmacs::log::enable("relax"sv);
+
+        acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source_chart, acmacs::chart::Verify::None)};
         auto projections = chart.projections_modify();
         if (opt.remove_original_projections)
             projections->remove_all();
@@ -68,7 +71,8 @@ int main(int argc, char* const argv[])
         }
         else {
             options.num_threads = opt.threads;
-            chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, opt.verbose ? acmacs::chart::report_stresses::yes : acmacs::chart::report_stresses::no, disconnected);
+            chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions},
+                        dimension_annealing, options, disconnected);
         }
         projections->sort();
         for (size_t p_no = 0; p_no < opt.fine; ++p_no)
@@ -77,7 +81,7 @@ int main(int argc, char* const argv[])
             projections->keep_just(keep_projections);
         std::cout << chart.make_info() << '\n';
         if (opt.output_chart.has_value())
-            acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name(), report);
+            acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name());
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << '\n';
@@ -85,7 +89,6 @@ int main(int argc, char* const argv[])
     }
     return exit_code;
 }
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:
