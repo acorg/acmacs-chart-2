@@ -86,12 +86,12 @@ int main(int argc, char* const argv[])
                 acmacs::chart::GridTest test(chart, projection_no_to_test, opt.grid_step);
                 const auto results = test.test_all(opt.threads);
                 fmt::print("{}\n", results.report());
-                // if (opt.verbose) {
-                //     for (const auto& entry : results) {
-                //         if (entry)
-                //             fmt::print("{}\n", entry.report(chart));
-                //     }
-                // }
+                if (acmacs::log::is_enabled(acmacs::log::report_stresses)) {
+                    for (const auto& entry : results) {
+                        if (entry)
+                            fmt::print("{}\n", entry.report(chart));
+                    }
+                }
                 auto projection = test.make_new_projection_and_relax(results, true);
                 ++grid_projections;
                 projection->comment("grid-test-" + acmacs::to_string(attempt));

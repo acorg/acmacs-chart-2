@@ -298,6 +298,10 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
     stress.set_disconnected(disconnect_points);
     if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
         stress.extend_disconnected(titrs->having_too_few_numeric_titers());
+    if (!stress.parameters().disconnected.empty())
+        AD_LOG(acmacs::log::relax, "(ag:{} sr:{}) Disconnected: {}", number_of_antigens(), number_of_sera(), stress.parameters().disconnected);
+    if (!stress.parameters().unmovable.empty())
+        AD_LOG(acmacs::log::relax, "(ag:{} sr:{}) Unmovable: {}", number_of_antigens(), number_of_sera(), stress.parameters().unmovable);
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
