@@ -105,7 +105,8 @@ void test_merge_2_frozen(const acmacs::chart::Chart& chart1, const acmacs::chart
     using namespace acmacs::chart;
     auto [merged2_chart, merge_report] = merge(chart1, chart2, MergeSettings(match_level, projection_merge_t::type2));
     assert(merged2_chart->number_of_projections() == 1);
-    // AD_DEBUG("merged\n{}\ndisconnected: {}", merged2_chart->make_info(), merged2_chart->titers()->having_too_few_numeric_titers());
+    const auto having_too_few_numeric_titers = merged2_chart->titers()->having_too_few_numeric_titers();
+    // AD_DEBUG("merged\n{}\ndisconnected: {}", merged2_chart->make_info(), having_too_few_numeric_titers);
 
     auto layout1 = chart1.projection(0)->layout();
     const auto chart1_num_antigens = chart1.number_of_antigens();
@@ -126,10 +127,12 @@ void test_merge_2_frozen(const acmacs::chart::Chart& chart1, const acmacs::chart
 
         // primary layout must be copied
         for (const auto& [index1, index_merge_common] : merge_report.antigens_primary_target) {
-            AD_ASSERT(index1 == index_merge_common.index && (*layout1)[index1] == (*merge_layout)[index_merge_common.index], "projection: {} AG index1:{} {} index_merge_common:{} {}", projection_no, index1, (*layout1)[index1], index_merge_common.index, (*merge_layout)[index_merge_common.index]);
+            if (!having_too_few_numeric_titers.contains(index_merge_common.index))
+                AD_ASSERT(index1 == index_merge_common.index && (*layout1)[index1] == (*merge_layout)[index_merge_common.index], "projection: {} AG index1:{} {} index_merge_common:{} {}", projection_no, index1, (*layout1)[index1], index_merge_common.index, (*merge_layout)[index_merge_common.index]);
         }
         for (const auto& [index1, index_merge_common] : merge_report.sera_primary_target) {
-            AD_ASSERT(index1 == index_merge_common.index && (*layout1)[index1 + chart1_num_antigens] == (*merge_layout)[index_merge_common.index + merge_num_antigens], "projection: {} SR index1:{} {} index_merge_common:{} {}", projection_no, index1, (*layout1)[index1 + chart1_num_antigens], index_merge_common.index, (*merge_layout)[index_merge_common.index + merge_num_antigens]);
+            if (!having_too_few_numeric_titers.contains(index_merge_common.index + merge_num_antigens))
+                AD_ASSERT(index1 == index_merge_common.index && (*layout1)[index1 + chart1_num_antigens] == (*merge_layout)[index_merge_common.index + merge_num_antigens], "projection: {} SR index1:{} (point_no: {}) {} index_merge_common:{} {}", projection_no, index1, index1 + chart1_num_antigens, (*layout1)[index1 + chart1_num_antigens], index_merge_common.index, (*merge_layout)[index_merge_common.index + merge_num_antigens]);
         }
     }
 
