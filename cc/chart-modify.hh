@@ -100,6 +100,8 @@ namespace acmacs::chart
         PlotSpecModifyP plot_spec_;
         rjson::value extensions_{rjson::null{}};
 
+        void report_disconnected_unmovable(const DisconnectedPoints& disconnected, const UnmovablePoints& unmovable) const;
+
     }; // class ChartModify
 
 // ----------------------------------------------------------------------

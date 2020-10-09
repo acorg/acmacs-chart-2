@@ -256,6 +256,17 @@ PlotSpecModifyP ChartModify::plot_spec_modify()
 
 // ----------------------------------------------------------------------
 
+void ChartModify::report_disconnected_unmovable(const DisconnectedPoints& disconnected, const UnmovablePoints& unmovable) const
+{
+    if (!disconnected.empty())
+        AD_LOG(acmacs::log::relax, "(ag:{} sr:{}) Disconnected: {}", number_of_antigens(), number_of_sera(), disconnected);
+    if (!unmovable.empty())
+        AD_LOG(acmacs::log::relax, "(ag:{} sr:{}) Unmovable: {}", number_of_antigens(), number_of_sera(), unmovable);
+
+} // ChartModify::report_disconnected_unmovable
+
+// ----------------------------------------------------------------------
+
 std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, optimization_options options, LayoutRandomizer::seed_t seed, const DisconnectedPoints& disconnect_points)
 {
     const auto start = std::chrono::high_resolution_clock::now();
@@ -263,6 +274,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     auto projection = projections_modify()->new_from_scratch(start_num_dim, minimum_column_basis);
     projection->set_disconnected(disconnect_points);
     projection->disconnect_having_too_few_numeric_titers(options, *titers());
+    report_disconnected_unmovable(projection->get_disconnected(), projection->get_unmovable());
     auto layout = projection->layout_modified();
     auto stress = acmacs::chart::stress_factory(*projection, options.mult);
     auto rnd = randomizer_plain_from_sample_optimization(*projection, stress, options.randomization_diameter_multiplier, seed);
@@ -298,10 +310,7 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
     stress.set_disconnected(disconnect_points);
     if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
         stress.extend_disconnected(titrs->having_too_few_numeric_titers());
-    if (!stress.parameters().disconnected.empty())
-        AD_LOG(acmacs::log::relax, "(ag:{} sr:{}) Disconnected: {}", number_of_antigens(), number_of_sera(), stress.parameters().disconnected);
-    if (!stress.parameters().unmovable.empty())
-        AD_LOG(acmacs::log::relax, "(ag:{} sr:{}) Unmovable: {}", number_of_antigens(), number_of_sera(), stress.parameters().unmovable);
+    report_disconnected_unmovable(stress.parameters().disconnected, stress.parameters().unmovable);
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
@@ -377,6 +386,7 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
             stress.extend_disconnected(to_disconnect);
         }
     }
+    report_disconnected_unmovable(stress.parameters().disconnected, stress.parameters().unmovable);
 
     // AD_DEBUG("relax_incremental: {}", number_of_points());
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
