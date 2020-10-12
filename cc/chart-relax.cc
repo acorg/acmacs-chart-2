@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/timeit.hh"
@@ -79,12 +77,12 @@ int main(int argc, char* const argv[])
             chart.projection_modify(p_no)->relax(acmacs::chart::optimization_options(method, acmacs::chart::optimization_precision::fine));
         if (const size_t keep_projections = opt.keep_projections; keep_projections > 0 && projections->size() > keep_projections)
             projections->keep_just(keep_projections);
-        std::cout << chart.make_info() << '\n';
+        fmt::print("{}\n", chart.make_info());
         if (opt.output_chart.has_value())
             acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name());
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;

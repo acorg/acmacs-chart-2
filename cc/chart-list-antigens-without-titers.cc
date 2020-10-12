@@ -1,6 +1,3 @@
-// --> cxx
-#include <iostream>
-
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
@@ -33,16 +30,16 @@ int main(int argc, char* const argv[])
         for (auto index : without_titers) {
             if (index < antigens->size()) {
                 if (!opt.name_only)
-                    std::cout << "AG " << std::setw(4) << std::right << index << ' ';
-                std::cout << antigens->at(index)->full_name() << '\n';
+                    fmt::print("AG {:4d} ", index);
+                fmt::print("{}\n", antigens->at(index)->full_name());
             }
             else {
-                std::cout << "SR " << std::setw(3) << std::right << (index - antigens->size()) << ' ' << sera->at(index - antigens->size())->full_name() << '\n';
+                fmt::print("SR {:3d} {}\n", index - antigens->size(), sera->at(index - antigens->size())->full_name());
             }
         }
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;

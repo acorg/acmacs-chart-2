@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
@@ -18,7 +16,7 @@ int main(int argc, char* const argv[])
                 {"--verbose", false}
         });
         if (args["-h"] || args["--help"] || args.number_of_arguments() < 1) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file> ...\n" << args.usage_options() << '\n';
+            AD_ERROR("Usage: {} [options] <chart-file> ...", args.program(), args.usage_options());
             exit_code = 1;
         }
         else {
@@ -34,19 +32,19 @@ int main(int argc, char* const argv[])
                         if (auto tt = titers->titer(ag_no, sr_no); !tt.is_dont_care())
                             sum += tt.value();
                 }
-                std::cout << "INFO: sum: " << sum << "  titers: " << num_antigens * num_sera << '\n';
+                AD_INFO("sum: {}  titers: {}", sum, num_antigens * num_sera);
 
                 std::string catenated;
                 for (size_t ag_no = 0; ag_no < num_antigens; ++ag_no) {
                     for (size_t sr_no = 0; sr_no < num_sera; ++sr_no)
                         catenated += titers->titer(ag_no, sr_no);
                 }
-                std::cout << "INFO: catenated: " << catenated.size() << '\n';
+                AD_INFO("catenated: {}", catenated.size());
             }
         }
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;

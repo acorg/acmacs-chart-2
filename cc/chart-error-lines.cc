@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
@@ -29,10 +27,10 @@ int main(int argc, char* const argv[])
         auto projection = chart->projection(opt.projection);
         const auto error_lines = projection->error_lines();
         for (const auto& line : error_lines)
-            std::cout << line.point_1 << ' ' << line.point_2 << ' ' << line.error_line << '\n';
+            fmt::print("{} {} {}\n", line.point_1, line.point_2, line.error_line);
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;

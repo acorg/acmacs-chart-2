@@ -807,7 +807,7 @@ std::vector<acmacs::PointStyle> LispmdsPlotSpec::all_styles() const
         return result;
     }
     catch (std::exception& err) {
-        std::cerr << "WARNING: [lispmds]: cannot get point styles: " << err.what() << '\n';
+        AD_WARNING("[lispmds]: cannot get point styles: {}", err);
     }
     return {};
 
@@ -821,7 +821,7 @@ size_t LispmdsPlotSpec::number_of_points() const
         return acmacs::lispmds::size(mData, 0, 1) + acmacs::lispmds::size(mData, 0, 2);
     }
     catch (std::exception& err) {
-        std::cerr << "WARNING: [lispmds]: cannot get point styles: " << err.what() << '\n';
+        AD_WARNING("[lispmds]: cannot get point styles: {}", err);
         return 0;
     }
 
