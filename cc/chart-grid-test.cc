@@ -107,7 +107,7 @@ int main(int argc, char* const argv[])
         }
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;
