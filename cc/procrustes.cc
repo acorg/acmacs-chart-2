@@ -5,7 +5,7 @@
 #pragma GCC diagnostic push
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wreserved-id-macro"
-// #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#pragma GCC diagnostic ignored "-Wsuggest-destructor-override"
 #endif
 #define AE_COMPILE_SVD
 #include "alglib-3.13.0/linalg.h"

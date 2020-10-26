@@ -9,6 +9,7 @@
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wreserved-id-macro"
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#pragma GCC diagnostic ignored "-Wsuggest-destructor-override"
 #endif
 #define AE_COMPILE_MINLBFGS
 #define AE_COMPILE_MINCG
