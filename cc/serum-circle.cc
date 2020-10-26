@@ -66,6 +66,8 @@ const char* acmacs::chart::detail::SerumCirclePerAntigen::report_reason() const
             return "antigen disconnected";
     }
 
+    return "unknown";           // hey g++-10
+
 } // acmacs::chart::detail::SerumCirclePerAntigen::report_reason
 
 // ----------------------------------------------------------------------
@@ -85,38 +87,6 @@ class TiterDistance
     double distance;
 };
 
-// inline std::ostream& operator << (std::ostream& out, const TiterDistance& td)
-// {
-//     if (td)
-//         return out << "{t:" << *td.titer << " s:" << td.similarity << " f:" << td.final_similarity << " d:" << td.distance << '}';
-//     else
-//         return out << '*';
-// }
-
-// inline std::ostream& operator << (std::ostream& out, const std::vector<TiterDistance>& vtd)
-// {
-//     out << fmt::format("({})[", vtd.size());
-//     bool space{false};
-//     size_t num_dont_care{0};
-//     for (const auto& td : vtd) {
-//         if (td) {
-//         if (space)
-//             out << ' ';
-//         else
-//             space = true;
-//         if (num_dont_care) {
-//             out << fmt::format("*({}) ", num_dont_care);
-//             num_dont_care = 0;
-//         }
-//         out << td;
-//         }
-//         else
-//             ++num_dont_care;
-//     }
-//     if (num_dont_care)
-//         out << fmt::format(" *({})", num_dont_care);
-//     return out << ']';
-// }
 
 // ----------------------------------------------------------------------
 
