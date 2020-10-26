@@ -1,6 +1,6 @@
 #include "acmacs-base/argv.hh"
 // #include "acmacs-base/fmt.hh"
-// #include "acmacs-base/range.hh"
+#include "acmacs-base/range-v3.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
@@ -9,14 +9,43 @@
 
 constexpr const size_t None{static_cast<size_t>(-1)};
 
-// struct AgSrRef
-// {
-//     AgSrRef(std::string&& a_name, size_t num_tables) : name{std::move(a_name)}, tables(num_tables, None) {}
-//     bool operator<(const AgSrRef& rhs) const { return name < rhs.name; }
+class AgSrRefs : public std::vector<size_t>
+{
+public:
+    using std::vector<size_t>::vector;
 
-//     std::string name;
-//     std::vector<size_t> tables;
-// };
+    auto num_tables() const
+    {
+        return std::count_if(begin(), end(), [](size_t no) { return no != None; });
+    }
+};
+
+struct TiterPerTable
+{
+    std::string antigen;
+    std::string serum;
+    std::vector<acmacs::chart::Titer> titer_per_table;
+
+    auto num_tables() const
+    {
+        return ranges::count_if(titer_per_table, [](const auto& titer) { return !titer.is_dont_care(); });
+    }
+
+    auto mean_logged_titer() const
+    {
+        return ranges::accumulate(
+            titer_per_table
+            | ranges::views::filter([](const auto& titer) { return !titer.is_dont_care(); }),
+            0.0, [](double sum, const auto& titer) { return sum + titer.logged_with_thresholded(); })
+            / static_cast<double>(num_tables());
+
+        // size_t nt { 0 };
+        // double sum { 0 };
+        // for (const auto& titer : titer_per_table) {
+
+        // }
+    }
+};
 
 // ----------------------------------------------------------------------
 
@@ -40,7 +69,6 @@ int main(int argc, char* const argv[])
 
         // std::for_each(std::begin(charts), std::end(charts), [](const auto& chart) { AD_DEBUG("{}", chart->info()->date()); });
 
-        using AgSrRefs = std::vector<size_t>;
         std::map<std::string, AgSrRefs> antigens, sera;
         const auto num_tables = charts.size();
         for (auto [table_no, chart] : acmacs::enumerate(charts)) {
@@ -52,9 +80,42 @@ int main(int argc, char* const argv[])
                 sera.emplace(sr->full_name(), AgSrRefs(num_tables, None)).first->second[table_no] = sr_no;
         }
 
-        AD_DEBUG("Charts: {}", num_tables);
-        AD_DEBUG("Antigens: {}", antigens.size());
-        AD_DEBUG("Sera: {}", sera.size());
+        // remove antigens found in just one table
+        for (auto it = antigens.begin(); it != antigens.end();) {
+            if (it->second.num_tables() < 2)
+                it = antigens.erase(it);
+            else
+                ++it;
+        }
+
+        constexpr const auto sqr = [](double value) { return value * value; };
+
+        for (auto [serum_name, serum_tables] : sera) {
+            if (serum_tables.num_tables() > 1) {
+                for (auto [antigen_name, antigen_tables] : antigens) {
+                    TiterPerTable titers{antigen_name, serum_name, std::vector<acmacs::chart::Titer>(num_tables)};
+                    for (size_t t_no = 0; t_no < num_tables; ++t_no) {
+                        if (serum_tables[t_no] != None && antigen_tables[t_no] != None)
+                            titers.titer_per_table[t_no] = charts[t_no]->titers()->titer(antigen_tables[t_no], serum_tables[t_no]);
+                    }
+                    if (titers.num_tables() > 1) {
+                        const auto mean = titers.mean_logged_titer();
+                        fmt::print("{}\n{}\n", antigen_name, serum_name);
+                        for (size_t t_no = 0; t_no < num_tables; ++t_no) {
+                            if (const auto& titer = titers.titer_per_table[t_no]; !titer.is_dont_care())
+                                fmt::print(" {} {:>7s}  {:.4f}\n", charts[t_no]->info()->date(), titer, sqr(titer.logged_with_thresholded() - mean));
+                            else
+                                fmt::print(" {}\n", charts[t_no]->info()->date());
+                        }
+                        fmt::print("          {}\n\n", mean);
+                    }
+                }
+            }
+        }
+
+        // AD_DEBUG("Charts: {}", num_tables);
+        // AD_DEBUG("Antigens: {}", antigens.size());
+        // AD_DEBUG("Sera: {}", sera.size());
     }
     catch (std::exception& err) {
         AD_ERROR("{}", err);
