@@ -22,6 +22,8 @@ namespace acmacs::chart
               avidity_adjusts(std::move(a_avidity_adjusts)), dodgy_titer_is_regular(a_dodgy_titer_is_regular) {}
         StressParameters(size_t a_number_of_points, multiply_antigen_titer_until_column_adjust a_mult, dodgy_titer_is_regular a_dodgy_titer_is_regular)
             : number_of_points(a_number_of_points), mult(a_mult), dodgy_titer_is_regular(a_dodgy_titer_is_regular) {}
+        StressParameters(size_t a_number_of_points)
+            : number_of_points(a_number_of_points) {}
 
         size_t number_of_points;
         UnmovablePoints unmovable;
@@ -29,7 +31,7 @@ namespace acmacs::chart
         UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension;
         multiply_antigen_titer_until_column_adjust mult{multiply_antigen_titer_until_column_adjust::yes};
         AvidityAdjusts avidity_adjusts;
-        enum dodgy_titer_is_regular dodgy_titer_is_regular;
+        enum dodgy_titer_is_regular dodgy_titer_is_regular{dodgy_titer_is_regular::no};
 
     }; // struct StressParameters
 
@@ -40,6 +42,7 @@ namespace acmacs::chart
 
         Stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
         Stress(number_of_dimensions_t number_of_dimensions, size_t number_of_points, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular);
+        Stress(number_of_dimensions_t number_of_dimensions, size_t number_of_points);
 
         double value(const double* first, const double* /* unused */ = nullptr) const;
         double value(const acmacs::Layout& aLayout) const;

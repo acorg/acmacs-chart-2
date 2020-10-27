@@ -6,6 +6,8 @@
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
+#include "acmacs-chart-2/stress.hh"
+#include "acmacs-chart-2/randomizer.hh"
 
 // ----------------------------------------------------------------------
 
@@ -133,7 +135,7 @@ class ChartData
             fmt::print("{}  {:.2f}  {:4d}\n", tables_[t_no], deviations[t_no].first / static_cast<double>(deviations[t_no].second), deviations[t_no].second);
     }
 
-    void make_distance_matrix() const
+    auto make_distance_matrix(bool report = false) const
     {
         std::vector<std::vector<double>> matrix(tables_.size() * tables_.size());
         for (const auto& en : collapsed_) {
@@ -145,15 +147,29 @@ class ChartData
             }
         }
 
+        if (report) {
+            for (size_t t1 = 0; t1 < (tables_.size() - 1); ++t1) {
+                for (size_t t2 = t1 + 1; t2 < tables_.size(); ++t2) {
+                    auto& distances = matrix[t1 * tables_.size() + t2];
+                    ranges::sort(distances);
+                    fmt::print("{} {} mean:{} median:{} max:{} {}\n", tables_[t1], tables_[t2], ranges::accumulate(distances, 0.0) / static_cast<double>(distances.size()),
+                               distances[distances.size() / 2], distances.back(), distances);
+                }
+            }
+        }
+
+        acmacs::chart::TableDistances table_distances;
         for (size_t t1 = 0; t1 < (tables_.size() - 1); ++t1) {
             for (size_t t2 = t1 + 1; t2 < tables_.size(); ++t2) {
                 auto& distances = matrix[t1 * tables_.size() + t2];
-                ranges::sort(distances);
-                fmt::print("{} {} mean:{} median:{} max:{} {}\n", tables_[t1], tables_[t2], ranges::accumulate(distances, 0.0) / static_cast<double>(distances.size()), distances[distances.size() / 2],
-                           distances.back(), distances);
+                const auto mean = ranges::accumulate(distances, 0.0) / static_cast<double>(distances.size());
+                table_distances.add_value(acmacs::chart::Titer::Regular, t1, t2, mean);
             }
         }
+        return table_distances;
     }
+
+    size_t num_tables() const { return tables_.size(); }
 
   private:
     std::vector<acmacs::chart::TableDate> tables_;
@@ -184,8 +200,23 @@ int main(int argc, char* const argv[])
         data.collapse();
         // data.report_deviation_from_mean();
         data.report_average_deviation_from_mean_per_table();
-        data.make_distance_matrix();
 
+        acmacs::chart::Stress stress(acmacs::number_of_dimensions_t{2}, data.num_tables());
+        stress.table_distances() = data.make_distance_matrix();
+
+        double best_stress { 9e99 };
+        for (auto attempt : acmacs::range(100ul)) {
+            acmacs::Layout layout(data.num_tables(), stress.number_of_dimensions());
+            acmacs::chart::LayoutRandomizerPlain rnd(10.0, std::nullopt);
+            for (auto point_no : acmacs::range(layout.number_of_points()))
+                layout.update(point_no, rnd.get(stress.number_of_dimensions()));
+
+            const auto status1 =
+                acmacs::chart::optimize(acmacs::chart::optimization_method::alglib_cg_pca, stress, layout.data(), layout.data() + layout.size(), acmacs::chart::optimization_precision::rough);
+            // fmt::print("{:3d} stress: {} <- {} iterations: {}\n", attempt, status1.final_stress, status1.initial_stress, status1.number_of_iterations);
+            best_stress = std::min(best_stress, status1.final_stress);
+        }
+        fmt::print("best_stress: {}\n", best_stress);
     }
     catch (std::exception& err) {
         AD_ERROR("{}", err);

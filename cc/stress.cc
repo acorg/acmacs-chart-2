@@ -112,6 +112,15 @@ acmacs::chart::Stress::Stress(number_of_dimensions_t number_of_dimensions, size_
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::Stress::Stress(number_of_dimensions_t number_of_dimensions, size_t number_of_points)
+    : number_of_dimensions_(number_of_dimensions),
+      parameters_(number_of_points)
+{
+
+} // acmacs::chart::Stress::Stress
+
+// ----------------------------------------------------------------------
+
 inline double contribution_regular(size_t point_1, size_t point_2, double table_distance, const double* first, acmacs::number_of_dimensions_t num_dim)
 {
     const double diff = table_distance - map_distance(first, point_1, point_2, num_dim);
