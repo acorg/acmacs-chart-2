@@ -103,40 +103,62 @@ class ChartData
     }
 
     void report_deviation_from_mean() const
-        {
-            for (const auto& en : collapsed_) {
-                fmt::print("{}\n{}\n", en.serum, en.antigen);
-                const auto mean = en.mean_logged_titer();
-                for (size_t t_no = 0; t_no < tables_.size(); ++t_no) {
-                    if (!en.titers[t_no].is_dont_care())
-                        fmt::print(" {}  {:>7s}  {:.2f}\n", tables_[t_no], en.titers[t_no], std::abs(en.titers[t_no].logged_with_thresholded() - mean));
-                    else
-                        fmt::print(" {}\n", tables_[t_no]);
+    {
+        for (const auto& en : collapsed_) {
+            fmt::print("{}\n{}\n", en.serum, en.antigen);
+            const auto mean = en.mean_logged_titer();
+            for (size_t t_no = 0; t_no < tables_.size(); ++t_no) {
+                if (!en.titers[t_no].is_dont_care())
+                    fmt::print(" {}  {:>7s}  {:.2f}\n", tables_[t_no], en.titers[t_no], std::abs(en.titers[t_no].logged_with_thresholded() - mean));
+                else
+                    fmt::print(" {}\n", tables_[t_no]);
+            }
+            fmt::print("            {:.2f}\n\n", mean);
+        }
+    }
+
+    void report_average_deviation_from_mean_per_table() const
+    {
+        std::vector<std::pair<double, size_t>> deviations(tables_.size(), {0.0, 0});
+        for (const auto& en : collapsed_) {
+            const auto mean = en.mean_logged_titer();
+            ranges::for_each(ranges::views::iota(0ul, deviations.size()) //
+                                 | ranges::views::filter([&en](size_t t_no) { return !en.titers[t_no].is_dont_care(); }),
+                             [&en, &deviations, mean](size_t t_no) {
+                                 deviations[t_no].first += std::abs(en.titers[t_no].logged_with_thresholded() - mean);
+                                 ++deviations[t_no].second;
+                             });
+        }
+        for (size_t t_no = 0; t_no < tables_.size(); ++t_no)
+            fmt::print("{}  {:.2f}  {:4d}\n", tables_[t_no], deviations[t_no].first / static_cast<double>(deviations[t_no].second), deviations[t_no].second);
+    }
+
+    void make_distance_matrix() const
+    {
+        std::vector<std::vector<double>> matrix(tables_.size() * tables_.size());
+        for (const auto& en : collapsed_) {
+            for (size_t t1 = 0; t1 < (tables_.size() - 1); ++t1) {
+                for (size_t t2 = t1 + 1; t2 < tables_.size(); ++t2) {
+                    if (!en.titers[t1].is_dont_care() && !en.titers[t2].is_dont_care())
+                        matrix[t1 * tables_.size() + t2].push_back(std::abs(en.titers[t1].logged_with_thresholded() - en.titers[t2].logged_with_thresholded()));
                 }
-                fmt::print("            {:.2f}\n\n", mean);
             }
         }
 
-        void report_average_deviation_from_mean_per_table() const
-        {
-            std::vector<std::pair<double, size_t>> deviations(tables_.size(), {0.0, 0});
-            for (const auto& en : collapsed_) {
-                const auto mean = en.mean_logged_titer();
-                ranges::for_each(ranges::views::iota(0ul, deviations.size()) //
-                                     | ranges::views::filter([&en](size_t t_no) { return !en.titers[t_no].is_dont_care(); }),
-                                 [&en, &deviations, mean](size_t t_no) {
-                                     deviations[t_no].first += std::abs(en.titers[t_no].logged_with_thresholded() - mean);
-                                     ++deviations[t_no].second;
-                                 });
+        for (size_t t1 = 0; t1 < (tables_.size() - 1); ++t1) {
+            for (size_t t2 = t1 + 1; t2 < tables_.size(); ++t2) {
+                auto& distances = matrix[t1 * tables_.size() + t2];
+                ranges::sort(distances);
+                fmt::print("{} {} mean:{} median:{} max:{} {}\n", tables_[t1], tables_[t2], ranges::accumulate(distances, 0.0) / static_cast<double>(distances.size()), distances[distances.size() / 2],
+                           distances.back(), distances);
             }
-            for (size_t t_no = 0; t_no < tables_.size(); ++t_no)
-                fmt::print("{}  {:.2f}  {:4d}\n", tables_[t_no], deviations[t_no].first / static_cast<double>(deviations[t_no].second), deviations[t_no].second);
         }
+    }
 
-      private:
-        std::vector<acmacs::chart::TableDate> tables_;
-        std::vector<TiterRef> raw_;
-        std::vector<TiterRefCollapsed> collapsed_;
+  private:
+    std::vector<acmacs::chart::TableDate> tables_;
+    std::vector<TiterRef> raw_;
+    std::vector<TiterRefCollapsed> collapsed_;
 };
 
 // ----------------------------------------------------------------------
@@ -162,6 +184,7 @@ int main(int argc, char* const argv[])
         data.collapse();
         // data.report_deviation_from_mean();
         data.report_average_deviation_from_mean_per_table();
+        data.make_distance_matrix();
 
     }
     catch (std::exception& err) {
