@@ -1,4 +1,4 @@
-#include "acmacs-base/debug.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/stream.hh"
 #include "acmacs-chart-2/rjson-import.hh"

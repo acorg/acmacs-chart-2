@@ -27,10 +27,9 @@ int main(int argc, char* const argv[])
     using namespace std::string_view_literals;
     int exit_code = 0;
     try {
-        acmacs::log::register_enabler_acmacs_chart();
         Options opt(argc, argv);
-        acmacs::log::enable("relax"sv);
-        acmacs::log::enable("report-stresses"sv);
+        acmacs::log::enable(acmacs::log::relax);
+        acmacs::log::enable(acmacs::log::report_stresses);
 
         auto chart = import_from_file(opt.table);
         fmt::print("{}\n", chart->make_info());

@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <cctype>
 
-#include "acmacs-base/debug.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/stream.hh"

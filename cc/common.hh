@@ -4,7 +4,7 @@
 #include <optional>
 #include <vector>
 
-#include "acmacs-base/debug.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-chart-2/point-index-list.hh"
 
 // ----------------------------------------------------------------------

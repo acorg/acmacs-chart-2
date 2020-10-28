@@ -3,7 +3,7 @@
 #include <optional>
 #include <algorithm>
 
-#include "acmacs-base/debug.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-chart-2/titers.hh"
 
 // ----------------------------------------------------------------------

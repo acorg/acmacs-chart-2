@@ -4,21 +4,12 @@
 
 // ----------------------------------------------------------------------
 
-namespace acmacs::log
+namespace acmacs::log::inline v1
 {
-    enum {
-        relax = 8,
-        report_stresses
-    };
+    constexpr log_key_t relax{"relax"};
+    constexpr log_key_t report_stresses{"report-stresses"};
 
-    inline void register_enabler_acmacs_chart()
-    {
-        using namespace std::string_view_literals;
-        register_enabler_acmacs_virus();
-        register_enabler("relax"sv, relax);
-        register_enabler("report-stresses"sv, report_stresses);
-    }
-}
+} // namespace acmacs::log::inline v1
 
 // ----------------------------------------------------------------------
 /// Local Variables:

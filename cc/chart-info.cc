@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "acmacs-base/debug.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/string-join.hh"

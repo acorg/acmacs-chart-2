@@ -3,7 +3,7 @@
 #include <limits>
 #include <algorithm>
 
-#include "acmacs-base/debug.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-base/omp.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"

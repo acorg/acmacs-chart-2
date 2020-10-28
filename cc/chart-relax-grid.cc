@@ -43,10 +43,9 @@ int main(int argc, char* const argv[])
     using namespace std::string_view_literals;
     int exit_code = 0;
     try {
-        acmacs::log::register_enabler_acmacs_chart();
         Options opt(argc, argv);
         acmacs::log::enable(opt.verbose);
-        acmacs::log::enable("relax"sv);
+        acmacs::log::enable(acmacs::log::relax);
 
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source_chart, acmacs::chart::Verify::None)};
         if (!opt.keep_original_projections)

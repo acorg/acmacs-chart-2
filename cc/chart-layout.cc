@@ -1,5 +1,5 @@
 #include "acmacs-base/argv.hh"
-#include "acmacs-base/debug.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/string-compare.hh"
 #include "acmacs-base/read-file.hh"

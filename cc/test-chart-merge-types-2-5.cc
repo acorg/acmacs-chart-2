@@ -2,7 +2,7 @@
 #include <cmath>
 
 #include "acmacs-base/argv.hh"
-#include "acmacs-base/debug.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/merge.hh"
