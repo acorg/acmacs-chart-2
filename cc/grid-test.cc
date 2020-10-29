@@ -67,7 +67,6 @@ acmacs::chart::GridTest::Result acmacs::chart::GridTest::test(size_t point_no)
 void acmacs::chart::GridTest::test(Result& result)
 {
     if (result.diagnosis == Result::not_tested) {
-        const auto start = acmacs::timestamp();
         const auto table_distances_for_point = stress_.table_distances_for(result.point_no);
         if (table_distances_for_point.empty()) { // no table distances, cannot test
             result.diagnosis = Result::excluded;
@@ -126,7 +125,7 @@ void acmacs::chart::GridTest::test(Result& result)
                 }
             }
         }
-        // AD_DEBUG("GridTest {} area: {:08.1f} units^{}  grid-step: {:5.3f} <Time: {}>", result.report(chart_), area.area(), area.num_dim(), grid_step_, acmacs::format(acmacs::elapsed(start)));
+        // AD_DEBUG("GridTest {} area: {:08.1f} units^{}  grid-step: {:5.3f}", result.report(chart_), area.area(), area.num_dim(), grid_step_);
     }
 
 } // acmacs::chart::GridTest::test
