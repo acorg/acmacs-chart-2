@@ -27,7 +27,7 @@ namespace acmacs::chart
         CommonAntigensSera& operator=(const CommonAntigensSera&) = delete;
         CommonAntigensSera& operator=(CommonAntigensSera&&);
 
-        [[nodiscard]] std::string report(size_t indent = 0, verbose vrb = verbose::yes) const;
+        [[nodiscard]] std::string report(size_t indent = 0) const;
         operator bool() const;
         size_t common_antigens() const;
         size_t common_sera() const;

@@ -23,7 +23,7 @@ struct Options : public argv
     option<str>  report_titers{*this, "report", desc{"titer merge report"}};
     option<bool> report_common_only{*this, "common-only", desc{"titer merge report for common antigens and sera only"}};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
-    option<str_array> verbose{*this, 'v', "verbose", desc{"comma separated list (or multiple switches) of enablers"}};
+    option<str_array> verbose{*this, 'v', "verbose", desc{"comma separated list (or multiple switches) of enablers: all, common"}};
 
     argument<str_array> source_charts{*this, arg_name{"source-chart"}, mandatory};
 };

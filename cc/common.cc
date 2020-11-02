@@ -8,6 +8,34 @@ using namespace acmacs::chart;
 
 // ----------------------------------------------------------------------
 
+enum class score_t : size_t { no_match = 0, passage_serum_id_ignored = 1, egg = 2, without_date = 3, full_match = 4 };
+
+template <> struct fmt::formatter<score_t> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const score_t& value, FormatCtx& ctx)
+    {
+        switch (value) {
+            case score_t::no_match:
+                format_to(ctx.out(), "no-match");
+                break;
+            case score_t::passage_serum_id_ignored:
+                format_to(ctx.out(), "passage-serum-id-mismatch");
+                break;
+            case score_t::egg:
+                format_to(ctx.out(), "egg");
+                break;
+            case score_t::without_date:
+                format_to(ctx.out(), "without-date");
+                break;
+            case score_t::full_match:
+                format_to(ctx.out(), "full");
+                break;
+        }
+        return ctx.out();
+    }
+};
+
+// ----------------------------------------------------------------------
+
 class CommonAntigensSera::Impl
 {
  public:
@@ -47,6 +75,7 @@ class CommonAntigensSera::Impl
         AntigenEntry(size_t a_index, const Antigen& antigen) : CoreEntry(a_index, antigen), passage(antigen.passage()) {}
         AntigenEntry& operator=(AntigenEntry&&) = default;
 
+        std::string_view ag_sr() const { using namespace std::string_view_literals; return "AG"sv; }
         std::string full_name() const { return acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), passage); }
         size_t full_name_length() const { return name.size() + reassortant.size() + annotations.total_length() + passage.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size(); }
         bool operator<(const AntigenEntry& rhs) const { return compare(*this, rhs) < 0; }
@@ -69,6 +98,7 @@ class CommonAntigensSera::Impl
         SerumEntry(size_t a_index, const Serum& serum) : CoreEntry(a_index, serum), serum_id(serum.serum_id()), passage(serum.passage()) {}
         SerumEntry& operator=(SerumEntry&&) = default;
 
+        std::string_view ag_sr() const { using namespace std::string_view_literals; return "SR"sv; }
         std::string full_name() const { return acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), serum_id, passage); }
         size_t full_name_length() const { return name.size() + reassortant.size() + annotations.total_length() + serum_id.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size() + passage.size() + (passage.empty() ? 0 : 1); }
         bool operator<(const SerumEntry& rhs) const { return compare(*this, rhs) < 0; }
@@ -85,8 +115,6 @@ class CommonAntigensSera::Impl
 
     }; // class SerumEntry
 
-    enum class score_t : size_t { no_match = 0, passage_serum_id_ignored = 1, egg = 2, without_date = 3, full_match = 4 };
-
     struct MatchEntry
     {
         size_t primary_index;
@@ -101,7 +129,7 @@ class CommonAntigensSera::Impl
      public:
         ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level);
         ChartData(const acmacs::chart::Chart& primary);
-        std::string report(size_t indent, std::string_view prefix, std::string_view ignored_key, verbose vrb) const;
+        std::string report(size_t indent, std::string_view prefix, std::string_view ignored_key) const;
         std::vector<CommonAntigensSera::common_t> common() const;
         std::optional<size_t> primary_by_secondary(size_t secondary_no) const;
         std::optional<size_t> secondary_by_primary(size_t primary_no) const;
@@ -144,7 +172,7 @@ class CommonAntigensSera::Impl
     ChartData<AntigenEntry> antigens_;
     ChartData<SerumEntry> sera_;
 
-}; // class Impl
+}; // class CommonAntigensSera::Impl
 
 // ----------------------------------------------------------------------
 
@@ -216,9 +244,11 @@ template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry
     for (const auto& secondary: secondary_) {
         const auto [first, last] = std::equal_range(primary_.begin(), primary_.end(), secondary, AgSrEntry::less);
         for (auto p_e = first; p_e != last; ++p_e) {
-            if (const auto score = match(*p_e, secondary, match_level); score != score_t::no_match)
-                  //match_.emplace_back(p_e->index, secondary.index, score);
+            if (const auto score = match(*p_e, secondary, match_level); score != score_t::no_match) {
+                AD_LOG(acmacs::log::common, "{} {:25s} -- \"{}\" <> \"{}\"", p_e->ag_sr(), fmt::format("{}", score), p_e->full_name(), secondary.full_name());
+                // match_.emplace_back(p_e->index, secondary.index, score);
                 match_.push_back({p_e->index, secondary.index, score});
+            }
         }
     }
     auto order = [](const auto& a, const auto& b) {
@@ -280,36 +310,44 @@ template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry
 
 // ----------------------------------------------------------------------
 
-template <typename AgSrEntry>
-CommonAntigensSera::Impl::score_t CommonAntigensSera::Impl::ChartData<AgSrEntry>::match(const AgSrEntry& primary, const AgSrEntry& secondary,
-                                                                                        acmacs::chart::CommonAntigensSera::match_level_t match_level) const
+template <typename AgSrEntry> score_t CommonAntigensSera::Impl::ChartData<AgSrEntry>::match(const AgSrEntry& primary, const AgSrEntry& secondary,  acmacs::chart::CommonAntigensSera::match_level_t match_level) const
 {
-    AD_LOG(acmacs::log::common, "name \"{}\"  \"{}\" --> {}\n               reassortant \"{}\"  \"{}\" --> {}\n               annotations {}  {} --> {}\n               distinct {} {}\n", //
-           primary.name, secondary.name, primary.name == secondary.name,                                                                                                                   //
-           primary.reassortant, secondary.reassortant, primary.reassortant == secondary.reassortant,                                                                                       //
-           primary.annotations, secondary.annotations, primary.annotations == secondary.annotations,                                                                                       //
-           primary.annotations.distinct(), secondary.annotations.distinct());
+    using namespace std::string_view_literals;
+    const auto match_report = [](bool equals, std::string_view report) -> std::string_view {
+        if (equals)
+            return {};
+        else
+            return report;
+    };
 
-    score_t result{score_t::no_match};
-    if (primary.name == secondary.name && primary.reassortant == secondary.reassortant && primary.annotations == secondary.annotations && !primary.annotations.distinct()) {
+    const auto name_neq = match_report(primary.name == secondary.name, "name"), reassortant_neq = match_report(primary.reassortant == secondary.reassortant, "reassortant"),
+               annotations_neq = match_report(primary.annotations == secondary.annotations, "annotations"), primary_distict = match_report(!primary.annotations.distinct(), "primary-distinct"),
+               secondary_distict = match_report(!secondary.annotations.distinct(), "secondary-distinct");
+
+    if (name_neq.empty() && reassortant_neq.empty() && annotations_neq.empty() && primary_distict.empty() && secondary_distict.empty()) {
+        // AD_LOG(acmacs::log::common, "{} \"{}\" == \"{}\"", primary.ag_sr(), primary.full_name(), secondary.full_name());
         switch (match_level) {
             case match_level_t::ignored:
-                result = score_t::passage_serum_id_ignored;
-                break;
+                return score_t::passage_serum_id_ignored;
             case match_level_t::strict:
             case match_level_t::relaxed:
             case match_level_t::automatic:
-                result = match_not_ignored(primary, secondary);
-                break;
+                return match_not_ignored(primary, secondary);
         }
     }
-    return result;
+    else {
+        AD_LOG(acmacs::log::common, "{} \"{} {} {}\" != \"{} {} {}\": {} {} {} {} {}", primary.ag_sr(), //
+               primary.name, primary.reassortant, primary.annotations,                //
+               secondary.name, secondary.reassortant, secondary.annotations,          //
+               name_neq, reassortant_neq, annotations_neq, primary_distict, secondary_distict);
+        return score_t::no_match;
+    }
 
 } // CommonAntigensSera::Impl::ChartData::match
 
 // ----------------------------------------------------------------------
 
-template <> CommonAntigensSera::Impl::score_t CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::match_not_ignored(const AntigenEntry& primary, const AntigenEntry& secondary) const
+template <> score_t CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::match_not_ignored(const AntigenEntry& primary, const AntigenEntry& secondary) const
 {
     auto result = score_t::passage_serum_id_ignored;
     if (primary.passage.empty() || secondary.passage.empty()) {
@@ -328,7 +366,7 @@ template <> CommonAntigensSera::Impl::score_t CommonAntigensSera::Impl::ChartDat
 
 // ----------------------------------------------------------------------
 
-template <> CommonAntigensSera::Impl::score_t CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::match_not_ignored(const SerumEntry& primary, const SerumEntry& secondary) const
+template <> score_t CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::match_not_ignored(const SerumEntry& primary, const SerumEntry& secondary) const
 {
     auto result = score_t::passage_serum_id_ignored;
     if (primary.serum_id == secondary.serum_id && !primary.serum_id.empty())
@@ -341,7 +379,7 @@ template <> CommonAntigensSera::Impl::score_t CommonAntigensSera::Impl::ChartDat
 
 // ----------------------------------------------------------------------
 
-template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<AgSrEntry>::report(size_t indent, std::string_view prefix, std::string_view ignored_key, verbose vrb) const
+template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<AgSrEntry>::report(size_t indent, std::string_view prefix, std::string_view ignored_key) const
 {
     using namespace std::string_view_literals;
     const std::array score_names{"no-match"sv, ignored_key, "egg"sv, "no-date"sv, "full"sv};
@@ -378,16 +416,16 @@ template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<Ag
                 common_in_secondary.push_back(m.secondary_index);
             }
         }
-        if (vrb == verbose::yes) {
-            fmt::format_to(output, "{:{}}common in primary {}: {}\n", ' ', indent, prefix, common_in_primary);
-            fmt::format_to(output, "{:{}}common in secondary {}: {}\n", ' ', indent, prefix, common_in_secondary);
+        if (acmacs::log::is_enabled(acmacs::log::common)) {
+            fmt::format_to(output, ">>>> [common] {:{}}common in primary {}: {}\n", ' ', indent, prefix, common_in_primary);
+            fmt::format_to(output, ">>>> [common] {:{}}common in secondary {}: {}\n", ' ', indent, prefix, common_in_secondary);
             std::vector<size_t> unique_in_primary(primary_.size() - common_in_primary.size()), unique_in_secondary(secondary_.size() - common_in_secondary.size());
             std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(primary_.size()), unique_in_primary.begin(),
                          [&common_in_primary](size_t index) { return std::find(std::begin(common_in_primary), std::end(common_in_primary), index) == std::end(common_in_primary); });
             std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(secondary_.size()), unique_in_secondary.begin(),
                          [&common_in_secondary](size_t index) { return std::find(std::begin(common_in_secondary), std::end(common_in_secondary), index) == std::end(common_in_secondary); });
-            fmt::format_to(output, "{:{}}unique in primary {}: {}\n", ' ', indent, prefix, unique_in_primary);
-            fmt::format_to(output, "{:{}}unique in secondary {}: {}\n", ' ', indent, prefix, unique_in_secondary);
+            fmt::format_to(output, ">>>> [common] {:{}}unique in primary {}: {}\n", ' ', indent, prefix, unique_in_primary);
+            fmt::format_to(output, ">>>> [common] {:{}}unique in secondary {}: {}\n", ' ', indent, prefix, unique_in_secondary);
         }
     }
     else {
@@ -482,10 +520,10 @@ acmacs::chart::CommonAntigensSera::~CommonAntigensSera()
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::CommonAntigensSera::report(size_t indent, verbose vrb) const
+std::string acmacs::chart::CommonAntigensSera::report(size_t indent) const
 {
     using namespace std::string_view_literals;
-    return fmt::format("{}\n{}", impl_->antigens_.report(indent, "antigens"sv, "no-passage"sv, vrb), impl_->sera_.report(indent, "sera"sv, "no-serum-id"sv, vrb));
+    return fmt::format("{}\n{}", impl_->antigens_.report(indent, "antigens"sv, "no-passage"sv), impl_->sera_.report(indent, "sera"sv, "no-serum-id"sv));
 
 } // CommonAntigensSera::report
 
