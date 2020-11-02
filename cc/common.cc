@@ -11,7 +11,7 @@ using namespace acmacs::chart;
 class CommonAntigensSera::Impl
 {
  public:
-    Impl(const Chart& primary, const Chart& secondary, match_level_t match_level, acmacs::debug dbg);
+    Impl(const Chart& primary, const Chart& secondary, match_level_t match_level);
     Impl(const Chart& primary);
 
     struct CoreEntry
@@ -99,7 +99,7 @@ class CommonAntigensSera::Impl
     template <typename AgSrEntry> class ChartData
     {
      public:
-        ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level, acmacs::debug dbg);
+        ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level);
         ChartData(const acmacs::chart::Chart& primary);
         std::string report(size_t indent, std::string_view prefix, std::string_view ignored_key, verbose vrb) const;
         std::vector<CommonAntigensSera::common_t> common() const;
@@ -135,8 +135,8 @@ class CommonAntigensSera::Impl
                 }
             }
 
-        void match(match_level_t match_level, acmacs::debug dbg = acmacs::debug::no);
-        score_t match(const AgSrEntry& primary, const AgSrEntry& secondary, match_level_t match_level, acmacs::debug dbg = acmacs::debug::no) const;
+        void match(match_level_t match_level);
+        score_t match(const AgSrEntry& primary, const AgSrEntry& secondary, match_level_t match_level) const;
         score_t match_not_ignored(const AgSrEntry& primary, const AgSrEntry& secondary) const;
 
     }; // class ChartData<AgSrEntry>
@@ -148,7 +148,7 @@ class CommonAntigensSera::Impl
 
 // ----------------------------------------------------------------------
 
-template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level, acmacs::debug dbg)
+template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level)
     : primary_(primary.number_of_antigens()), secondary_(secondary.number_of_antigens()),
       primary_base_{0}, secondary_base_{0},
       min_number_{std::min(primary_.size(), secondary_.size())}
@@ -156,7 +156,7 @@ template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::Antige
     make(primary_, *primary.antigens());
     std::sort(primary_.begin(), primary_.end());
     make(secondary_, *secondary.antigens());
-    match(match_level, dbg);
+    match(match_level);
 
 } // CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::ChartData
 
@@ -179,7 +179,7 @@ template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::Antige
 
 // ----------------------------------------------------------------------
 
-template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level, acmacs::debug dbg)
+template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level)
     : primary_(primary.number_of_sera()), secondary_(secondary.number_of_sera()),
       primary_base_{primary.number_of_antigens()}, secondary_base_{secondary.number_of_antigens()},
       min_number_{std::min(primary_.size(), secondary_.size())}
@@ -187,7 +187,7 @@ template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumE
     make(primary_, *primary.sera());
     std::sort(primary_.begin(), primary_.end());
     make(secondary_, *secondary.sera());
-    match(match_level, dbg);
+    match(match_level);
 
 } // CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData
 
@@ -211,12 +211,12 @@ template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumE
 
 // ----------------------------------------------------------------------
 
-template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry>::match(CommonAntigensSera::match_level_t match_level, acmacs::debug dbg)
+template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry>::match(CommonAntigensSera::match_level_t match_level)
 {
     for (const auto& secondary: secondary_) {
         const auto [first, last] = std::equal_range(primary_.begin(), primary_.end(), secondary, AgSrEntry::less);
         for (auto p_e = first; p_e != last; ++p_e) {
-            if (const auto score = match(*p_e, secondary, match_level, dbg); score != score_t::no_match)
+            if (const auto score = match(*p_e, secondary, match_level); score != score_t::no_match)
                   //match_.emplace_back(p_e->index, secondary.index, score);
                 match_.push_back({p_e->index, secondary.index, score});
         }
@@ -282,15 +282,15 @@ template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry
 
 template <typename AgSrEntry>
 CommonAntigensSera::Impl::score_t CommonAntigensSera::Impl::ChartData<AgSrEntry>::match(const AgSrEntry& primary, const AgSrEntry& secondary,
-                                                                                        acmacs::chart::CommonAntigensSera::match_level_t match_level, acmacs::debug dbg) const
+                                                                                        acmacs::chart::CommonAntigensSera::match_level_t match_level) const
 {
+    AD_LOG(acmacs::log::common, "name \"{}\"  \"{}\" --> {}\n               reassortant \"{}\"  \"{}\" --> {}\n               annotations {}  {} --> {}\n               distinct {} {}\n", //
+           primary.name, secondary.name, primary.name == secondary.name,                                                                                                                   //
+           primary.reassortant, secondary.reassortant, primary.reassortant == secondary.reassortant,                                                                                       //
+           primary.annotations, secondary.annotations, primary.annotations == secondary.annotations,                                                                                       //
+           primary.annotations.distinct(), secondary.annotations.distinct());
+
     score_t result{score_t::no_match};
-    if (dbg == acmacs::debug::yes) {
-        fmt::print(stderr, "DEBUG: name \"{}\"  \"{}\" --> {}\n", primary.name, secondary.name, primary.name == secondary.name);
-        fmt::print(stderr, "DEBUG: reassortant \"{}\"  \"{}\" --> {}\n", primary.reassortant, secondary.reassortant, primary.reassortant == secondary.reassortant);
-        fmt::print(stderr, "DEBUG: annotations {}  {} --> {}\n", primary.annotations, secondary.annotations, primary.annotations == secondary.annotations);
-        fmt::print(stderr, "DEBUG: distinct {} {}\n\n", primary.annotations.distinct(), secondary.annotations.distinct());
-    }
     if (primary.name == secondary.name && primary.reassortant == secondary.reassortant && primary.annotations == secondary.annotations && !primary.annotations.distinct()) {
         switch (match_level) {
             case match_level_t::ignored:
@@ -442,8 +442,8 @@ template <typename AgSrEntry> inline std::optional<size_t> CommonAntigensSera::I
 
 // ----------------------------------------------------------------------
 
-inline CommonAntigensSera::Impl::Impl(const Chart& primary, const Chart& secondary, match_level_t match_level, acmacs::debug dbg)
-    : antigens_(primary, secondary, match_level, dbg), sera_(primary, secondary, match_level, dbg)
+inline CommonAntigensSera::Impl::Impl(const Chart& primary, const Chart& secondary, match_level_t match_level)
+    : antigens_(primary, secondary, match_level), sera_(primary, secondary, match_level)
 {
 }
 
@@ -456,8 +456,8 @@ inline CommonAntigensSera::Impl::Impl(const Chart& primary)
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::CommonAntigensSera::CommonAntigensSera(const Chart& primary, const Chart& secondary, match_level_t match_level, acmacs::debug dbg)
-    : impl_(&primary == &secondary ? std::make_unique<Impl>(primary) : std::make_unique<Impl>(primary, secondary, match_level, dbg))
+acmacs::chart::CommonAntigensSera::CommonAntigensSera(const Chart& primary, const Chart& secondary, match_level_t match_level)
+    : impl_(&primary == &secondary ? std::make_unique<Impl>(primary) : std::make_unique<Impl>(primary, secondary, match_level))
 {
 }
 

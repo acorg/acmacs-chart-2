@@ -4,7 +4,7 @@
 #include <optional>
 #include <vector>
 
-#include "acmacs-base/log.hh"
+#include "acmacs-chart-2/log.hh"
 #include "acmacs-chart-2/point-index-list.hh"
 
 // ----------------------------------------------------------------------
@@ -19,7 +19,7 @@ namespace acmacs::chart
      public:
         enum class match_level_t { strict, relaxed, ignored, automatic };
 
-        CommonAntigensSera(const Chart& primary, const Chart& secondary, match_level_t match_level, acmacs::debug dbg = acmacs::debug::no);
+        CommonAntigensSera(const Chart& primary, const Chart& secondary, match_level_t match_level);
         CommonAntigensSera(const Chart& primary); // for procrustes between projections of the same chart
         CommonAntigensSera(const CommonAntigensSera&) = delete;
         CommonAntigensSera(CommonAntigensSera&&);

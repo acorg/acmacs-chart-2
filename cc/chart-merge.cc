@@ -23,6 +23,7 @@ struct Options : public argv
     option<str>  report_titers{*this, "report", desc{"titer merge report"}};
     option<bool> report_common_only{*this, "common-only", desc{"titer merge report for common antigens and sera only"}};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
+    option<str_array> verbose{*this, 'v', "verbose", desc{"comma separated list (or multiple switches) of enablers"}};
 
     argument<str_array> source_charts{*this, arg_name{"source-chart"}, mandatory};
 };
@@ -32,6 +33,7 @@ int main(int argc, const char* const argv[])
     int exit_code = 0;
     try {
         Options opt(argc, argv);
+        acmacs::log::enable(opt.verbose);
         const auto report = do_report_time(opt.report_time);
         acmacs::chart::MergeSettings settings;
         if (opt.merge_type == "incremental" || opt.merge_type == "type2")
@@ -57,7 +59,9 @@ int main(int argc, const char* const argv[])
         };
         auto chart1 = read((*opt.source_charts)[0]);
         auto chart2 = read((*opt.source_charts)[1]);
+
         auto [result, merge_report] = acmacs::chart::merge(chart1, chart2, settings);
+
         fmt::print("{}\n{}\n\n{}\n----------\n\n", chart1.description(), chart2.description(), merge_report.common.report());
         for (size_t c_no = 2; c_no < opt.source_charts->size(); ++c_no) {
             auto chart3 = read((*opt.source_charts)[c_no]);

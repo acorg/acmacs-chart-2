@@ -49,7 +49,7 @@ namespace acmacs::chart
         std::unique_ptr<TitersModify::titer_merge_report> titer_report;
     };
 
-    inline std::ostream& operator<<(std::ostream& out, const MergeReport::target_index_common_t& entry) { return out << '[' << entry.index << (entry.common ? ",common" : "") << ']'; }
+    // inline std::ostream& operator<<(std::ostream& out, const MergeReport::target_index_common_t& entry) { return out << '[' << entry.index << (entry.common ? ",common" : "") << ']'; }
 
     std::pair<ChartModifyP, MergeReport> merge(const Chart& chart1, const Chart& chart2, const MergeSettings& settings = {});
 }

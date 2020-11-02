@@ -16,7 +16,7 @@ struct Options : public argv
     option<str>       subset{*this, "subset", dflt{"all"}, desc{"all, antigens, sera"}};
     option<str>       match{*this, "match", dflt{"auto"}, desc{"match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""}};
     option<bool>      scaling{*this, "scaling", desc{"use scaling"}};
-    option<bool>      verbose{*this, 'v', "verbose", desc{"show detailied matching data"}};
+    option<str_array> verbose{*this, 'v', "verbose", desc{"comma separated list (or multiple switches) of enablers"}};
 
     argument<str>     chart1{*this, arg_name{"chart"}, mandatory};
     argument<str>     chart2{*this, arg_name{"secondary-chart"}};
@@ -27,10 +27,11 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         Options opt(argc, argv);
+        acmacs::log::enable(opt.verbose);
         const auto match_level = acmacs::chart::CommonAntigensSera::match_level(opt.match);
         auto chart1 = acmacs::chart::import_from_file(opt.chart1);
         auto chart2 = opt.chart2 ? acmacs::chart::import_from_file(opt.chart2) : chart1;
-        acmacs::chart::CommonAntigensSera common(*chart1, *chart2, match_level, opt.verbose ? acmacs::debug::yes : acmacs::debug::no);
+        acmacs::chart::CommonAntigensSera common(*chart1, *chart2, match_level);
         if (opt.subset == "antigens")
             common.antigens_only();
         else if (opt.subset == "sera")
