@@ -310,7 +310,7 @@ template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry
 
 // ----------------------------------------------------------------------
 
-template <typename AgSrEntry> score_t CommonAntigensSera::Impl::ChartData<AgSrEntry>::match(const AgSrEntry& primary, const AgSrEntry& secondary,  acmacs::chart::CommonAntigensSera::match_level_t match_level) const
+template <typename AgSrEntry> score_t CommonAntigensSera::Impl::ChartData<AgSrEntry>::match(const AgSrEntry& primary, const AgSrEntry& secondary, acmacs::chart::CommonAntigensSera::match_level_t match_level) const
 {
     using namespace std::string_view_literals;
     const auto match_report = [](bool equals, std::string_view report) -> std::string_view {
