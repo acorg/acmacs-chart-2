@@ -39,7 +39,7 @@ int main(int argc, char* const argv[])
         else if (opt.subset != "all")
             fmt::print(stderr, "WARNING: unrecognized --subset argument, \"all\" assumed\n");
         if (common) {
-            auto procrustes_data = acmacs::chart::procrustes(*chart1->projection(opt.p1), *chart2->projection(opt.p2), common.points(),
+            const auto procrustes_data = acmacs::chart::procrustes(*chart1->projection(opt.p1), *chart2->projection(opt.p2), common.points(),
                                                              opt.scaling ? acmacs::chart::procrustes_scaling_t::yes : acmacs::chart::procrustes_scaling_t::no);
             fmt::print("common antigens: {} sera: {}\n", common.common_antigens(), common.common_sera());
             fmt::print("transformation: {}\nrms: {}\n", procrustes_data.transformation, procrustes_data.rms);
