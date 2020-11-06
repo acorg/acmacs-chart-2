@@ -1,3 +1,4 @@
+#include "acmacs-base/range-v3.hh"
 #include "acmacs-chart-2/bounding-ball.hh"
 
 // ----------------------------------------------------------------------
@@ -12,6 +13,7 @@ void acmacs::BoundingBall::extend(const acmacs::PointCoordinates& aPoint)
         auto p = aPoint.begin();
         for (auto c = mCenter.begin(); c != mCenter.end(); ++c, ++p)
             *c = (mDiameter * 0.5 * (*c) + difference * (*p)) / dist;
+        mHVDiameter = std::max(mHVDiameter, calculate_hv_diameter((aPoint - mCenter) * 2.0));
     }
 
 } // acmacs::BoundingBall::extend
@@ -29,6 +31,14 @@ void acmacs::BoundingBall::extend(const acmacs::BoundingBall& aBoundingBall)
 
 // ----------------------------------------------------------------------
 
+double acmacs::BoundingBall::calculate_hv_diameter(const PointCoordinates& dist) const
+{
+    return ranges::max(dist | ranges::views::transform([](double val) { return std::abs(val); }));
+
+} // acmacs::BoundingBall::calculate_hv_diameter
+
+// ----------------------------------------------------------------------
+
 acmacs::BoundingBall acmacs::minimum_bounding_ball(const Layout& aLayout)
 {
     const auto area = aLayout.area();
@@ -38,9 +48,6 @@ acmacs::BoundingBall acmacs::minimum_bounding_ball(const Layout& aLayout)
     return bb;
 
 } // acmacs::minimum_bounding_ball
-
-// ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:
