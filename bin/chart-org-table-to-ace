@@ -167,9 +167,10 @@ def check_titer(titer, filename, row_no, column_no):
         if titer not in sNormalTiters:
             print(f">> WARNING: unusual titer \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}", file=sys.stderr)
         return titer
+    elif "/" in titer:
+        return check_titer(titer.split("/")[0].strip(), filename, row_no, column_no)
     else:
         raise RuntimeError(f"Unrecognized titer \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}")
-
 
 # ----------------------------------------------------------------------
 
