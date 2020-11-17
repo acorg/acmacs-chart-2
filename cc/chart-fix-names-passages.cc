@@ -36,12 +36,14 @@ int main(int argc, char* const argv[])
         for (size_t ag_no{0}; ag_no < antigens->size(); ++ag_no) {
             auto& antigen = antigens->at(ag_no);
 
+            AD_LOG(acmacs::log::name_parsing, "AG {} \"{}\"", ag_no, antigen.name());
+            AD_LOG_INDENT;
             auto parsed_name = acmacs::virus::name::parse(antigen.name());
             if (*parsed_name.subtype == "A")
                 parsed_name.subtype = subtype;
             const auto new_name = parsed_name.name();
             if (antigen.name() != new_name) {
-                AD_LOG(acmacs::log::name_parsing, "\"{}\" -> \"{}\"", antigen.name(), new_name);
+                AD_LOG(acmacs::log::name_parsing, "\"{}\" -> {}", antigen.name(), parsed_name);
                 if (!parsed_name.mutations.empty())
                     AD_WARNING("Name has mutations: {} <-- \"{}\"", parsed_name.mutations, antigen.name());
                 antigen.name(*new_name);
@@ -65,12 +67,23 @@ int main(int argc, char* const argv[])
         for (size_t sr_no{0}; sr_no < sera->size(); ++sr_no) {
             auto& serum = sera->at(sr_no);
 
+            AD_LOG(acmacs::log::name_parsing, "SR {} \"{}\"", sr_no, serum.name());
+            AD_LOG_INDENT;
             auto parsed_name = acmacs::virus::name::parse(serum.name());
             if (*parsed_name.subtype == "A")
                 parsed_name.subtype = subtype;
             const auto new_name = parsed_name.name();
             if (serum.name() != new_name) {
+                AD_LOG(acmacs::log::name_parsing, "\"{}\" -> {}", serum.name(), parsed_name);
                 serum.name(*new_name);
+                if (!parsed_name.reassortant.empty() && parsed_name.reassortant != serum.reassortant()) {
+                    if (serum.reassortant().empty())
+                        serum.reassortant(parsed_name.reassortant);
+                    else
+                        serum.reassortant(acmacs::virus::Reassortant{fmt::format("{} {}", serum.reassortant(), parsed_name.reassortant)});
+                }
+                if (!parsed_name.extra.empty())
+                    serum.add_annotation(parsed_name.extra);
             }
 
             auto [passage, extra] = acmacs::virus::parse_passage(serum.passage(), acmacs::virus::passage_only::no);
