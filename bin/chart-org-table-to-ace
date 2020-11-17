@@ -173,7 +173,7 @@ def check_titer(titer, filename, row_no, column_no, prn_read=False, warn_if_not_
              raise RuntimeError(f"PRN Read titer is not available: \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}")
         if titer not in sNormalTiters and warn_if_not_normal:
             print(f">> WARNING: unusual titer \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}", file=sys.stderr)
-        if convert_prn_low_read and titer[0] != "<" and int(titer) < 10:
+        if convert_prn_low_read and titer[0] not in ["<", ">", "*"] and int(titer) < 10:
             titer = "<10"
         return titer
     elif "/" in titer:
