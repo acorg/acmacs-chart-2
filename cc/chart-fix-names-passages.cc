@@ -1,5 +1,6 @@
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/read-file.hh"
+#include "acmacs-base/string-compare.hh"
 #include "acmacs-virus/virus-name-normalize.hh"
 #include "acmacs-virus/passage.hh"
 #include "acmacs-chart-2/factory-import.hh"
@@ -40,7 +41,7 @@ int main(int argc, char* const argv[])
                 parsed_name.subtype = subtype;
             const auto new_name = parsed_name.name();
             if (antigen.name() != new_name) {
-                AD_DEBUG("\"{}\" -> \"{}\"", antigen.name(), new_name);
+                AD_LOG(acmacs::log::name_parsing, "\"{}\" -> \"{}\"", antigen.name(), new_name);
                 if (!parsed_name.mutations.empty())
                     AD_WARNING("Name has mutations: {} <-- \"{}\"", parsed_name.mutations, antigen.name());
                 antigen.name(*new_name);
@@ -73,7 +74,7 @@ int main(int argc, char* const argv[])
             }
 
             auto [passage, extra] = acmacs::virus::parse_passage(serum.passage(), acmacs::virus::passage_only::no);
-            if (!extra.empty())
+            if (!extra.empty() && !(passage == "E?"sv && acmacs::string::startswith(extra, "10-"sv)))
                 AD_WARNING("passage \"{}\" has extra \"{}\" <-- \"{}\"", passage, extra, serum.passage());
             if (passage != serum.passage()) {
                 serum.passage(passage);

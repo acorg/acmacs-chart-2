@@ -1,10 +1,11 @@
 #! /usr/bin/env python3
 
 import sys, os, json, re, datetime, lzma, pprint, subprocess
+import logging; module_logger = logging.getLogger(__name__)
 
 # ----------------------------------------------------------------------
 
-def main(input_file, output_file):
+def main(input_file, output_file, prn_read):
     lines = [line.strip() for line in open(input_file)] #  if line and line[0] in ["-", "|"]]
     num_antigens = 0
     num_sera = 0
@@ -84,7 +85,7 @@ def main(input_file, output_file):
         if ace["c"]["i"]["V"] == "B" and ace["c"]["i"].get("s"): # lineage
             entry["L"] = ace["c"]["i"]["s"][0]
         ace["c"]["a"].append(entry)
-        ace["c"]["t"]["l"].append([check_titer(rows[row_no][column_no], input_file, table_rows[row_no], column_no) for column_no in serum_columns])
+        ace["c"]["t"]["l"].append([check_titer(rows[row_no][column_no], input_file, table_rows[row_no], column_no, prn_read=prn_read) for column_no in serum_columns])
 
     detect_reference(ace["c"]["a"], ace["c"]["s"])
     if ace["c"]["i"]["l"] == "MELB":
@@ -162,13 +163,18 @@ sNormalTiters = ["10", "20", "40", "80", "160", "320", "640", "1280", "2560", "5
                  "*"
                  ]
 
-def check_titer(titer, filename, row_no, column_no):
+def check_titer(titer, filename, row_no, column_no, prn_read=False, warn_if_not_normal=True):
     if sReTiter.match(titer):
-        if titer not in sNormalTiters:
+        if prn_read:
+             raise RuntimeError(f"PRN Read titer is not available: \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}")
+        if titer not in sNormalTiters and warn_if_not_normal:
             print(f">> WARNING: unusual titer \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}", file=sys.stderr)
         return titer
     elif "/" in titer:
-        return check_titer(titer.split("/")[0].strip(), filename, row_no, column_no)
+        if prn_read:
+            return check_titer(titer.split("/")[1].strip(), filename, row_no, column_no, warn_if_not_normal=False)
+        else:
+            return check_titer(titer.split("/")[0].strip(), filename, row_no, column_no)
     else:
         raise RuntimeError(f"Unrecognized titer \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}")
 
@@ -520,14 +526,24 @@ def json_dumps(data, indent=2, indent_increment=None, toplevel=True, one_line_ma
 
 # ----------------------------------------------------------------------
 
-if len(sys.argv) != 3:
-    print("Usage:", sys.argv[0], "<input.org> <output.ace>", file=sys.stderr)
-    exit(1)
+import argparse, traceback
 
 try:
-    main(sys.argv[1], sys.argv[2])
-    exit(0)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO, help='Enable debugging output.')
+    parser.add_argument('--prn-read', action='store_true', dest='prn_read', default=False, help='Export prn-read titers (Crick H3 PRN) into ace.')
+
+    parser.add_argument("input", nargs=1)
+    parser.add_argument("output", nargs=1)
+
+    args = parser.parse_args()
+    logging.basicConfig(level=args.loglevel, format="%(levelname)s %(asctime)s: %(message)s")
+    exit_code = main(args.input[0], args.output[0], prn_read = args.prn_read)
+except Error as err:
+    logging.error(str(err))
+    exit_code = 1
 except Exception as err:
-    print(f"ERROR: {err} @@ {sys.argv[1]}:1", file=sys.stderr)
-    raise
-    exit(2)
+    logging.error('{}\n{}'.format(err, traceback.format_exc()))
+    exit_code = 1
+exit(exit_code)
+
