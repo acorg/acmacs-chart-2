@@ -5,6 +5,7 @@
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
+#include "acmacs-chart-2/log.hh"
 
 // ----------------------------------------------------------------------
 
@@ -12,6 +13,8 @@ using namespace acmacs::argv;
 struct Options : public argv
 {
     Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<str_array> verbose{*this, 'v', "verbose", desc{"comma separated list (or multiple switches) of log enablers"}};
 
     argument<str> input_chart{*this, arg_name{"input-chart"}, mandatory};
     argument<str> output_chart{*this, arg_name{"output-chart"}};
@@ -23,6 +26,8 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         Options opt(argc, argv);
+        acmacs::log::enable(opt.verbose);
+
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.input_chart)};
         const auto subtype = chart.info()->virus_type();
 
@@ -35,6 +40,7 @@ int main(int argc, char* const argv[])
                 parsed_name.subtype = subtype;
             const auto new_name = parsed_name.name();
             if (antigen.name() != new_name) {
+                AD_DEBUG("\"{}\" -> \"{}\"", antigen.name(), new_name);
                 if (!parsed_name.mutations.empty())
                     AD_WARNING("Name has mutations: {} <-- \"{}\"", parsed_name.mutations, antigen.name());
                 antigen.name(*new_name);
@@ -68,7 +74,7 @@ int main(int argc, char* const argv[])
 
             auto [passage, extra] = acmacs::virus::parse_passage(serum.passage(), acmacs::virus::passage_only::no);
             if (!extra.empty())
-                AD_WARNING("extra in passage \"{}\" \"{}\" <- \"{}\"", passage, extra, serum.passage());
+                AD_WARNING("passage \"{}\" has extra \"{}\" <-- \"{}\"", passage, extra, serum.passage());
             if (passage != serum.passage()) {
                 serum.passage(passage);
                 if (!extra.empty())
