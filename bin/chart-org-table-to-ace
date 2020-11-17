@@ -539,9 +539,6 @@ try:
     args = parser.parse_args()
     logging.basicConfig(level=args.loglevel, format="%(levelname)s %(asctime)s: %(message)s")
     exit_code = main(args.input[0], args.output[0], prn_read = args.prn_read)
-except Error as err:
-    logging.error(str(err))
-    exit_code = 1
 except Exception as err:
     logging.error('{}\n{}'.format(err, traceback.format_exc()))
     exit_code = 1
