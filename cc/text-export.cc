@@ -34,6 +34,7 @@ std::string acmacs::chart::export_text(const Chart& chart)
 
 std::string acmacs::chart::export_table_to_text(const Chart& chart, std::optional<size_t> just_layer)
 {
+    using namespace std::string_view_literals;
     fmt::memory_buffer result;
     auto antigens = chart.antigens();
     auto sera = chart.sera();
@@ -48,11 +49,12 @@ std::string acmacs::chart::export_table_to_text(const Chart& chart, std::optiona
 
     const auto column_width = 8;
     const auto table_prefix = 5;
-    fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix);
+    const std::string_view reference_marker { ":ref" };
+    fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + (reference_marker.size() + 1));
     for (auto serum_no : acmacs::range(sera->size()))
         fmt::format_to(result, "{: ^{}d}", serum_no, column_width);
     fmt::format_to(result, "\n");
-    fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix);
+    fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + (reference_marker.size() + 1));
     for (auto serum : *sera)
         fmt::format_to(result, "{: ^8s}", serum->abbreviated_location_year(), column_width);
     fmt::format_to(result, "\n\n");
@@ -61,7 +63,7 @@ std::string acmacs::chart::export_table_to_text(const Chart& chart, std::optiona
     if (!just_layer.has_value()) {
         // merged table
         for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
-            fmt::format_to(result, "{:{}d} {: <{}s} ", ag_no, ag_no_num_digits, antigen->full_name(), max_antigen_name);
+            fmt::format_to(result, "{:{}d} {: <{}s} {:<{}s}", ag_no, ag_no_num_digits, antigen->full_name(), max_antigen_name, antigen->reference() ? reference_marker : ""sv, reference_marker.size() + 1);
             for (auto serum_no : acmacs::range(sera->size()))
                 fmt::format_to(result, "{: >{}s}", *titers->titer(ag_no, serum_no), column_width);
             fmt::format_to(result, "\n");
@@ -72,7 +74,7 @@ std::string acmacs::chart::export_table_to_text(const Chart& chart, std::optiona
         const auto [antigens_of_layer, sera_of_layer] = titers->antigens_sera_of_layer(*just_layer);
         for (auto ag_no : antigens_of_layer) {
             auto antigen = antigens->at(ag_no);
-            fmt::format_to(result, "{:{}d} {: <{}s} ", ag_no, ag_no_num_digits, antigen->full_name(), max_antigen_name);
+            fmt::format_to(result, "{:{}d} {: <{}s} {:<6s}", ag_no, ag_no_num_digits, antigen->full_name(), max_antigen_name, antigen->reference() ? "<ref>"sv : ""sv);
             for (auto serum_no : acmacs::range(sera->size()))
                 fmt::format_to(result, "{: >{}s}", *titers->titer_of_layer(*just_layer, ag_no, serum_no), column_width);
             fmt::format_to(result, "\n");
