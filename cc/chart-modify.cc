@@ -5,7 +5,8 @@
 
 #include "acmacs-base/log.hh"
 #include "acmacs-base/omp.hh"
-#include "acmacs-base/range.hh"
+#include "acmacs-base/flat-set.hh"
+#include "acmacs-base/range-v3.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/string-join.hh"
 #include "acmacs-virus/virus-name-v1.hh"
@@ -530,6 +531,29 @@ SerumModifyP ChartModify::insert_serum(size_t before)
 
 // ----------------------------------------------------------------------
 
+void ChartModify::detect_reference_antigens(remove_reference_before_detecting rrbd)
+{
+    auto antigens = antigens_modify();
+    auto ser = sera();
+
+    if (rrbd == remove_reference_before_detecting::yes)
+        ranges::for_each(range_from_0_to(antigens->size()), [&antigens](auto ag_no) { antigens->at(ag_no).reference(false); });
+
+    // set refernece attribute for all antigens whose names (without reassortant, annotations, passage) are the same as sera names
+    // DISTINCT antigens are not marked to avoid marking control duplicates of CDC
+
+    acmacs::flat_set_t<acmacs::virus::name_t> serum_names;
+    ranges::for_each(range_from_0_to(ser->size()), [&ser, &serum_names](auto sr_no) { serum_names.add(ser->at(sr_no)->name()); });
+
+    ranges::for_each(range_from_0_to(antigens->size()), [&antigens, &serum_names](auto ag_no) {
+        if (auto& antigen = antigens->at(ag_no); !antigen.annotations().distinct() && serum_names.exists(antigen.name()))
+            antigen.reference(true);
+    });
+
+} // ChartModify::detect_reference_antigens
+
+// ----------------------------------------------------------------------
+
 ChartNew::ChartNew(size_t number_of_antigens, size_t number_of_sera)
     : ChartModify(number_of_antigens, number_of_sera)
 {
@@ -540,7 +564,7 @@ ChartNew::ChartNew(size_t number_of_antigens, size_t number_of_sera)
     auto& antigens = *antigens_modify();
       //size_t name_no = 0;
     std::string suffix = "";
-    for (auto ag_no : acmacs::range(number_of_antigens)) {
+    for (auto ag_no : range_from_0_to(number_of_antigens)) {
         antigens.at(ag_no).name(sNames[dis(gen)] + suffix);
         // ++name_no;
         // if (name_no >= sNamesSize) {
@@ -551,7 +575,7 @@ ChartNew::ChartNew(size_t number_of_antigens, size_t number_of_sera)
 
     auto& sera = *sera_modify();
     suffix = "";
-    for (auto sr_no : acmacs::range(number_of_sera)) {
+    for (auto sr_no : range_from_0_to(number_of_sera)) {
         sera.at(sr_no).name(sNames[dis(gen)] + suffix);
         // ++name_no;
         // if (name_no >= sNamesSize) {
@@ -836,8 +860,8 @@ TitersModify::TitersModify(TitersP main)
             for (size_t layer_no = 0; layer_no < main->number_of_layers(); ++layer_no) {
                 auto& target = layers_[layer_no];
                 target.resize(main->number_of_antigens());
-                for (auto ag_no : acmacs::range(target.size())) {
-                    for (auto sr_no : acmacs::range(number_of_sera_))
+                for (auto ag_no : range_from_0_to(target.size())) {
+                    for (auto sr_no : range_from_0_to(number_of_sera_))
                         if (const auto titer = main->titer_of_layer(layer_no, ag_no, sr_no); !titer.is_dont_care() && !titer.is_invalid())
                             target[ag_no].emplace_back(sr_no, titer);
                 }
@@ -1037,8 +1061,8 @@ std::unique_ptr<TitersModify::titer_merge_report> TitersModify::set_titers_from_
     constexpr double standard_deviation_threshold = 1.0; // lispmds: average-multiples-unless-sd-gt-1-ignore-thresholded-unless-only-entries-then-min-threshold
     const auto number_of_antigens = layers_[0].size();
     auto titers = std::make_unique<std::vector<titer_merge_data>>();
-    for (auto ag_no : acmacs::range(number_of_antigens)) {
-        for (auto sr_no : acmacs::range(number_of_sera_)) {
+    for (auto ag_no : range_from_0_to(number_of_antigens)) {
+        for (auto sr_no : range_from_0_to(number_of_sera_)) {
             auto [titer, titer_merge_report] = titer_from_layers(ag_no, sr_no, mtt, standard_deviation_threshold);
             titers->emplace_back(std::move(titer), ag_no, sr_no, titer_merge_report);
         }
@@ -1154,7 +1178,7 @@ std::pair<Titer, TitersModify::titer_merge> TitersModify::merge_titers(const std
 std::pair<Titer, TitersModify::titer_merge> TitersModify::titer_from_layers(size_t ag_no, size_t sr_no, more_than_thresholded mtt, double standard_deviation_threshold) const
 {
     std::vector<Titer> titers;
-    for (auto layer_no : acmacs::range(layers_.size())) {
+    for (auto layer_no : range_from_0_to(layers_.size())) {
         if (auto titer = titer_in_sparse_t(layers_[layer_no], ag_no, sr_no); !titer.is_dont_care()) {
             titers.emplace_back(std::move(titer));
         }
@@ -1350,7 +1374,7 @@ void TitersModify::dontcare_for_serum(size_t aSerumNo)
     auto set_dontcare = [aSerumNo, this](auto& titers) {
         using T = std::decay_t<decltype(titers)>;
         if constexpr (std::is_same_v<T, dense_t>) {
-            for (auto ag_no : acmacs::range(number_of_antigens()))
+            for (auto ag_no : range_from_0_to(number_of_antigens()))
                 titers[ag_no * this->number_of_sera_ + aSerumNo] = Titer{};
         }
         else {
@@ -1391,7 +1415,7 @@ void TitersModify::multiply_by_for_serum(size_t aSerumNo, double multiply_by)
     const auto multiply = [aSerumNo, multiply_by, this](auto& titers) {
         using T = std::decay_t<decltype(titers)>;
         if constexpr (std::is_same_v<T, dense_t>) {
-            for (auto ag_no : acmacs::range(number_of_antigens())) {
+            for (auto ag_no : range_from_0_to(number_of_antigens())) {
                 auto& titer = titers[ag_no * this->number_of_sera_ + aSerumNo];
                 titer = titer.multiplied_by(multiply_by);
             }
@@ -1427,7 +1451,7 @@ void TitersModify::set_proportion_of_titers_to_dont_care(double proportion)
     std::shuffle(cells.begin(), cells.end(), generator);
     const auto entries_to_dont_care = static_cast<size_t>(std::lround(static_cast<double>(cells.size()) * proportion));
     const auto set_to_dont_care = [entries_to_dont_care, &cells, number_of_sera = number_of_sera_](auto& titers) {
-        for (auto index : acmacs::range(entries_to_dont_care)) {
+        for (auto index : range_from_0_to(entries_to_dont_care)) {
             const auto ag_no = cells[index].first, sr_no = cells[index].second;
             using T = std::decay_t<decltype(titers)>;
             if constexpr (std::is_same_v<T, dense_t>) {
@@ -1820,7 +1844,7 @@ std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(std::shared_p
     modify();
     auto layout = layout_modified();
     const auto number_of_dimensions = layout->number_of_dimensions();
-    for (auto point_no : acmacs::range(layout->number_of_points())) {
+    for (auto point_no : range_from_0_to(layout->number_of_points())) {
         const auto point{randomizer->get(number_of_dimensions)};
         // AD_DEBUG("{:3d} {}", point_no, point);
         layout->update(point_no, point);
@@ -1921,10 +1945,10 @@ PlotSpecModify::PlotSpecModify(size_t number_of_antigens, size_t number_of_sera)
     : main_{nullptr}, number_of_antigens_(number_of_antigens), modified_{true}, styles_(number_of_antigens + number_of_sera, PointStyle{})
 {
     // AD_DEBUG("PlotSpecModify number_of_antigens:{}", number_of_antigens);
-    for (size_t point_no : acmacs::range(number_of_antigens)) {
+    for (size_t point_no : range_from_0_to(number_of_antigens)) {
         styles_[point_no].fill(GREEN);
     }
-    for (size_t point_no : acmacs::range(number_of_antigens, number_of_antigens + number_of_sera)) {
+    for (size_t point_no : range_from_to(number_of_antigens, number_of_antigens + number_of_sera)) {
         styles_[point_no].shape(PointShape::Box);
     }
     drawing_order_.fill_if_empty(number_of_antigens + number_of_sera);

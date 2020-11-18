@@ -41,12 +41,13 @@ namespace acmacs::chart
 
     enum class remove_source_projection { no, yes }; // for relax_incremental
     enum class unmovable_non_nan_points { no, yes }; // for relax_incremental, points that have coordinates (not NaN) are marked as unmovable
+    enum class remove_reference_before_detecting { no, yes };
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     class ChartModify : public Chart
     {
-     public:
+      public:
         explicit ChartModify(ChartP main) : main_{main} {}
 
         InfoP info() const override;
@@ -73,23 +74,28 @@ namespace acmacs::chart
         const rjson::value& extension_field_modify(std::string field_name);
         void extension_field_modify(std::string field_name, const rjson::value& value);
 
-        std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, LayoutRandomizer::seed_t seed = std::nullopt, const DisconnectedPoints& disconnect_points = {});
-        void relax(number_of_optimizations_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points = {});
-        void relax_incremental(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options, remove_source_projection rsp = remove_source_projection::yes, unmovable_non_nan_points unnp = unmovable_non_nan_points::no);
+        std::pair<optimization_status, ProjectionModifyP> relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing,
+                                                                acmacs::chart::optimization_options options, LayoutRandomizer::seed_t seed = std::nullopt,
+                                                                const DisconnectedPoints& disconnect_points = {});
+        void relax(number_of_optimizations_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing,
+                   acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points = {});
+        void relax_incremental(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options,
+                               remove_source_projection rsp = remove_source_projection::yes, unmovable_non_nan_points unnp = unmovable_non_nan_points::no);
 
         void remove_layers();
         void remove_antigens(const ReverseSortedIndexes& indexes);
         void remove_sera(const ReverseSortedIndexes& indexes);
         AntigenModifyP insert_antigen(size_t before);
         SerumModifyP insert_serum(size_t before);
+        void detect_reference_antigens(remove_reference_before_detecting rrbd);
 
         void merge(const Chart& merge_in);
 
-     protected:
+      protected:
         explicit ChartModify(size_t number_of_antigens, size_t number_of_sera);
         explicit ChartModify(const Chart& source, bool copy_projections, bool copy_plot_spec);
 
-     private:
+      private:
         ChartP main_;
         InfoModifyP info_;
         AntigensModifyP antigens_;
@@ -104,25 +110,25 @@ namespace acmacs::chart
 
     }; // class ChartModify
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     class ChartNew : public ChartModify
     {
-     public:
+      public:
         explicit ChartNew(size_t number_of_antigens, size_t number_of_sera);
 
     }; // class ChartNew
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     class ChartClone : public ChartModify
     {
-     public:
+      public:
         enum class clone_data {
-            titers,             // info, antigens, sera, titers, forced_column_bases
-            projections,         // titers+projections
-            plot_spec,            // titers+plot_spec
-            projections_plot_spec,            // titers+projections+plot_spec
+            titers,                // info, antigens, sera, titers, forced_column_bases
+            projections,           // titers+projections
+            plot_spec,             // titers+plot_spec
+            projections_plot_spec, // titers+projections+plot_spec
         };
 
         explicit ChartClone(const Chart& source, clone_data cd = clone_data::titers);
@@ -130,28 +136,36 @@ namespace acmacs::chart
 
     }; // class ChartNew
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     class InfoModify : public Info
     {
-     public:
+      public:
         explicit InfoModify() = default;
         explicit InfoModify(InfoP main);
         void replace_with(const Info& main);
 
         std::string name(Compute aCompute = Compute::No) const override { return aCompute == Compute::No ? name_ : computed_name_; }
-        Virus       virus(Compute aCompute = Compute::No) const override;
-        acmacs::virus::type_subtype_t   virus_type(Compute aCompute = Compute::Yes) const override;
+        Virus virus(Compute aCompute = Compute::No) const override;
+        acmacs::virus::type_subtype_t virus_type(Compute aCompute = Compute::Yes) const override;
         std::string subset(Compute aCompute = Compute::No) const override;
-        Assay       assay(Compute aCompute = Compute::No) const override;
-        Lab         lab(Compute aCompute = Compute::No, FixLab fix = FixLab::yes) const override;
-        RbcSpecies  rbc_species(Compute aCompute = Compute::No) const override;
-        TableDate   date(Compute aCompute = Compute::No) const override;
+        Assay assay(Compute aCompute = Compute::No) const override;
+        Lab lab(Compute aCompute = Compute::No, FixLab fix = FixLab::yes) const override;
+        RbcSpecies rbc_species(Compute aCompute = Compute::No) const override;
+        TableDate date(Compute aCompute = Compute::No) const override;
         size_t number_of_sources() const override { return sources_.size(); }
         InfoP source(size_t aSourceNo) const override { return sources_.at(aSourceNo); }
 
-        void name(std::string value) { name_ = value; computed_name_ = value; }
-        void name_append(std::string_view value) { name_ = acmacs::string::join(acmacs::string::join_space, name_, value); computed_name_ = name_; }
+        void name(std::string value)
+        {
+            name_ = value;
+            computed_name_ = value;
+        }
+        void name_append(std::string_view value)
+        {
+            name_ = acmacs::string::join(acmacs::string::join_space, name_, value);
+            computed_name_ = name_;
+        }
         void virus(Virus value) { virus_ = value; }
         void virus_type(acmacs::virus::type_subtype_t value) { virus_type_ = value; }
         void subset(std::string value) { subset_ = value; }
@@ -176,11 +190,11 @@ namespace acmacs::chart
 
     }; // class InfoModify
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     class AntigenModify : public Antigen
     {
-     public:
+      public:
         explicit AntigenModify() = default;
         explicit AntigenModify(const Antigen& main);
 
@@ -210,7 +224,7 @@ namespace acmacs::chart
         void replace_with(const Antigen& main);
         void update_with(const Antigen& main);
 
-     private:
+      private:
         acmacs::virus::name_t name_;
         Date date_;
         acmacs::virus::Passage passage_;
@@ -224,11 +238,11 @@ namespace acmacs::chart
 
     }; // class AntigenModify
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     class SerumModify : public Serum
     {
-     public:
+      public:
         explicit SerumModify() = default;
         explicit SerumModify(const Serum& main);
 
@@ -255,7 +269,7 @@ namespace acmacs::chart
         void replace_with(const Serum& main);
         void update_with(const Serum& main);
 
-     private:
+      private:
         acmacs::virus::name_t name_;
         acmacs::virus::Passage passage_;
         BLineage lineage_;
@@ -267,7 +281,7 @@ namespace acmacs::chart
 
     }; // class SerumModify
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     template <typename Base, typename Modify, typename ModifyBase> class AntigensSeraModify : public Base
     {
@@ -320,7 +334,7 @@ namespace acmacs::chart
         std::vector<std::shared_ptr<Modify>> data_;
     };
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     class titers_cannot_be_modified : public std::runtime_error
     {
@@ -330,11 +344,11 @@ namespace acmacs::chart
 
     class TitersModify : public Titers
     {
-     public:
+      public:
         using dense_t = std::vector<Titer>;
         using sparse_entry_t = std::pair<size_t, Titer>; // serum no, titer
         using sparse_row_t = std::vector<sparse_entry_t>;
-        using sparse_t = std::vector<sparse_row_t>;    // size = number_of_antigens
+        using sparse_t = std::vector<sparse_row_t>; // size = number_of_antigens
         using titers_t = std::variant<dense_t, sparse_t>;
         using layers_t = std::vector<sparse_t>;
 
@@ -362,7 +376,7 @@ namespace acmacs::chart
 
         using titer_merge_report = std::vector<titer_merge_data>;
 
-        enum class more_than_thresholded {adjust_to_next, to_dont_care};
+        enum class more_than_thresholded { adjust_to_next, to_dont_care };
 
         // ----------------------------------------------------------------------
 
@@ -377,7 +391,11 @@ namespace acmacs::chart
         size_t titrations_for_serum(size_t serum_no) const override;
 
         bool modifiable() const noexcept { return layers_.empty(); }
-        void modifiable_check() const { if (!modifiable()) throw titers_cannot_be_modified{}; }
+        void modifiable_check() const
+        {
+            if (!modifiable())
+                throw titers_cannot_be_modified{};
+        }
 
         void titer(size_t aAntigenNo, size_t aSerumNo, const Titer& aTiter);
         void dontcare_for_antigen(size_t aAntigenNo);
@@ -407,8 +425,8 @@ namespace acmacs::chart
         static std::string titer_merge_report_long(titer_merge data);
         static std::string titer_merge_report_description();
 
-     private:
-          // size_t number_of_antigens_;
+      private:
+        // size_t number_of_antigens_;
         size_t number_of_sera_;
         titers_t titers_;
         layers_t layers_;
@@ -425,86 +443,155 @@ namespace acmacs::chart
 
     }; // class TitersModify
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     class ColumnBasesModify : public ColumnBasesData
     {
-     public:
+      public:
         explicit ColumnBasesModify(ColumnBasesP aMain) : ColumnBasesData{*aMain} {}
         explicit ColumnBasesModify(const ColumnBases& aSource) : ColumnBasesData{aSource} {}
 
     }; // class ColumnBasesModify
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     class ProjectionModifyNew;
 
     class ProjectionModify : public Projection
     {
-     public:
+      public:
         enum class randomizer { plain_with_table_max_distance, plain_with_current_layout_area, plain_from_sample_optimization };
 
         explicit ProjectionModify(const Chart& chart) : Projection(chart) {}
         explicit ProjectionModify(const ProjectionModify& aSource, const Chart& chart) : Projection(chart)
-            {
-                if (aSource.modified()) {
-                    layout_ = std::make_shared<acmacs::Layout>(*aSource.layout_modified());
-                    transformation_ = aSource.transformation_modified();
-                }
+        {
+            if (aSource.modified()) {
+                layout_ = std::make_shared<acmacs::Layout>(*aSource.layout_modified());
+                transformation_ = aSource.transformation_modified();
             }
+        }
         explicit ProjectionModify(const ProjectionModify& aSource) : ProjectionModify(aSource, aSource.chart()) {}
 
         std::string comment() const override { return comment_; }
 
         std::optional<double> stored_stress() const override { return stress_; }
-        void move_point(size_t aPointNo, const PointCoordinates& aCoordinates) { modify(); layout_->update(aPointNo, aCoordinates); transformed_layout_.reset(); }
-        void rotate_radians(double aAngle) { modify(); transformation_.rotate(aAngle); transformed_layout_.reset(); }
+        void move_point(size_t aPointNo, const PointCoordinates& aCoordinates)
+        {
+            modify();
+            layout_->update(aPointNo, aCoordinates);
+            transformed_layout_.reset();
+        }
+        void rotate_radians(double aAngle)
+        {
+            modify();
+            transformation_.rotate(aAngle);
+            transformed_layout_.reset();
+        }
         void rotate_degrees(double aAngle) { rotate_radians(aAngle * M_PI / 180.0); }
-        void flip(double aX, double aY) { modify(); transformation_.flip(aX, aY); transformed_layout_.reset(); }
+        void flip(double aX, double aY)
+        {
+            modify();
+            transformation_.flip(aX, aY);
+            transformed_layout_.reset();
+        }
         void flip_east_west() { flip(0, 1); }
         void flip_north_south() { flip(1, 0); }
-        void transformation(const Transformation& transformation) { modify(); transformation_ = transformation; transformed_layout_.reset(); }
-        void transformation_reset() { modify(); transformation_.reset(number_of_dimensions()); transformed_layout_.reset(); }
+        void transformation(const Transformation& transformation)
+        {
+            modify();
+            transformation_ = transformation;
+            transformed_layout_.reset();
+        }
+        void transformation_reset()
+        {
+            modify();
+            transformation_.reset(number_of_dimensions());
+            transformed_layout_.reset();
+        }
         using Projection::transformation;
-        void set_forced_column_bases(ColumnBasesP aSource) { if (aSource) forced_column_bases_ = std::make_shared<ColumnBasesModify>(aSource); else forced_column_bases_.reset(); }
+        void set_forced_column_bases(ColumnBasesP aSource)
+        {
+            if (aSource)
+                forced_column_bases_ = std::make_shared<ColumnBasesModify>(aSource);
+            else
+                forced_column_bases_.reset();
+        }
         void set_forced_column_basis(size_t serum_no, double column_basis);
 
-        std::shared_ptr<acmacs::Layout> layout_modified() { modify(); return layout_; }
+        std::shared_ptr<acmacs::Layout> layout_modified()
+        {
+            modify();
+            return layout_;
+        }
         std::shared_ptr<acmacs::Layout> layout_modified() const { return layout_; }
         std::shared_ptr<acmacs::Layout> randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer);
         std::shared_ptr<acmacs::Layout> randomize_layout(randomizer rnd, double diameter_multiplier, LayoutRandomizer::seed_t seed = std::nullopt);
         std::shared_ptr<acmacs::Layout> randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> randomizer); // randomize just some point coordinates
         virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
         virtual void set_stress(double stress) { stress_ = stress; }
-        virtual void comment(std::string comment) { modify(); comment_ = comment; }
+        virtual void comment(std::string comment)
+        {
+            modify();
+            comment_ = comment;
+        }
         virtual optimization_status relax(optimization_options options);
         virtual optimization_status relax(optimization_options options, IntermediateLayouts& intermediate_layouts);
         virtual std::shared_ptr<ProjectionModifyNew> clone(ChartModify& chart) const;
         ProcrustesData orient_to(const Projection& master);
 
         PointIndexList non_nan_points() const; // for relax_incremental and enum unmovable_non_nan_points
-        void set_unmovable(const UnmovablePoints& a_unmovable) { modify(); unmovable_ = a_unmovable; }
-        void set_disconnected(const DisconnectedPoints& disconnect) { modify(); disconnected_ = disconnect; }
+        void set_unmovable(const UnmovablePoints& a_unmovable)
+        {
+            modify();
+            unmovable_ = a_unmovable;
+        }
+        void set_disconnected(const DisconnectedPoints& disconnect)
+        {
+            modify();
+            disconnected_ = disconnect;
+        }
         void disconnect_having_too_few_numeric_titers(optimization_options options, const Titers& titers);
-        void set_unmovable_in_the_last_dimension(const UnmovableInTheLastDimensionPoints& a_unmovable_in_the_last_dimension) { modify(); unmovable_in_the_last_dimension_ = a_unmovable_in_the_last_dimension; }
+        void set_unmovable_in_the_last_dimension(const UnmovableInTheLastDimensionPoints& a_unmovable_in_the_last_dimension)
+        {
+            modify();
+            unmovable_in_the_last_dimension_ = a_unmovable_in_the_last_dimension;
+        }
 
         void remove_antigens(const ReverseSortedIndexes& indexes);
         void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens);
         void insert_antigen(size_t before);
         void insert_serum(size_t before, size_t number_of_antigens);
 
-     protected:
-        virtual void modify() { stress_.reset(); transformed_layout_.reset(); }
+      protected:
+        virtual void modify()
+        {
+            stress_.reset();
+            transformed_layout_.reset();
+        }
         virtual bool modified() const { return true; }
-        double recalculate_stress() const override { stress_ = Projection::recalculate_stress(); return *stress_; }
+        double recalculate_stress() const override
+        {
+            stress_ = Projection::recalculate_stress();
+            return *stress_;
+        }
         bool layout_present() const { return static_cast<bool>(layout_); }
         void clone_from(const Projection& aSource);
-        std::shared_ptr<Layout> transformed_layout_modified() const { if (!transformed_layout_) transformed_layout_ = layout_->transform(transformation_); return transformed_layout_; }
+        std::shared_ptr<Layout> transformed_layout_modified() const
+        {
+            if (!transformed_layout_)
+                transformed_layout_ = layout_->transform(transformation_);
+            return transformed_layout_;
+        }
         size_t number_of_points_modified() const { return layout_->number_of_points(); }
         number_of_dimensions_t number_of_dimensions_modified() const { return layout_->number_of_dimensions(); }
         const Transformation& transformation_modified() const { return transformation_; }
         ColumnBasesModifyP forced_column_bases_modified() const { return forced_column_bases_; }
-        void new_layout(size_t number_of_points, number_of_dimensions_t number_of_dimensions) { layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions); transformation_.reset(number_of_dimensions); transformed_layout_.reset(); }
+        void new_layout(size_t number_of_points, number_of_dimensions_t number_of_dimensions)
+        {
+            layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions);
+            transformation_.reset(number_of_dimensions);
+            transformed_layout_.reset();
+        }
         constexpr const UnmovablePoints& get_unmovable() const { return unmovable_; }
         constexpr UnmovablePoints& get_unmovable() { return unmovable_; }
         constexpr const DisconnectedPoints& get_disconnected() const { return disconnected_; }
@@ -512,7 +599,7 @@ namespace acmacs::chart
         constexpr const UnmovableInTheLastDimensionPoints& get_unmovable_in_the_last_dimension() const { return unmovable_in_the_last_dimension_; }
         constexpr UnmovableInTheLastDimensionPoints& get_unmovable_in_the_last_dimension() { return unmovable_in_the_last_dimension_; }
 
-     private:
+      private:
         std::shared_ptr<acmacs::Layout> layout_;
         Transformation transformation_;
         mutable std::shared_ptr<Layout> transformed_layout_;
@@ -528,15 +615,21 @@ namespace acmacs::chart
 
     }; // class ProjectionModify
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     class ProjectionModifyMain : public ProjectionModify
     {
-     public:
+      public:
         explicit ProjectionModifyMain(const ChartModify& chart, ProjectionP main) : ProjectionModify(chart), main_{main} {}
         explicit ProjectionModifyMain(const ProjectionModifyMain& aSource) : ProjectionModify(aSource), main_(aSource.main_) {}
 
-        std::optional<double> stored_stress() const override { if (modified()) return ProjectionModify::stored_stress(); else return main_->stored_stress(); } // no stress if projection was modified
+        std::optional<double> stored_stress() const override
+        {
+            if (modified())
+                return ProjectionModify::stored_stress();
+            else
+                return main_->stored_stress();
+        } // no stress if projection was modified
         std::shared_ptr<Layout> layout() const override { return modified() ? layout_modified() : main_->layout(); }
         std::shared_ptr<Layout> transformed_layout() const override { return modified() ? transformed_layout_modified() : main_->transformed_layout(); }
         std::string comment() const override { return modified() ? ProjectionModify::comment() : main_->comment(); }
@@ -552,40 +645,45 @@ namespace acmacs::chart
         UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const override { return modified() ? get_unmovable_in_the_last_dimension() : main_->unmovable_in_the_last_dimension(); }
         AvidityAdjusts avidity_adjusts() const override { return main_->avidity_adjusts(); }
 
-     protected:
+      protected:
         bool modified() const override { return layout_present(); }
-        void modify() override { ProjectionModify::modify(); if (!modified()) clone_from(*main_);  }
+        void modify() override
+        {
+            ProjectionModify::modify();
+            if (!modified())
+                clone_from(*main_);
+        }
 
-     private:
+      private:
         ProjectionP main_;
 
     }; // class ProjectionModifyMain
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     class ProjectionModifyNew : public ProjectionModify
     {
-     public:
+      public:
         explicit ProjectionModifyNew(const Chart& chart, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis)
             : ProjectionModify(chart), minimum_column_basis_(minimum_column_basis)
-            {
-                new_layout(chart.number_of_points(), number_of_dimensions);
-                set_forced_column_bases(chart.forced_column_bases(minimum_column_basis));
-            }
+        {
+            new_layout(chart.number_of_points(), number_of_dimensions);
+            set_forced_column_bases(chart.forced_column_bases(minimum_column_basis));
+        }
 
         explicit ProjectionModifyNew(const ProjectionModify& aSource, const Chart& chart)
-            : ProjectionModify(aSource, chart), minimum_column_basis_(aSource.minimum_column_basis()),
-              dodgy_titer_is_regular_(aSource.dodgy_titer_is_regular()), stress_diff_to_stop_(aSource.stress_diff_to_stop())
-            {
-                const auto& source_layout = *aSource.layout();
-                new_layout(source_layout.number_of_points(), source_layout.number_of_dimensions());
-                set_layout(source_layout);
-                set_forced_column_bases(aSource.forced_column_bases());
-                set_disconnected(aSource.disconnected());
-                set_unmovable(aSource.unmovable());
-                set_unmovable_in_the_last_dimension(aSource.unmovable_in_the_last_dimension());
-                comment(aSource.comment());
-            }
+            : ProjectionModify(aSource, chart), minimum_column_basis_(aSource.minimum_column_basis()), dodgy_titer_is_regular_(aSource.dodgy_titer_is_regular()),
+              stress_diff_to_stop_(aSource.stress_diff_to_stop())
+        {
+            const auto& source_layout = *aSource.layout();
+            new_layout(source_layout.number_of_points(), source_layout.number_of_dimensions());
+            set_layout(source_layout);
+            set_forced_column_bases(aSource.forced_column_bases());
+            set_disconnected(aSource.disconnected());
+            set_unmovable(aSource.unmovable());
+            set_unmovable_in_the_last_dimension(aSource.unmovable_in_the_last_dimension());
+            comment(aSource.comment());
+        }
 
         explicit ProjectionModifyNew(const ProjectionModify& aSource) : ProjectionModifyNew(aSource, aSource.chart()) {}
 
@@ -605,32 +703,35 @@ namespace acmacs::chart
         UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const override { return get_unmovable_in_the_last_dimension(); }
         AvidityAdjusts avidity_adjusts() const override { return {}; }
 
-     private:
+      private:
         MinimumColumnBasis minimum_column_basis_;
         enum dodgy_titer_is_regular dodgy_titer_is_regular_ = dodgy_titer_is_regular::no;
         double stress_diff_to_stop_{0};
 
     }; // class ProjectionModifyNew
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     class ProjectionsModify : public Projections
     {
-     public:
+      public:
         explicit ProjectionsModify(const ChartModify& chart) : Projections(chart) {}
-        explicit ProjectionsModify(const ChartModify& chart, ProjectionsP main)
-            : Projections(chart), projections_(main->size(), nullptr)
-            {
-                std::transform(main->begin(), main->end(), projections_.begin(), [&chart](ProjectionP aSource) { return std::make_shared<ProjectionModifyMain>(chart, aSource); });
-                set_projection_no();
-            }
+        explicit ProjectionsModify(const ChartModify& chart, ProjectionsP main) : Projections(chart), projections_(main->size(), nullptr)
+        {
+            std::transform(main->begin(), main->end(), projections_.begin(), [&chart](ProjectionP aSource) { return std::make_shared<ProjectionModifyMain>(chart, aSource); });
+            set_projection_no();
+        }
 
         bool empty() const override { return projections_.empty(); }
         size_t size() const override { return projections_.size(); }
         ProjectionP operator[](size_t aIndex) const override { return projections_.at(aIndex); }
         ProjectionModifyP at(size_t aIndex) const { return projections_.at(aIndex); }
-          // ProjectionModifyP clone(size_t aIndex) { auto cloned = projections_.at(aIndex)->clone(); projections_.push_back(cloned); return cloned; }
-        void sort() { std::sort(projections_.begin(), projections_.end(), [](const auto& p1, const auto& p2) { return p1->stress() < p2->stress(); }); set_projection_no(); }
+        // ProjectionModifyP clone(size_t aIndex) { auto cloned = projections_.at(aIndex)->clone(); projections_.push_back(cloned); return cloned; }
+        void sort()
+        {
+            std::sort(projections_.begin(), projections_.end(), [](const auto& p1, const auto& p2) { return p1->stress() < p2->stress(); });
+            set_projection_no();
+        }
         void add(std::shared_ptr<ProjectionModify> projection);
 
         std::shared_ptr<ProjectionModifyNew> new_from_scratch(number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis);
@@ -640,35 +741,50 @@ namespace acmacs::chart
         std::shared_ptr<ProjectionModifyNew> new_by_cloning(const ProjectionModify& source, Chart& chart);
 
         void keep_just(size_t number_of_projections_to_keep)
-            {
-                if (projections_.size() > number_of_projections_to_keep)
-                    projections_.erase(projections_.begin() + static_cast<decltype(projections_)::difference_type>(number_of_projections_to_keep), projections_.end());
-            }
+        {
+            if (projections_.size() > number_of_projections_to_keep)
+                projections_.erase(projections_.begin() + static_cast<decltype(projections_)::difference_type>(number_of_projections_to_keep), projections_.end());
+        }
 
         void remove_all();
         void remove(size_t projection_no);
         void remove_all_except(size_t projection_no);
         void remove_except(size_t number_of_initial_projections_to_keep, ProjectionP projection_to_keep = {nullptr});
 
-        void remove_antigens(const ReverseSortedIndexes& indexes) { for_each(projections_.begin(), projections_.end(), [&](auto& projection) { projection->remove_antigens(indexes); }); }
-        void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens) { for_each(projections_.begin(), projections_.end(), [&indexes,number_of_antigens](auto& projection) { projection->remove_sera(indexes, number_of_antigens); }); }
-        void insert_antigen(size_t before) { for_each(projections_.begin(), projections_.end(), [=](auto& projection) { projection->insert_antigen(before); }); }
-        void insert_serum(size_t before, size_t number_of_antigens) { for_each(projections_.begin(), projections_.end(), [=](auto& projection) { projection->insert_serum(before, number_of_antigens); }); }
+        void remove_antigens(const ReverseSortedIndexes& indexes)
+        {
+            for_each(projections_.begin(), projections_.end(), [&](auto& projection) { projection->remove_antigens(indexes); });
+        }
+        void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens)
+        {
+            for_each(projections_.begin(), projections_.end(), [&indexes, number_of_antigens](auto& projection) { projection->remove_sera(indexes, number_of_antigens); });
+        }
+        void insert_antigen(size_t before)
+        {
+            for_each(projections_.begin(), projections_.end(), [=](auto& projection) { projection->insert_antigen(before); });
+        }
+        void insert_serum(size_t before, size_t number_of_antigens)
+        {
+            for_each(projections_.begin(), projections_.end(), [=](auto& projection) { projection->insert_serum(before, number_of_antigens); });
+        }
 
-     private:
+      private:
         std::vector<ProjectionModifyP> projections_;
 
-        void set_projection_no() { std::for_each(acmacs::index_iterator(0UL), acmacs::index_iterator(projections_.size()), [this](auto index) { this->projections_[index]->set_projection_no(index); }); }
+        void set_projection_no()
+        {
+            std::for_each(acmacs::index_iterator(0UL), acmacs::index_iterator(projections_.size()), [this](auto index) { this->projections_[index]->set_projection_no(index); });
+        }
 
         friend class ChartModify;
 
     }; // class ProjectionsModify
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     class PlotSpecModify : public PlotSpec
     {
-     public:
+      public:
         explicit PlotSpecModify(size_t number_of_antigens, size_t number_of_sera);
         explicit PlotSpecModify(PlotSpecP main, size_t number_of_antigens) : main_{main}, number_of_antigens_(number_of_antigens) {}
 
@@ -680,69 +796,226 @@ namespace acmacs::chart
         size_t number_of_points() const override { return modified() ? styles_.size() : main_->number_of_points(); }
 
         DrawingOrder drawing_order() const override
-            {
-                if (modified())
-                    return drawing_order_;
-                auto drawing_order = main_->drawing_order();
-                drawing_order.fill_if_empty(number_of_points());
-                return drawing_order;
-            }
+        {
+            if (modified())
+                return drawing_order_;
+            auto drawing_order = main_->drawing_order();
+            drawing_order.fill_if_empty(number_of_points());
+            return drawing_order;
+        }
 
-        DrawingOrder& drawing_order_modify() { modify(); return drawing_order_; }
-        void raise(size_t point_no) { modify(); validate_point_no(point_no); drawing_order_.raise(point_no); }
-        void raise(const Indexes& points) { modify(); std::for_each(points.begin(), points.end(), [this](size_t index) { this->raise(index); }); }
-        void lower(size_t point_no) { modify(); validate_point_no(point_no); drawing_order_.lower(point_no); }
-        void lower(const Indexes& points) { modify(); std::for_each(points.begin(), points.end(), [this](size_t index) { this->lower(index); }); }
+        DrawingOrder& drawing_order_modify()
+        {
+            modify();
+            return drawing_order_;
+        }
+        void raise(size_t point_no)
+        {
+            modify();
+            validate_point_no(point_no);
+            drawing_order_.raise(point_no);
+        }
+        void raise(const Indexes& points)
+        {
+            modify();
+            std::for_each(points.begin(), points.end(), [this](size_t index) { this->raise(index); });
+        }
+        void lower(size_t point_no)
+        {
+            modify();
+            validate_point_no(point_no);
+            drawing_order_.lower(point_no);
+        }
+        void lower(const Indexes& points)
+        {
+            modify();
+            std::for_each(points.begin(), points.end(), [this](size_t index) { this->lower(index); });
+        }
         void raise_serum(size_t serum_no) { raise(serum_no + number_of_antigens_); }
-        void raise_serum(const Indexes& sera) { std::for_each(sera.begin(), sera.end(), [this](size_t index) { this->raise(index + this->number_of_antigens_); }); }
+        void raise_serum(const Indexes& sera)
+        {
+            std::for_each(sera.begin(), sera.end(), [this](size_t index) { this->raise(index + this->number_of_antigens_); });
+        }
         void lower_serum(size_t serum_no) { lower(serum_no + number_of_antigens_); }
-        void lower_serum(const Indexes& sera) { std::for_each(sera.begin(), sera.end(), [this](size_t index) { this->lower(index + this->number_of_antigens_); }); }
+        void lower_serum(const Indexes& sera)
+        {
+            std::for_each(sera.begin(), sera.end(), [this](size_t index) { this->lower(index + this->number_of_antigens_); });
+        }
 
-        void shown(size_t point_no, bool shown) { modify(); validate_point_no(point_no); styles_[point_no].shown(shown); }
-        void size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].size(size); }
-        void fill(size_t point_no, Color fill) { modify(); validate_point_no(point_no); styles_[point_no].fill(fill); }
-        void fill_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].fill(color::Modifier{color::Modifier::transparency_set{1.0 - opacity}}); }
-        void outline(size_t point_no, Color outline) { modify(); validate_point_no(point_no); styles_[point_no].outline(outline); }
-        void outline_opacity(size_t point_no, double opacity) { modify(); validate_point_no(point_no); validate_opacity(opacity); styles_[point_no].outline(color::Modifier{color::Modifier::transparency_set{1.0 - opacity}}); }
-        void outline_width(size_t point_no, Pixels outline_width) { modify(); validate_point_no(point_no); styles_[point_no].outline_width(outline_width); }
-        void rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].rotation(rotation); }
-        void aspect(size_t point_no, Aspect aspect) { modify(); validate_point_no(point_no); styles_[point_no].aspect(aspect); }
-        void shape(size_t point_no, PointShape::Shape shape) { modify(); validate_point_no(point_no); styles_[point_no].shape(shape); }
-        void label_shown(size_t point_no, bool shown) { modify(); validate_point_no(point_no); styles_[point_no].label().shown = shown; }
-        void label_offset_x(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label().offset.x(offset); }
-        void label_offset_y(size_t point_no, double offset) { modify(); validate_point_no(point_no); styles_[point_no].label().offset.y(offset); }
-        void label_size(size_t point_no, Pixels size) { modify(); validate_point_no(point_no); styles_[point_no].label().size = size; }
-        void label_color(size_t point_no, Color color) { modify(); validate_point_no(point_no); styles_[point_no].label().color.add(color::Modifier{color}); }
-        void label_rotation(size_t point_no, Rotation rotation) { modify(); validate_point_no(point_no); styles_[point_no].label().rotation = rotation; }
-        void label_slant(size_t point_no, FontSlant slant) { modify(); validate_point_no(point_no); styles_[point_no].label().style.slant = slant; }
-        void label_weight(size_t point_no, FontWeight weight) { modify(); validate_point_no(point_no); styles_[point_no].label().style.weight = weight; }
-        void label_font_family(size_t point_no, std::string font_family) { modify(); validate_point_no(point_no); styles_[point_no].label().style.font_family = font_family; }
-        void label_text(size_t point_no, std::string text) { modify(); validate_point_no(point_no); styles_[point_no].label_text(text); }
+        void shown(size_t point_no, bool shown)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].shown(shown);
+        }
+        void size(size_t point_no, Pixels size)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].size(size);
+        }
+        void fill(size_t point_no, Color fill)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].fill(fill);
+        }
+        void fill_opacity(size_t point_no, double opacity)
+        {
+            modify();
+            validate_point_no(point_no);
+            validate_opacity(opacity);
+            styles_[point_no].fill(color::Modifier{color::Modifier::transparency_set{1.0 - opacity}});
+        }
+        void outline(size_t point_no, Color outline)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].outline(outline);
+        }
+        void outline_opacity(size_t point_no, double opacity)
+        {
+            modify();
+            validate_point_no(point_no);
+            validate_opacity(opacity);
+            styles_[point_no].outline(color::Modifier{color::Modifier::transparency_set{1.0 - opacity}});
+        }
+        void outline_width(size_t point_no, Pixels outline_width)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].outline_width(outline_width);
+        }
+        void rotation(size_t point_no, Rotation rotation)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].rotation(rotation);
+        }
+        void aspect(size_t point_no, Aspect aspect)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].aspect(aspect);
+        }
+        void shape(size_t point_no, PointShape::Shape shape)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].shape(shape);
+        }
+        void label_shown(size_t point_no, bool shown)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].label().shown = shown;
+        }
+        void label_offset_x(size_t point_no, double offset)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].label().offset.x(offset);
+        }
+        void label_offset_y(size_t point_no, double offset)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].label().offset.y(offset);
+        }
+        void label_size(size_t point_no, Pixels size)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].label().size = size;
+        }
+        void label_color(size_t point_no, Color color)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].label().color.add(color::Modifier{color});
+        }
+        void label_rotation(size_t point_no, Rotation rotation)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].label().rotation = rotation;
+        }
+        void label_slant(size_t point_no, FontSlant slant)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].label().style.slant = slant;
+        }
+        void label_weight(size_t point_no, FontWeight weight)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].label().style.weight = weight;
+        }
+        void label_font_family(size_t point_no, std::string font_family)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].label().style.font_family = font_family;
+        }
+        void label_text(size_t point_no, std::string text)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no].label_text(text);
+        }
 
-        void scale_all(double point_scale, double outline_scale) { modify(); std::for_each(styles_.begin(), styles_.end(), [=](auto& style) { style.scale(point_scale).scale_outline(outline_scale); }); }
+        void scale_all(double point_scale, double outline_scale)
+        {
+            modify();
+            std::for_each(styles_.begin(), styles_.end(), [=](auto& style) { style.scale(point_scale).scale_outline(outline_scale); });
+        }
 
-        void modify(size_t point_no, const PointStyleModified& style) { modify(); validate_point_no(point_no); styles_[point_no] = style; }
-        void modify(const Indexes& points, const PointStyleModified& style) { modify(); std::for_each(points.begin(), points.end(), [this,&style](size_t index) { this->modify(index, style); }); }
+        void modify(size_t point_no, const PointStyleModified& style)
+        {
+            modify();
+            validate_point_no(point_no);
+            styles_[point_no] = style;
+        }
+        void modify(const Indexes& points, const PointStyleModified& style)
+        {
+            modify();
+            std::for_each(points.begin(), points.end(), [this, &style](size_t index) { this->modify(index, style); });
+        }
         void modify_serum(size_t serum_no, const PointStyleModified& style) { modify(serum_no + number_of_antigens_, style); }
-        void modify_sera(const Indexes& sera, const PointStyleModified& style) { std::for_each(sera.begin(), sera.end(), [this,&style](size_t index) { this->modify(index + this->number_of_antigens_, style); }); }
+        void modify_sera(const Indexes& sera, const PointStyleModified& style)
+        {
+            std::for_each(sera.begin(), sera.end(), [this, &style](size_t index) { this->modify(index + this->number_of_antigens_, style); });
+        }
 
         void remove_antigens(const ReverseSortedIndexes& indexes);
         void remove_sera(const ReverseSortedIndexes& indexes);
         void insert_antigen(size_t before);
         void insert_serum(size_t before);
 
-     protected:
+      protected:
         virtual bool modified() const { return modified_; }
-        virtual void modify() { if (!modified()) clone_from(*main_); }
-        void clone_from(const PlotSpec& aSource) { modified_ = true; styles_ = aSource.all_styles(); drawing_order_ = aSource.drawing_order(); drawing_order_.fill_if_empty(number_of_points()); }
+        virtual void modify()
+        {
+            if (!modified())
+                clone_from(*main_);
+        }
+        void clone_from(const PlotSpec& aSource)
+        {
+            modified_ = true;
+            styles_ = aSource.all_styles();
+            drawing_order_ = aSource.drawing_order();
+            drawing_order_.fill_if_empty(number_of_points());
+        }
         const PointStyle& style_modified(size_t point_no) const { return styles_.at(point_no); }
 
         void validate_point_no(size_t point_no) const
-            {
-                // std::cerr << "DEBUG: PlotSpecModify::validate_point_no: number_of_points main: " << main_->number_of_points() << " modified: " << modified() << " number_of_points: " << number_of_points() << '\n';
-                if (point_no >= number_of_points())
-                    throw std::runtime_error{fmt::format("Invalid point number: {}, expected integer in range 0..{} inclusive", point_no, number_of_points() - 1)};
-            }
+        {
+            // std::cerr << "DEBUG: PlotSpecModify::validate_point_no: number_of_points main: " << main_->number_of_points() << " modified: " << modified() << " number_of_points: " <<
+            // number_of_points() << '\n';
+            if (point_no >= number_of_points())
+                throw std::runtime_error{fmt::format("Invalid point number: {}, expected integer in range 0..{} inclusive", point_no, number_of_points() - 1)};
+        }
 
         void validate_opacity(double opacity) const
         {
@@ -750,7 +1023,7 @@ namespace acmacs::chart
                 throw std::runtime_error{fmt::format("Invalid color opacity: {}, expected within range 0.0..1.0 inclusive", opacity)};
         }
 
-     private:
+      private:
         PlotSpecP main_;
         size_t number_of_antigens_;
         bool modified_ = false;
@@ -759,7 +1032,7 @@ namespace acmacs::chart
 
     }; // class PlotSpecModify
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
 } // namespace acmacs::chart
 

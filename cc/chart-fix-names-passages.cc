@@ -96,6 +96,7 @@ int main(int argc, char* const argv[])
             }
         }
 
+        chart.detect_reference_antigens(acmacs::chart::remove_reference_before_detecting::no);
         acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name());
     }
     catch (std::exception& err) {
