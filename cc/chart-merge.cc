@@ -2,11 +2,17 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/read-file.hh"
+#include "acmacs-base/range-v3.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/merge.hh"
 #include "acmacs-chart-2/common.hh"
+
+// ----------------------------------------------------------------------
+
+static void set_merge_type(acmacs::chart::MergeSettings& settings, std::string_view merge_type);
+[[nodiscard]] static std::vector<std::vector<size_t>> get_cheating_assays(const std::vector<acmacs::chart::ChartModify>& charts);
 
 // ----------------------------------------------------------------------
 
@@ -19,10 +25,10 @@ struct Options : public argv
     option<str>  output_chart{*this, 'o', "output", dflt{""}, desc{"output chart"}};
     option<str>  match{*this, "match", dflt{"auto"}, desc{"match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""}};
     option<str>  merge_type{*this, 'm', "merge-type", dflt{"simple"}, desc{"merge type: \"type1\"..\"type5\", \"incremental\" (type2), \"overlay\" (type3), \"simple\" (type1)"}};
+    option<bool> combine_cheating_assays{*this, "combine-cheating-assays", desc{"combine tables if they have the same reference titers"}};
     option<bool> duplicates_distinct{*this, "duplicates-distinct", desc{"make duplicates distinct"}};
     option<str>  report_titers{*this, "report", desc{"titer merge report"}};
     option<bool> report_common_only{*this, "common-only", desc{"titer merge report for common antigens and sera only"}};
-    option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
     option<str_array> verbose{*this, 'v', "verbose", desc{"comma separated list (or multiple switches) of enablers: all, common"}};
 
     argument<str_array> source_charts{*this, arg_name{"source-chart"}, mandatory};
@@ -34,43 +40,45 @@ int main(int argc, const char* const argv[])
     try {
         Options opt(argc, argv);
         acmacs::log::enable(opt.verbose);
-        const auto report = do_report_time(opt.report_time);
+
         acmacs::chart::MergeSettings settings;
-        if (opt.merge_type == "incremental" || opt.merge_type == "type2")
-            settings.projection_merge = acmacs::chart::projection_merge_t::type2;
-        else if (opt.merge_type == "overlay" || opt.merge_type == "type3")
-            settings.projection_merge = acmacs::chart::projection_merge_t::type3;
-        else if (opt.merge_type == "type4")
-            settings.projection_merge = acmacs::chart::projection_merge_t::type4;
-        else if (opt.merge_type == "type5")
-            settings.projection_merge = acmacs::chart::projection_merge_t::type5;
-        else if (opt.merge_type != "simple" && opt.merge_type != "type1")
-            throw std::runtime_error(acmacs::string::concat("unrecognized --merge-type value: ", opt.merge_type.get()));
+        set_merge_type(settings, opt.merge_type);
+        settings.match_level = acmacs::chart::CommonAntigensSera::match_level(opt.match);
         if (opt.source_charts->size() < 2)
             throw std::runtime_error("too few source charts specified");
-        settings.match_level = acmacs::chart::CommonAntigensSera::match_level(opt.match);
-        const auto read = [report,duplicates_distinct=*opt.duplicates_distinct](std::string_view filename) {
-            acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(filename, acmacs::chart::Verify::None, report)};
-            if (duplicates_distinct) {
+
+        std::vector<acmacs::chart::ChartModify> charts;
+        for (auto chart_no : range_from_0_to(opt.source_charts->size())) {
+            acmacs::chart::ChartModify chart{acmacs::chart::import_from_file((*opt.source_charts)[chart_no])};
+            if (*opt.duplicates_distinct) {
                 chart.antigens_modify()->duplicates_distinct(chart.antigens()->find_duplicates());
                 chart.sera_modify()->duplicates_distinct(chart.sera()->find_duplicates());
             }
-            return chart;
-        };
-        auto chart1 = read((*opt.source_charts)[0]);
-        auto chart2 = read((*opt.source_charts)[1]);
+            charts.push_back(std::move(chart));
+        }
 
-        auto [result, merge_report] = acmacs::chart::merge(chart1, chart2, settings);
+        const auto cheating_assays = get_cheating_assays(charts);
+        if (!cheating_assays.empty() && !opt.combine_cheating_assays) {
+            AD_WARNING("Cheating assays present, consider using --combine-cheating-assays");
+            for (const auto& group : cheating_assays) {
+                fmt::print(stderr, "    cheating assay group\n");
+                for (const auto chart_no : group)
+                    fmt::print(stderr, "        {}\n", charts[chart_no].make_name());
+            }
+            fmt::print(stderr, "\n\n");
+        }
 
-        fmt::print("{}\n{}\n\n{}\n----------\n\n", chart1.description(), chart2.description(), merge_report.common.report());
+        auto [result, merge_report] = acmacs::chart::merge(charts[0], charts[1], settings);
+
+        fmt::print("{}\n{}\n\n{}\n----------\n\n", charts[0].description(), charts[1].description(), merge_report.common.report());
         for (size_t c_no = 2; c_no < opt.source_charts->size(); ++c_no) {
-            auto chart3 = read((*opt.source_charts)[c_no]);
+            auto& chart3 = charts[c_no];
             fmt::print("{}\n{}\n\n", result->description(), chart3.description());
             std::tie(result, merge_report) = acmacs::chart::merge(*result, chart3, settings);
             fmt::print("{}\n----------\n\n", merge_report.common.report());
         }
         if (opt.output_chart.has_value())
-            acmacs::chart::export_factory(*result, opt.output_chart, opt.program_name(), report);
+            acmacs::chart::export_factory(*result, opt.output_chart, opt.program_name());
         if (opt.report_titers.has_value()) {
             if (opt.report_common_only)
                 acmacs::file::write(opt.report_titers, merge_report.titer_merge_report_common_only(*result));
@@ -84,11 +92,100 @@ int main(int argc, const char* const argv[])
         }
     }
     catch (std::exception& err) {
-        fmt::print(stderr, "> ERROR {}\n", err);
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;
 }
+
+// ----------------------------------------------------------------------
+
+void set_merge_type(acmacs::chart::MergeSettings& settings, std::string_view merge_type)
+{
+    using namespace std::string_view_literals;
+    if (merge_type == "incremental"sv || merge_type == "type2"sv)
+        settings.projection_merge = acmacs::chart::projection_merge_t::type2;
+    else if (merge_type == "overlay"sv || merge_type == "type3"sv)
+        settings.projection_merge = acmacs::chart::projection_merge_t::type3;
+    else if (merge_type == "type4"sv)
+        settings.projection_merge = acmacs::chart::projection_merge_t::type4;
+    else if (merge_type == "type5"sv)
+        settings.projection_merge = acmacs::chart::projection_merge_t::type5;
+    else if (merge_type != "simple"sv && merge_type != "type1"sv)
+        throw std::runtime_error{fmt::format("unrecognized --merge-type value: \"{}\"", merge_type)};
+
+} // set_merge_type
+
+// ----------------------------------------------------------------------
+
+std::vector<std::vector<size_t>> get_cheating_assays(const std::vector<acmacs::chart::ChartModify>& charts)
+{
+    const auto pair_order = [](const auto& e1, const auto& e2) { return e1.second < e2.second; };
+    const auto get_reference_names = [pair_order](const auto& ag_sr) {
+        return *ag_sr.reference_indexes()                                                                             //
+               | ranges::views::transform([&ag_sr](size_t no) { return std::make_pair(no, ag_sr[no]->full_name()); }) //
+               | ranges::to_vector                                                                                    //
+               | ranges::actions::sort(pair_order);
+    };
+    const auto get_all_names = [pair_order](const auto& ag_sr) {
+        return *ag_sr.all_indexes()                                                                                   //
+               | ranges::views::transform([&ag_sr](size_t no) { return std::make_pair(no, ag_sr[no]->full_name()); }) //
+               | ranges::to_vector                                                                                    //
+               | ranges::actions::sort(pair_order);
+    };
+
+    const auto titers_same = []<typename T, typename N>(const T& titers1, const N& antigens1, const N& sera1, const T& titers2, const N& antigens2, const N& sera2) {
+        for (const auto& [ag1_no, ag1] : antigens1) {
+            const auto ag2_no = ranges::find_if(antigens2, [ag1 = ag1](const auto& en) { return en.second == ag1; })->first;
+            for (const auto& [sr1_no, sr1] : sera1) {
+                const auto sr2_no = ranges::find_if(sera2, [sr1 = sr1](const auto& en) { return en.second == sr1; })->first;
+                if (titers1.titer(ag1_no, sr1_no) != titers2.titer(ag2_no, sr2_no))
+                    return false;
+            }
+        }
+        return true;
+    };
+
+    std::vector<std::vector<size_t>> result;
+    std::vector<size_t> processed;
+    for (auto no1 : range_from_0_to(charts.size())) {
+        if (ranges::find(processed, no1) == ranges::end(processed)) {
+            std::vector<size_t> group;
+            auto antigens1 = charts[no1].antigens();
+            const auto antigens1_names = get_reference_names(*antigens1);
+            // AD_DEBUG("AG {}", antigens1_names);
+            auto sera1 = charts[no1].sera();
+            const auto sera1_names = get_all_names(*sera1);
+            // AD_DEBUG("SR {}", sera1_names);
+
+            for (auto no2 : range_from_to(no1 + 1, charts.size())) {
+                if (ranges::find(processed, no2) == ranges::end(processed)) {
+
+                    auto antigens2 = charts[no2].antigens();
+                    const auto antigens2_names = get_reference_names(*antigens2);
+                    auto sera2 = charts[no2].sera();
+                    const auto sera2_names = get_all_names(*sera2);
+
+                    if (antigens1_names == antigens2_names && sera1_names == sera2_names &&
+                        titers_same(*charts[no1].titers(), antigens1_names, sera1_names, *charts[no2].titers(), antigens2_names, sera2_names)) {
+                        if (group.empty())
+                            group.push_back(no1);
+                        group.push_back(no2);
+                        processed.push_back(no2);
+                    }
+                }
+            }
+            processed.push_back(no1);
+            if (!group.empty())
+                result.push_back(std::move(group));
+        }
+    }
+    return result;
+
+} // get_cheating_assays
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:
