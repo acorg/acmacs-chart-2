@@ -89,6 +89,10 @@ int main(int argc, const char* const argv[])
             fmt::print("{}\n", result->make_info());
             if (const auto having_too_few_numeric_titers = result->titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers->empty())
                 fmt::print("Points having too few numeric titers: {} {}\n", having_too_few_numeric_titers->size(), having_too_few_numeric_titers);
+            fmt::print("\nTables:\n");
+            auto info = result->info();
+            for (auto src_no : range_from_0_to(info->number_of_sources()))
+                fmt::print("{:3d} {}\n", src_no, info->source(src_no)->make_name());
         }
     }
     catch (std::exception& err) {
