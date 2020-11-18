@@ -12,7 +12,9 @@
 // ----------------------------------------------------------------------
 
 static void set_merge_type(acmacs::chart::MergeSettings& settings, std::string_view merge_type);
+static void combine_cheating_assays(std::vector<acmacs::chart::ChartModify>& charts, bool combine_requested);
 [[nodiscard]] static std::vector<std::vector<size_t>> get_cheating_assays(const std::vector<acmacs::chart::ChartModify>& charts);
+static void combine_tables(std::vector<acmacs::chart::ChartModify>& charts, const std::vector<size_t>& to_combine);
 
 // ----------------------------------------------------------------------
 
@@ -57,16 +59,7 @@ int main(int argc, const char* const argv[])
             charts.push_back(std::move(chart));
         }
 
-        const auto cheating_assays = get_cheating_assays(charts);
-        if (!cheating_assays.empty() && !opt.combine_cheating_assays) {
-            AD_WARNING("Cheating assays present, consider using --combine-cheating-assays");
-            for (const auto& group : cheating_assays) {
-                fmt::print(stderr, "    cheating assay group\n");
-                for (const auto chart_no : group)
-                    fmt::print(stderr, "        {}\n", charts[chart_no].make_name());
-            }
-            fmt::print(stderr, "\n\n");
-        }
+        combine_cheating_assays(charts, opt.combine_cheating_assays);
 
         auto [result, merge_report] = acmacs::chart::merge(charts[0], charts[1], settings);
 
@@ -119,6 +112,64 @@ void set_merge_type(acmacs::chart::MergeSettings& settings, std::string_view mer
         throw std::runtime_error{fmt::format("unrecognized --merge-type value: \"{}\"", merge_type)};
 
 } // set_merge_type
+
+// ----------------------------------------------------------------------
+
+void combine_cheating_assays(std::vector<acmacs::chart::ChartModify>& charts, bool combine_requested)
+{
+    const auto cheating_assays = get_cheating_assays(charts);
+    if (cheating_assays.empty()) {
+        if (combine_requested)
+            AD_INFO("No cheating assays found");
+        return;
+    }
+    if (!combine_requested) {
+        AD_WARNING("Cheating assays present, consider using --combine-cheating-assays");
+        for (const auto& group : cheating_assays) {
+            fmt::print(stderr, "    cheating assay group\n");
+            for (const auto chart_no : group)
+                fmt::print(stderr, "        {}\n", charts[chart_no].make_name());
+        }
+        fmt::print(stderr, "\n\n");
+        return;
+    }
+
+    for (const auto& group : cheating_assays)
+        combine_tables(charts, group);
+
+    // remove used charts
+    {
+        const auto to_remove = cheating_assays | ranges::views::join | ranges::to<std::vector<size_t>>;
+        auto remove_iter = std::begin(to_remove);
+        size_t current{0};
+        const auto should_be_removed = [&remove_iter, &to_remove, &current](const auto& /*chart*/) {
+            if (remove_iter == std::end(to_remove))
+                return false;
+            if (*remove_iter == current) {
+                ++current;
+                ++remove_iter;
+                return true;
+            }
+            else {
+                ++current;
+                return false;
+            }
+        };
+        charts.erase(std::remove_if(std::begin(charts), std::end(charts), should_be_removed), std::end(charts));
+    }
+
+} // combine_cheating_assays
+
+// ----------------------------------------------------------------------
+
+void combine_tables(std::vector<acmacs::chart::ChartModify>& charts, const std::vector<size_t>& to_combine)
+{
+    auto& master = charts[to_combine[0]];
+    for (const auto chart_no : to_combine | ranges::views::drop(1)) {
+        auto& to_append = charts[chart_no];
+    }
+
+} // combine_tables
 
 // ----------------------------------------------------------------------
 

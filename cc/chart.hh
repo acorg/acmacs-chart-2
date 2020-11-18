@@ -797,6 +797,8 @@ namespace acmacs::chart
         Chart() = default;
         Chart(const Chart&) = delete;
         Chart(Chart&&) = default;
+        Chart& operator=(const Chart&) = delete;
+        Chart& operator=(Chart&&) = default;
 
         virtual std::shared_ptr<Info> info() const = 0;
         virtual std::shared_ptr<Antigens> antigens() const = 0;
