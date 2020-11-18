@@ -24,7 +24,7 @@ def main(input_file, output_file, prn_read, prn_remove_concentration):
             if field == "lab":
                 ace["c"]["i"]["l"] = value
             elif field == "date":
-                ace["c"]["i"]["D"] = value
+                ace["c"]["i"]["D"] = value.replace("-", "")
             elif field == "subtype":
                 ace["c"]["i"]["V"] = value
             elif field == "assay":
@@ -153,8 +153,11 @@ def make_antigen_serum_field(key, value):
             return [value]
         else:
             return None
-    elif key == "D" and not value:
-        return None
+    elif key == "D":
+        if value:
+            return value
+        else:
+            return None
     else:
         return value
 
