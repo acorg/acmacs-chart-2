@@ -53,17 +53,17 @@ std::shared_ptr<acmacs::chart::ChartNew> import_from_file(std::string_view filen
     while (input)
         antigens_titers.push_back(read_fields(input));
     auto chart = std::make_shared<acmacs::chart::ChartNew>(antigens_titers.size(), serum_names.size());
-    auto sera = chart->sera_modify();
+    auto& sera = chart->sera_modify();
     for (auto [serum_no, serum_name] : acmacs::enumerate(serum_names))
-        sera->at(serum_no).name(serum_name);
-    auto antigens = chart->antigens_modify();
-    auto titers = chart->titers_modify();
+        sera.at(serum_no).name(serum_name);
+    auto& antigens = chart->antigens_modify();
+    auto& titers = chart->titers_modify();
     for (auto [antigen_no, row] : acmacs::enumerate(antigens_titers)) {
         for (auto [f_no, field] : acmacs::enumerate(row)) {
             if (f_no == 0)
-                antigens->at(antigen_no).name(field);
+                antigens.at(antigen_no).name(field);
             else
-                titers->titer(antigen_no, f_no - 1, acmacs::chart::Titer{field});
+                titers.titer(antigen_no, f_no - 1, acmacs::chart::Titer{field});
         }
     }
     return chart;

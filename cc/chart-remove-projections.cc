@@ -23,11 +23,11 @@ int main(int argc, char* const argv[])
     try {
         Options opt(argc, argv);
         acmacs::chart::ChartModify chart(acmacs::chart::import_from_file(opt.input));
-        auto projections = chart.projections_modify();
+        auto& projections = chart.projections_modify();
         if (opt.keep == 0ul)
-            projections->remove_all();
-        else if (projections->size() > 0)
-            projections->remove_except(opt.keep, projections->at(0));
+            projections.remove_all();
+        else if (projections.size() > 0)
+            projections.remove_except(opt.keep, projections.at(0));
         acmacs::chart::export_factory(chart, opt.output, opt.program_name());
     }
     catch (std::exception& err) {

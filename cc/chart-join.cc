@@ -47,10 +47,11 @@ int main(int argc, char* const argv[])
                     throw std::runtime_error{"titers of charts are differenet"};
             }
 
-            auto projections1 = chart1.projections_modify(), projections2 = chart2.projections_modify();
-            for (size_t projection_no = 0; projection_no < projections2->size(); ++projection_no)
-                projections1->new_by_cloning(*projections2->at(projection_no));
-            projections1->sort();
+            auto& projections1 = chart1.projections_modify();
+            auto& projections2 = chart2.projections_modify();
+            for (size_t projection_no = 0; projection_no < projections2.size(); ++projection_no)
+                projections1.new_by_cloning(*projections2.at(projection_no));
+            projections1.sort();
             std::cout << chart1.make_info() << '\n';
 
             acmacs::chart::export_factory(chart1, args[2], args.program(), report);

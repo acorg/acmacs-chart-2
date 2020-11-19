@@ -45,9 +45,9 @@ int main(int argc, char* const argv[])
         chart.relax_incremental(source_projection_no, acmacs::chart::number_of_optimizations_t{*opt.number_of_attempts}, options,
                                 opt.remove_source_projection ? acmacs::chart::remove_source_projection::yes : acmacs::chart::remove_source_projection::no,
                                 opt.unmovable_non_nan_points ? acmacs::chart::unmovable_non_nan_points::yes : acmacs::chart::unmovable_non_nan_points::no);
-        auto projections = chart.projections_modify();
-        if (opt.keep_projections > 0 && projections->size() > opt.keep_projections)
-            projections->keep_just(opt.keep_projections);
+        auto& projections = chart.projections_modify();
+        if (opt.keep_projections > 0 && projections.size() > opt.keep_projections)
+            projections.keep_just(opt.keep_projections);
         fmt::print("{}\n", chart.make_info());
         if (!opt.output_chart.empty())
             acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name(), report);

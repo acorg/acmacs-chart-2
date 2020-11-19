@@ -55,11 +55,11 @@ InfoP ChartModify::info() const
 
 // ----------------------------------------------------------------------
 
-InfoModifyP ChartModify::info_modify()
+InfoModify& ChartModify::info_modify()
 {
     if (!info_)
         info_ = std::make_shared<InfoModify>(main_->info());
-    return info_;
+    return *info_;
 
 } // ChartModify::info_modify
 
@@ -76,11 +76,11 @@ AntigensP ChartModify::antigens() const
 
 // ----------------------------------------------------------------------
 
-AntigensModifyP ChartModify::antigens_modify()
+AntigensModify& ChartModify::antigens_modify()
 {
     if (!antigens_)
         antigens_ = std::make_shared<AntigensModify>(main_->antigens());
-    return antigens_;
+    return *antigens_;
 
 } // ChartModify::antigens_modify
 
@@ -97,11 +97,11 @@ SeraP ChartModify::sera() const
 
 // ----------------------------------------------------------------------
 
-SeraModifyP ChartModify::sera_modify()
+SeraModify& ChartModify::sera_modify()
 {
     if (!sera_)
         sera_ = std::make_shared<SeraModify>(main_->sera());
-    return sera_;
+    return *sera_;
 
 } // ChartModify::sera_modify
 
@@ -118,11 +118,11 @@ TitersP ChartModify::titers() const
 
 // ----------------------------------------------------------------------
 
-TitersModifyP ChartModify::titers_modify()
+TitersModify& ChartModify::titers_modify()
 {
     if (!titers_)
         titers_ = std::make_shared<TitersModify>(main_->titers());
-    return titers_;
+    return *titers_;
 
 } // ChartModify::titers_modify
 
@@ -163,7 +163,7 @@ ColumnBasesP ChartModify::forced_column_bases(MinimumColumnBasis aMinimumColumnB
 
 // ----------------------------------------------------------------------
 
-ColumnBasesModifyP ChartModify::forced_column_bases_modify(MinimumColumnBasis aMinimumColumnBasis)
+std::shared_ptr<ColumnBasesModify> ChartModify::forced_column_bases_modify(MinimumColumnBasis aMinimumColumnBasis)
 {
     if (!forced_column_bases_ && main_) {
         if (auto fcb = main_->forced_column_bases(aMinimumColumnBasis); fcb)
@@ -175,10 +175,10 @@ ColumnBasesModifyP ChartModify::forced_column_bases_modify(MinimumColumnBasis aM
 
 // ----------------------------------------------------------------------
 
-ColumnBasesModifyP ChartModify::forced_column_bases_modify(const ColumnBases& source)
+ColumnBasesModify& ChartModify::forced_column_bases_modify(const ColumnBases& source)
 {
     forced_column_bases_ = std::make_shared<ColumnBasesModify>(source);
-    return forced_column_bases_;
+    return *forced_column_bases_;
 
 } // ChartModify::forced_column_bases_modify
 
@@ -229,11 +229,11 @@ void ChartModify::extension_field_modify(std::string field_name, const rjson::va
 
 // ----------------------------------------------------------------------
 
-ProjectionsModifyP ChartModify::projections_modify()
+ProjectionsModify& ChartModify::projections_modify()
 {
     if (!projections_)
         projections_ = std::make_shared<ProjectionsModify>(*this, main_->projections());
-    return projections_;
+    return *projections_;
 
 } // ChartModify::projections_modify
 
@@ -241,17 +241,17 @@ ProjectionsModifyP ChartModify::projections_modify()
 
 ProjectionModifyP ChartModify::projection_modify(size_t aProjectionNo)
 {
-    return projections_modify()->at(aProjectionNo);
+    return projections_modify().at(aProjectionNo);
 
 } // ChartModify::projection_modify
 
 // ----------------------------------------------------------------------
 
-PlotSpecModifyP ChartModify::plot_spec_modify()
+PlotSpecModify& ChartModify::plot_spec_modify()
 {
     if (!plot_spec_)
         plot_spec_ = std::make_shared<PlotSpecModify>(main_->plot_spec(), number_of_antigens());
-    return plot_spec_;
+    return *plot_spec_;
 
 } // ChartModify::plot_spec_modify
 
@@ -272,7 +272,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
 {
     const auto start = std::chrono::high_resolution_clock::now();
     const auto start_num_dim = dimension_annealing == use_dimension_annealing::yes && *number_of_dimensions < 5 ? number_of_dimensions_t{5} : number_of_dimensions;
-    auto projection = projections_modify()->new_from_scratch(start_num_dim, minimum_column_basis);
+    auto projection = projections_modify().new_from_scratch(start_num_dim, minimum_column_basis);
     projection->set_disconnected(disconnect_points);
     projection->disconnect_having_too_few_numeric_titers(options, *titers());
     report_disconnected_unmovable(projection->get_disconnected(), projection->get_unmovable());
@@ -315,8 +315,8 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
-    std::transform(projections.begin(), projections.end(), projections.begin(), [start_num_dim, minimum_column_basis, pp = projections_modify(), &stress](const auto&) {
-        auto projection = pp->new_from_scratch(start_num_dim, minimum_column_basis);
+    std::transform(projections.begin(), projections.end(), projections.begin(), [start_num_dim, minimum_column_basis, this, &stress](const auto&) {
+        auto projection = projections_modify().new_from_scratch(start_num_dim, minimum_column_basis);
         projection->set_disconnected(stress.parameters().disconnected);
         projection->set_unmovable(stress.parameters().unmovable);
         return projection;
@@ -405,8 +405,8 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
     // fmt::print("INFO: about to randomize coordinates of {} points\n", points_with_nan_coordinates.size());
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
-    std::transform(projections.begin(), projections.end(), projections.begin(), [&stress, &source_projection, pp = projections_modify()](const auto&) {
-        auto projection = pp->new_by_cloning(*source_projection);
+    std::transform(projections.begin(), projections.end(), projections.begin(), [&stress, &source_projection, this](const auto&) {
+        auto projection = projections_modify().new_by_cloning(*source_projection);
         projection->set_disconnected(stress.parameters().disconnected);
         projection->set_unmovable(stress.parameters().unmovable);
         return projection;
@@ -427,14 +427,14 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
     }
 
     if (rsp == remove_source_projection::yes)
-        projections_modify()->remove(source_projection_no);
-    projections_modify()->sort();
+        projections_modify().remove(source_projection_no);
+    projections_modify().sort();
 
     if (options.precision == optimization_precision::fine) {
         const size_t top_projections = std::min(5UL, *number_of_optimizations);
         for (size_t p_no = 0; p_no < top_projections; ++p_no)
-            projections_modify()->at(p_no)->relax(options); // do not omp parallel, occasionally fails
-        projections_modify()->sort();
+            projections_modify().at(p_no)->relax(options); // do not omp parallel, occasionally fails
+        projections_modify().sort();
     }
 
 } // ChartModify::relax_incremental
@@ -443,8 +443,8 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
 
 void ChartModify::remove_layers()
 {
-    titers_modify()->remove_layers();
-    info_modify()->remove_sources();
+    titers_modify().remove_layers();
+    info_modify().remove_sources();
 
 } // ChartModify::remove_layers
 
@@ -454,15 +454,15 @@ void ChartModify::remove_antigens(const ReverseSortedIndexes& indexes)
 {
     // obtain *_modify pointers before removing antigens
     // otherwise they are incrrectly created with the new number of antigens
-    auto antigens_mod = antigens_modify();
-    auto titers_mod = titers_modify();
-    auto projections_mod = projections_modify();
-    auto plot_spec_mod = plot_spec_modify();
+    auto& antigens_mod = antigens_modify();
+    auto& titers_mod = titers_modify();
+    auto& projections_mod = projections_modify();
+    auto& plot_spec_mod = plot_spec_modify();
 
-    antigens_mod->remove(indexes);
-    titers_mod->remove_antigens(indexes);
-    projections_mod->remove_antigens(indexes);
-    plot_spec_mod->remove_antigens(indexes);
+    antigens_mod.remove(indexes);
+    titers_mod.remove_antigens(indexes);
+    projections_mod.remove_antigens(indexes);
+    plot_spec_mod.remove_antigens(indexes);
 
 } // ChartModify::remove_antigens
 
@@ -470,10 +470,10 @@ void ChartModify::remove_antigens(const ReverseSortedIndexes& indexes)
 
 void ChartModify::remove_sera(const ReverseSortedIndexes& indexes)
 {
-    sera_modify()->remove(indexes);
-    titers_modify()->remove_sera(indexes);
-    projections_modify()->remove_sera(indexes, number_of_antigens());
-    plot_spec_modify()->remove_sera(indexes);
+    sera_modify().remove(indexes);
+    titers_modify().remove_sera(indexes);
+    projections_modify().remove_sera(indexes, number_of_antigens());
+    plot_spec_modify().remove_sera(indexes);
     if (auto fcb = forced_column_bases_modify(MinimumColumnBasis{}); fcb)
         fcb->remove(indexes);
 
@@ -492,17 +492,17 @@ AntigenModifyP ChartModify::insert_antigen(size_t before)
 
     // obtain *_modify pointers before inserting antigens
     // otherwise they are incrrectly created with the new number of antigens
-    auto antigens_mod = antigens_modify();
-    auto titers_mod = titers_modify();
-    auto projections_mod = projections_modify();
-    auto plot_spec_mod = plot_spec_modify();
+    auto& antigens_mod = antigens_modify();
+    auto& titers_mod = titers_modify();
+    auto& projections_mod = projections_modify();
+    auto& plot_spec_mod = plot_spec_modify();
 
-    titers_mod->modifiable_check();
-    auto result = antigens_mod->insert(before);
+    titers_mod.modifiable_check();
+    auto result = antigens_mod.insert(before);
     result->name(sNames[dis(gen)]);
-    titers_mod->insert_antigen(before);
-    projections_mod->insert_antigen(before);
-    plot_spec_mod->insert_antigen(before);
+    titers_mod.insert_antigen(before);
+    projections_mod.insert_antigen(before);
+    plot_spec_mod.insert_antigen(before);
     return result;
 
 } // ChartModify::insert_antigen
@@ -515,12 +515,12 @@ SerumModifyP ChartModify::insert_serum(size_t before)
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     std::uniform_int_distribution<> dis(0, sNamesSize - 1);
 
-    titers_modify()->modifiable_check();
-    auto result = sera_modify()->insert(before);
+    titers_modify().modifiable_check();
+    auto result = sera_modify().insert(before);
     result->name(sNames[dis(gen)]);
-    titers_modify()->insert_serum(before);
-    projections_modify()->insert_serum(before, number_of_antigens());
-    plot_spec_modify()->insert_serum(before);
+    titers_modify().insert_serum(before);
+    projections_modify().insert_serum(before, number_of_antigens());
+    plot_spec_modify().insert_serum(before);
     if (auto fcb = forced_column_bases_modify(MinimumColumnBasis{}); fcb) {
         fmt::print(stderr, "WARNING: inserting serum in the table having forced column bases, please set column basis for that serum\n");
         fcb->insert(before, 7.0); // all titers for the new serum are dont-care, there is no real column basis, use 1280 just to have something
@@ -533,11 +533,11 @@ SerumModifyP ChartModify::insert_serum(size_t before)
 
 void ChartModify::detect_reference_antigens(remove_reference_before_detecting rrbd)
 {
-    auto antigens = antigens_modify();
+    auto& antigens = antigens_modify();
     auto ser = sera();
 
     if (rrbd == remove_reference_before_detecting::yes)
-        ranges::for_each(range_from_0_to(antigens->size()), [&antigens](auto ag_no) { antigens->at(ag_no).reference(false); });
+        ranges::for_each(range_from_0_to(antigens.size()), [&antigens](auto ag_no) { antigens.at(ag_no).reference(false); });
 
     // set refernece attribute for all antigens whose names (without reassortant, annotations, passage) are the same as sera names
     // DISTINCT antigens are not marked to avoid marking control duplicates of CDC
@@ -545,8 +545,8 @@ void ChartModify::detect_reference_antigens(remove_reference_before_detecting rr
     acmacs::flat_set_t<acmacs::virus::name_t> serum_names;
     ranges::for_each(range_from_0_to(ser->size()), [&ser, &serum_names](auto sr_no) { serum_names.add(ser->at(sr_no)->name()); });
 
-    ranges::for_each(range_from_0_to(antigens->size()), [&antigens, &serum_names](auto ag_no) {
-        if (auto& antigen = antigens->at(ag_no); !antigen.annotations().distinct() && serum_names.exists(antigen.name()))
+    ranges::for_each(range_from_0_to(antigens.size()), [&antigens, &serum_names](auto ag_no) {
+        if (auto& antigen = antigens.at(ag_no); !antigen.annotations().distinct() && serum_names.exists(antigen.name()))
             antigen.reference(true);
     });
 
@@ -561,7 +561,7 @@ ChartNew::ChartNew(size_t number_of_antigens, size_t number_of_sera)
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     std::uniform_int_distribution<> dis(0, sNamesSize - 1);
 
-    auto& antigens = *antigens_modify();
+    auto& antigens = antigens_modify();
       //size_t name_no = 0;
     std::string suffix = "";
     for (auto ag_no : range_from_0_to(number_of_antigens)) {
@@ -573,7 +573,7 @@ ChartNew::ChartNew(size_t number_of_antigens, size_t number_of_sera)
         // }
     }
 
-    auto& sera = *sera_modify();
+    auto& sera = sera_modify();
     suffix = "";
     for (auto sr_no : range_from_0_to(number_of_sera)) {
         sera.at(sr_no).name(sNames[dis(gen)] + suffix);
@@ -1600,7 +1600,7 @@ void TitersModify::insert_serum(size_t before)
 std::shared_ptr<ProjectionModifyNew> ProjectionModify::clone(ChartModify& chart) const
 {
     auto projection = std::make_shared<ProjectionModifyNew>(*this);
-    chart.projections_modify()->add(projection);
+    chart.projections_modify().add(projection);
     return projection;
 
 } // ProjectionModify::clone

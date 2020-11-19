@@ -164,7 +164,7 @@ acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all([[maybe_unuse
 
 acmacs::chart::GridTest::Projection acmacs::chart::GridTest::make_new_projection_and_relax(const Results& results, bool verbose)
 {
-    auto projection = chart_.projections_modify()->new_by_cloning(*projection_);
+    auto projection = chart_.projections_modify().new_by_cloning(*projection_);
     auto layout = projection->layout_modified();
     for (const auto& result : results) {
         if (result && result.contribution_diff < 0) {

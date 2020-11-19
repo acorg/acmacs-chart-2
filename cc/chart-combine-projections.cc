@@ -34,13 +34,13 @@ int main(int argc, char* const argv[])
             if (!acmacs::chart::same_tables(master, chart, true))
                 throw std::runtime_error(fmt::format("Tables of {} and {} are not the same!\n", opt.source_charts->at(0), chart_filename));
             // fmt::print("INFO: tables are the same, combining projections of {} and {}\n", opt.source_charts->at(0), chart_filename);
-            for (size_t p_no = 0; p_no < chart.projections_modify()->size(); ++p_no)
-                master.projections_modify()->new_by_cloning(*chart.projections_modify()->at(p_no), master);
+            for (size_t p_no = 0; p_no < chart.projections_modify().size(); ++p_no)
+                master.projections_modify().new_by_cloning(*chart.projections_modify().at(p_no), master);
         }
 
-        master.projections_modify()->sort();
+        master.projections_modify().sort();
         fmt::print("{}\n", master.make_info());
-        master.projections_modify()->keep_just(*opt.keep_projections);
+        master.projections_modify().keep_just(*opt.keep_projections);
         if (opt.output_chart.has_value())
             acmacs::chart::export_factory(master, opt.output_chart, opt.program_name());
     }

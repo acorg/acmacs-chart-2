@@ -104,23 +104,23 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
 
     ChartModifyP result = std::make_shared<ChartNew>(report.target_antigens, report.target_sera);
     merge_info(*result, chart1, chart2);
-    auto result_antigens = result->antigens_modify();
-    auto result_sera = result->sera_modify();
-    merge_antigens_sera(*result_antigens, *chart1.antigens(), report.antigens_primary_target, true);
-    merge_antigens_sera(*result_antigens, *chart2.antigens(), report.antigens_secondary_target, false);
-    merge_antigens_sera(*result_sera, *chart1.sera(), report.sera_primary_target, true);
-    merge_antigens_sera(*result_sera, *chart2.sera(), report.sera_secondary_target, false);
-    if (const auto rda = result_antigens->find_duplicates(), rds = result_sera->find_duplicates(); !rda.empty() || !rds.empty()) {
+    auto& result_antigens = result->antigens_modify();
+    auto& result_sera = result->sera_modify();
+    merge_antigens_sera(result_antigens, *chart1.antigens(), report.antigens_primary_target, true);
+    merge_antigens_sera(result_antigens, *chart2.antigens(), report.antigens_secondary_target, false);
+    merge_antigens_sera(result_sera, *chart1.sera(), report.sera_primary_target, true);
+    merge_antigens_sera(result_sera, *chart2.sera(), report.sera_secondary_target, false);
+    if (const auto rda = result_antigens.find_duplicates(), rds = result_sera.find_duplicates(); !rda.empty() || !rds.empty()) {
         const auto err_message = fmt::format("Merge \"{}\" has duplicates: AG:{} SR:{}", result->description(), rda, rds);
         fmt::print(stderr, "ERROR: {}\n", err_message);
         for (const auto& dups : rda) {
             for (const auto ag_no : dups)
-                fmt::print(stderr, "  AG {:5d} {}\n", ag_no, result_antigens->at(ag_no).full_name());
+                fmt::print(stderr, "  AG {:5d} {}\n", ag_no, result_antigens.at(ag_no).full_name());
             fmt::print(stderr, "\n");
         }
         for (const auto& dups : rds) {
             for (const auto sr_no : dups)
-                fmt::print(stderr, "  SR {:5d} {}\n", sr_no, result_sera->at(sr_no).full_name());
+                fmt::print(stderr, "  SR {:5d} {}\n", sr_no, result_sera.at(sr_no).full_name());
             fmt::print(stderr, "\n");
         }
         // for (auto [ag_no, antigen] : acmacs::enumerate(*result_antigens))
@@ -173,15 +173,15 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
 
 void merge_titers(acmacs::chart::ChartModify& result, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2, acmacs::chart::MergeReport& report)
 {
-    auto titers = result.titers_modify();
+    auto& titers = result.titers_modify();
     auto titers1 = chart1.titers(), titers2 = chart2.titers();
     auto layers1 = titers1->number_of_layers(), layers2 = titers2->number_of_layers();
-    titers->create_layers((layers1 ? layers1 : 1) + (layers2 ? layers2 : 1), result.number_of_antigens());
+    titers.create_layers((layers1 ? layers1 : 1) + (layers2 ? layers2 : 1), result.number_of_antigens());
 
     size_t target_layer_no = 0;
     auto copy_layers = [&target_layer_no, &titers](size_t source_layers, const auto& source_titers, const acmacs::chart::MergeReport::index_mapping_t& antigen_target,
                                                    const acmacs::chart::MergeReport::index_mapping_t& serum_target) {
-        auto assign = [&titers, &target_layer_no](size_t ag_no, size_t sr_no, const acmacs::chart::Titer& titer) { titers->titer(ag_no, sr_no, target_layer_no, titer); };
+        auto assign = [&titers, &target_layer_no](size_t ag_no, size_t sr_no, const acmacs::chart::Titer& titer) { titers.titer(ag_no, sr_no, target_layer_no, titer); };
         auto copy_titer = [&assign, &antigen_target, &serum_target](const auto& titer_iterator) {
             for (auto titer_ref : titer_iterator) {
                 if (auto ag_no = antigen_target.find(titer_ref.antigen), sr_no = serum_target.find(titer_ref.serum); ag_no != antigen_target.end() && sr_no != serum_target.end())
@@ -200,7 +200,7 @@ void merge_titers(acmacs::chart::ChartModify& result, const acmacs::chart::Chart
     };
     copy_layers(layers1, *titers1, report.antigens_primary_target, report.sera_primary_target);
     copy_layers(layers2, *titers2, report.antigens_secondary_target, report.sera_secondary_target);
-    report.titer_report = titers->set_from_layers(result);
+    report.titer_report = titers.set_from_layers(result);
 }
 
 // ----------------------------------------------------------------------
@@ -209,22 +209,22 @@ void merge_plot_spec(acmacs::chart::ChartModify& result, const acmacs::chart::Ch
 {
     auto plot_spec1 = chart1.plot_spec();
     auto plot_spec2 = chart2.plot_spec();
-    auto result_plot_spec = result.plot_spec_modify();
+    auto& result_plot_spec = result.plot_spec_modify();
     for (size_t ag_no = 0; ag_no < chart1.number_of_antigens(); ++ag_no)
-        result_plot_spec->modify(ag_no, plot_spec1->style(ag_no));
+        result_plot_spec.modify(ag_no, plot_spec1->style(ag_no));
     for (size_t sr_no = 0; sr_no < chart1.number_of_sera(); ++sr_no)
-        result_plot_spec->modify_serum(sr_no, plot_spec1->style(sr_no + chart1.number_of_antigens()));
+        result_plot_spec.modify_serum(sr_no, plot_spec1->style(sr_no + chart1.number_of_antigens()));
     for (size_t ag_no = 0; ag_no < chart2.number_of_antigens(); ++ag_no) {
         if (auto found = report.antigens_secondary_target.find(ag_no); found != report.antigens_secondary_target.end() && !found->second.common)
-            result_plot_spec->modify(found->second.index, plot_spec2->style(ag_no));
+            result_plot_spec.modify(found->second.index, plot_spec2->style(ag_no));
     }
     for (size_t sr_no = 0; sr_no < chart2.number_of_sera(); ++sr_no) {
         if (auto found = report.sera_secondary_target.find(sr_no); found != report.sera_secondary_target.end() && !found->second.common)
-            result_plot_spec->modify_serum(found->second.index, plot_spec2->style(sr_no + chart2.number_of_antigens()));
+            result_plot_spec.modify_serum(found->second.index, plot_spec2->style(sr_no + chart2.number_of_antigens()));
     }
 
       // drawing order
-      // auto& drawing_order = result_plot_spec->drawing_order_modify();
+      // auto& drawing_order = result_plot_spec.drawing_order_modify();
 
 }
 
@@ -256,7 +256,7 @@ void merge_projections_type2(acmacs::chart::ChartModify& result, const acmacs::c
     // std::cout << "INFO: incremental merge\n";
     auto projection1 = chart1.projection(0);
     check_projection_before_merging(*projection1);
-    auto result_projection = result.projections_modify()->new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
+    auto result_projection = result.projections_modify().new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
     auto layout1 = projection1->layout();
     auto result_layout = result_projection->layout_modified();
     copy_layout(*layout1, *result_layout, chart1.number_of_antigens(), result.number_of_antigens());
@@ -290,7 +290,7 @@ void merge_projections_type3(acmacs::chart::ChartModify& result, const acmacs::c
     // std::cout << "INFO: transformation for the secondary layout: " << transformation2 << '\n';
     auto layout2 = projection2->layout()->transform(transformation2);
 
-    auto result_projection = result.projections_modify()->new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
+    auto result_projection = result.projections_modify().new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
     auto result_layout = result_projection->layout_modified();
     copy_layout(*layout1, *result_layout, chart1.number_of_antigens(), result.number_of_antigens());
 
@@ -336,7 +336,7 @@ void merge_projections_type5(acmacs::chart::ChartModify& result, const acmacs::c
       // std::cout << "INFO: transformation for the secondary layout: " << transformation2 << '\n';
     auto layout2 = projection2->layout()->transform(transformation2);
 
-    auto result_projection = result.projections_modify()->new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
+    auto result_projection = result.projections_modify().new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
     auto result_layout = result_projection->layout_modified();
     copy_layout(*layout1, *result_layout, chart1.number_of_antigens(), result.number_of_antigens());
 
@@ -394,20 +394,20 @@ void copy_layout(const acmacs::Layout& source, acmacs::Layout& target, size_t so
 
 void merge_info(acmacs::chart::ChartModify& target, const acmacs::chart::Chart& chart1, const acmacs::chart::Chart& chart2)
 {
-    target.info_modify()->virus(chart1.info()->virus());
+    target.info_modify().virus(chart1.info()->virus());
     if (chart1.info()->number_of_sources() == 0) {
-        target.info_modify()->add_source(chart1.info());
+        target.info_modify().add_source(chart1.info());
     }
     else {
         for (size_t s_no = 0; s_no < chart1.info()->number_of_sources(); ++s_no)
-            target.info_modify()->add_source(chart1.info()->source(s_no));
+            target.info_modify().add_source(chart1.info()->source(s_no));
     }
     if (chart2.info()->number_of_sources() == 0) {
-        target.info_modify()->add_source(chart2.info());
+        target.info_modify().add_source(chart2.info());
     }
     else {
         for (size_t s_no = 0; s_no < chart2.info()->number_of_sources(); ++s_no)
-            target.info_modify()->add_source(chart2.info()->source(s_no));
+            target.info_modify().add_source(chart2.info()->source(s_no));
     }
 
 } // merge_info

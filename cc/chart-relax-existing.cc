@@ -55,7 +55,7 @@ int main(int argc, char* const argv[])
         }
 
         if (opt.sort)
-            chart.projections_modify()->sort();
+            chart.projections_modify().sort();
         std::cout << chart.make_info() << '\n';
         if (opt.output_chart.has_value())
             acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name(), report);

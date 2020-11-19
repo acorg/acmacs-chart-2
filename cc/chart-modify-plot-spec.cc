@@ -59,19 +59,19 @@ int main(int argc, char* const argv[])
         std::cerr << "points: " << points << '\n';
 
         acmacs::chart::ChartModify chart_modify(chart);
-        auto plot_spec = chart_modify.plot_spec_modify();
+        auto& plot_spec = chart_modify.plot_spec_modify();
 
         if (opt.size) {
             for (auto point_no : points)
-                plot_spec->size(point_no, Pixels{*opt.size});
+                plot_spec.size(point_no, Pixels{*opt.size});
         }
         if (opt.fill) {
             for (auto point_no : points)
-                plot_spec->fill(point_no, Color(opt.fill));
+                plot_spec.fill(point_no, Color(opt.fill));
         }
         if (opt.outline) {
             for (auto point_no : points)
-                plot_spec->outline(point_no, Color(opt.outline));
+                plot_spec.outline(point_no, Color(opt.outline));
         }
 
         acmacs::chart::export_factory(chart_modify, opt.output_chart, opt.program_name());

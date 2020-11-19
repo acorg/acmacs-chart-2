@@ -142,9 +142,9 @@ void test_modify_titers(acmacs::chart::ChartP chart, const argc_argv& args, repo
     const std::array<ME, 4> test_data{{{0, 1, "11"}, {0, 2, "12"}, {1, 1, "21"}, {1, 2, "<22"}}};
 
     acmacs::chart::ChartModify chart_modify{chart};
-    auto titers = chart_modify.titers_modify();
+    auto& titers = chart_modify.titers_modify();
     for (const auto& new_t : test_data)
-        titers->titer(new_t.ag_no, new_t.sr_no, acmacs::chart::Titer{new_t.titer});
+        titers.titer(new_t.ag_no, new_t.sr_no, acmacs::chart::Titer{new_t.titer});
     const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
     auto titers_source{chart->titers()}, titers_modified{imported->titers()};
@@ -172,7 +172,7 @@ void test_modify_titers(acmacs::chart::ChartP chart, const argc_argv& args, repo
 void test_dont_care_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo, const argc_argv& args, report_time report)
 {
     acmacs::chart::ChartModify chart_modify{chart};
-    chart_modify.titers_modify()->dontcare_for_antigen(aAntigenNo);
+    chart_modify.titers_modify().dontcare_for_antigen(aAntigenNo);
 
     const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
@@ -194,7 +194,7 @@ void test_dont_care_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo, 
 void test_dont_care_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, const argc_argv& args, report_time report)
 {
     acmacs::chart::ChartModify chart_modify{chart};
-    chart_modify.titers_modify()->dontcare_for_serum(aSerumNo);
+    chart_modify.titers_modify().dontcare_for_serum(aSerumNo);
 
     const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
@@ -216,7 +216,7 @@ void test_dont_care_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, cons
 void test_multiply_by_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo, double aMult, const argc_argv& args, report_time report)
 {
     acmacs::chart::ChartModify chart_modify{chart};
-    chart_modify.titers_modify()->multiply_by_for_antigen(aAntigenNo, aMult);
+    chart_modify.titers_modify().multiply_by_for_antigen(aAntigenNo, aMult);
 
     const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);
@@ -240,7 +240,7 @@ void test_multiply_by_for_antigen(acmacs::chart::ChartP chart, size_t aAntigenNo
 void test_multiply_by_for_serum(acmacs::chart::ChartP chart, size_t aSerumNo, double aMult, const argc_argv& args, report_time report)
 {
     acmacs::chart::ChartModify chart_modify{chart};
-    chart_modify.titers_modify()->multiply_by_for_serum(aSerumNo, aMult);
+    chart_modify.titers_modify().multiply_by_for_serum(aSerumNo, aMult);
 
     const auto exported = acmacs::chart::export_factory(chart_modify, acmacs::chart::export_format::ace, args.program(), report);
     auto imported = acmacs::chart::import_from_data(exported, acmacs::chart::Verify::None, report);

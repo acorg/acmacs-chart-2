@@ -49,7 +49,7 @@ int main(int argc, char* const argv[])
         }
 
         if (opt.remove_projections)
-            chart.projections_modify()->remove_all();
+            chart.projections_modify().remove_all();
 
         if (!antigens_to_keep->empty()) {
             acmacs::ReverseSortedIndexes antigens_to_remove(chart.number_of_antigens());

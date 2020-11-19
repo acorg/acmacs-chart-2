@@ -26,13 +26,13 @@ int main(int argc, char* const argv[])
         Options opt(argc, argv);
         const acmacs::number_of_dimensions_t target_number_of_dimensions{*opt.target_number_of_dimensions};
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.input_chart)};
-        auto projections = chart.projections_modify();
-        if (projections->size() == 0)
+        auto& projections = chart.projections_modify();
+        if (projections.size() == 0)
             throw std::runtime_error{"chart has no projections"};
-        projections->remove_except(*opt.number_of_projections_to_convert);
+        projections.remove_except(*opt.number_of_projections_to_convert);
         const acmacs::chart::optimization_options opt_opt;
-        for (size_t p_no = 0; p_no < projections->size(); ++p_no) {
-            auto projection = projections->at(p_no);
+        for (size_t p_no = 0; p_no < projections.size(); ++p_no) {
+            auto projection = projections.at(p_no);
             auto stress = acmacs::chart::stress_factory(*projection, opt_opt.mult);
             auto layout = projection->layout_modified();
             if (*target_number_of_dimensions == 0) {

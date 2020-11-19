@@ -42,7 +42,7 @@ int main(int argc, char* const argv[])
 
             acmacs::chart::ProjectionModifyP source_projection;
             if (args["--remove-source-projections"]) {
-                chart.projections_modify()->remove_all_except(args["--projection"]);
+                chart.projections_modify().remove_all_except(args["--projection"]);
                 source_projection = chart.projection_modify(0);
             }
             else {
@@ -62,10 +62,10 @@ int main(int argc, char* const argv[])
                 fmt::print("{} {}\n", attempt, status );
             }
             if (args["--remove-source-projections"])
-                chart.projections_modify()->remove(0);
+                chart.projections_modify().remove(0);
 
 
-            chart.projections_modify()->sort();
+            chart.projections_modify().sort();
             std::cout << chart.make_info() << '\n';
             if (args.number_of_arguments() > 1)
                 acmacs::chart::export_factory(chart, args[1], args.program(), report);

@@ -167,7 +167,7 @@ std::string acmacs::chart::format_help()
 {
     ChartNew chart{101, 101};
 
-    auto& antigen = chart.antigens_modify()->at(67);
+    auto& antigen = chart.antigens_modify().at(67);
     antigen.name("A(H3N2)/KLAGENFURT/24/2020");
     antigen.date("2020-05-24");
     antigen.passage(acmacs::virus::Passage{"E1 (2020-04-01)"});
@@ -177,7 +177,7 @@ std::string acmacs::chart::format_help()
     antigen.reference(true);
     antigen.add_clade("3C.3A");
 
-    auto& serum = chart.sera_modify()->at(12);
+    auto& serum = chart.sera_modify().at(12);
     serum.name("B/WUHAN/24/2020");
     serum.passage(acmacs::virus::Passage{"MDCK1/SIAT2 (2020-04-01)"});
     serum.lineage("YAMAGATA");

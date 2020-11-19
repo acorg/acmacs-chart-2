@@ -48,9 +48,9 @@ int main(int argc, char* const argv[])
         acmacs::log::enable(acmacs::log::relax);
 
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source_chart, acmacs::chart::Verify::None)};
-        auto projections = chart.projections_modify();
+        auto& projections = chart.projections_modify();
         if (opt.remove_original_projections)
-            projections->remove_all();
+            projections.remove_all();
         const auto precision = (opt.rough || opt.fine > 0) ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
         const auto method{acmacs::chart::optimization_method_from_string(opt.method)};
         auto disconnected{acmacs::chart::get_disconnected(opt.disconnect_antigens, opt.disconnect_sera, chart.number_of_antigens(), chart.number_of_sera())};
@@ -71,11 +71,11 @@ int main(int argc, char* const argv[])
             chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions},
                         dimension_annealing, options, disconnected);
         }
-        projections->sort();
+        projections.sort();
         for (size_t p_no = 0; p_no < opt.fine; ++p_no)
             chart.projection_modify(p_no)->relax(acmacs::chart::optimization_options(method, acmacs::chart::optimization_precision::fine));
-        if (const size_t keep_projections = opt.keep_projections; keep_projections > 0 && projections->size() > keep_projections)
-            projections->keep_just(keep_projections);
+        if (const size_t keep_projections = opt.keep_projections; keep_projections > 0 && projections.size() > keep_projections)
+            projections.keep_just(keep_projections);
         fmt::print("{}\n", chart.make_info());
         if (opt.output_chart.has_value())
             acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name());

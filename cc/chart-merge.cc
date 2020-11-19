@@ -55,8 +55,8 @@ int main(int argc, const char* const argv[])
         for (auto chart_no : range_from_0_to(opt.source_charts->size())) {
             auto chart = std::make_unique<acmacs::chart::ChartModify>(acmacs::chart::import_from_file((*opt.source_charts)[chart_no]));
             if (*opt.duplicates_distinct) {
-                chart->antigens_modify()->duplicates_distinct(chart->antigens()->find_duplicates());
-                chart->sera_modify()->duplicates_distinct(chart->sera()->find_duplicates());
+                chart->antigens_modify().duplicates_distinct(chart->antigens()->find_duplicates());
+                chart->sera_modify().duplicates_distinct(chart->sera()->find_duplicates());
             }
             charts.push_back(std::move(chart));
         }
@@ -151,10 +151,10 @@ void combine_cheating_assays(Charts& charts, bool combine_requested)
 void combine_tables(Charts& charts, const std::vector<size_t>& to_combine)
 {
     auto& master = *charts[to_combine[0]];
-    auto& master_antigens = *master.antigens_modify();
-    auto& master_titers = *master.titers_modify();
+    auto& master_antigens = master.antigens_modify();
+    auto& master_titers = master.titers_modify();
     master_titers.remove_layers();
-    master.projections_modify()->remove_all();
+    master.projections_modify().remove_all();
     for (const auto chart_no : to_combine | ranges::views::drop(1)) {
         auto& to_append = *charts[chart_no];
         auto to_append_antigens = to_append.antigens();
@@ -165,7 +165,7 @@ void combine_tables(Charts& charts, const std::vector<size_t>& to_combine)
             for (const auto sr_no : range_from_0_to(master.number_of_sera()))
                 master_titers.titer(master_titers.number_of_antigens() - 1, sr_no, to_append_titers->titer(to_append_antigen_no, sr_no));
         }
-        master.info_modify()->date(fmt::format("{}+{}", master.info_modify()->date(), to_append.info()->date()));
+        master.info_modify().date(fmt::format("{}+{}", master.info_modify().date(), to_append.info()->date()));
     }
 
 } // combine_tables

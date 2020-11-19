@@ -99,7 +99,7 @@ acmacs::chart::optimization_status acmacs::chart::optimize(ProjectionModify& pro
 
 acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::ChartModify& chart, MinimumColumnBasis minimum_column_basis, const acmacs::chart::dimension_schedule& schedule, acmacs::chart::optimization_options options)
 {
-    auto projection = chart.projections_modify()->new_from_scratch(schedule.initial(), minimum_column_basis);
+    auto projection = chart.projections_modify().new_from_scratch(schedule.initial(), minimum_column_basis);
     projection->randomize_layout(randomizer_plain_with_table_max_distance(*projection));
     return optimize(*projection, schedule, options);
 

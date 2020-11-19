@@ -32,9 +32,9 @@ int main(int argc, char* const argv[])
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.input_chart)};
         const auto subtype = chart.info()->virus_type();
 
-        auto antigens = chart.antigens_modify();
-        for (size_t ag_no{0}; ag_no < antigens->size(); ++ag_no) {
-            auto& antigen = antigens->at(ag_no);
+        auto& antigens = chart.antigens_modify();
+        for (size_t ag_no{0}; ag_no < antigens.size(); ++ag_no) {
+            auto& antigen = antigens.at(ag_no);
 
             AD_LOG(acmacs::log::name_parsing, "AG {} \"{}\"", ag_no, antigen.name());
             AD_LOG_INDENT;
@@ -63,9 +63,9 @@ int main(int argc, char* const argv[])
             }
         }
 
-        auto sera = chart.sera_modify();
-        for (size_t sr_no{0}; sr_no < sera->size(); ++sr_no) {
-            auto& serum = sera->at(sr_no);
+        auto& sera = chart.sera_modify();
+        for (size_t sr_no{0}; sr_no < sera.size(); ++sr_no) {
+            auto& serum = sera.at(sr_no);
 
             AD_LOG(acmacs::log::name_parsing, "SR {} \"{}\"", sr_no, serum.name());
             AD_LOG_INDENT;

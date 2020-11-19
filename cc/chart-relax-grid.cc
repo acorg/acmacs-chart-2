@@ -49,7 +49,7 @@ int main(int argc, char* const argv[])
 
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source_chart, acmacs::chart::Verify::None)};
         if (!opt.keep_original_projections)
-            chart.projections_modify()->remove_all();
+            chart.projections_modify().remove_all();
         const auto method{acmacs::chart::optimization_method_from_string(opt.method)};
         auto disconnected{acmacs::chart::get_disconnected(opt.disconnect_antigens, opt.disconnect_sera, chart.number_of_antigens(), chart.number_of_sera())};
 
@@ -60,7 +60,7 @@ int main(int argc, char* const argv[])
                 throw std::runtime_error(fmt::format("chart for reorienting has no projections: {}", *opt.reorient));
         }
 
-        auto projections = chart.projections_modify();
+        auto& projections = chart.projections_modify();
 
         {
             // relax
@@ -70,7 +70,7 @@ int main(int argc, char* const argv[])
             options.disconnect_too_few_numeric_titers = opt.no_disconnect_having_few_titers ? acmacs::chart::disconnect_few_numeric_titers::no : acmacs::chart::disconnect_few_numeric_titers::yes;
             options.num_threads = opt.threads;
             chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, disconnected);
-            projections->sort();
+            projections.sort();
             options.precision = acmacs::chart::optimization_precision::fine;
             chart.projection_modify(0)->relax(options);
         }
@@ -101,9 +101,9 @@ int main(int argc, char* const argv[])
             }
         }
 
-        projections->sort();
-        if (const size_t keep_projections = opt.keep_projections; keep_projections > 0 && projections->size() > (keep_projections + grid_projections))
-            projections->keep_just(keep_projections + grid_projections);
+        projections.sort();
+        if (const size_t keep_projections = opt.keep_projections; keep_projections > 0 && projections.size() > (keep_projections + grid_projections))
+            projections.keep_just(keep_projections + grid_projections);
 
         if (opt.output_chart.has_value() && !opt.reorient->empty()) {
             acmacs::chart::CommonAntigensSera common(*master, chart, acmacs::chart::CommonAntigensSera::match_level_t::automatic);

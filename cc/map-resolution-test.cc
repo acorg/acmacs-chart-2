@@ -15,7 +15,7 @@ acmacs::chart::map_resolution_test_data::Results acmacs::chart::map_resolution_t
 {
     create_directory_for_intermediate_charts(parameters);
     map_resolution_test_data::Results results(parameters);
-    chart.projections_modify()->remove_all();
+    chart.projections_modify().remove_all();
     // std::cout << "master dot-cares: " << (1.0 - chart.titers()->percent_of_non_dont_cares()) << '\n' << chart.titers()->print() << '\n';
     for (auto number_of_dimensions : parameters.number_of_dimensions) {
         for (auto proportion_to_dont_care : parameters.proportions_to_dont_care) {
@@ -59,19 +59,19 @@ acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontc
                                                                                      const acmacs::chart::map_resolution_test_data::Parameters& parameters)
 {
     acmacs::chart::ChartClone chart(master_chart, acmacs::chart::ChartClone::clone_data::titers);
-    chart.info_modify()->name_append(acmacs::string::concat(proportion_to_dont_care, "-dont-cared"));
-    chart.titers_modify()->remove_layers();
-    chart.titers_modify()->set_proportion_of_titers_to_dont_care(proportion_to_dont_care);
+    chart.info_modify().name_append(acmacs::string::concat(proportion_to_dont_care, "-dont-cared"));
+    chart.titers_modify().remove_layers();
+    chart.titers_modify().set_proportion_of_titers_to_dont_care(proportion_to_dont_care);
     if (parameters.column_bases_from_master == acmacs::chart::map_resolution_test_data::column_bases_from_master::yes)
         chart.forced_column_bases_modify(*master_chart.column_bases(parameters.minimum_column_basis));
     if (parameters.relax_from_full_table == acmacs::chart::map_resolution_test_data::relax_from_full_table::yes) {
-        auto projection = chart.projections_modify()->new_by_cloning(*master_chart.projections_modify()->at(0), true);
+        auto projection = chart.projections_modify().new_by_cloning(*master_chart.projections_modify().at(0), true);
         projection->set_forced_column_bases(master_chart.column_bases(parameters.minimum_column_basis));
         projection->comment("relaxed-from-full-table-best");
         projection->relax(acmacs::chart::optimization_options{parameters.optimization_precision});
     }
     relax(chart, number_of_dimensions, parameters);
-    chart.projections_modify()->sort();
+    chart.projections_modify().sort();
 
     // collect statistics
     const auto replicate_stat = collect_errors(master_chart, chart, parameters);
@@ -94,7 +94,7 @@ acmacs::chart::map_resolution_test_data::Predictions relax_with_proportion_dontc
     //           << '\n';
 
     //  if (*number_of_dimensions == 5 && float_equal(proportion_to_dont_care, 0.1)) {
-    //      std::cout << "dot-cares: " << (1.0 - chart.titers_modify()->percent_of_non_dont_cares()) << '\n' << chart.titers_modify()->print() << '\n';
+    //      std::cout << "dot-cares: " << (1.0 - chart.titers_modify().percent_of_non_dont_cares()) << '\n' << chart.titers_modify().print() << '\n';
     //      std::cout << replicate_no << " corr:" << predictions.correlation << " mean-abs:" << predictions.av_abs_error << ' ' << replicate_stat.master_distances << ' ' << replicate_stat.predicted_distances << '\n';
     // //      // std::cout << "DEBUG: rep:" << replicate_no << " mean-abs:" << predictions.av_abs_error << " sd-err:" << predictions.sd_error << "\n " << prediction_errors << '\n';
     // //      // std::cout << "DEBUG: corr:" << predictions.correlation << " var-m:" << acmacs::statistics::varianceN(std::begin(replicate_stat.master_distances), std::end(replicate_stat.master_distances))

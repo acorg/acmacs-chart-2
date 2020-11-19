@@ -70,7 +70,7 @@ int main(int argc, char* const argv[])
                         chart.projection_modify(projection_to_reorient)->transformation(procrustes_data.transformation);
                     }
                 }
-                chart.projections_modify()->sort();
+                chart.projections_modify().sort();
                 acmacs::chart::export_factory(chart, opt.output, opt.program_name(), report);
             }
             fmt::print(stderr, "{}\n", chart.make_info());

@@ -25,16 +25,9 @@ namespace acmacs::chart
     class PlotSpecModify;
 
     using ChartModifyP = std::shared_ptr<ChartModify>;
-    using InfoModifyP = std::shared_ptr<InfoModify>;
-    using AntigensModifyP = std::shared_ptr<AntigensModify>;
-    using SeraModifyP = std::shared_ptr<SeraModify>;
     using AntigenModifyP = std::shared_ptr<AntigenModify>;
     using SerumModifyP = std::shared_ptr<SerumModify>;
-    using TitersModifyP = std::shared_ptr<TitersModify>;
-    using ColumnBasesModifyP = std::shared_ptr<ColumnBasesModify>;
-    using ProjectionsModifyP = std::shared_ptr<ProjectionsModify>;
     using ProjectionModifyP = std::shared_ptr<ProjectionModify>;
-    using PlotSpecModifyP = std::shared_ptr<PlotSpecModify>;
 
     enum class use_dimension_annealing { no, yes };
     constexpr inline use_dimension_annealing use_dimension_annealing_from_bool(bool use) { return use ? use_dimension_annealing::yes : use_dimension_annealing::no; }
@@ -62,15 +55,17 @@ namespace acmacs::chart
 
         bool is_merge() const override { return main_ ? main_->is_merge() : false; }
 
-        InfoModifyP info_modify();
-        AntigensModifyP antigens_modify();
-        SeraModifyP sera_modify();
-        TitersModifyP titers_modify();
-        ColumnBasesModifyP forced_column_bases_modify(MinimumColumnBasis aMinimumColumnBasis);
-        ColumnBasesModifyP forced_column_bases_modify(const ColumnBases& source);
-        ProjectionsModifyP projections_modify();
+        InfoModify& info_modify();
+        AntigensModify& antigens_modify();
+        SeraModify& sera_modify();
+        TitersModify& titers_modify();
+        std::shared_ptr<TitersModify> titers_modify_ptr() { titers_modify(); return titers_; }
+        std::shared_ptr<ColumnBasesModify> forced_column_bases_modify(MinimumColumnBasis aMinimumColumnBasis); // may return nullptr
+        ColumnBasesModify& forced_column_bases_modify(const ColumnBases& source);
+        ProjectionsModify& projections_modify();
         ProjectionModifyP projection_modify(size_t aProjectionNo);
-        PlotSpecModifyP plot_spec_modify();
+        PlotSpecModify& plot_spec_modify();
+        std::shared_ptr<PlotSpecModify> plot_spec_modify_ptr() { plot_spec_modify(); return plot_spec_; }
         const rjson::value& extension_field_modify(std::string field_name);
         void extension_field_modify(std::string field_name, const rjson::value& value);
 
@@ -97,13 +92,13 @@ namespace acmacs::chart
 
       private:
         ChartP main_;
-        InfoModifyP info_;
-        AntigensModifyP antigens_;
-        SeraModifyP sera_;
-        TitersModifyP titers_;
-        ColumnBasesModifyP forced_column_bases_;
-        ProjectionsModifyP projections_;
-        PlotSpecModifyP plot_spec_;
+        std::shared_ptr<InfoModify> info_;
+        std::shared_ptr<AntigensModify> antigens_;
+        std::shared_ptr<SeraModify> sera_;
+        std::shared_ptr<TitersModify> titers_;
+        std::shared_ptr<ColumnBasesModify> forced_column_bases_;
+        std::shared_ptr<ProjectionsModify> projections_;
+        std::shared_ptr<PlotSpecModify> plot_spec_;
         rjson::value extensions_{rjson::null{}};
 
         void report_disconnected_unmovable(const DisconnectedPoints& disconnected, const UnmovablePoints& unmovable) const;
@@ -591,7 +586,7 @@ namespace acmacs::chart
         size_t number_of_points_modified() const { return layout_->number_of_points(); }
         number_of_dimensions_t number_of_dimensions_modified() const { return layout_->number_of_dimensions(); }
         const Transformation& transformation_modified() const { return transformation_; }
-        ColumnBasesModifyP forced_column_bases_modified() const { return forced_column_bases_; }
+        std::shared_ptr<ColumnBasesModify> forced_column_bases_modified() const { return forced_column_bases_; }
         void new_layout(size_t number_of_points, number_of_dimensions_t number_of_dimensions)
         {
             layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions);
@@ -610,7 +605,7 @@ namespace acmacs::chart
         Transformation transformation_;
         mutable std::shared_ptr<Layout> transformed_layout_;
         mutable std::optional<double> stress_;
-        ColumnBasesModifyP forced_column_bases_;
+        std::shared_ptr<ColumnBasesModify> forced_column_bases_;
         std::string comment_;
         DisconnectedPoints disconnected_;
         UnmovablePoints unmovable_;

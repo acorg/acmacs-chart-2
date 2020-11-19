@@ -41,7 +41,7 @@ int main(int argc, char* const argv[])
             sera_to_remove.add(*sr_egg);
         }
         if (opt.remove_projections)
-            chart.projections_modify()->remove_all();
+            chart.projections_modify().remove_all();
         if (!antigens_to_remove.empty())
             chart.remove_antigens(antigens_to_remove);
         if (!sera_to_remove.empty())

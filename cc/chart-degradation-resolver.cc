@@ -92,18 +92,18 @@ int main(int argc, char* const argv[])
               // std::cerr << found1->make_info() << '\n' << '\n';
             if (type == "recursive") {
                 auto found2 = randomize_found_on_the_wrong_side_of_serum_line_recursive(chart, original_projection, 0, "", options);
-                chart.projections_modify()->add(found2);
+                chart.projections_modify().add(found2);
             }
             else if (type == "random") {
                   // auto found2 = randomize_found_on_the_wrong_side_of_serum_line(chart, original_projection, options);
                 auto found2 = randomize_found_on_the_wrong_side_of_serum_line_parallel(chart, original_projection, options);
-                chart.projections_modify()->add(found2);
+                chart.projections_modify().add(found2);
             }
             else {
                 std::cerr << "Unrecognized type of search: " << type << '\n';
             }
 
-            chart.projections_modify()->sort();
+            chart.projections_modify().sort();
             acmacs::chart::export_factory(chart, intermediate_filename(3), args.program(), report);
 
             std::cout << chart.make_info() << '\n';
@@ -123,10 +123,10 @@ int main(int argc, char* const argv[])
 //     acmacs::chart::ProjectionModifyP result;
 //     size_t wrong_side = 100000;
 //     const SplitData split_data(*original_projection);
-//     acmacs::chart::ProjectionModifyP projection_for_randomizer = chart.projections_modify()->new_by_cloning(*original_projection, false);
+//     acmacs::chart::ProjectionModifyP projection_for_randomizer = chart.projections_modify().new_by_cloning(*original_projection, false);
 //     auto randomizer = acmacs::chart::randomizer_border_with_current_layout_area(*projection_for_randomizer, 1.0, {split_data.serum_line.line(), split_data.good_side});
 //     for (size_t attempt = 0; attempt < options.number_of_attempts; ++attempt) {
-//         acmacs::chart::ProjectionModifyP new_projection = chart.projections_modify()->new_by_cloning(*original_projection, false);
+//         acmacs::chart::ProjectionModifyP new_projection = chart.projections_modify().new_by_cloning(*original_projection, false);
 //         new_projection->randomize_layout(split_data.on_the_wrong_side, randomizer);
 //         new_projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
 //         const SplitData new_split_data(*new_projection);
@@ -161,7 +161,7 @@ acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line
 
 #pragma omp parallel for default(shared) schedule(static, 4)
     for (size_t attempt = 0; attempt < options.number_of_attempts; ++attempt) {
-        acmacs::chart::ProjectionModifyP new_projection = chart.projections_modify()->new_by_cloning(*original_projection, false);
+        acmacs::chart::ProjectionModifyP new_projection = chart.projections_modify().new_by_cloning(*original_projection, false);
         auto randomizer = acmacs::chart::randomizer_border_with_current_layout_area(*new_projection, 1.0, {split_data.serum_line.line(), split_data.good_side});
         new_projection->randomize_layout(split_data.on_the_wrong_side, randomizer);
         new_projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
@@ -187,7 +187,7 @@ acmacs::chart::ProjectionModifyP randomize_found_on_the_wrong_side_of_serum_line
           // std::cerr << sublevel_path << '\n';
 
         SplitData split_data(*original_projection);
-        acmacs::chart::ProjectionModifyP new_projection = chart.projections_modify()->new_by_cloning(*original_projection, false);
+        acmacs::chart::ProjectionModifyP new_projection = chart.projections_modify().new_by_cloning(*original_projection, false);
         auto randomizer = acmacs::chart::randomizer_border_with_current_layout_area(*new_projection, 1.0, {split_data.serum_line.line(), split_data.good_side});
         new_projection->randomize_layout(split_data.on_the_wrong_side, randomizer);
         new_projection->comment("resolver " + sublevel_path + " wrong-side:" + std::to_string(split_data.on_the_wrong_side->size()));
@@ -221,17 +221,17 @@ acmacs::chart::ProjectionModifyP flip_relax(acmacs::chart::ChartModify& chart, a
     acmacs::PointStyleModified style;
     style.outline(acmacs::color::Modifier{ORANGE});
     style.outline_width(Pixels{2});
-    chart.plot_spec_modify()->modify(split_data.on_the_wrong_side, style);
+    chart.plot_spec_modify().modify(split_data.on_the_wrong_side, style);
 
     // flip bad side antigens to good side
-    auto flipped = chart.projections_modify()->new_by_cloning(*original_projection);
+    auto flipped = chart.projections_modify().new_by_cloning(*original_projection);
     flipped->comment("flipped " + std::to_string(split_data.on_the_wrong_side->size()) + " antigens");
     auto layout = flipped->layout();
     for (auto index : split_data.on_the_wrong_side)
         flipped->move_point(index, split_data.serum_line.line().flip_over(layout->at(index), 1.0));
 
     // relax from flipped
-    auto relax_from_flipped = flipped; // chart.projections_modify()->new_by_cloning(*flipped);
+    auto relax_from_flipped = flipped; // chart.projections_modify().new_by_cloning(*flipped);
     relax_from_flipped->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_precision::rough));
     relax_from_flipped->orient_to(*original_projection);
 
