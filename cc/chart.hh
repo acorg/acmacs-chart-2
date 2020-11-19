@@ -908,6 +908,10 @@ namespace acmacs::chart
         return std::accumulate(std::begin(indexes), std::end(indexes), 0ul, [&ag_sr](size_t max_name, size_t index) { return std::max(max_name, ag_sr.at(index)->full_name().size()); });
     }
 
+    // ----------------------------------------------------------------------
+
+    TableDate table_date_from_sources(std::vector<std::string>&& sources);
+
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------

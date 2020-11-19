@@ -3,6 +3,7 @@
 
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-join.hh"
+#include "acmacs-base/string-split.hh"
 #include "acmacs-virus/virus-name-v1.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/range.hh"
@@ -1059,6 +1060,21 @@ acmacs::chart::Indexes acmacs::chart::Sera::find_by_name(const std::regex& aName
     return ::find_by_name(*this, aName);
 
 } // acmacs::chart::Sera::find_by_name
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::TableDate acmacs::chart::table_date_from_sources(std::vector<std::string>&& sources)
+{
+    std::sort(std::begin(sources), std::end(sources));
+    std::string front{sources.front()}, back{sources.back()};
+    const std::string_view tables_separator{"+"};
+    if (const auto fparts = acmacs::string::split(front, tables_separator, acmacs::string::Split::RemoveEmpty); fparts.size() > 1)
+        front = fparts.front();
+    if (const auto bparts = acmacs::string::split(back, tables_separator, acmacs::string::Split::RemoveEmpty); bparts.size() > 1)
+        back = bparts.back();
+    return TableDate{fmt::format("{}-{}", front, back)};
+
+} // acmacs::chart::table_date_from_sources
 
 // ----------------------------------------------------------------------
 /// Local Variables:

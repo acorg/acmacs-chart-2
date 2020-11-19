@@ -396,8 +396,7 @@ TableDate Acd1Info::date(Compute aCompute) const
         if (const auto& sources = data_["sources"]; !sources.empty()) {
             std::vector<std::string> composition{sources.size()};
             rjson::transform(sources, composition.begin(), [](const rjson::value& sinfo) { return sinfo["date"].get_or_default(""); });
-            std::sort(std::begin(composition), std::end(composition));
-            result = acmacs::string::join(acmacs::string::join_dash, composition.front(), composition.back());
+            return table_date_from_sources(std::move(composition));
         }
     }
     return TableDate{result};
