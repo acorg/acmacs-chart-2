@@ -153,6 +153,7 @@ void combine_tables(Charts& charts, const std::vector<size_t>& to_combine)
     auto& master = *charts[to_combine[0]];
     auto& master_antigens = master.antigens_modify();
     auto& master_titers = master.titers_modify();
+    auto& master_plot_spec = master.plot_spec_modify();
     master_titers.remove_layers();
     master.projections_modify().remove_all();
     for (const auto chart_no : to_combine | ranges::views::drop(1)) {
@@ -162,6 +163,7 @@ void combine_tables(Charts& charts, const std::vector<size_t>& to_combine)
         for (const auto to_append_antigen_no : to_append_antigens->test_indexes()) {
             master_antigens.append()->replace_with(*to_append_antigens->at(to_append_antigen_no));
             master_titers.append_antigen();
+            master_plot_spec.append_antigen();
             for (const auto sr_no : range_from_0_to(master.number_of_sera()))
                 master_titers.titer(master_titers.number_of_antigens() - 1, sr_no, to_append_titers->titer(to_append_antigen_no, sr_no));
         }

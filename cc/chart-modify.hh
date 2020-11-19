@@ -992,6 +992,7 @@ namespace acmacs::chart
         void remove_antigens(const ReverseSortedIndexes& indexes);
         void remove_sera(const ReverseSortedIndexes& indexes);
         void insert_antigen(size_t before);
+        void append_antigen() { insert_antigen(number_of_antigens_); }
         void insert_serum(size_t before);
 
       protected:
