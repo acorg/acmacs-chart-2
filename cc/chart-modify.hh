@@ -313,7 +313,12 @@ namespace acmacs::chart
         {
             if (before > data_.size())
                 throw invalid_data{"invalid index to insert before: " + to_string(before) + ", valid values in [0.." + to_string(data_.size()) + ']'};
-            return *data_.emplace(data_.begin() + static_cast<Indexes::difference_type>(before), new Modify);
+            return *data_.emplace(data_.begin() + static_cast<Indexes::difference_type>(before), std::make_shared<Modify>());
+        }
+
+        std::shared_ptr<Modify> append()
+        {
+            return data_.emplace_back(std::make_shared<Modify>());
         }
 
         void set_continent()
@@ -407,6 +412,7 @@ namespace acmacs::chart
         void remove_antigens(const ReverseSortedIndexes& indexes);
         void remove_sera(const ReverseSortedIndexes& indexes);
         void insert_antigen(size_t before);
+        void append_antigen() { insert_antigen(number_of_antigens()); }
         void insert_serum(size_t before);
 
         size_t number_of_layers() const override { return layers_.size(); }

@@ -11,10 +11,12 @@
 
 // ----------------------------------------------------------------------
 
+using Charts = std::vector<std::unique_ptr<acmacs::chart::ChartModify>>;
+
 static void set_merge_type(acmacs::chart::MergeSettings& settings, std::string_view merge_type);
-static void combine_cheating_assays(std::vector<acmacs::chart::ChartModify>& charts, bool combine_requested);
-[[nodiscard]] static std::vector<std::vector<size_t>> get_cheating_assays(const std::vector<acmacs::chart::ChartModify>& charts);
-static void combine_tables(std::vector<acmacs::chart::ChartModify>& charts, const std::vector<size_t>& to_combine);
+static void combine_cheating_assays(Charts& charts, bool combine_requested);
+[[nodiscard]] static std::vector<std::vector<size_t>> get_cheating_assays(const Charts& charts);
+static void combine_tables(Charts& charts, const std::vector<size_t>& to_combine);
 
 // ----------------------------------------------------------------------
 
@@ -49,23 +51,23 @@ int main(int argc, const char* const argv[])
         if (opt.source_charts->size() < 2)
             throw std::runtime_error("too few source charts specified");
 
-        std::vector<acmacs::chart::ChartModify> charts;
+        Charts charts;
         for (auto chart_no : range_from_0_to(opt.source_charts->size())) {
-            acmacs::chart::ChartModify chart{acmacs::chart::import_from_file((*opt.source_charts)[chart_no])};
+            auto chart = std::make_unique<acmacs::chart::ChartModify>(acmacs::chart::import_from_file((*opt.source_charts)[chart_no]));
             if (*opt.duplicates_distinct) {
-                chart.antigens_modify()->duplicates_distinct(chart.antigens()->find_duplicates());
-                chart.sera_modify()->duplicates_distinct(chart.sera()->find_duplicates());
+                chart->antigens_modify()->duplicates_distinct(chart->antigens()->find_duplicates());
+                chart->sera_modify()->duplicates_distinct(chart->sera()->find_duplicates());
             }
             charts.push_back(std::move(chart));
         }
 
         combine_cheating_assays(charts, opt.combine_cheating_assays);
 
-        auto [result, merge_report] = acmacs::chart::merge(charts[0], charts[1], settings);
+        auto [result, merge_report] = acmacs::chart::merge(*charts[0], *charts[1], settings);
 
-        fmt::print("{}\n{}\n\n{}\n----------\n\n", charts[0].description(), charts[1].description(), merge_report.common.report());
-        for (size_t c_no = 2; c_no < opt.source_charts->size(); ++c_no) {
-            auto& chart3 = charts[c_no];
+        fmt::print("{}\n{}\n\n{}\n----------\n\n", charts[0]->description(), charts[1]->description(), merge_report.common.report());
+        for (const size_t c_no : range_from_to(2ul, charts.size())) {
+            auto& chart3 = *charts[c_no];
             fmt::print("{}\n{}\n\n", result->description(), chart3.description());
             std::tie(result, merge_report) = acmacs::chart::merge(*result, chart3, settings);
             fmt::print("{}\n----------\n\n", merge_report.common.report());
@@ -115,7 +117,7 @@ void set_merge_type(acmacs::chart::MergeSettings& settings, std::string_view mer
 
 // ----------------------------------------------------------------------
 
-void combine_cheating_assays(std::vector<acmacs::chart::ChartModify>& charts, bool combine_requested)
+void combine_cheating_assays(Charts& charts, bool combine_requested)
 {
     const auto cheating_assays = get_cheating_assays(charts);
     if (cheating_assays.empty()) {
@@ -128,7 +130,7 @@ void combine_cheating_assays(std::vector<acmacs::chart::ChartModify>& charts, bo
         for (const auto& group : cheating_assays) {
             fmt::print(stderr, "    cheating assay group\n");
             for (const auto chart_no : group)
-                fmt::print(stderr, "        {}\n", charts[chart_no].make_name());
+                fmt::print(stderr, "        {}\n", charts[chart_no]->make_name());
         }
         fmt::print(stderr, "\n\n");
         return;
@@ -137,43 +139,40 @@ void combine_cheating_assays(std::vector<acmacs::chart::ChartModify>& charts, bo
     for (const auto& group : cheating_assays)
         combine_tables(charts, group);
 
-    // remove used charts
-    {
-        const auto to_remove = cheating_assays | ranges::views::join | ranges::to<std::vector<size_t>>;
-        auto remove_iter = std::begin(to_remove);
-        size_t current{0};
-        const auto should_be_removed = [&remove_iter, &to_remove, &current](const auto& /*chart*/) {
-            if (remove_iter == std::end(to_remove))
-                return false;
-            if (*remove_iter == current) {
-                ++current;
-                ++remove_iter;
-                return true;
-            }
-            else {
-                ++current;
-                return false;
-            }
-        };
-        charts.erase(std::remove_if(std::begin(charts), std::end(charts), should_be_removed), std::end(charts));
-    }
+    // remove appended charts
+    for (const auto& group : cheating_assays)
+        ranges::for_each(group | ranges::views::drop(1), [&charts](size_t chart_no) { charts[chart_no].reset(); });
+    charts.erase(ranges::remove(charts, std::unique_ptr<acmacs::chart::ChartModify>{}), std::end(charts));
 
 } // combine_cheating_assays
 
 // ----------------------------------------------------------------------
 
-void combine_tables(std::vector<acmacs::chart::ChartModify>& charts, const std::vector<size_t>& to_combine)
+void combine_tables(Charts& charts, const std::vector<size_t>& to_combine)
 {
-    auto& master = charts[to_combine[0]];
+    auto& master = *charts[to_combine[0]];
+    auto& master_antigens = *master.antigens_modify();
+    auto& master_titers = *master.titers_modify();
+    master_titers.remove_layers();
+    master.projections_modify()->remove_all();
     for (const auto chart_no : to_combine | ranges::views::drop(1)) {
-        auto& to_append = charts[chart_no];
+        auto& to_append = *charts[chart_no];
+        auto to_append_antigens = to_append.antigens();
+        auto to_append_titers = to_append.titers();
+        for (const auto to_append_antigen_no : to_append_antigens->test_indexes()) {
+            master_antigens.append()->replace_with(*to_append_antigens->at(to_append_antigen_no));
+            master_titers.append_antigen();
+            for (const auto sr_no : range_from_0_to(master.number_of_sera()))
+                master_titers.titer(master_titers.number_of_antigens() - 1, sr_no, to_append_titers->titer(to_append_antigen_no, sr_no));
+        }
+        master.info_modify()->date(fmt::format("{}+{}", master.info_modify()->date(), to_append.info()->date()));
     }
 
 } // combine_tables
 
 // ----------------------------------------------------------------------
 
-std::vector<std::vector<size_t>> get_cheating_assays(const std::vector<acmacs::chart::ChartModify>& charts)
+std::vector<std::vector<size_t>> get_cheating_assays(const Charts& charts)
 {
     const auto pair_order = [](const auto& e1, const auto& e2) { return e1.second < e2.second; };
     const auto get_reference_names = [pair_order](const auto& ag_sr) {
@@ -206,23 +205,23 @@ std::vector<std::vector<size_t>> get_cheating_assays(const std::vector<acmacs::c
     for (auto no1 : range_from_0_to(charts.size())) {
         if (ranges::find(processed, no1) == ranges::end(processed)) {
             std::vector<size_t> group;
-            auto antigens1 = charts[no1].antigens();
+            auto antigens1 = charts[no1]->antigens();
             const auto antigens1_names = get_reference_names(*antigens1);
             // AD_DEBUG("AG {}", antigens1_names);
-            auto sera1 = charts[no1].sera();
+            auto sera1 = charts[no1]->sera();
             const auto sera1_names = get_all_names(*sera1);
             // AD_DEBUG("SR {}", sera1_names);
 
             for (auto no2 : range_from_to(no1 + 1, charts.size())) {
                 if (ranges::find(processed, no2) == ranges::end(processed)) {
 
-                    auto antigens2 = charts[no2].antigens();
+                    auto antigens2 = charts[no2]->antigens();
                     const auto antigens2_names = get_reference_names(*antigens2);
-                    auto sera2 = charts[no2].sera();
+                    auto sera2 = charts[no2]->sera();
                     const auto sera2_names = get_all_names(*sera2);
 
                     if (antigens1_names == antigens2_names && sera1_names == sera2_names &&
-                        titers_same(*charts[no1].titers(), antigens1_names, sera1_names, *charts[no2].titers(), antigens2_names, sera2_names)) {
+                        titers_same(*charts[no1]->titers(), antigens1_names, sera1_names, *charts[no2]->titers(), antigens2_names, sera2_names)) {
                         if (group.empty())
                             group.push_back(no1);
                         group.push_back(no2);
