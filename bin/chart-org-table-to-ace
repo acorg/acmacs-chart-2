@@ -189,7 +189,7 @@ def check_titer(titer, filename, row_no, column_no, lab, subtype, assay, prn_rea
         if convert_prn_low_read:
             return "<10"
         elif prn_titer:
-            if prn_titer in ["<", "0"]:
+            if prn_titer == "<" or int(prn_titer) < 10:
                 return "<10"
             else:
                 prn_log = math.log2(int(prn_titer) / 10.0)
@@ -197,6 +197,7 @@ def check_titer(titer, filename, row_no, column_no, lab, subtype, assay, prn_rea
                     prn_log += 1
                 else:
                     prn_log = math.ceil(prn_log)
+                module_logger.debug(f"{titer} {prn_titer} -> {prn_log} -> {int(math.pow(2, prn_log) * 10)}")
                 return "<" + str(int(math.pow(2, prn_log) * 10))
         else:
             return "<40"        # unclear
