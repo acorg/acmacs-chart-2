@@ -192,7 +192,12 @@ def check_titer(titer, filename, row_no, column_no, lab, subtype, assay, prn_rea
             if prn_titer in ["<", "0"]:
                 return "<10"
             else:
-                return "<" + str(int(math.pow(2, math.ceil(math.log2(int(prn_titer) / 10.0))) * 10))
+                prn_log = math.log2(int(prn_titer) / 10.0)
+                if math.ceil(prn_log) == prn_log:
+                    prn_log += 1
+                else:
+                    prn_log = math.ceil(prn_log)
+                return "<" + str(int(math.pow(2, prn_log) * 10))
         else:
             return "<40"        # unclear
     elif "/" in titer:
