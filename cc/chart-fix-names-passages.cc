@@ -24,6 +24,12 @@ struct Options : public argv
 int main(int argc, char* const argv[])
 {
     using namespace std::string_view_literals;
+
+    const auto check_unknown = [](std::string_view name) {
+        if (name.find("UNKNOWN"sv) != std::string_view::npos)
+            AD_WARNING("name contains UNKNOWN: {}", name);
+    };
+
     int exit_code = 0;
     try {
         Options opt(argc, argv);
@@ -52,6 +58,7 @@ int main(int argc, char* const argv[])
                 if (!parsed_name.extra.empty())
                     antigen.add_annotation(parsed_name.extra);
             }
+            check_unknown(antigen.name());
 
             auto [passage, extra] = acmacs::virus::parse_passage(antigen.passage(), acmacs::virus::passage_only::no);
             if (!extra.empty())
@@ -85,6 +92,7 @@ int main(int argc, char* const argv[])
                 if (!parsed_name.extra.empty())
                     serum.add_annotation(parsed_name.extra);
             }
+            check_unknown(serum.name());
 
             auto [passage, extra] = acmacs::virus::parse_passage(serum.passage(), acmacs::virus::passage_only::no);
             if (!extra.empty() && !(passage == "E?"sv && acmacs::string::startswith(extra, "10-"sv)))
