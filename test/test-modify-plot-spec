@@ -10,4 +10,4 @@ cd "$TESTDIR"
 ../dist/chart-convert ./test-2004-3.ace "${TDIR}/orig.txt" >/dev/null || failed " ../dist/chart-convert ./test-2004-3.ace orig.txt"
 ../dist/chart-convert "${TDIR}/r1.ace" "${TDIR}/r1.txt" >/dev/null || failed " ../dist/chart-convert r1.ace r1.txt"
 diff "${TDIR}/orig.txt" "${TDIR}/r1.txt" >"${TDIR}/diff-1.txt" || true
-cmp "${TDIR}/diff-1.txt" test-modify-plot-spec.expected-1.diff  || report_fail "test-modify-plot-spec" "${TDIR}/diff-1.txt" "${TDIR}/orig.txt" "${TDIR}/r1.txt"
+cmp "${TDIR}/diff-1.txt" test-modify-plot-spec.expected-1.diff  || report_fail "test-modify-plot-spec" "${TDIR}/diff-1.txt" test-modify-plot-spec.expected-1.diff
