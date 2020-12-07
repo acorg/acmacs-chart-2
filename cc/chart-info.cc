@@ -88,50 +88,12 @@ int main(int argc, char* const argv[])
                 fmt::print("{}\n", acmacs::string::join(acmacs::string::join_space, fields));
             }
             else {
-                fmt::print("{}\n", chart->make_info());
-                // if (const auto having_too_few_numeric_titers = chart->titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers->empty())
-                //     fmt::print("Points having too few numeric titers:{} {}\n ", having_too_few_numeric_titers->size(), having_too_few_numeric_titers);
-                if (opt.column_bases) {
-                    // Timeit ti("column bases computing ");
-                    auto cb = chart->computed_column_bases(acmacs::chart::MinimumColumnBasis{});
-                    fmt::print("computed column bases:                 {:.2f}\n", *cb);
-                    for (auto projection_no : acmacs::range(chart->number_of_projections())) {
-                        if (auto fcb = chart->projection(projection_no)->forced_column_bases(); fcb) {
-                            fmt::print("forced column bases for projection {:2d}: {:.2f}\n", projection_no, *fcb);
-                            fmt::print("                                       diff:");
-                            for (size_t sr_no{0}; sr_no < cb->size(); ++sr_no) {
-                                if (!float_equal(cb->column_basis(sr_no), fcb->column_basis(sr_no)))
-                                    fmt::print("  {}:{:.2f} - {:.2f} = {}", sr_no, cb->column_basis(sr_no), fcb->column_basis(sr_no), cb->column_basis(sr_no) - fcb->column_basis(sr_no));
-                            }
-                            fmt::print("\n");
-                        }
-                    }
-                }
-                if (opt.list_tables && info->number_of_sources() > 0) {
-                    fmt::print("\nTables:\n");
-                    for (auto src_no : acmacs::range(info->number_of_sources()))
-                        fmt::print("{:3d} {}\n", src_no, info->source(src_no)->make_name());
-                }
-                if (opt.list_tables_for_sera && info->number_of_sources() > 0) {
-                    auto titers = chart->titers();
-                    for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-                        fmt::print("SR {:{}d} {}\n", sr_no, serum_index_num_digits, serum->full_name_with_passage());
-                        for (auto layer_no : titers->layers_with_serum(sr_no))
-                            fmt::print("    {:3d} {}\n", layer_no, info->source(layer_no)->make_name());
-                    }
-                }
-                if (opt.dates) {
-                    acmacs::Counter<std::string> dates;
-                    auto antigens = chart->antigens();
-                    for (const auto antigen : *antigens) {
-                        if (const auto date = antigen->date(); !date.empty())
-                            dates.count(date->substr(0, 7));
-                        else
-                            dates.count(date);
-                    }
-                    for (const auto& [date, count] : dates.counter())
-                        fmt::print("{} {:4d}\n", date, count);
-                }
+                using namespace acmacs::chart;
+                const unsigned inf{(opt.column_bases ? info_data::column_bases : 0)              //
+                                   | (opt.list_tables ? info_data::tables : 0)                   //
+                                   | (opt.list_tables_for_sera ? info_data::tables_for_sera : 0) //
+                                   | (opt.dates ? info_data::dates : 0)};
+                fmt::print("{}\n", chart->make_info(20, inf));
             }
             if (file_no < (opt.charts->size() - 1))
                 fmt::print("\n");
