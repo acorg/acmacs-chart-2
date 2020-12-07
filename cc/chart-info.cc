@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "acmacs-base/log.hh"
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/range.hh"
@@ -81,18 +79,18 @@ int main(int argc, char* const argv[])
                 chart->set_homologous(acmacs::chart::find_homologous::all, nullptr, acmacs::debug::yes);
                 auto antigens = chart->antigens();
                 for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-                    std::cout << fmt::format("SR {:{}d} {} -- {}\n", sr_no, serum_index_num_digits, serum->full_name(), serum->homologous_antigens());
+                    fmt::print("SR {:{}d} {} -- {}\n", sr_no, serum_index_num_digits, serum->full_name(), serum->homologous_antigens());
                 }
                 fields.emplace_back();
             }
 
             if (!fields.empty()) {
-                std::cout << acmacs::string::join(acmacs::string::join_space, fields) << '\n';
+                fmt::print("{}\n", acmacs::string::join(acmacs::string::join_space, fields));
             }
             else {
-                std::cout << chart->make_info() << '\n';
-                if (const auto having_too_few_numeric_titers = chart->titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers->empty())
-                    std::cout << fmt::format("Points having too few numeric titers:{} {}\n ", having_too_few_numeric_titers->size(), having_too_few_numeric_titers);
+                fmt::print("{}\n", chart->make_info());
+                // if (const auto having_too_few_numeric_titers = chart->titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers->empty())
+                //     fmt::print("Points having too few numeric titers:{} {}\n ", having_too_few_numeric_titers->size(), having_too_few_numeric_titers);
                 if (opt.column_bases) {
                     // Timeit ti("column bases computing ");
                     auto cb = chart->computed_column_bases(acmacs::chart::MinimumColumnBasis{});
@@ -110,9 +108,9 @@ int main(int argc, char* const argv[])
                     }
                 }
                 if (opt.list_tables && info->number_of_sources() > 0) {
-                    std::cout << "\nTables:\n";
+                    fmt::print("\nTables:\n");
                     for (auto src_no : acmacs::range(info->number_of_sources()))
-                        std::cout << std::setw(3) << src_no << ' ' << info->source(src_no)->make_name() << '\n';
+                        fmt::print("{:3d} {}\n", src_no, info->source(src_no)->make_name());
                 }
                 if (opt.list_tables_for_sera && info->number_of_sources() > 0) {
                     auto titers = chart->titers();
@@ -136,10 +134,10 @@ int main(int argc, char* const argv[])
                 }
             }
             if (file_no < (opt.charts->size() - 1))
-                std::cout << '\n';
+                fmt::print("\n");
         }
         if (total_number_of_antigens > 0)
-            std::cerr << "Total number of antigens: " << total_number_of_antigens << '\n';
+            fmt::print("Total number of antigens: {}\n", total_number_of_antigens);
     }
     catch (std::exception& err) {
         fmt::print(stderr, "ERROR: {}\n", err);

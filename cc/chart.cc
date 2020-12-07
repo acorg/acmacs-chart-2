@@ -1,12 +1,11 @@
-#include <regex>
-#include <algorithm>
-
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-join.hh"
 #include "acmacs-base/string-split.hh"
-#include "acmacs-virus/virus-name-v1.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-base/range.hh"
+#include "acmacs-base/range-v3.hh"
+#include "acmacs-base/regex.hh"
+#include "acmacs-base/counter.hh"
+#include "acmacs-virus/virus-name-v1.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-whocc-data/labs.hh"
 #include "acmacs-chart-2/chart.hh"
@@ -27,15 +26,64 @@
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_show) const
+std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_show, unsigned inf) const
 {
-    const auto layers = titers()->number_of_layers();
-    return string::join(acmacs::string::join_newline,
-                        info()->make_info(),
-                        layers ? fmt::format("Number of layers: {}", layers) : std::string{},
-                        fmt::format("Antigens: {}   Sera: {}", number_of_antigens(), number_of_sera()),
-                        projections()->make_info(max_number_of_projections_to_show)
-        );
+    fmt::memory_buffer text;
+    fmt::format_to(text, "{}\nAntigens: {}   Sera: {}\n", info()->make_info(), number_of_antigens(), number_of_sera());
+    if (const auto layers = titers()->number_of_layers(); layers)
+        fmt::format_to(text, "Number of layers: {}\n", layers);
+    if (const auto having_too_few_numeric_titers = titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers->empty())
+        fmt::format_to(text, "Points having too few numeric titers:{} {}\n", having_too_few_numeric_titers->size(), having_too_few_numeric_titers);
+
+    if (inf & info_data::column_bases) {
+        auto cb = computed_column_bases(acmacs::chart::MinimumColumnBasis{});
+        fmt::format_to(text, "computed column bases:                 {:.2f}\n", *cb);
+        for (auto projection_no : range_from_0_to(number_of_projections())) {
+            if (auto fcb = projection(projection_no)->forced_column_bases(); fcb) {
+                fmt::format_to(text, "forced column bases for projection {:2d}: {:.2f}\n", projection_no, *fcb);
+                fmt::format_to(text, "                                       diff:");
+                for (const auto sr_no : range_from_0_to(cb->size())) {
+                    if (!float_equal(cb->column_basis(sr_no), fcb->column_basis(sr_no)))
+                        fmt::format_to(text, "  {}:{:.2f} - {:.2f} = {}", sr_no, cb->column_basis(sr_no), fcb->column_basis(sr_no), cb->column_basis(sr_no) - fcb->column_basis(sr_no));
+                }
+                fmt::format_to(text, "\n");
+            }
+        }
+    }
+
+    fmt::format_to(text, "{}\n", projections()->make_info(max_number_of_projections_to_show));
+
+    if (inf & info_data::tables && info()->number_of_sources() > 0) {
+        fmt::format_to(text, "\nTables:\n");
+        for (const auto src_no : range_from_0_to(info()->number_of_sources()))
+            fmt::format_to(text, "{:3d} {}\n", src_no, info()->source(src_no)->make_name());
+    }
+
+    if (inf & info_data::tables_for_sera && info()->number_of_sources() > 0) {
+        auto titers = this->titers();
+        auto sera = this->sera();
+        for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
+            fmt::format_to(text, "SR {:3d} {}\n", sr_no, serum->full_name_with_passage());
+            for (const auto layer_no : titers->layers_with_serum(sr_no))
+                fmt::format_to(text, "    {:3d} {}\n", layer_no, info()->source(layer_no)->make_name());
+        }
+    }
+
+    if (inf & info_data::dates) {
+        acmacs::Counter<std::string> dates;
+        auto antigens = this->antigens();
+        for (const auto antigen : *antigens) {
+            if (const auto date = antigen->date(); !date.empty())
+                dates.count(date->substr(0, 7));
+            else
+                dates.count(date);
+        }
+        fmt::format_to(text, "Antigen dates ({})\n\n", dates.size());
+        for (const auto& [date, count] : dates.counter())
+            fmt::format_to(text, "    {} {:4d}\n", date, count);
+    }
+
+    return fmt::to_string(text);
 
 } // acmacs::chart::Chart::make_info
 
@@ -239,7 +287,7 @@ std::string acmacs::chart::Chart::show_table(std::optional<size_t> layer_no) con
     const auto max_ag_name = static_cast<int>(max_full_name(*ags));
 
     fmt::format_to(output, "{:>{}s}Serum full names are under the table\n{:>{}s}", "", max_ag_name + 6, "", max_ag_name);
-    for (auto sr_ind : acmacs::range(serum_indexes->size()))
+    for (auto sr_ind : range_from_0_to(serum_indexes->size()))
         fmt::format_to(output, "{:>7d}", sr_label(sr_ind));
     fmt::format_to(output, "\n");
 
@@ -342,7 +390,7 @@ size_t acmacs::chart::Info::max_source_name() const
     if (number_of_sources() < 2)
         return 0;
     size_t msn = 0;
-    for (auto s_no : acmacs::range(number_of_sources()))
+    for (auto s_no : range_from_0_to(number_of_sources()))
         msn = std::max(msn, source(s_no)->name().size());
     return msn;
 
@@ -439,10 +487,11 @@ acmacs::chart::Blobs acmacs::chart::Projection::blobs(double stress_diff, const 
 
 std::string acmacs::chart::Projections::make_info(size_t max_number_of_projections_to_show) const
 {
-    std::string result = "Projections: " + std::to_string(size());
-    for (auto projection_no: acmacs::range(0UL, std::min(max_number_of_projections_to_show, size())))
-        result += "\n  " + std::to_string(projection_no) + ' ' + operator[](projection_no)->make_info();
-    return result;
+    fmt::memory_buffer text;
+    fmt::format_to(text, "Projections: {}", size());
+    for (auto projection_no: range_from_0_to(std::min(max_number_of_projections_to_show, size())))
+        fmt::format_to(text, "\n{:3d} {}", projection_no, operator[](projection_no)->make_info());
+    return fmt::to_string(text);
 
 } // acmacs::chart::Projections::make_info
 

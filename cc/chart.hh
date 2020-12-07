@@ -784,6 +784,11 @@ namespace acmacs::chart
 
     // ----------------------------------------------------------------------
 
+    namespace info_data
+    {
+        constexpr const unsigned column_bases = 1, tables = 2, tables_for_sera = 4, dates = 8;
+    }
+
     class Chart
     {
       protected:
@@ -825,7 +830,7 @@ namespace acmacs::chart
         std::shared_ptr<Serum> serum(size_t aSerumNo) const { return sera()->operator[](aSerumNo); }
         acmacs::virus::lineage_t lineage() const;
 
-        std::string make_info(size_t max_number_of_projections_to_show = 20) const;
+        std::string make_info(size_t max_number_of_projections_to_show = 20, unsigned inf = info_data::column_bases|info_data::tables) const;
         std::string make_name(std::optional<size_t> aProjectionNo = {}) const;
         std::string description() const;
 
