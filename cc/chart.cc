@@ -80,7 +80,7 @@ std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_
         }
         fmt::format_to(text, "Antigen dates ({})\n", dates.size());
         for (const auto& [date, count] : dates.counter())
-            fmt::format_to(text, "    [{:7s}] {:4d}\n", date, count);
+            fmt::format_to(text, "    {:7s} {:4d}\n", date, count);
     }
 
     return fmt::to_string(text);
@@ -420,7 +420,7 @@ std::string acmacs::chart::Projection::make_info() const
 {
     fmt::memory_buffer result;
     auto lt = layout();
-    fmt::format_to(result, "{} {}d", stress(), lt->number_of_dimensions());
+    fmt::format_to(result, "{:.14f} {}d", stress(), lt->number_of_dimensions());
     if (auto cmt = comment(); !cmt.empty())
         fmt::format_to(result, " <{}>", cmt);
     if (auto fcb = forced_column_bases(); fcb)
