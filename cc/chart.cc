@@ -76,7 +76,7 @@ std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_
             if (const auto date = antigen->date(); !date.empty())
                 dates.count(date->substr(0, 7));
             else
-                dates.count(date);
+                dates.count("*empty*");
         }
         fmt::format_to(text, "Antigen dates ({})\n", dates.size());
         for (const auto& [date, count] : dates.counter())
