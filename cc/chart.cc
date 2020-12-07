@@ -78,9 +78,9 @@ std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_
             else
                 dates.count(date);
         }
-        fmt::format_to(text, "Antigen dates ({})\n\n", dates.size());
+        fmt::format_to(text, "Antigen dates ({})\n", dates.size());
         for (const auto& [date, count] : dates.counter())
-            fmt::format_to(text, "    {} {:4d}\n", date, count);
+            fmt::format_to(text, "    [{:5s}] {:4d}\n", date, count);
     }
 
     return fmt::to_string(text);
