@@ -15,12 +15,12 @@ namespace acmacs::chart
     struct MergeSettings
     {
         MergeSettings() = default;
-        MergeSettings(CommonAntigensSera::match_level_t a_match_level, projection_merge_t a_projection_merge = projection_merge_t::type1)
-            : match_level{a_match_level}, projection_merge{a_projection_merge} {}
+        MergeSettings(CommonAntigensSera::match_level_t a_match_level, projection_merge_t a_projection_merge = projection_merge_t::type1, bool a_remove_distinct = false)
+            : match_level{a_match_level}, projection_merge{a_projection_merge}, remove_distinct{a_remove_distinct} {}
         MergeSettings(projection_merge_t a_projection_merge) : projection_merge{a_projection_merge} {}
         CommonAntigensSera::match_level_t match_level{CommonAntigensSera::match_level_t::automatic};
-        bool remove_distinct{false};
         projection_merge_t projection_merge{projection_merge_t::type1};
+        bool remove_distinct{false};
     };
 
     struct MergeReport
