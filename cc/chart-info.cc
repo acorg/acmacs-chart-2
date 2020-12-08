@@ -99,7 +99,7 @@ int main(int argc, char* const argv[])
                 fmt::print("\n");
         }
         if (total_number_of_antigens > 0)
-            fmt::print("Total number of antigens: {}\n", total_number_of_antigens);
+            fmt::print(stderr, "Total number of antigens: {}\n", total_number_of_antigens);
     }
     catch (std::exception& err) {
         fmt::print(stderr, "ERROR: {}\n", err);
