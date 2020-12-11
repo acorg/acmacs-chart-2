@@ -45,6 +45,8 @@ int main(int argc, char* const argv[])
             AD_LOG(acmacs::log::name_parsing, "AG {} \"{}\"", ag_no, antigen.name());
             AD_LOG_INDENT;
             auto parsed_name = acmacs::virus::name::parse(antigen.name());
+            if (parsed_name.not_good())
+                AD_WARNING("AG {} \"{}\": {}", ag_no, antigen.name(), parsed_name.messages);
             if (*parsed_name.subtype == "A")
                 parsed_name.subtype = subtype;
             const auto new_name = parsed_name.name();
@@ -77,6 +79,8 @@ int main(int argc, char* const argv[])
             AD_LOG(acmacs::log::name_parsing, "SR {} \"{}\"", sr_no, serum.name());
             AD_LOG_INDENT;
             auto parsed_name = acmacs::virus::name::parse(serum.name());
+            if (parsed_name.not_good())
+                AD_WARNING("SR {} \"{}\": {}", sr_no, serum.name(), parsed_name.messages);
             if (*parsed_name.subtype == "A")
                 parsed_name.subtype = subtype;
             const auto new_name = parsed_name.name();
