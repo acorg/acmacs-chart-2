@@ -310,7 +310,8 @@ template <typename AgSrEntry> void CommonAntigensSera::Impl::ChartData<AgSrEntry
 
 // ----------------------------------------------------------------------
 
-template <typename AgSrEntry> score_t CommonAntigensSera::Impl::ChartData<AgSrEntry>::match(const AgSrEntry& primary, const AgSrEntry& secondary, acmacs::chart::CommonAntigensSera::match_level_t match_level) const
+template <typename AgSrEntry>
+score_t CommonAntigensSera::Impl::ChartData<AgSrEntry>::match(const AgSrEntry& primary, const AgSrEntry& secondary, acmacs::chart::CommonAntigensSera::match_level_t match_level) const
 {
     using namespace std::string_view_literals;
     const auto match_report = [](bool equals, std::string_view report) -> std::string_view {
@@ -335,13 +336,12 @@ template <typename AgSrEntry> score_t CommonAntigensSera::Impl::ChartData<AgSrEn
                 return match_not_ignored(primary, secondary);
         }
     }
-    else {
-        AD_LOG(acmacs::log::common, "{} \"{} {} {}\" != \"{} {} {}\": {} {} {} {} {}", primary.ag_sr(), //
-               primary.name, primary.reassortant, primary.annotations,                //
-               secondary.name, secondary.reassortant, secondary.annotations,          //
-               name_neq, reassortant_neq, annotations_neq, primary_distict, secondary_distict);
-        return score_t::no_match;
-    }
+
+    AD_LOG(acmacs::log::common, "{} \"{} {} {}\" != \"{} {} {}\": {} {} {} {} {}", primary.ag_sr(), //
+           primary.name, primary.reassortant, primary.annotations,                                  //
+           secondary.name, secondary.reassortant, secondary.annotations,                            //
+           name_neq, reassortant_neq, annotations_neq, primary_distict, secondary_distict);
+    return score_t::no_match;
 
 } // CommonAntigensSera::Impl::ChartData::match
 
