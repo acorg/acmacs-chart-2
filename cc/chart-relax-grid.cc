@@ -66,7 +66,7 @@ int main(int argc, char* const argv[])
             // relax
             const Timeit ti_relax(fmt::format("{} rough optimizations: ", opt.number_of_optimizations), report_time::yes);
             acmacs::chart::optimization_options options(method, acmacs::chart::optimization_precision::rough, opt.max_distance_multiplier);
-            const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(opt.dimension_annealing && method != acmacs::chart::optimization_method::optimlib_differential_evolution);
+            const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(opt.dimension_annealing); // && method != acmacs::chart::optimization_method::optimlib_differential_evolution);
             options.disconnect_too_few_numeric_titers = opt.no_disconnect_having_few_titers ? acmacs::chart::disconnect_few_numeric_titers::no : acmacs::chart::disconnect_few_numeric_titers::yes;
             options.num_threads = opt.threads;
             chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, disconnected);

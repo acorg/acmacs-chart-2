@@ -60,7 +60,7 @@ int main(int argc, char* const argv[])
 
         if (opt.no_dimension_annealing)
             AD_WARNING("option --no-dimension-annealing is deprectaed, dimension annealing is disabled by default, use --dimension-annealing to enable");
-        const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(opt.dimension_annealing && method != acmacs::chart::optimization_method::optimlib_differential_evolution);
+        const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(opt.dimension_annealing); // && method != acmacs::chart::optimization_method::optimlib_differential_evolution);
         if (opt.seed.has_value()) {
             if (opt.number_of_optimizations != 1UL)
                 fmt::print(stderr, "WARNING: can only perform one optimization when seed is used\n");

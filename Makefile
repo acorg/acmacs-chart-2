@@ -89,7 +89,6 @@ SOURCES = \
   lispmds-encode.cc       \
   optimize.cc             \
   alglib.cc               \
-  optim.cc                \
   grid-test.cc            \
   lispmds-export.cc       \
   common.cc               \
@@ -106,6 +105,8 @@ SOURCES = \
   bounding-ball.cc        \
   name-format.cc          \
   column-bases.cc
+
+#  optim.cc
 
 ALGLIB = alglib-3.13.0
 ALGLIB_SOURCES = optimization.cpp ap.cpp alglibinternal.cpp linalg.cpp alglibmisc.cpp \
