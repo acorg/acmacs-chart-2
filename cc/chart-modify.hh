@@ -211,6 +211,7 @@ namespace acmacs::chart
         void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
         void reference(bool value) { reference_ = value; }
         void add_annotation(std::string_view annotation) { annotations_.insert_if_not_present(std::string{annotation}); }
+        void set_distinct() { annotations_.set_distinct(); }
         void add_clade(std::string_view clade) { clades_.insert_if_not_present(std::string{clade}); }
         void remove_annotation(std::string_view annotation) { annotations_.remove(std::string{annotation}); }
         template <typename S> void continent(S&& value) { continent_ = Continent{std::forward<S>(value)}; }
