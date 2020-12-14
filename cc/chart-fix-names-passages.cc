@@ -39,7 +39,7 @@ int main(int argc, char* const argv[])
         update_antigens(chart.antigens_modify(), subtype);
         update_sera(chart.sera_modify(), subtype);
 
-        chart.detect_reference_antigens(acmacs::chart::remove_reference_before_detecting::no);
+        chart.detect_reference_antigens(acmacs::chart::remove_reference_before_detecting::yes);
         acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name());
     }
     catch (std::exception& err) {

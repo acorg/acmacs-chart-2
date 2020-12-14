@@ -540,15 +540,16 @@ void ChartModify::detect_reference_antigens(remove_reference_before_detecting rr
         ranges::for_each(range_from_0_to(antigens.size()), [&antigens](auto ag_no) { antigens.at(ag_no).reference(false); });
 
     // set refernece attribute for all antigens whose names (without reassortant, annotations, passage) are the same as sera names
-    // antigens having unclear annotations are not marked to avoid marking various clones, CDC-LV, etc.
-    // DISTINCT antigens are not marked to avoid marking control duplicates of CDC
+    // DISTINCT antigens are not marked to avoid marking control duplicates of CDC (CDC-LV can be reference, see h1 20200710)
 
     acmacs::flat_set_t<acmacs::virus::name_t> serum_names;
     ranges::for_each(range_from_0_to(ser->size()), [&ser, &serum_names](auto sr_no) { serum_names.add(ser->at(sr_no)->name()); });
 
     ranges::for_each(range_from_0_to(antigens.size()), [&antigens, &serum_names](auto ag_no) {
-        if (auto& antigen = antigens.at(ag_no); !antigen.annotations().distinct() && (!antigen.annotations().empty() /* TODO: recognized annotations? */) && serum_names.exists(antigen.name()))
+        if (auto& antigen = antigens.at(ag_no); !antigen.annotations().distinct() && serum_names.exists(antigen.name())) {
+            // if (auto& antigen = antigens.at(ag_no); antigen.annotations().empty() && serum_names.exists(antigen.name())) { // TODO: recognized annotations?
             antigen.reference(true);
+        }
     });
 
 } // ChartModify::detect_reference_antigens
