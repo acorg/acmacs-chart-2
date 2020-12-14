@@ -74,7 +74,7 @@ def main(input_file, output_file, prn_read, prn_remove_concentration):
     for column_no in serum_columns:
         entry = {}
         for field, row_no in ace_serum_fields.items():
-            value = make_antigen_serum_field(field, rows[row_no][column_no])
+            value = make_antigen_serum_field(field, rows[row_no][column_no], lab)
             if value is not None:
                 entry[field] = value
         if ace["c"]["i"]["V"] == "B" and ace["c"]["i"].get("s"): # lineage
@@ -87,7 +87,7 @@ def main(input_file, output_file, prn_read, prn_remove_concentration):
     for row_no in antigen_rows:
         entry = {}
         for field, column_no in ace_antigen_fields.items():
-            value = make_antigen_serum_field(field, rows[row_no][column_no])
+            value = make_antigen_serum_field(field, rows[row_no][column_no], lab)
             if value is not None:
                 entry[field] = value
         if ace["c"]["i"]["V"] == "B" and ace["c"]["i"].get("s"): # lineage
@@ -153,9 +153,11 @@ def serum_field(no, cell):
 
 # ----------------------------------------------------------------------
 
-def make_antigen_serum_field(key, value):
+def make_antigen_serum_field(key, value, lab):
     if key in ["l", "a"]:
         if value:
+            if key == "l" and not value.startswith(lab):
+                value = f"{lab}#{value}"
             return [value]
         else:
             return None
