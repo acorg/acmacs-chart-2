@@ -112,8 +112,8 @@ ALGLIB = alglib-3.13.0
 ALGLIB_SOURCES = optimization.cpp ap.cpp alglibinternal.cpp linalg.cpp alglibmisc.cpp \
   dataanalysis.cpp statistics.cpp specialfunctions.cpp solvers.cpp
 ALGLIB_CXXFLAGS = -DAE_COMPILE_MINLBFGS -DAE_COMPILE_PCA -DAE_COMPILE_MINCG -g -MMD -O3 -mfpmath=sse -mtune=intel -fPIC -std=c++11 -Icc -Wall
-ifeq ($(CXX_TYPE),GCC8)
-ALGLIB_CXXFLAGS += -Wno-maybe-uninitialized
+ifeq ($(CXX_COMPILER_TYPE),gcc)
+ALGLIB_CXXFLAGS += -Wno-maybe-uninitialized -Wno-format-overflow=
 endif
 
 all: install
