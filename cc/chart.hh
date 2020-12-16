@@ -91,6 +91,14 @@ namespace acmacs::chart
             else
                 return "Neut";
         }
+
+        std::string short_name() const
+        {
+            if (get() == "FOCUS REDUCTION")
+                return "FRA";
+            else
+                return get();
+        }
     };
 
     class RbcSpecies : public acmacs::named_string_t<struct chart_rbc_species_tag_t>
@@ -98,6 +106,14 @@ namespace acmacs::chart
       public:
         using acmacs::named_string_t<struct chart_rbc_species_tag_t>::named_string_t;
     };
+
+    inline std::string assay_rbc_short(const Assay& assay, const RbcSpecies& rbc)
+    {
+        if (assay.empty() || assay.get() == "HI" || !rbc.empty())
+            return fmt::format("{} {}", assay.short_name(), rbc);
+        else
+            return assay.short_name();
+    }
 
     class TableDate : public acmacs::named_string_t<struct chart_table_date_tag_t>
     {
