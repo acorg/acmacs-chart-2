@@ -514,10 +514,10 @@ std::string acmacs::chart::Projections::make_info(size_t max_number_of_projectio
 std::string acmacs::chart::Antigen::full_name_with_fields() const
 {
     std::string r{name()};
-    if (const auto value = reassortant(); !value.empty())
-        r += " reassortant=\"" + *value + '"';
     if (const auto value = string::join(acmacs::string::join_space, annotations()); !value.empty())
         r += " annotations=\"" + value + '"';
+    if (const auto value = reassortant(); !value.empty())
+        r += " reassortant=\"" + *value + '"';
     if (const auto value = passage(); !value.empty())
         r += fmt::format(" passage=\"{}\" ptype={}", *value, value.passage_type());
     if (const auto value = date(); !value.empty())
@@ -537,10 +537,10 @@ std::string acmacs::chart::Antigen::full_name_with_fields() const
 std::string acmacs::chart::Serum::full_name_with_fields() const
 {
     std::string r{name()};
-    if (const auto value = reassortant(); !value.empty())
-        r += " reassortant=\"" + *value + '"';
     if (const auto value = string::join(acmacs::string::join_space, annotations()); !value.empty())
         r += " annotations=\"" + value + '"';
+    if (const auto value = reassortant(); !value.empty())
+        r += " reassortant=\"" + *value + '"';
     if (const auto value = serum_id(); !value.empty())
         r += " serum_id=\"" + *value + '"';
     if (const auto value = passage(); !value.empty())
@@ -836,12 +836,12 @@ acmacs::chart::Sera::homologous_canditates_t acmacs::chart::Sera::find_homologou
             for (auto ag_no : ags->second) {
                 auto antigen = aAntigens[ag_no];
                 if (dbg == debug::yes)
-                    fmt::print(stderr, "DEBUG: SR {} {} R:{} A:{} P:{} -- AG {} {} R:{} A:{} P:{} -- R_match: {} A_match:{} P_match:{}\n",
-                               sr_no, *serum->name(), *serum->reassortant(), serum->annotations(), *serum->passage(),
-                               ag_no, *antigen->name(), *antigen->reassortant(), antigen->annotations(), *antigen->passage(),
-                               antigen->reassortant() == serum->reassortant(), Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()),
+                    fmt::print(stderr, "DEBUG: SR {} {} R:{} A:{} P:{} -- AG {} {} R:{} A:{} P:{} -- A_match:{} R_match: {} P_match:{}\n",
+                               sr_no, *serum->name(), serum->annotations(), *serum->reassortant(), *serum->passage(),
+                               ag_no, *antigen->name(), antigen->annotations(), *antigen->reassortant(), *antigen->passage(),
+                               Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()), antigen->reassortant() == serum->reassortant(),
                                match_passage(antigen->passage(), serum->passage(), *serum));
-                if (antigen->reassortant() == serum->reassortant() && Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()) &&
+                if (Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()) && antigen->reassortant() == serum->reassortant() &&
                     match_passage(antigen->passage(), serum->passage(), *serum)) {
                     result[sr_no].insert(ag_no);
                 }
