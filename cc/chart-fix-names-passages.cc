@@ -70,7 +70,7 @@ void update_antigens(acmacs::chart::AntigensModify& antigens, const acmacs::viru
 
         AD_LOG(acmacs::log::name_parsing, "AG {} \"{}\"", ag_no, antigen.name());
         AD_LOG_INDENT;
-        auto parsed_name = acmacs::virus::name::parse(antigen.name());
+        auto parsed_name = acmacs::virus::name::parse(antigen.name(), acmacs::virus::name::warn_on_empty::yes, acmacs::virus::name::extract_passage::no);
         if (parsed_name.not_good())
             AD_WARNING("AG {} \"{}\": {}", ag_no, antigen.name(), parsed_name.messages);
         if (*parsed_name.subtype == "A")
@@ -121,7 +121,7 @@ void update_sera(acmacs::chart::SeraModify& sera, const acmacs::virus::type_subt
 
         AD_LOG(acmacs::log::name_parsing, "SR {} \"{}\"", sr_no, serum.name());
         AD_LOG_INDENT;
-        auto parsed_name = acmacs::virus::name::parse(serum.name());
+        auto parsed_name = acmacs::virus::name::parse(serum.name(), acmacs::virus::name::warn_on_empty::yes, acmacs::virus::name::extract_passage::no);
         if (parsed_name.not_good())
             AD_WARNING("SR {} \"{}\": {}", sr_no, serum.name(), parsed_name.messages);
         if (*parsed_name.subtype == "A")
