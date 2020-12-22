@@ -1,4 +1,5 @@
 #include "acmacs-base/argv.hh"
+#include "acmacs-base/date.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/string-compare.hh"
 #include "acmacs-base/range-v3.hh"
@@ -23,7 +24,7 @@ struct Options : public argv
 };
 
 static void check_unknown(std::string_view name);
-static void update_antigens(acmacs::chart::AntigensModify& antigens, const acmacs::virus::type_subtype_t& subtype);
+static void update_antigens(acmacs::chart::AntigensModify& antigens, const acmacs::virus::type_subtype_t& subtype, const acmacs::Lab& lab);
 static void update_sera(acmacs::chart::SeraModify& sera, const acmacs::virus::type_subtype_t& subtype);
 
 int main(int argc, char* const argv[])
@@ -36,7 +37,7 @@ int main(int argc, char* const argv[])
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.input_chart)};
         const auto subtype = chart.info()->virus_type();
 
-        update_antigens(chart.antigens_modify(), subtype);
+        update_antigens(chart.antigens_modify(), subtype, chart.info()->lab());
         update_sera(chart.sera_modify(), subtype);
 
         chart.detect_reference_antigens(acmacs::chart::remove_reference_before_detecting::yes);
@@ -62,7 +63,7 @@ void check_unknown(std::string_view name)
 
 // ----------------------------------------------------------------------
 
-void update_antigens(acmacs::chart::AntigensModify& antigens, const acmacs::virus::type_subtype_t& subtype)
+void update_antigens(acmacs::chart::AntigensModify& antigens, const acmacs::virus::type_subtype_t& subtype, const acmacs::Lab& lab)
 {
     std::vector<std::pair<size_t, std::string>> full_names; // to find duplicates
     for (size_t ag_no{0}; ag_no < antigens.size(); ++ag_no) {
@@ -96,6 +97,10 @@ void update_antigens(acmacs::chart::AntigensModify& antigens, const acmacs::viru
             if (!extra.empty())
                 antigen.add_annotation(extra);
         }
+
+        if (auto date = antigen.date(); !date.empty())
+            antigen.date(date::display(date::from_string(*date, date::allow_incomplete::no, date::throw_on_error::yes, *lab == "CDC" ? date::month_first::yes : date::month_first::no)));
+
         full_names.emplace_back(ag_no, antigen.full_name());
     }
 
