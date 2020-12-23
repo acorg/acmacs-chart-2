@@ -1,4 +1,4 @@
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/log.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/timeit.hh"
@@ -38,54 +38,51 @@ double measure_gradient(acmacs::chart::ProjectionP projection, const acmacs::cha
 
 // ----------------------------------------------------------------------
 
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<size_t>  projection{*this, "projection", dflt{0ul}};
+    option<bool>  stress_double{*this, "double", desc{"just report stress (double)"}};
+    option<bool>  gradient{*this, "gradient", desc{"just report gradient (double)"}};
+    option<bool>  gradient_max{*this, "gradient-max", desc{"just report gradient max (double)"}};
+    option<size_t> precision{*this, "precision", dflt{17ul}, desc{"stress/gradient report precision"}};
+    option<bool>  time{*this, "time", desc{"test speed"}};
+
+    argument<str> chart{*this, arg_name{"chart"}, mandatory};
+};
+
 int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {
-                {"--projection", 0},
-                {"--double", false, "just report stress (double)"},
-                {"--gradient", false, "just report gradient (double)"},
-                {"--gradient-max", false, "just report gradient max (double)"},
-                {"--precision", 17, "stress/gradient report precision (double)"},
-                {"--time", false, "test speed"},
-                {"--verbose", false},
-                {"-h", false},
-                {"--help", false},
-                {"-v", false},
-                        });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
-            fmt::print(stderr, "Usage: {} [options] <chart-file>\n{}\n", args.program(), args.usage_options());
-            exit_code = 1;
+        Options opt(argc, argv);
+        auto chart = acmacs::chart::import_from_file(opt.chart);
+        auto projection = chart->projection(opt.projection);
+        if (opt.stress_double) {
+            fmt::print("{:.{}f}\n", projection->calculate_stress(), *opt.precision);
+        }
+        else if (opt.gradient) {
+            fmt::print("{}\n", projection->calculate_gradient());
+        }
+        else if (opt.gradient_max) {
+            const auto gradient = projection->calculate_gradient();
+            const auto gradient_max = std::accumulate(gradient.begin(), gradient.end(), 0.0, [](auto mx, auto val) { return std::max(mx, std::abs(val)); });
+            fmt::print("{:.{}f}\n", gradient_max, *opt.precision);
         }
         else {
-            const auto report = do_report_time(args["--time"]);
-            auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
-            auto projection = chart->projection(args["--projection"]);
-            if (args["--double"]) {
-                fmt::print("{:.{}f}\n", projection->calculate_stress(), args["--precision"]);
-            }
-            else if (args["--gradient"]) {
-                fmt::print("{}\n", projection->calculate_gradient());
-            }
-            else if (args["--gradient-max"]) {
-                const auto gradient = projection->calculate_gradient();
-                const auto gradient_max = std::accumulate(gradient.begin(), gradient.end(), 0.0, [](auto mx, auto val) { return std::max(mx, std::abs(val)); });
-                fmt::print("{:.{}f}\n", gradient_max, args["--precision"]);
-            }
-            else {
-                auto stress = chart->make_stress(args["--projection"]);
-                if (args["--time"])
-                    fmt::print("stress d: {}   per second: {}\n", projection->calculate_stress(stress), measure(projection, stress));
-                else
-                    fmt::print("stress d: {}\n", projection->calculate_stress(stress));
-                const auto gradient = projection->calculate_gradient(stress);
-                const auto gradient_max = std::accumulate(gradient.begin(), gradient.end(), 0.0, [](auto mx, auto val) { return std::max(mx, std::abs(val)); });
-                if (args["--time"])
-                    fmt::print("gradie d: {}   per second: {}\n", gradient_max, measure_gradient(projection, stress));
-                else
-                    fmt::print("gradie d: {}\n", gradient_max);
-            }
+            auto stress = chart->make_stress(opt.projection);
+            if (opt.time)
+                fmt::print("stress d: {}   per second: {}\n", projection->calculate_stress(stress), measure(projection, stress));
+            else
+                fmt::print("stress d: {}\n", projection->calculate_stress(stress));
+            const auto gradient = projection->calculate_gradient(stress);
+            const auto gradient_max = std::accumulate(gradient.begin(), gradient.end(), 0.0, [](auto mx, auto val) { return std::max(mx, std::abs(val)); });
+            if (opt.time)
+                fmt::print("gradie d: {}   per second: {}\n", gradient_max, measure_gradient(projection, stress));
+            else
+                fmt::print("gradie d: {}\n", gradient_max);
         }
     }
     catch (std::exception& err) {

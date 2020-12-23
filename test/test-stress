@@ -26,10 +26,16 @@ trap failed ERR
 echo test-stress
 
 cd "$TESTDIR"
-../dist/chart-stress --double --precision 6 ./test-2004-3.ace >"${TDIR}/test-2004-3.txt" 2>/dev/null
-../dist/chart-stress --gradient-max --precision 6 ./test-2004-3.ace >>"${TDIR}/test-2004-3.txt" 2>/dev/null
-diff "${TDIR}/test-2004-3.txt" test-stress-expected-1.txt
+printf "  test-stress 1\n"
+../dist/chart-stress --double --precision 6 ./test-2004-3.ace >"${TDIR}/test-2004-3.txt"
+# 2>/dev/null
+../dist/chart-stress --gradient-max --precision 6 ./test-2004-3.ace >>"${TDIR}/test-2004-3.txt"
+# 2>/dev/null
+diff "${TDIR}/test-2004-3.txt" test-stress-expected-1.txt 
 
-../dist/chart-stress --double --precision 6 ./test.ace >"${TDIR}/test.txt" 2>/dev/null
-../dist/chart-stress --gradient-max --precision 6 ./test.ace >>"${TDIR}/test.txt" 2>/dev/null
+printf "  test-stress 2\n"
+../dist/chart-stress --double --precision 6 ./test.ace >"${TDIR}/test.txt"
+# 2>/dev/null
+../dist/chart-stress --gradient-max --precision 6 ./test.ace >>"${TDIR}/test.txt"
+# 2>/dev/null
 diff "${TDIR}/test.txt" test-stress-expected-2.txt
