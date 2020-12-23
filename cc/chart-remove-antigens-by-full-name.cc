@@ -1,6 +1,5 @@
-#include <iostream>
-
 #include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
 #include "acmacs-base/file-stream.hh"
@@ -45,18 +44,18 @@ int main(int argc, char* const argv[])
                 }
             }
             if (!antigens_to_remove.empty()) {
-                std::cout << "INFO: antigens_to_remove: " << antigens_to_remove.size() << ' ' << antigens_to_remove << '\n';
+                AD_INFO("antigens_to_remove: {} {}", antigens_to_remove.size(), antigens_to_remove);
                 chart.remove_antigens(antigens_to_remove);
                 acmacs::chart::export_factory(chart, args[2], args.program(), report_time::no);
             }
             else {
-                std::cerr << "ERROR: nothing to remove!\n";
+                AD_ERROR("nothing to remove!\n");
                 exit_code = 1;
             }
         }
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;

@@ -11,6 +11,7 @@
 #include "acmacs-base/layout.hh"
 #include "acmacs-base/log.hh"
 #include "acmacs-base/lab.hh"
+#include "acmacs-base/iterator.hh"
 #include "acmacs-virus/virus-name.hh"
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/stress.hh"

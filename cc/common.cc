@@ -1,5 +1,4 @@
 #include "acmacs-base/string.hh"
-#include "acmacs-base/stream.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-chart-2/common.hh"
 #include "acmacs-chart-2/chart.hh"

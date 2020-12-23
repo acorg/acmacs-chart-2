@@ -4,7 +4,6 @@
 #include "acmacs-base/log.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-base/stream.hh"
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/chart.hh"
 

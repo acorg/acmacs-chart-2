@@ -1,6 +1,5 @@
-#include <iostream>
-
 #include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
 #include "acmacs-base/timeit.hh"
@@ -42,7 +41,7 @@ int main(int argc, char* const argv[])
                 {"-v", false},
                         });
         if (args["-h"] || args["--help"] || args.number_of_arguments() < 1) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file> [<output-chart-file>]\n" << args.usage_options() << '\n';
+            fmt::print(stderr, "Usage: {} [options] <chart-file> [<output-chart-file>]\n{}\n", args.program(), args.usage_options());
             exit_code = 1;
         }
         else {
@@ -75,7 +74,7 @@ int main(int argc, char* const argv[])
         }
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;
@@ -103,7 +102,7 @@ void test_randomization(acmacs::chart::ChartModify& chart, size_t attempts, std:
             }
         }
         const auto status = projection->relax(acmacs::chart::optimization_options(acmacs::chart::optimization_method::alglib_lbfgs_pca));
-        std::cout << "final " << std::setprecision(12) << status.final_stress << " time: " << acmacs::format(status.time) << " iters: " << status.number_of_iterations << " nstress: " << status.number_of_stress_calculations << ' ' << status.termination_report << '\n';
+        fmt::print("final {:.12f} time: {} iters: {} nstress: {} {}\n", status.final_stress, status.time, status.number_of_iterations, status.number_of_stress_calculations, status.termination_report);
     }
 
 } // test_randomization
@@ -145,11 +144,11 @@ void test_rough(acmacs::chart::ChartModify& chart, size_t attempts, std::string 
     std::vector<size_t> order_final(stresses.size());
     std::transform(stresses.begin(), stresses.end(), order_final.begin(), [](const auto& entry) { return std::get<0>(entry); });
     report("by final");
-    std::cout << "order_rough: " << order_rough << '\n';
+    fmt::print("order_rough: {}\n", order_rough);
     if (order_rough == order_final)
-        std::cout << "orders are the same" << '\n';
+        fmt::print("orders are the same\n");
     else
-        std::cout << "orders are DIFFERENT\norder_final: " << order_final << '\n';
+        fmt::print("orders are DIFFERENT\norder_final: {}\n", order_final);
 
 } // test_rough
 

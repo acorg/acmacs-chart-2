@@ -1,7 +1,6 @@
 #include <memory>
 
 #include "acmacs-base/timeit.hh"
-#include "acmacs-base/stream.hh"
 #include "acmacs-base/sigmoid.hh"
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/chart-modify.hh"

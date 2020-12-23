@@ -3,7 +3,6 @@
 #include <limits>
 
 #include "acmacs-base/log.hh"
-#include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/timeit.hh"

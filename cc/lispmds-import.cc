@@ -4,7 +4,6 @@
 #include <regex>
 #include <cmath>
 
-#include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/fmt.hh"

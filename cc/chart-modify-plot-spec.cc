@@ -1,7 +1,7 @@
-#include <iostream>
 #include <algorithm>
 
 #include "acmacs-base/argv.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-base/string-split.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
@@ -41,7 +41,7 @@ int main(int argc, char* const argv[])
         Options opt(argc, argv);
 
         auto chart = acmacs::chart::import_from_file(opt.input_chart);
-        std::cout << chart->make_info() << '\n';
+        fmt::print("{}\n", chart->make_info());
 
         std::vector<size_t> points;
         if (opt.points)
@@ -56,7 +56,7 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("No point indexes were provided, use --points, --antigens, --sera");
         // else if (!points.empty() && points.back() >= chart->number_of_points())
         //     throw std::runtime_error("Invalid point index: " + acmacs::to_string(points.back()) + ", expected in range 0.." + acmacs::to_string(chart->number_of_points() - 1) + " inclusive");
-        std::cerr << "points: " << points << '\n';
+        fmt::print(stderr, "points: {}\n", points);
 
         acmacs::chart::ChartModify chart_modify(chart);
         auto& plot_spec = chart_modify.plot_spec_modify();
@@ -77,7 +77,7 @@ int main(int argc, char* const argv[])
         acmacs::chart::export_factory(chart_modify, opt.output_chart, opt.program_name());
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;

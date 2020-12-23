@@ -1,4 +1,3 @@
-#include <fstream>
 #include <cctype>
 
 #include "acmacs-base/argv.hh"
