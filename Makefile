@@ -141,8 +141,7 @@ LDLIBS = \
 
 install: install-headers $(TARGETS)
 	$(call install_lib,$(ACMACS_CHART_LIB))
-	$(call symbolic_link_wildcard,$(DIST)/chart-*,$(AD_BIN))
-	$(call symbolic_link_wildcard,$(abspath bin)/chart-*,$(AD_BIN))
+	$(call install_all,$(AD_PACKAGE_NAME))
 
 test: install
 	test/test
@@ -150,7 +149,7 @@ test: install
 
 # ----------------------------------------------------------------------
 
-$(ACMACS_CHART_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SOURCES)) $(patsubst %.cpp,$(BUILD)/%.o,$(ALGLIB_SOURCES)) | $(DIST)
+$(ACMACS_CHART_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SOURCES)) $(patsubst %.cpp,$(BUILD)/%.o,$(ALGLIB_SOURCES)) | $(DIST) install-headers
 	$(call echo_shared_lib,$@)
 	$(call make_shared_lib,libacmacschart,$(ACMACS_CHART_LIB_MAJOR),$(ACMACS_CHART_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
