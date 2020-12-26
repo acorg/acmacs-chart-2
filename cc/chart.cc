@@ -95,7 +95,9 @@ std::string acmacs::chart::Chart::make_name(std::optional<size_t> aProjectionNo)
     fmt::format_to(name, "{}", info()->make_name());
     if (auto prjs = projections(); !prjs->empty() && (!aProjectionNo || *aProjectionNo < prjs->size())) {
         auto prj = (*prjs)[aProjectionNo ? *aProjectionNo : 0];
-        fmt::format_to(name, " {}{:.4f}", prj->minimum_column_basis().format(">={} ", MinimumColumnBasis::use_none::no), prj->stress());
+        fmt::format_to(name, " {}", prj->minimum_column_basis().format(">={}", MinimumColumnBasis::use_none::no));
+        if (const auto stress = prj->stress(); !std::isnan(stress))
+            fmt::format_to(name, " {:.4f}", stress);
     }
     return fmt::to_string(name);
 
@@ -109,7 +111,9 @@ std::string acmacs::chart::Chart::description() const
     fmt::format_to(desc, "{}", info()->make_name());
     if (auto prjs = projections(); !prjs->empty()) {
         auto prj = (*prjs)[0];
-        fmt::format_to(desc, "{}{:.4f}", prj->minimum_column_basis().format(">={} ", MinimumColumnBasis::use_none::yes), prj->stress());
+        fmt::format_to(desc, "{}", prj->minimum_column_basis().format(">={}", MinimumColumnBasis::use_none::yes));
+        if (const auto stress = prj->stress(); !std::isnan(stress))
+            fmt::format_to(desc, " {:.4f}", stress);
     }
     if (info()->virus_type() == acmacs::virus::type_subtype_t{"B"})
         fmt::format_to(desc, " {}", lineage());
