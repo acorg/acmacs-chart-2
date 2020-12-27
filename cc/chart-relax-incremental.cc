@@ -14,15 +14,15 @@ struct Options : public argv
     Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
 
     option<size_t> number_of_attempts{*this, 'n', desc{"number of optimizations"}};
-    option<bool> no_disconnect_having_few_titers{*this, "no-disconnect-having-few-titers", desc{"do not disconnect points having too few numeric titers"}};
-    option<bool> unmovable_non_nan_points{*this, "unmovable-non-nan-points", desc{"keep ag/sr of primary chart frozen (unmovable)"}};
-    option<bool> remove_source_projection{*this, "remove-source-projection"};
-    option<bool> rough{*this, "rough"};
-    option<str> method{*this, "method", dflt{"cg"}, desc{"method: lbfgs, cg"}};
+    option<bool>   no_disconnect_having_few_titers{*this, "no-disconnect-having-few-titers", desc{"do not disconnect points having too few numeric titers"}};
+    option<bool>   unmovable_non_nan_points{*this, "unmovable-non-nan-points", desc{"keep ag/sr of primary chart frozen (unmovable)"}};
+    option<bool>   remove_source_projection{*this, "remove-source-projection"};
+    option<bool>   rough{*this, "rough"};
+    option<str>    method{*this, "method", dflt{"alglib-cg"}, desc{"method: alglib-lbfgs, alglib-cg, optim-bfgs, optim-differential-evolution"}};
     option<double> randomization_diameter_multiplier{*this, "md", dflt{2.0}, desc{"randomization diameter multiplier"}};
     option<size_t> keep_projections{*this, "keep-projections", dflt{0ul}, desc{"number of projections to keep, 0 - keep all"}};
-    option<int> threads{*this, "threads", dflt{0}};
-    option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
+    option<int>    threads{*this, "threads", dflt{0}};
+    option<bool>   report_time{*this, "time", desc{"report time of loading chart"}};
 
     argument<str> chart{*this, arg_name{"chart"}, mandatory};
     argument<str> output_chart{*this, arg_name{"output-chart"}};
