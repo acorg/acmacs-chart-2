@@ -20,10 +20,12 @@ struct Options : public argv
     option<str>    minimum_column_basis{*this, 'm', dflt{"none"}, desc{"minimum column basis"}};
     option<bool>   rough{*this, "rough"};
     option<size_t> fine{*this, "fine", dflt{0UL}, desc{"relax roughly, then relax finely N best projections"}};
+    option<bool>   incremental{*this, "only randomize points having NaN coordinates"};
+    option<bool>   unmovable_non_nan_points{*this, "unmovable-non-nan-points", desc{"requires --incremental, keep ag/sr of primary chart frozen (unmovable)"}};
     option<bool>   no_dimension_annealing{*this, "no-dimension-annealing"};
     option<bool>   dimension_annealing{*this, "dimension-annealing"};
     option<str>    method{*this, "method", dflt{"alglib-cg"}, desc{"method: alglib-lbfgs, alglib-cg, optim-bfgs, optim-differential-evolution"}};
-    option<double> max_distance_multiplier{*this, "md", dflt{2.0}, desc{"randomization diameter multiplier"}};
+    option<double> randomization_diameter_multiplier{*this, "md", dflt{2.0}, desc{"randomization diameter multiplier"}};
     option<bool>   remove_original_projections{*this, "remove-original-projections", desc{"remove projections found in the source chart"}};
     option<size_t> keep_projections{*this, "keep-projections", dflt{0UL}, desc{"number of projections to keep, 0 - keep all"}};
     option<bool>   no_disconnect_having_few_titers{*this, "no-disconnect-having-few-titers"};
@@ -49,13 +51,14 @@ int main(int argc, char* const argv[])
 
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.source_chart, acmacs::chart::Verify::None)};
         auto& projections = chart.projections_modify();
-        if (opt.remove_original_projections)
+        if (opt.remove_original_projections && !opt.incremental)
             projections.remove_all();
         const auto precision = (opt.rough || opt.fine > 0) ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine;
         const auto method{acmacs::chart::optimization_method_from_string(opt.method)};
         auto disconnected{acmacs::chart::get_disconnected(opt.disconnect_antigens, opt.disconnect_sera, chart.number_of_antigens(), chart.number_of_sera())};
+        const size_t incremental_source_projection_no = 0;
 
-        acmacs::chart::optimization_options options(method, precision, opt.max_distance_multiplier);
+        acmacs::chart::optimization_options options(method, precision, opt.randomization_diameter_multiplier);
         options.disconnect_too_few_numeric_titers = opt.no_disconnect_having_few_titers ? acmacs::chart::disconnect_few_numeric_titers::no : acmacs::chart::disconnect_few_numeric_titers::yes;
 
         if (opt.no_dimension_annealing)
@@ -64,11 +67,21 @@ int main(int argc, char* const argv[])
         if (opt.seed.has_value()) {
             if (opt.number_of_optimizations != 1UL)
                 fmt::print(stderr, "WARNING: can only perform one optimization when seed is used\n");
-            chart.relax(*opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, opt.seed, disconnected);
+            if (opt.incremental)
+                chart.relax_incremental(incremental_source_projection_no, acmacs::chart::number_of_optimizations_t{1}, options,
+                                opt.remove_original_projections ? acmacs::chart::remove_source_projection::yes : acmacs::chart::remove_source_projection::no,
+                                opt.unmovable_non_nan_points ? acmacs::chart::unmovable_non_nan_points::yes : acmacs::chart::unmovable_non_nan_points::no);
+            else
+                chart.relax(*opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, opt.seed, disconnected);
         }
         else {
             options.num_threads = opt.threads;
-            chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions},
+            if (opt.incremental)
+                chart.relax_incremental(incremental_source_projection_no, acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, options,
+                                opt.remove_original_projections ? acmacs::chart::remove_source_projection::yes : acmacs::chart::remove_source_projection::no,
+                                opt.unmovable_non_nan_points ? acmacs::chart::unmovable_non_nan_points::yes : acmacs::chart::unmovable_non_nan_points::no);
+            else
+                chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions},
                         dimension_annealing, options, disconnected);
         }
         projections.sort();
