@@ -4,6 +4,7 @@
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
+#include "acmacs-chart-2/grid-test.hh"
 #include "acmacs-chart-2/log.hh"
 #include "acmacs-chart-2/command-helper.hh"
 
@@ -20,8 +21,10 @@ struct Options : public argv
     option<str>    minimum_column_basis{*this, 'm', dflt{"none"}, desc{"minimum column basis"}};
     option<bool>   rough{*this, "rough"};
     option<size_t> fine{*this, "fine", dflt{0UL}, desc{"relax roughly, then relax finely N best projections"}};
-    option<bool>   incremental{*this, "only randomize points having NaN coordinates"};
+    option<bool>   incremental{*this, "incremental", desc{"only randomize points having NaN coordinates"}};
     option<bool>   unmovable_non_nan_points{*this, "unmovable-non-nan-points", desc{"requires --incremental, keep ag/sr of primary chart frozen (unmovable)"}};
+    option<bool>   grid{*this, "grid", desc{"perform grid test after optimization until no trapped points left"}};
+    option<double> grid_step{*this, "grid-step", dflt{0.1}};
     option<bool>   no_dimension_annealing{*this, "no-dimension-annealing"};
     option<bool>   dimension_annealing{*this, "dimension-annealing"};
     option<str>    method{*this, "method", dflt{"alglib-cg"}, desc{"method: alglib-lbfgs, alglib-cg, optim-bfgs, optim-differential-evolution"}};
@@ -63,14 +66,17 @@ int main(int argc, char* const argv[])
 
         if (opt.no_dimension_annealing)
             AD_WARNING("option --no-dimension-annealing is deprectaed, dimension annealing is disabled by default, use --dimension-annealing to enable");
-        const auto dimension_annealing = acmacs::chart::use_dimension_annealing_from_bool(opt.dimension_annealing); // && method != acmacs::chart::optimization_method::optimlib_differential_evolution);
+        const auto dimension_annealing =
+            acmacs::chart::use_dimension_annealing_from_bool(opt.dimension_annealing); // && method != acmacs::chart::optimization_method::optimlib_differential_evolution);
+
         if (opt.seed.has_value()) {
-            if (opt.number_of_optimizations != 1UL)
+            // --- seeded optimization ---
+            if (opt.number_of_optimizations != 1ul)
                 fmt::print(stderr, "WARNING: can only perform one optimization when seed is used\n");
             if (opt.incremental)
                 chart.relax_incremental(incremental_source_projection_no, acmacs::chart::number_of_optimizations_t{1}, options,
-                                opt.remove_original_projections ? acmacs::chart::remove_source_projection::yes : acmacs::chart::remove_source_projection::no,
-                                opt.unmovable_non_nan_points ? acmacs::chart::unmovable_non_nan_points::yes : acmacs::chart::unmovable_non_nan_points::no);
+                                        opt.remove_original_projections ? acmacs::chart::remove_source_projection::yes : acmacs::chart::remove_source_projection::no,
+                                        opt.unmovable_non_nan_points ? acmacs::chart::unmovable_non_nan_points::yes : acmacs::chart::unmovable_non_nan_points::no);
             else
                 chart.relax(*opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions}, dimension_annealing, options, opt.seed, disconnected);
         }
@@ -78,12 +84,38 @@ int main(int argc, char* const argv[])
             options.num_threads = opt.threads;
             if (opt.incremental)
                 chart.relax_incremental(incremental_source_projection_no, acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, options,
-                                opt.remove_original_projections ? acmacs::chart::remove_source_projection::yes : acmacs::chart::remove_source_projection::no,
-                                opt.unmovable_non_nan_points ? acmacs::chart::unmovable_non_nan_points::yes : acmacs::chart::unmovable_non_nan_points::no);
+                                        opt.remove_original_projections ? acmacs::chart::remove_source_projection::yes : acmacs::chart::remove_source_projection::no,
+                                        opt.unmovable_non_nan_points ? acmacs::chart::unmovable_non_nan_points::yes : acmacs::chart::unmovable_non_nan_points::no);
             else
                 chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions},
-                        dimension_annealing, options, disconnected);
+                            dimension_annealing, options, disconnected);
+
+            // ---- grid test ----
+            if (opt.grid) {
+                projections.sort();
+                size_t grid_projections = 0;
+                size_t projection_no_to_test = 0;
+                for (auto attempt = 1; attempt < 20; ++attempt) {
+                    acmacs::chart::GridTest test(chart, projection_no_to_test, opt.grid_step);
+                    const auto results = test.test_all(opt.threads);
+                    fmt::print("{}\n", results.report());
+                    if (acmacs::log::is_enabled(acmacs::log::report_stresses)) {
+                        for (const auto& entry : results) {
+                            if (entry)
+                                fmt::print("{}\n", entry.report(chart));
+                        }
+                    }
+                    auto projection = test.make_new_projection_and_relax(results, true);
+                    ++grid_projections;
+                    projection->comment("grid-test-" + acmacs::to_string(attempt));
+                    projection_no_to_test = projection->projection_no();
+                    // projections_to_reorient.push_back(projection_no_to_test);
+                    if (std::all_of(results.begin(), results.end(), [](const auto& result) { return result.diagnosis != acmacs::chart::GridTest::Result::trapped; }))
+                        break;
+                }
+            }
         }
+
         projections.sort();
         for (size_t p_no = 0; p_no < opt.fine; ++p_no)
             chart.projection_modify(p_no)->relax(acmacs::chart::optimization_options(method, acmacs::chart::optimization_precision::fine));
