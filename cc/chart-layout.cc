@@ -149,14 +149,14 @@ void write_text(std::string_view aFilename, const Options& opt, const acmacs::ch
     std::string result;
     const auto number_of_dimensions = layout->number_of_dimensions();
     for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
-        result += acmacs::string::concat("AG", opt.field_separator, encode_name(antigen->full_name(), opt.field_separator));
+        result += fmt::format("AG{}{}{}{}", opt.field_separator, ag_no, opt.field_separator, encode_name(antigen->full_name(), opt.field_separator));
         for (auto dim : acmacs::range(number_of_dimensions))
             result += acmacs::string::concat(opt.field_separator, acmacs::to_string(layout->coordinate(ag_no, dim)));
         result += '\n';
     }
     const auto number_of_antigens = antigens->size();
     for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-        result += acmacs::string::concat("SR", opt.field_separator, encode_name(serum->full_name(), opt.field_separator));
+        result += fmt::format("SR{}{}{}{}", opt.field_separator, sr_no, opt.field_separator, encode_name(serum->full_name(), opt.field_separator));
         for (auto dim : acmacs::range(number_of_dimensions))
             result += acmacs::string::concat(opt.field_separator, acmacs::to_string(layout->coordinate(sr_no + number_of_antigens, dim)));
         result += '\n';
