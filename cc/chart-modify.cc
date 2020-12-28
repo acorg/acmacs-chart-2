@@ -380,13 +380,14 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
         if (!unmovable_points.empty())
             disconnected_points.remove(ReverseSortedIndexes{*unmovable_points});
         stress.set_disconnected(disconnected_points);
-        if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes) {
-            auto to_disconnect = titers()->having_too_few_numeric_titers();
-            if (!unmovable_points.empty())
-                to_disconnect.remove(ReverseSortedIndexes{*unmovable_points});
-            stress.extend_disconnected(to_disconnect);
-        }
     }
+    if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes) {
+        auto to_disconnect = titers()->having_too_few_numeric_titers();
+        if (!unmovable_points.empty())
+            to_disconnect.remove(ReverseSortedIndexes{*unmovable_points});
+        stress.extend_disconnected(to_disconnect);
+    }
+
     report_disconnected_unmovable(stress.parameters().disconnected, stress.parameters().unmovable);
 
     // AD_DEBUG("relax_incremental: {}", number_of_points());
