@@ -25,6 +25,7 @@ struct Options : public argv
     option<bool>   unmovable_non_nan_points{*this, "unmovable-non-nan-points", desc{"requires --incremental, keep ag/sr of primary chart frozen (unmovable)"}};
     option<bool>   grid{*this, "grid", desc{"perform grid test after optimization until no trapped points left"}};
     option<double> grid_step{*this, "grid-step", dflt{0.1}};
+    option<bool>   export_pre_grid{*this, "export-pre-grid", desc{"export chart before running grid test (to help debugging crashes)"}};
     option<bool>   no_dimension_annealing{*this, "no-dimension-annealing"};
     option<bool>   dimension_annealing{*this, "dimension-annealing"};
     option<str>    method{*this, "method", dflt{"alglib-cg"}, desc{"method: alglib-lbfgs, alglib-cg, optim-bfgs, optim-differential-evolution"}};
@@ -96,6 +97,8 @@ int main(int argc, char* const argv[])
                 size_t grid_projections = 0;
                 size_t projection_no_to_test = 0;
                 for (auto attempt = 1; attempt < 20; ++attempt) {
+                    if (opt.export_pre_grid && opt.output_chart.has_value())
+                        acmacs::chart::export_factory(chart, fmt::format("{}.before-grid-{}.ace", opt.output_chart->substr(0, opt.output_chart->size() - 4), attempt), opt.program_name());
                     acmacs::chart::GridTest test(chart, projection_no_to_test, opt.grid_step);
                     const auto results = test.test_all(opt.threads);
                     fmt::print("{}\n", results.report());
