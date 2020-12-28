@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/range-v3.hh"
 #include "acmacs-chart-2/factory-import.hh"
@@ -18,6 +16,7 @@ struct Options : public argv
 
     option<size_t> keep_projections{*this, 'k', "keep-projections", dflt{10ul}, desc{"number of projections to keep, 0 - keep all"}};
     option<str>    output_chart{*this, 'o', "output", desc{"output-chart"}};
+    option<bool>   info{*this, 'i', "info"};
 
     argument<str_array>  source_charts{*this, arg_name{"source-chart"}, mandatory};
 };
@@ -39,13 +38,15 @@ int main(int argc, char* const argv[])
         }
 
         master.projections_modify().sort();
-        fmt::print("{}\n", master.make_info());
+        if (opt.info)
+            fmt::print("{}\n", master.make_info());
         master.projections_modify().keep_just(*opt.keep_projections);
         if (opt.output_chart.has_value())
             acmacs::chart::export_factory(master, opt.output_chart, opt.program_name());
+        fmt::print("{}\n", master.make_name());
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;
