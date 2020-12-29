@@ -56,8 +56,8 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
 
     // std::cerr << "DEBUG: antigens_primary_target " << antigens_primary_target << '\n';
     // std::cerr << "DEBUG: antigens_secondary_target" << antigens_secondary_target << '\n';
-    // std::cerr << "DEBUG: sera_primary_target " << sera_primary_target << '\n';
-    // std::cerr << "DEBUG: sera_secondary_target" << sera_secondary_target << '\n';
+    // AD_DEBUG("sera_primary_target {}", sera_primary_target);
+    // AD_DEBUG("sera_secondary_target {}", sera_secondary_target);
 
 } // acmacs::chart::MergeReport::MergeReport
 
@@ -70,7 +70,7 @@ static const auto merge_antigens_sera = [](auto& target, const auto& source, con
                 target.at(entry->second.index).update_with(*source.at(no));
             else
                 target.at(entry->second.index).replace_with(*source.at(no));
-            // fmt::print(stderr, "DEBUG: merge_antigens_sera {} {} <- {} {}\n", entry->second.index, target.at(entry->second.index).full_name(), no, source.at(no)->full_name());
+            // AD_DEBUG("merge_antigens_sera {} {} <- {} {}", entry->second.index, target.at(entry->second.index).full_name(), no, source.at(no)->full_name());
         }
     }
 };

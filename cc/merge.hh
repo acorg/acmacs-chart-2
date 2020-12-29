@@ -49,10 +49,16 @@ namespace acmacs::chart
         std::unique_ptr<TitersModify::titer_merge_report> titer_report;
     };
 
-    // inline std::ostream& operator<<(std::ostream& out, const MergeReport::target_index_common_t& entry) { return out << '[' << entry.index << (entry.common ? ",common" : "") << ']'; }
-
     std::pair<ChartModifyP, MergeReport> merge(const Chart& chart1, const Chart& chart2, const MergeSettings& settings = {});
 }
+
+template <> struct fmt::formatter<acmacs::chart::MergeReport::target_index_common_t> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const acmacs::chart::MergeReport::target_index_common_t& value, FormatCtx& ctx)
+    {
+        return format_to(ctx.out(), "[{}{}]", value.index, value.common ? ",common" : "");
+    }
+};
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:
