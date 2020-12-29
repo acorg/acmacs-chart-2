@@ -112,7 +112,7 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
     merge_antigens_sera(result_sera, *chart2.sera(), report.sera_secondary_target, false);
     if (const auto rda = result_antigens.find_duplicates(), rds = result_sera.find_duplicates(); !rda.empty() || !rds.empty()) {
         fmt::memory_buffer msg;
-        fmt::format_to(msg, "Merge \"{}\" has duplicates: AG:{} SR:{}", result->description(), rda, rds);
+        fmt::format_to(msg, "Merge \"{}\" has duplicates: AG:{} SR:{}\n", result->description(), rda, rds);
         for (const auto& dups : rda) {
             for (const auto ag_no : dups)
                 fmt::format_to(msg, "  AG {:5d} {}\n", ag_no, result_antigens.at(ag_no).full_name());
