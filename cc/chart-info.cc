@@ -19,7 +19,7 @@ struct Options : public argv
     option<bool> show_number_of_antigens{*this, "antigens", desc{"just show number of antigens"}};
     option<bool> show_number_of_sera{*this, "sera", desc{"just show number of sera"}};
     option<bool> column_bases{*this, 'c', "column-bases"};
-    option<bool> list_tables{*this, "list-tables"};
+    option<bool> list_tables{*this, 't', "list-tables"};
     option<bool> list_tables_for_sera{*this, "list-tables-for-sera"};
     option<bool> dates{*this, "dates", desc{"show isolation dates stats"}};
     option<bool> homologous{*this, "homologous", desc{"report homologous antigens for sera"}};

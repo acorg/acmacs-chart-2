@@ -37,16 +37,18 @@ std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_
 
     if (inf & info_data::column_bases) {
         auto cb = computed_column_bases(acmacs::chart::MinimumColumnBasis{});
-        fmt::format_to(text, "computed column bases:                 {:.2f}\n", *cb);
+        fmt::format_to(text, "computed column bases:                 {:5.2f}\n", *cb);
         for (auto projection_no : range_from_0_to(number_of_projections())) {
             if (auto fcb = projection(projection_no)->forced_column_bases(); fcb) {
-                fmt::format_to(text, "forced column bases for projection {:2d}: {:.2f}\n", projection_no, *fcb);
-                fmt::format_to(text, "                                       diff:");
+                fmt::format_to(text, "forced column bases for projection {:2d}: {:5.2f}\n", projection_no, *fcb);
+                fmt::format_to(text, "                                 diff: [");
                 for (const auto sr_no : range_from_0_to(cb->size())) {
-                    if (!float_equal(cb->column_basis(sr_no), fcb->column_basis(sr_no)))
-                        fmt::format_to(text, "  {}:{:.2f} - {:.2f} = {}", sr_no, cb->column_basis(sr_no), fcb->column_basis(sr_no), cb->column_basis(sr_no) - fcb->column_basis(sr_no));
+                    if (float_equal(cb->column_basis(sr_no), fcb->column_basis(sr_no)))
+                        fmt::format_to(text, "  .   ");
+                    else
+                        fmt::format_to(text, "{:5.2f} ", cb->column_basis(sr_no) - fcb->column_basis(sr_no));
                 }
-                fmt::format_to(text, "\n");
+                fmt::format_to(text, "]\n");
             }
         }
     }
