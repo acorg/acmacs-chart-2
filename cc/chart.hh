@@ -562,6 +562,11 @@ namespace acmacs::chart
             remove(aIndexes, [&passage](const auto& entry) -> bool { return !entry.passage().search(passage); });
         }
 
+        void filter_lineage(Indexes& aIndexes, BLineage lineage) const
+        {
+            remove(aIndexes, [lineage](const auto& entry) -> bool { return entry.lineage() != lineage; });
+        }
+
         void filter_date_range(Indexes& aIndexes, std::string_view first_date, std::string_view after_last_date) const
         {
             remove(aIndexes, [first_date, after_last_date](const auto& entry) { return !entry.date().within_range(first_date, after_last_date); });
@@ -673,6 +678,11 @@ namespace acmacs::chart
         void filter_reassortant(Indexes& aIndexes) const
         {
             remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); });
+        }
+
+        void filter_lineage(Indexes& aIndexes, BLineage lineage) const
+        {
+            remove(aIndexes, [lineage](const auto& entry) -> bool { return entry.lineage() != lineage; });
         }
 
         void filter_out_distinct(Indexes& aIndexes) const

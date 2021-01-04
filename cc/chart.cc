@@ -349,8 +349,10 @@ acmacs::chart::BLineage::Lineage acmacs::chart::BLineage::from(char aSource)
 {
     switch (aSource) {
         case 'Y':
+        case 'y':
             return Yamagata;
         case 'V':
+        case 'v':
             return Victoria;
     }
     return Unknown;
