@@ -11,16 +11,23 @@ namespace acmacs::chart
     class merge_error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
     enum class projection_merge_t { type1, type2, type3, type4, type5 }; // see ../doc/merge-types.org
+    enum class remove_distinct { no, yes };
+    enum class combine_cheating_assays { no, yes };
 
     struct MergeSettings
     {
         MergeSettings() = default;
-        MergeSettings(CommonAntigensSera::match_level_t a_match_level, projection_merge_t a_projection_merge = projection_merge_t::type1, bool a_remove_distinct = false)
-            : match_level{a_match_level}, projection_merge{a_projection_merge}, remove_distinct{a_remove_distinct} {}
+        MergeSettings(CommonAntigensSera::match_level_t a_match_level, projection_merge_t a_projection_merge = projection_merge_t::type1,
+                      combine_cheating_assays a_combine_cheating_assays = combine_cheating_assays::no, remove_distinct a_remove_distinct = remove_distinct::no)
+            : match_level{a_match_level}, projection_merge{a_projection_merge}, combine_cheating_assays_{a_combine_cheating_assays}, remove_distinct_{a_remove_distinct}
+        {
+        }
         MergeSettings(projection_merge_t a_projection_merge) : projection_merge{a_projection_merge} {}
+
         CommonAntigensSera::match_level_t match_level{CommonAntigensSera::match_level_t::automatic};
         projection_merge_t projection_merge{projection_merge_t::type1};
-        bool remove_distinct{false};
+        combine_cheating_assays combine_cheating_assays_{combine_cheating_assays::no};
+        remove_distinct remove_distinct_{remove_distinct::no};
     };
 
     struct MergeReport
@@ -41,6 +48,7 @@ namespace acmacs::chart
         std::string titer_merge_report(const ChartModify& chart) const;
         std::string titer_merge_report_common_only(const ChartModify& chart) const;
         std::string titer_merge_diagnostics(const ChartModify& chart, const PointIndexList& antigens, const PointIndexList& sera, int max_field_size) const;
+        Indexes secondary_antigens_to_merge(const Chart& primary, const Chart& secondary, const MergeSettings& settings) const;
 
         CommonAntigensSera::match_level_t match_level;
         CommonAntigensSera common;

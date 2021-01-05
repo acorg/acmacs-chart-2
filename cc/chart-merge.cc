@@ -14,9 +14,9 @@
 using Charts = std::vector<std::unique_ptr<acmacs::chart::ChartModify>>;
 
 static void set_merge_type(acmacs::chart::MergeSettings& settings, std::string_view merge_type);
-static void combine_cheating_assays(Charts& charts, bool combine_requested);
+[[nodiscard]] static acmacs::chart::combine_cheating_assays combine_cheating_assays(Charts& charts, bool combine_requested);
 [[nodiscard]] static std::vector<std::vector<size_t>> get_cheating_assays(const Charts& charts);
-static void combine_tables(Charts& charts, const std::vector<size_t>& to_combine);
+// static void combine_tables(Charts& charts, const std::vector<size_t>& to_combine);
 
 // ----------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ int main(int argc, const char* const argv[])
             charts.push_back(std::move(chart));
         }
 
-        combine_cheating_assays(charts, opt.combine_cheating_assays);
+        settings.combine_cheating_assays_ = combine_cheating_assays(charts, opt.combine_cheating_assays);
 
         auto [result, merge_report] = acmacs::chart::merge(*charts[0], *charts[1], settings);
 
@@ -117,13 +117,13 @@ void set_merge_type(acmacs::chart::MergeSettings& settings, std::string_view mer
 
 // ----------------------------------------------------------------------
 
-void combine_cheating_assays(Charts& charts, bool combine_requested)
+acmacs::chart::combine_cheating_assays combine_cheating_assays(Charts& charts, bool combine_requested)
 {
     const auto cheating_assays = get_cheating_assays(charts);
     if (cheating_assays.empty()) {
         if (combine_requested)
             AD_INFO("No cheating assays found");
-        return;
+        return acmacs::chart::combine_cheating_assays::no;
     }
     if (!combine_requested) {
         AD_WARNING("Cheating assays present, consider using --combine-cheating-assays");
@@ -133,44 +133,48 @@ void combine_cheating_assays(Charts& charts, bool combine_requested)
                 fmt::print(stderr, "        {}\n", charts[chart_no]->make_name());
         }
         fmt::print(stderr, "\n\n");
-        return;
+        return acmacs::chart::combine_cheating_assays::no;
+    }
+    else {
+        AD_INFO("Cheating assays present and will be combined");
+        return acmacs::chart::combine_cheating_assays::yes;
     }
 
-    for (const auto& group : cheating_assays)
-        combine_tables(charts, group);
+    // for (const auto& group : cheating_assays)
+    //     combine_tables(charts, group);
 
-    // remove appended charts
-    for (const auto& group : cheating_assays)
-        ranges::for_each(group | ranges::views::drop(1), [&charts](size_t chart_no) { charts[chart_no].reset(); });
-    charts.erase(ranges::remove(charts, std::unique_ptr<acmacs::chart::ChartModify>{}), std::end(charts));
+    // // remove appended charts
+    // for (const auto& group : cheating_assays)
+    //     ranges::for_each(group | ranges::views::drop(1), [&charts](size_t chart_no) { charts[chart_no].reset(); });
+    // charts.erase(ranges::remove(charts, std::unique_ptr<acmacs::chart::ChartModify>{}), std::end(charts));
 
 } // combine_cheating_assays
 
 // ----------------------------------------------------------------------
 
-void combine_tables(Charts& charts, const std::vector<size_t>& to_combine)
-{
-    auto& master = *charts[to_combine[0]];
-    auto& master_antigens = master.antigens_modify();
-    auto& master_titers = master.titers_modify();
-    auto& master_plot_spec = master.plot_spec_modify();
-    master_titers.remove_layers();
-    master.projections_modify().remove_all();
-    for (const auto chart_no : to_combine | ranges::views::drop(1)) {
-        auto& to_append = *charts[chart_no];
-        auto to_append_antigens = to_append.antigens();
-        auto to_append_titers = to_append.titers();
-        for (const auto to_append_antigen_no : to_append_antigens->test_indexes()) {
-            master_antigens.append()->replace_with(*to_append_antigens->at(to_append_antigen_no));
-            master_titers.append_antigen();
-            master_plot_spec.append_antigen();
-            for (const auto sr_no : range_from_0_to(master.number_of_sera()))
-                master_titers.titer(master_titers.number_of_antigens() - 1, sr_no, to_append_titers->titer(to_append_antigen_no, sr_no));
-        }
-        master.info_modify().date(fmt::format("{}+{}", master.info_modify().date(), to_append.info()->date()));
-    }
+// void combine_tables(Charts& charts, const std::vector<size_t>& to_combine)
+// {
+//     auto& master = *charts[to_combine[0]];
+//     auto& master_antigens = master.antigens_modify();
+//     auto& master_titers = master.titers_modify();
+//     auto& master_plot_spec = master.plot_spec_modify();
+//     master_titers.remove_layers();
+//     master.projections_modify().remove_all();
+//     for (const auto chart_no : to_combine | ranges::views::drop(1)) {
+//         auto& to_append = *charts[chart_no];
+//         auto to_append_antigens = to_append.antigens();
+//         auto to_append_titers = to_append.titers();
+//         for (const auto to_append_antigen_no : to_append_antigens->test_indexes()) {
+//             master_antigens.append()->replace_with(*to_append_antigens->at(to_append_antigen_no));
+//             master_titers.append_antigen();
+//             master_plot_spec.append_antigen();
+//             for (const auto sr_no : range_from_0_to(master.number_of_sera()))
+//                 master_titers.titer(master_titers.number_of_antigens() - 1, sr_no, to_append_titers->titer(to_append_antigen_no, sr_no));
+//         }
+//         master.info_modify().date(fmt::format("{}+{}", master.info_modify().date(), to_append.info()->date()));
+//     }
 
-} // combine_tables
+// } // combine_tables
 
 // ----------------------------------------------------------------------
 

@@ -23,14 +23,15 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
 {
       // antigens
     {
-        const bool remove_distinct = settings.remove_distinct && primary.info()->lab(Info::Compute::Yes) == Lab{"CDC"};
+        const bool remove_distinct = settings.remove_distinct_ == remove_distinct::yes && primary.info()->lab(Info::Compute::Yes) == Lab{"CDC"};
         auto src1 = primary.antigens();
         for (size_t no1 = 0; no1 < src1->size(); ++no1) {
             if (!remove_distinct || !src1->at(no1)->distinct())
                 antigens_primary_target.emplace_or_replace(no1, target_index_common_t{target_antigens++, common.antigen_secondary_by_primary(no1).has_value()});
         }
         auto src2 = secondary.antigens();
-        for (size_t no2 = 0; no2 < src2->size(); ++no2) {
+        const auto secondary_antigen_indexes = secondary_antigens_to_merge(primary, secondary, settings);
+        for (const auto no2 : secondary_antigen_indexes) {
             if (!remove_distinct || !src2->at(no2)->distinct()) {
                 if (const auto no1 = common.antigen_primary_by_secondary(no2); no1)
                     antigens_secondary_target.emplace_or_replace(no2, antigens_primary_target.get(*no1));
@@ -60,6 +61,69 @@ acmacs::chart::MergeReport::MergeReport(const Chart& primary, const Chart& secon
     // AD_DEBUG("sera_secondary_target {}", sera_secondary_target);
 
 } // acmacs::chart::MergeReport::MergeReport
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Indexes acmacs::chart::MergeReport::secondary_antigens_to_merge(const Chart& primary, const Chart& secondary, const MergeSettings& settings) const
+{
+    Indexes indexes = secondary.antigens()->all_indexes();
+    if (settings.combine_cheating_assays_ == combine_cheating_assays::yes) {
+        // expected: primary chart is single or multi layered, secondary chart is single layered
+        auto secondary_titers = secondary.titers();
+        if (secondary_titers->number_of_layers() > 1)
+            AD_WARNING("[chart merge and combine_cheating_assays]: secondary chart is multilayered, result can be unexpected");
+
+        bool all_secondary_in_primary{true}; // otherwise no cheating assay
+        bool titers_same{true}; // otherwise no cheating assay
+
+        const auto primary_by_secondary = [&all_secondary_in_primary](const auto& indexes2, auto&& func) {
+            return ranges::views::transform(indexes2, [&all_secondary_in_primary, &func](size_t no2) -> size_t {
+                if (const auto no1 = func(no2); no1.has_value()) {
+                    return *no1;
+                }
+                else {
+                    all_secondary_in_primary = false;
+                    return static_cast<size_t>(-1);
+                }
+            }) | ranges::to_vector;
+        };
+
+        auto secondary_antigens = secondary.antigens();
+        auto secondary_sera = secondary.sera();
+
+        const auto antigens2_indexes = secondary_antigens->reference_indexes();
+        const auto sera2_indexes = secondary_sera->all_indexes();
+        const auto antigen_indexes1 = primary_by_secondary(antigens2_indexes, [this](size_t no2) { return common.antigen_primary_by_secondary(no2); });
+        const auto serum_indexes1 = primary_by_secondary(sera2_indexes, [this](size_t no2) { return common.serum_primary_by_secondary(no2); });
+        if (all_secondary_in_primary) {
+            // check titers
+            auto primary_titers = primary.titers();
+            const auto primary_titer = [&primary_titers](size_t ag, size_t sr) { return primary_titers->titer(ag, sr); };
+            for (const auto antigen_index_no : range_from_0_to(antigens2_indexes.size())) {
+                for (const auto serum_index_no : range_from_0_to(sera2_indexes.size())) {
+                    titers_same &= secondary_titers->titer(antigens2_indexes[antigen_index_no], sera2_indexes[serum_index_no]) == primary_titer(antigen_indexes1[antigen_index_no], serum_indexes1[serum_index_no]);
+                    if (!titers_same)
+                        break;
+                }
+                if (!titers_same)
+                    break;
+            }
+        }
+
+        if (all_secondary_in_primary && titers_same) {
+            return secondary_antigens->test_indexes();
+        }
+        else {
+            if (!all_secondary_in_primary)
+                AD_INFO("[chart merge and combine_cheating_assays]: not a cheating assay: not all secondary ref antigens/sera found in primary");
+            if (!titers_same)
+                AD_INFO("[chart merge and combine_cheating_assays]: not a cheating assay: titers are different");
+        }
+    }
+
+    return secondary.antigens()->all_indexes(); // no cheating assay or combining not requested
+
+} // acmacs::chart::MergeReport::secondary_antigens_to_merge
 
 // ----------------------------------------------------------------------
 
