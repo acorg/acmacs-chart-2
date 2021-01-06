@@ -126,8 +126,14 @@ acmacs::chart::Indexes acmacs::chart::MergeReport::secondary_antigens_to_merge(c
         }
 
         if (all_secondary_in_primary && titers_same) {
-            AD_INFO("cheating assay ({}) will be combined", secondary.make_name());
-            return secondary_antigens->test_indexes();
+            if (const auto test_indexes = secondary_antigens->test_indexes(); !test_indexes.empty()) {
+                AD_INFO("cheating assay ({}) will be combined, no reference titers will be in the new layer, test antigens: {}", secondary.make_name(), test_indexes.size());
+                return test_indexes;
+            }
+            else {
+                AD_ERROR("cheating assay ({}) and chart has no test antigens, remove table or disable cheating assay handling", secondary.make_name());
+                throw merge_error{"cheating assay and chart has no test antigens"};
+            }
         }
         else {
             // if (!all_secondary_in_primary)
@@ -267,8 +273,9 @@ void merge_titers(acmacs::chart::ChartModify& result, const acmacs::chart::Chart
         };
 
         if (source_layers) {
-            for (size_t source_layer_no = 0; source_layer_no < source_layers; ++source_layer_no, ++target_layer_no)
+            for (size_t source_layer_no = 0; source_layer_no < source_layers; ++source_layer_no, ++target_layer_no) {
                 copy_titer(source_titers.titers_existing_from_layer(source_layer_no));
+            }
         }
         else {
             copy_titer(source_titers.titers_existing());
