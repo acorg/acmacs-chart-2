@@ -39,6 +39,8 @@ def main(input_file, output_file, prn_read, prn_remove_concentration):
                 ace["c"]["i"]["r"] = value
             elif field == "lineage":
                 ace["c"]["i"]["s"] = value
+            elif field == "error":
+                raise RuntimeError(f"> ERROR: {value}")
             else:
                 raise RuntimeError(f"Unrecognized meta field name: \"{field}\"")
 

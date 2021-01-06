@@ -1,4 +1,4 @@
-# Time-stamp: <2020-07-03 15:49:55 eu>
+# Time-stamp: <2021-01-06 10:32:56 eu>
 
 * Description
 
@@ -14,6 +14,8 @@ Lines starting with - provide meta information, format is:
   - <field-name>: <field-value>
 
 Available field names (case insensitive):
+
+  - Error: <message> - parsing will fail, the table cannot be used
 
   - Lab: <lab-name>
   - Date: 2020-07-02 or 20170727
