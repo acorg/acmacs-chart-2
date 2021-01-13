@@ -197,6 +197,13 @@ namespace
 
         void next(acmacs::chart::TiterIterator::Data& data) const override
         {
+            if (data.antigen >= number_of_rows()) {
+                data.serum = 0;
+                data.titer = acmacs::chart::Titer{};
+                return;
+            }
+            if (serum_ == sera_.end())
+                throw std::runtime_error{fmt::format("internal error in TiterGetterExistingDict::next @@ {}:{}", __FILE__, __LINE__)};
             ++serum_;
             if (serum_ == sera_.end()) {
                 for (++data.antigen; data.antigen < number_of_rows() && row(data).empty(); ++data.antigen)
