@@ -198,6 +198,7 @@ namespace
         void next(acmacs::chart::TiterIterator::Data& data) const override
         {
             if (data.antigen >= number_of_rows()) {
+                // last antigen dict was empty, there are not titers for the last antigen in the layer, perhaps after subsetting and removing sera
                 data.serum = 0;
                 data.titer = acmacs::chart::Titer{};
                 return;
