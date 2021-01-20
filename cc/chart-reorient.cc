@@ -35,14 +35,22 @@ int main(int argc, char* const argv[])
             fmt::print("{}\n", to_reorient.make_name());
             acmacs::chart::CommonAntigensSera common(*master, to_reorient, match_level);
             if (common) {
+                bool modified{false};
                 fmt::print("    common antigens: {} sera: {}\n", common.common_antigens(), common.common_sera());
                 const auto projections = *opt.chart_projection_no < 0 ? acmacs::filled_with_indexes(to_reorient.number_of_projections()) : std::vector<size_t>{static_cast<size_t>(*opt.chart_projection_no)};
                 for (auto projection_no : projections) {
                     auto procrustes_data = acmacs::chart::procrustes(*master->projection(static_cast<size_t>(*opt.master_projection_no)), *to_reorient.projection(projection_no), common.points(), acmacs::chart::procrustes_scaling_t::no);
-                    to_reorient.projection_modify(projection_no)->transformation(procrustes_data.transformation);
-                    fmt::print("    projection: {}\ntransformation: {}\nrms: {}\n", projection_no, procrustes_data.transformation, procrustes_data.rms);
+                    fmt::print("    projection: {}\n", projection_no);
+                    if (to_reorient.projection_modify(projection_no)->transformation().difference(procrustes_data.transformation) > 1e-5) {
+                        to_reorient.projection_modify(projection_no)->transformation(procrustes_data.transformation);
+                        modified = true;
+                        fmt::print("transformation: {}\nrms: {}\n", projection_no, procrustes_data.transformation, procrustes_data.rms);
+                    }
+                    else
+                        fmt::print("already oriented\n");
                 }
-                acmacs::chart::export_factory(to_reorient, source, opt.program_name());
+                if (modified)
+                    acmacs::chart::export_factory(to_reorient, source, opt.program_name());
             }
             else {
                 AD_ERROR("no common antigens/sera");
