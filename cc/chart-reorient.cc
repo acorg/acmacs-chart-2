@@ -44,7 +44,7 @@ int main(int argc, char* const argv[])
                     if (to_reorient.projection_modify(projection_no)->transformation().difference(procrustes_data.transformation) > 1e-5) {
                         to_reorient.projection_modify(projection_no)->transformation(procrustes_data.transformation);
                         modified = true;
-                        fmt::print("transformation: {}\nrms: {}\n", projection_no, procrustes_data.transformation, procrustes_data.rms);
+                        fmt::print("transformation: {}\nrms: {}\n", procrustes_data.transformation, procrustes_data.rms);
                     }
                     else
                         fmt::print("already oriented\n");
