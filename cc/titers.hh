@@ -105,6 +105,7 @@ namespace acmacs::chart
         struct Data
         {
             Data() = default;
+            Data(const Data&) = default;
             constexpr operator const Titer& () const { return titer; }
             constexpr bool operator==(const Data& rhs) const { return antigen == rhs.antigen && serum == rhs.serum; }
             constexpr bool operator!=(const Data& rhs) const { return !operator==(rhs); }

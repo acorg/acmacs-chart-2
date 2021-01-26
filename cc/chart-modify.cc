@@ -1435,6 +1435,28 @@ void TitersModify::multiply_by_for_serum(size_t aSerumNo, double multiply_by)
 
 // ----------------------------------------------------------------------
 
+void TitersModify::replace_all(const std::regex& look_for, std::string_view replacement)
+{
+    modifiable_check();
+    std::vector<TiterIterator::Data> replacements;
+    for (const auto& titer_ref : titers_existing()) {
+        if (std::smatch match; std::regex_search(titer_ref.titer.get(), match, look_for)) {
+            auto repl{titer_ref};
+            repl.titer = Titer{match.format(std::string{replacement})};
+            replacements.push_back(repl);
+        }
+    }
+    if (!replacements.empty()) {
+        for (const auto& ref : replacements)
+            titer(ref.antigen, ref.serum, ref.titer);
+    }
+    else
+        AD_WARNING("TitersModify::replace_all: no matches found, nothing replaced");
+
+} // TitersModify::replace_all
+
+// ----------------------------------------------------------------------
+
 // acmacs/backend/antigenic-table.hh setProportionToDontCare()
 void TitersModify::set_proportion_of_titers_to_dont_care(double proportion)
 {
