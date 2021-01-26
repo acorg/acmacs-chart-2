@@ -24,10 +24,17 @@ int main(int argc, char* const argv[])
     try {
         Options opt(argc, argv);
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.chart)};
-        chart.titers_modify().replace_all(std::regex{std::begin(*opt.look_for), std::end(*opt.look_for), acmacs::regex::icase}, opt.replacement);
+        const auto replacements = chart.titers_modify().replace_all(std::regex{std::begin(*opt.look_for), std::end(*opt.look_for), acmacs::regex::icase}, opt.replacement);
         acmacs::chart::export_factory(chart, opt.chart, opt.program_name());
-        if (opt.verbose)
-            fmt::print("{}", acmacs::chart::export_table_to_text(chart));
+        if (opt.verbose) {
+            if (!replacements.empty()) {
+                AD_INFO("{} titer replacements done", replacements.size());
+                for (const auto& rep : replacements)
+                    fmt::print(stderr, "    ag:{:04d} sr:{:03d} titer:{}", rep.antigen, rep.serum, rep.titer);
+            }
+            else
+                AD_WARNING("No titer replacement performed: no titer match for \"{}\"", *opt.look_for);
+        }
     }
     catch (std::exception& err) {
         AD_ERROR("{}", err);
