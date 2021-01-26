@@ -406,7 +406,8 @@ namespace acmacs::chart
         void multiply_by_for_serum(size_t aSerumNo, double multiply_by);
         void set_proportion_of_titers_to_dont_care(double proportion);
         // replace all titers matching look_for (via regex_search) with replacement, replacement may contain substitutions $`, $', $1, etc.
-        void replace_all(const std::regex& look_for, std::string_view replacement);
+        // returns list of the replacements performed
+        std::vector<TiterIterator::Data> replace_all(const std::regex& look_for, std::string_view replacement);
 
         void remove_antigens(const ReverseSortedIndexes& indexes);
         void remove_sera(const ReverseSortedIndexes& indexes);

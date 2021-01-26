@@ -1435,7 +1435,7 @@ void TitersModify::multiply_by_for_serum(size_t aSerumNo, double multiply_by)
 
 // ----------------------------------------------------------------------
 
-void TitersModify::replace_all(const std::regex& look_for, std::string_view replacement)
+std::vector<TiterIterator::Data> TitersModify::replace_all(const std::regex& look_for, std::string_view replacement)
 {
     modifiable_check();
     std::vector<TiterIterator::Data> replacements;
@@ -1450,8 +1450,10 @@ void TitersModify::replace_all(const std::regex& look_for, std::string_view repl
         for (const auto& ref : replacements)
             titer(ref.antigen, ref.serum, ref.titer);
     }
-    else
-        AD_WARNING("TitersModify::replace_all: no matches found, nothing replaced");
+    // else
+    //     AD_WARNING("TitersModify::replace_all: no matches found, nothing replaced");
+
+    return replacements;
 
 } // TitersModify::replace_all
 
