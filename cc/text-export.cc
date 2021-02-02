@@ -66,6 +66,8 @@ std::string acmacs::chart::export_table_to_text(const Chart& chart, std::optiona
             fmt::format_to(result, "{:{}d} {: <{}s} {:<{}s}", ag_no, ag_no_num_digits, antigen->full_name(), max_antigen_name, antigen->reference() ? reference_marker : ""sv, reference_marker.size() + 1);
             for (auto serum_no : acmacs::range(sera->size()))
                 fmt::format_to(result, "{: >{}s}", *titers->titer(ag_no, serum_no), column_width);
+            if (const auto date = antigen->date(); !date.empty())
+                fmt::format_to(result, "{:{}s}[{}]", "", column_width, date);
             fmt::format_to(result, "\n");
         }
     }
