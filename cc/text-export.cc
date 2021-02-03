@@ -1,5 +1,6 @@
 #include "acmacs-base/string-join.hh"
 #include "acmacs-base/string-split.hh"
+#include "acmacs-base/range-v3.hh"
 #include "acmacs-chart-2/text-export.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -32,7 +33,7 @@ std::string acmacs::chart::export_text(const Chart& chart)
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::export_table_to_text(const Chart& chart, std::optional<size_t> just_layer)
+std::string acmacs::chart::export_table_to_text(const Chart& chart, std::optional<size_t> just_layer, bool sort)
 {
     using namespace std::string_view_literals;
     fmt::memory_buffer result;
@@ -47,25 +48,34 @@ std::string acmacs::chart::export_table_to_text(const Chart& chart, std::optiona
         fmt::format_to(result, "Layer {}   {}\n\n", *just_layer, chart.info()->source(*just_layer)->make_name());
     }
 
+    auto antigen_order = range_from_0_to(antigens->size()) | ranges::to_vector;
+    auto serum_order = range_from_0_to(sera->size()) | ranges::to_vector;
+    if (sort) {
+        ranges::sort(antigen_order, [&antigens](auto i1, auto i2) { return antigens->at(i1)->full_name() < antigens->at(i2)->full_name(); });
+        ranges::sort(serum_order, [&sera](auto i1, auto i2) { return sera->at(i1)->full_name() < sera->at(i2)->full_name(); });
+    }
+
     const auto column_width = 8;
     const auto table_prefix = 5;
-    const std::string_view reference_marker { ":ref" };
+    const std::string_view reference_marker{":ref"};
     fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + (reference_marker.size() + 1));
-    for (auto serum_no : acmacs::range(sera->size()))
+    for (auto serum_no : range_from_0_to(sera->size()))
         fmt::format_to(result, "{: ^{}d}", serum_no, column_width);
     fmt::format_to(result, "\n");
     fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name + table_prefix + (reference_marker.size() + 1));
-    for (auto serum : *sera)
-        fmt::format_to(result, "{: ^8s}", serum->abbreviated_location_year(), column_width);
+    for (auto serum_no : serum_order)
+        fmt::format_to(result, "{: ^8s}", sera->at(serum_no)->abbreviated_location_year(), column_width);
     fmt::format_to(result, "\n\n");
 
     const auto ag_no_num_digits = static_cast<int>(std::log10(antigens->size())) + 1;
     if (!just_layer.has_value()) {
         // merged table
-        for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
-            fmt::format_to(result, "{:{}d} {: <{}s} {:<{}s}", ag_no, ag_no_num_digits, antigen->full_name(), max_antigen_name, antigen->reference() ? reference_marker : ""sv, reference_marker.size() + 1);
-            for (auto serum_no : acmacs::range(sera->size()))
-                fmt::format_to(result, "{: >{}s}", *titers->titer(ag_no, serum_no), column_width);
+        for (auto [ag_no, antigen_no] : acmacs::enumerate(antigen_order)) {
+            auto antigen = antigens->at(antigen_no);
+            fmt::format_to(result, "{:{}d} {: <{}s} {:<{}s}", ag_no, ag_no_num_digits, antigen->full_name(), max_antigen_name, antigen->reference() ? reference_marker : ""sv,
+                           reference_marker.size() + 1);
+            for (auto serum_no : serum_order)
+                fmt::format_to(result, "{: >{}s}", *titers->titer(antigen_no, serum_no), column_width);
             if (const auto date = antigen->date(); !date.empty())
                 fmt::format_to(result, "{:{}s}[{}]", "", column_width, date);
             fmt::format_to(result, "\n");
@@ -77,15 +87,15 @@ std::string acmacs::chart::export_table_to_text(const Chart& chart, std::optiona
         for (auto ag_no : antigens_of_layer) {
             auto antigen = antigens->at(ag_no);
             fmt::format_to(result, "{:{}d} {: <{}s} {:<6s}", ag_no, ag_no_num_digits, antigen->full_name(), max_antigen_name, antigen->reference() ? "<ref>"sv : ""sv);
-            for (auto serum_no : acmacs::range(sera->size()))
+            for (auto serum_no : serum_order)
                 fmt::format_to(result, "{: >{}s}", *titers->titer_of_layer(*just_layer, ag_no, serum_no), column_width);
             fmt::format_to(result, "\n");
         }
     }
 
     fmt::format_to(result, "\n");
-    for (auto [sr_no, serum] : acmacs::enumerate(*sera))
-        fmt::format_to(result, "{: >{}s} {:3d} {}\n", "", max_antigen_name + table_prefix, sr_no, serum->full_name());
+    for (auto [sr_no, serum_no] : acmacs::enumerate(serum_order))
+        fmt::format_to(result, "{: >{}s} {:3d} {}\n", "", max_antigen_name + table_prefix, sr_no, sera->at(serum_no)->full_name());
 
     return fmt::to_string(result);
 
