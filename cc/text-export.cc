@@ -95,7 +95,7 @@ std::string acmacs::chart::export_table_to_text(const Chart& chart, std::optiona
 
     fmt::format_to(result, "\n");
     for (auto [sr_no, serum_no] : acmacs::enumerate(serum_order))
-        fmt::format_to(result, "{: >{}s} {:3d} {}\n", "", max_antigen_name + table_prefix, sr_no, sera->at(serum_no)->full_name());
+        fmt::format_to(result, "{: >{}s} {:3d} {}\n", "", max_antigen_name + table_prefix, sr_no, sera->at(serum_no)->full_name_with_passage());
 
     return fmt::to_string(result);
 
