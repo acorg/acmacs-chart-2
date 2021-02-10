@@ -280,7 +280,7 @@ void export_projections(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Pr
         }
 
         rjson::set_field_if_not_empty(target, "c", projection->comment());
-        if (const auto stress = projection->stress(); !std::isnan(stress) && stress >= 0)
+        if (const auto stress = projection->stress(); !std::isnan(stress) && !std::isinf(stress) && stress >= 0)
             target["s"] = rjson::number(acmacs::to_string(stress, 8));
         if (const auto minimum_column_basis = projection->minimum_column_basis(); !minimum_column_basis.is_none())
             target["m"] = static_cast<std::string>(minimum_column_basis);
