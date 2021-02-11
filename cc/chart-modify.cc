@@ -305,6 +305,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
 void ChartModify::relax(number_of_optimizations_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions,
                         use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points)
 {
+    AD_DEBUG("relax");
     const auto start_num_dim = dimension_annealing == use_dimension_annealing::yes && *number_of_dimensions < 5 ? number_of_dimensions_t{5} : number_of_dimensions;
     auto titrs = titers();
     auto stress = acmacs::chart::stress_factory(*this, start_num_dim, minimum_column_basis, options.mult, dodgy_titer_is_regular::no);
@@ -1844,6 +1845,7 @@ void ProjectionModify::set_forced_column_basis(size_t serum_no, double column_ba
 
 std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(ProjectionModify::randomizer rnd, double diameter_multiplier, LayoutRandomizer::seed_t seed)
 {
+    AD_DEBUG("randomize_layout");
     std::shared_ptr<LayoutRandomizer> rnd_v;
     switch (rnd) {
       case randomizer::plain_with_table_max_distance:
@@ -1870,11 +1872,11 @@ std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(std::shared_p
     modify();
     auto layout = layout_modified();
     const auto number_of_dimensions = layout->number_of_dimensions();
-    for (auto point_no : range_from_0_to(layout->number_of_points())) {
+    for (const auto point_no : range_from_0_to(layout->number_of_points())) {
         const auto point{randomizer->get(number_of_dimensions)};
-        // AD_DEBUG("{:3d} {}", point_no, point);
         layout->update(point_no, point);
     }
+    // AD_DEBUG("randomize_layout {}", *layout);
     return layout;
 
 } // ProjectionModify::randomize_layout

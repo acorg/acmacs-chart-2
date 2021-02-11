@@ -1,6 +1,7 @@
 #include "acmacs-base/range.hh"
 #include "acmacs-base/vector-math.hh"
 #include "acmacs-base/sigmoid.hh"
+#include "acmacs-base/range-v3.hh"
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -330,13 +331,20 @@ void acmacs::chart::Stress::gradient_with_unmovable(const double* first, const d
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Stress::set_coordinates_of_disconnected(double* first, double value, number_of_dimensions_t number_of_dimensions) const
+void acmacs::chart::Stress::set_coordinates_of_disconnected(double* first, size_t num_args, double value, number_of_dimensions_t number_of_dimensions) const
 {
-      // do not use number_of_dimensions_! after pca its value is wrong!
-    for (auto p_no: parameters_.disconnected) {
+    // do not use number_of_dimensions_! after pca its value is wrong!
+    for (auto p_no : parameters_.disconnected) {
         for (auto dim : range(number_of_dimensions))
             *(first + p_no * static_cast<size_t>(number_of_dimensions) + static_cast<size_t>(dim)) = value;
     }
+
+    // if (float_zero(value)) {
+    //     for (const auto arg_no : range_from_0_to(num_args)) {
+    //         if (std::isnan(first[arg_no]) || std::isinf(first[arg_no]))
+    //             AD_WARNING("Stress::set_coordinates_of_disconnected: coordinates of point {} ({}) are {} but point is not disconnected", arg_no / static_cast<size_t>(number_of_dimensions), arg_no, first[arg_no]);
+    //     }
+    // }
 
 } // acmacs::chart::Stress::set_coordinates_of_disconnected
 

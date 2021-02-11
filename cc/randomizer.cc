@@ -13,7 +13,6 @@ std::shared_ptr<acmacs::chart::LayoutRandomizerPlain> acmacs::chart::randomizer_
     if (!cb)
         cb = projection.chart().column_bases(projection.minimum_column_basis());
     const auto max_distance = projection.chart().titers()->max_distance(*cb);
-    // std::cerr << "max_distance: " << max_distance << '\n';
     return std::make_shared<LayoutRandomizerPlain>(max_distance, seed);
 
 } // acmacs::chart::randomizer_plain_with_table_max_distance
@@ -54,7 +53,6 @@ std::shared_ptr<acmacs::chart::LayoutRandomizer> randomizer_plain_from_sample_op
     const auto diameter = std::sqrt(std::accumulate(mm.begin(), mm.end(), 0.0, [&sq](double sum, const auto& p) { return sum + sq(p.second - p.first); }));
     if (std::isnan(diameter) || float_zero(diameter))
         throw std::runtime_error(acmacs::string::concat("randomizer_plain_from_sample_optimization_internal: diameter is ", diameter));
-    // AD_DEBUG("randomization diamter: {} <- {} * {}", diameter * diameter_multiplier, diameter, diameter_multiplier);
     rnd->diameter(diameter * diameter_multiplier);
     return rnd;
 

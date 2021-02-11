@@ -302,13 +302,16 @@ double acmacs::chart::Titers::max_distance(const acmacs::chart::ColumnBases& col
 
     double max_distance = 0;
     if (number_of_sera()) {
-        for (const auto& titer_ref : titers_existing())
+        for (const auto& titer_ref : titers_existing()) {
             max_distance = std::max(max_distance, column_bases.column_basis(titer_ref.serum) - titer_ref.titer.logged_with_thresholded());
+            if (std::isnan(max_distance) || std::isinf(max_distance))
+                throw std::runtime_error{fmt::format("Titers::max_distance invalid: {} after titer [{}] column_bases:{}{}", max_distance, titer_ref, column_bases, AD_DEBUG_FILE_LINE)};
+        }
     }
     else {
         throw std::runtime_error(AD_FORMAT("genetic table support not implemented"));
     }
-      // std::cerr << "Titers::max_distance: " << max_distance << '\n';
+
     return max_distance;
 
 } // acmacs::chart::Titers::max_distance

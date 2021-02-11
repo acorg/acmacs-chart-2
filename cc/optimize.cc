@@ -118,7 +118,7 @@ acmacs::chart::optimization_status acmacs::chart::optimize(optimization_method o
 acmacs::chart::optimization_status acmacs::chart::optimize(acmacs::chart::optimization_method optimization_method, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last,
                                                            acmacs::chart::optimization_precision precision)
 {
-    DisconnectedPointsHandler disconnected_point_handler{callback_data.stress, arg_first};
+    DisconnectedPointsHandler disconnected_point_handler{callback_data.stress, arg_first, static_cast<size_t>(arg_last - arg_first)};
     optimization_status status(optimization_method);
     status.initial_stress = callback_data.stress.value(arg_first);
     const auto start = std::chrono::high_resolution_clock::now();

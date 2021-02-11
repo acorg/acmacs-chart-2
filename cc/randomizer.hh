@@ -61,10 +61,13 @@ namespace acmacs::chart
     {
      public:
         LayoutRandomizerPlain(double diameter, seed_t seed = std::nullopt)
-            : LayoutRandomizer(seed), diameter_{diameter}, distribution_(-diameter / 2, diameter / 2) {}
+            : LayoutRandomizer(seed), diameter_{diameter}, distribution_(-diameter / 2, diameter / 2)
+            {
+                check();
+            }
           // LayoutRandomizerPlain(LayoutRandomizerPlain&&) = default;
 
-        void diameter(double diameter) { diameter_ = diameter; distribution_ = std::uniform_real_distribution<>(-diameter / 2, diameter / 2); }
+        void diameter(double diameter) { diameter_ = diameter; check(); distribution_ = std::uniform_real_distribution<>(-diameter / 2, diameter / 2); }
         double diameter() const { return diameter_; } // std::abs(distribution_.a() - distribution_.b()); }
 
         using LayoutRandomizer::get;
@@ -74,6 +77,13 @@ namespace acmacs::chart
             std::lock_guard<std::mutex> guard(generator_access_);
             return distribution_(generator());
         }
+
+        void check()
+            {
+                if (std::isnan(diameter_) || std::isinf(diameter_) || diameter_ <= 0.0 || diameter_ > 9999)
+                    throw std::runtime_error{fmt::format("LayoutRandomizerPlain: invalid diameter: {}{}", diameter_, AD_DEBUG_FILE_LINE)};
+            }
+
         // double get() override {  // c2
         //     std::lock_guard<std::mutex> guard(generator_access_);
         //     return (static_cast<double>(generator()()) * (1.0 / 4294967296.0) - 0.5) * diameter_;

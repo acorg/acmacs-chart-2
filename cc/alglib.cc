@@ -1,4 +1,5 @@
 #include "acmacs-base/fmt.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-chart-2/alglib.hh"
 #include "acmacs-chart-2/optimize.hh"
 #include "acmacs-chart-2/stress.hh"
@@ -104,7 +105,7 @@ void alglib::lbfgs_optimize(acmacs::chart::optimization_status& status, acmacs::
 
         if (rep.terminationtype < 0) {
             const char* msg = lbfgs_optimize_errors[static_cast<size_t>(std::abs(rep.terminationtype) <= 8 ? (std::abs(rep.terminationtype) - 1) : 8)];
-            fmt::print(stderr, "> ERROR alglib_lbfgs_optimize: {}\n", msg);
+            AD_ERROR("alglib_lbfgs_optimize: {}", msg);
             throw acmacs::chart::optimization_error(msg);
         }
 
@@ -113,7 +114,7 @@ void alglib::lbfgs_optimize(acmacs::chart::optimization_status& status, acmacs::
         status.number_of_stress_calculations = static_cast<size_t>(rep.nfev);
     }
     catch (ap_error& err) {
-        throw acmacs::chart::optimization_error(fmt::format("alglib error: {}", err.msg));
+        throw acmacs::chart::optimization_error(fmt::format("alglib error (lbfgs_optimize): {}{}", err.msg, AD_DEBUG_FILE_LINE));
     }
 
 } // alglib::lbfgs_optimize
@@ -163,7 +164,7 @@ void alglib::cg_optimize(acmacs::chart::optimization_status& status, acmacs::cha
 
         if (rep.terminationtype < 0) {
             const char* msg = lbfgs_optimize_errors[static_cast<size_t>(std::abs(rep.terminationtype) <= 8 ? (std::abs(rep.terminationtype) - 1) : 8)];
-            fmt::print(stderr, "> ERROR alglib_cg_optimize: {}\n", msg);
+            AD_ERROR("alglib_cg_optimize: {}", msg);
             throw acmacs::chart::optimization_error(msg);
         }
 
@@ -172,7 +173,7 @@ void alglib::cg_optimize(acmacs::chart::optimization_status& status, acmacs::cha
         status.number_of_stress_calculations = static_cast<size_t>(rep.nfev);
     }
     catch (ap_error& err) {
-        throw acmacs::chart::optimization_error(fmt::format("alglib error: {}", err.msg));
+        throw acmacs::chart::optimization_error(fmt::format("alglib error (cg_optimize): {}{}", err.msg, AD_DEBUG_FILE_LINE));
     }
 
 } // alglib::cg_optimize
@@ -188,7 +189,7 @@ void alglib::pca(acmacs::chart::OptimiserCallbackData& callback_data, acmacs::nu
         const aint_t number_of_points = (arg_last - arg_first) / cint(source_number_of_dimensions);
 
         // alglib does not like NaN coordinates of disconnected points, set them to 0
-        callback_data.stress.set_coordinates_of_disconnected(arg_first, 0.0, source_number_of_dimensions);
+        callback_data.stress.set_coordinates_of_disconnected(arg_first, static_cast<size_t>(arg_last - arg_first), 0.0, source_number_of_dimensions);
 
         alglib::real_2d_array x;
         x.attach_to_ptr(number_of_points, cint(source_number_of_dimensions), arg_first);
@@ -215,11 +216,11 @@ void alglib::pca(acmacs::chart::OptimiserCallbackData& callback_data, acmacs::nu
 
         // return back NaN for disconnected points
         // number of dimensions changed!
-        callback_data.stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), target_number_of_dimensions);
+        callback_data.stress.set_coordinates_of_disconnected(arg_first, 0ul, std::numeric_limits<double>::quiet_NaN(), target_number_of_dimensions);
     }
     catch (ap_error& err) {
         AD_ERROR("alglib::pca: {}", err.msg);
-        throw acmacs::chart::optimization_error(fmt::format("alglib::pca error: {}", err.msg));
+        throw acmacs::chart::optimization_error(fmt::format("alglib::pca error: {}{}", err.msg, AD_DEBUG_FILE_LINE));
     }
 
 } // alglib::pca
@@ -232,7 +233,7 @@ void alglib::pca_full(acmacs::chart::OptimiserCallbackData& callback_data, acmac
         const aint_t number_of_points = (arg_last - arg_first) / cint(number_of_dimensions);
 
         // alglib does not like NaN coordinates of disconnected points, set them to 0
-        callback_data.stress.set_coordinates_of_disconnected(arg_first, 0.0, number_of_dimensions);
+        callback_data.stress.set_coordinates_of_disconnected(arg_first, static_cast<size_t>(arg_last - arg_first), 0.0, number_of_dimensions);
 
         alglib::real_2d_array x;
         x.attach_to_ptr(number_of_points, cint(number_of_dimensions), arg_first);
@@ -271,11 +272,10 @@ void alglib::pca_full(acmacs::chart::OptimiserCallbackData& callback_data, acmac
 
         // return back NaN for disconnected points
         // number of dimensions changed!
-        callback_data.stress.set_coordinates_of_disconnected(arg_first, std::numeric_limits<double>::quiet_NaN(), number_of_dimensions);
+        callback_data.stress.set_coordinates_of_disconnected(arg_first, 0, std::numeric_limits<double>::quiet_NaN(), number_of_dimensions);
     }
     catch (ap_error& err) {
-        AD_ERROR("alglib::pca_full: {}", err.msg);
-        throw acmacs::chart::optimization_error(fmt::format("alglib::pca_full error: {}", err.msg));
+        throw acmacs::chart::optimization_error(fmt::format("alglib::pca_full error: {}{}", err.msg, AD_DEBUG_FILE_LINE));
     }
 
 } // alglib::pca_full

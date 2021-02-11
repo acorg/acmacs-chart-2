@@ -13,7 +13,7 @@ namespace acmacs::chart
 {
     class Stress;
 
-    class optimization_error : public std::runtime_error { public: inline optimization_error(std::string msg) : std::runtime_error("invalid_data: " + msg) {} };
+    class optimization_error : public std::runtime_error { public: inline optimization_error(const std::string& msg) : std::runtime_error("invalid_data: " + msg) {} };
 
     class Projection;
     class ChartModify;

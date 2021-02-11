@@ -67,7 +67,7 @@ namespace acmacs::chart
         void set_unmovable(const UnmovablePoints& unmovable) { parameters_.unmovable = unmovable; }
         void set_unmovable_in_the_last_dimension(const UnmovableInTheLastDimensionPoints& unmovable_in_the_last_dimension) { parameters_.unmovable_in_the_last_dimension = unmovable_in_the_last_dimension; }
 
-        void set_coordinates_of_disconnected(double* first, double value, number_of_dimensions_t number_of_dimensions) const;
+        void set_coordinates_of_disconnected(double* first, size_t num_args, double value, number_of_dimensions_t number_of_dimensions) const;
 
      private:
         number_of_dimensions_t number_of_dimensions_;
