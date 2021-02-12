@@ -63,7 +63,8 @@ namespace acmacs::chart
         LayoutRandomizerPlain(double diameter, seed_t seed = std::nullopt)
             : LayoutRandomizer(seed), diameter_{diameter}, distribution_(-diameter / 2, diameter / 2)
             {
-                check();
+                if (!float_zero(diameter_))
+                    check();
             }
           // LayoutRandomizerPlain(LayoutRandomizerPlain&&) = default;
 
