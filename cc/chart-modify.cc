@@ -1763,7 +1763,7 @@ static inline void remove_from(PointIndexList& list, const acmacs::ReverseSorted
                 --*listp;
             }
             else if (*listp == to_remove) {
-                list.erase(listp.base());
+                list.erase(listp.base() - 1);
                 break;
             }
             else
