@@ -21,6 +21,7 @@ struct Options : public argv
     option<str_array>  sera{*this, 's', "sera", desc{"comma or space separated list of sera (zero based indexes) to report for them only, or regex to match serum name"}};
     option<bool> antigens_only{*this, "antigens-only", desc{"report just antigens"}};
     option<bool> sera_only{*this, "sera-only", desc{"report just sera"}};
+    option<bool> egg_only{*this, "egg-only", desc{"report just egg antigens/sera"}};
     option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
     option<bool> verbose{*this, 'v', "verbose"};
     argument<str_array> charts{*this, arg_name{"chart"}, mandatory};
@@ -38,37 +39,51 @@ int main(int argc, char* const argv[])
         for (const auto& chart_filename : *opt.charts) {
             auto chart = acmacs::chart::import_from_file(chart_filename, acmacs::chart::Verify::None, do_report_time(opt.report_time));
             chart->sera()->set_homologous(acmacs::chart::find_homologous::all, *chart->antigens(), acmacs::debug::no);
-            bool reported { false };
+            bool reported{false};
+            auto ag_indexes_to_report = chart->antigens()->all_indexes();
+            auto sr_indexes_to_report = chart->sera()->all_indexes();
+            if (opt.egg_only) {
+                chart->antigens()->filter_egg(ag_indexes_to_report);
+                chart->sera()->filter_egg(sr_indexes_to_report);
+            }
             for (const auto& ag_data : *opt.antigens) {
                 if (std::regex_match(std::begin(ag_data), std::end(ag_data), numbers)) {
-                for (const auto ag_no : acmacs::string::split_into_size_t(ag_data))
-                    fmt::print("{}", acmacs::chart::format_antigen(pattern, *chart, ag_no));
+                    for (const auto ag_no : acmacs::string::split_into_size_t(ag_data)) {
+                        if (ag_indexes_to_report.contains(ag_no))
+                            fmt::print("{}", acmacs::chart::format_antigen(pattern, *chart, ag_no));
+                    }
                 }
                 else {
-                    for (const auto ag_no : chart->antigens()->find_by_name(std::regex{std::begin(ag_data), std::end(ag_data), acmacs::regex::icase}))
-                        fmt::print("{}", acmacs::chart::format_antigen(pattern, *chart, ag_no));
+                    for (const auto ag_no : chart->antigens()->find_by_name(std::regex{std::begin(ag_data), std::end(ag_data), acmacs::regex::icase})) {
+                        if (ag_indexes_to_report.contains(ag_no))
+                            fmt::print("{}", acmacs::chart::format_antigen(pattern, *chart, ag_no));
+                    }
                 }
                 reported = true;
             }
             for (const auto& sr_data : *opt.sera) {
                 if (std::regex_match(std::begin(sr_data), std::end(sr_data), numbers)) {
-                for (const auto sr_no : acmacs::string::split_into_size_t(sr_data))
-                    fmt::print("{}", acmacs::chart::format_serum(pattern, *chart, sr_no));
+                    for (const auto sr_no : acmacs::string::split_into_size_t(sr_data)) {
+                        if (sr_indexes_to_report.contains(sr_no))
+                            fmt::print("{}", acmacs::chart::format_serum(pattern, *chart, sr_no));
+                    }
                 }
                 else {
-                    for (const auto sr_no : chart->sera()->find_by_name(std::regex{std::begin(sr_data), std::end(sr_data), acmacs::regex::icase}))
-                        fmt::print("{}", acmacs::chart::format_serum(pattern, *chart, sr_no));
+                    for (const auto sr_no : chart->sera()->find_by_name(std::regex{std::begin(sr_data), std::end(sr_data), acmacs::regex::icase})) {
+                        if (sr_indexes_to_report.contains(sr_no))
+                            fmt::print("{}", acmacs::chart::format_serum(pattern, *chart, sr_no));
+                    }
                 }
                 reported = true;
             }
             if (!reported) {
                 const bool antigens_and_sera = !opt.antigens_only && !opt.sera_only;
                 if (antigens_and_sera || opt.antigens_only) {
-                    for (const auto ag_no : acmacs::range(chart->number_of_antigens()))
+                    for (const auto ag_no : ag_indexes_to_report)
                         fmt::print("{}\n", acmacs::string::strip(format_antigen(pattern, *chart, ag_no)));
                 }
                 if (antigens_and_sera || opt.sera_only) {
-                    for (const auto sr_no : acmacs::range(chart->number_of_sera()))
+                    for (const auto sr_no : sr_indexes_to_report)
                         fmt::print("{}\n", acmacs::string::strip(format_serum(pattern, *chart, sr_no)));
                 }
             }
