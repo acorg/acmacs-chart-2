@@ -123,8 +123,9 @@ class TiterDistance
 void acmacs::chart::detail::serum_circle_empirical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen, const Layout& layout, const Titers& titers, double fold, acmacs::verbose verbose)
 {
     if (verbose == acmacs::verbose::yes) {
-        fmt::print(stderr, "======================================================================\nSerum circle empirical for SR {}\n", circle_data.serum_no());
-        fmt::print(stderr, "======================================================================\n");
+        AD_INFO("======================================================================");
+        AD_INFO("Serum circle empirical for SR {}  AG {}  homologous titer {}", circle_data.serum_no(), per_antigen.antigen_no, per_antigen.titer);
+        AD_INFO("======================================================================");
     }
 
     if (!layout.point_has_coordinates(circle_data.serum_no() + titers.number_of_antigens())) {
