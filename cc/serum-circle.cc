@@ -397,8 +397,13 @@ acmacs::chart::SerumCoverageIndexes acmacs::chart::serum_coverage(const Titers& 
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::SerumCoverageIndexes acmacs::chart::serum_coverage(const Titers& titers, const PointIndexList& antigens, size_t serum_no, double fold)
+acmacs::chart::SerumCoverageIndexes acmacs::chart::serum_coverage(const Titers& titers, const PointIndexList& antigens, size_t serum_no, const Layout& layout, double column_basis, double fold)
 {
+    const SerumCircle circle_data = serum_circle_empirical(antigens, serum_no, layout, column_basis, titers, fold);
+    if (!circle_data.valid())
+        throw serum_coverage_error(fmt::format("no valid homologous antigen found ({}), antigens tried: {}", circle_data.report_reason(), antigens));
+
+    return serum_coverage(titers, circle_data.per_antigen().front().antigen_no, serum_no, fold);
 }
 
 // ----------------------------------------------------------------------
