@@ -369,6 +369,39 @@ acmacs::chart::SerumCircle acmacs::chart::serum_circle_theoretical(const PointIn
 } // acmacs::chart::serum_circle_theoretical
 
 // ----------------------------------------------------------------------
+
+acmacs::chart::SerumCoverageIndexes acmacs::chart::serum_coverage(const Titers& titers, Titer homologous_titer, size_t serum_no, double fold)
+{
+    if (!homologous_titer.is_regular())
+        throw serum_coverage_error(fmt::format("cannot handle non-regular homologous titer: {}", *homologous_titer));
+    const double titer_threshold = homologous_titer.logged() - fold;
+    if (titer_threshold <= 0)
+        throw serum_coverage_error(fmt::format("homologous titer is too low: {}", *homologous_titer));
+    SerumCoverageIndexes indexes;
+    // AD_DEBUG("titer_threshold {}", titer_threshold);
+    for (size_t ag_no = 0; ag_no < titers.number_of_antigens(); ++ag_no) {
+        const Titer titer = titers.titer(ag_no, serum_no);
+        const double value = titer.is_dont_care() ? -1 : titer.logged_for_column_bases();
+        // AD_DEBUG("{} -> {}", titer, value);
+        if (value >= titer_threshold)
+            indexes.within.insert(ag_no);
+        else if (value >= 0 && value < titer_threshold)
+            indexes.outside.insert(ag_no);
+    }
+    if (indexes.within->empty()) {
+        AD_WARNING("no antigens within 4fold from homologous titer (for serum coverage)");
+        // throw serum_coverage_error("no antigens within 4fold from homologous titer (for serum coverage)"); // BUG? at least homologous antigen must be there!
+    }
+    return indexes;
+}
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::SerumCoverageIndexes acmacs::chart::serum_coverage(const Titers& titers, const PointIndexList& antigens, size_t serum_no, double fold)
+{
+}
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

@@ -34,11 +34,6 @@ namespace acmacs::chart
       public:
         chart_is_read_only(std::string_view msg) : std::runtime_error{fmt::format("chart_is_read_only: ", msg)} {}
     };
-    class serum_coverage_error : public std::runtime_error
-    {
-      public:
-        serum_coverage_error(std::string_view msg) : std::runtime_error{fmt::format("serum_coverage: ", msg)} {}
-    };
 
     enum class find_homologous {
         strict,         // passage must match
@@ -873,11 +868,6 @@ namespace acmacs::chart
             return default_style(aPointNo < ags->size() ? ((*ags)[aPointNo]->reference() ? PointType::ReferenceAntigen : PointType::TestAntigen) : PointType::Serum);
         }
         std::vector<acmacs::PointStyle> default_all_styles() const;
-
-        // aWithin4Fold: indices of antigens within 4fold from homologous titer
-        // aOutside4Fold: indices of antigens with titers against aSerumNo outside 4fold distance from homologous titer
-        void serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithinFold, Indexes& aOutsideFold, double aFold = 2) const; // aFold=2 for 4fold, 3 - for 8fold
-        void serum_coverage(Titer aHomologousTiter, size_t aSerumNo, Indexes& aWithinFold, Indexes& aOutsideFold, double aFold = 2) const; // aFold=2 for 4fold, 3 - for 8fold
 
         void set_homologous(find_homologous options, std::shared_ptr<Sera> aSera = nullptr, acmacs::debug dbg = acmacs::debug::no) const;
 

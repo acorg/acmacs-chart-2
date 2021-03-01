@@ -11,7 +11,7 @@
 
 // ----------------------------------------------------------------------
 
-static void report(std::string_view chart_filename, size_t projection_no, std::string_view json_filename, std::string_view csv_filename, acmacs::verbose verbose);
+static void report(std::string_view chart_filename, size_t serum_no, size_t projection_no, std::string_view json_filename, std::string_view csv_filename, acmacs::verbose verbose);
 
 using namespace acmacs::argv;
 struct Options : public argv
@@ -21,6 +21,7 @@ struct Options : public argv
     option<str>    json{*this, "json", desc{"write json data into file suitable for the ssm report"}};
     option<str>    csv{*this, "csv", desc{"write csv data into file"}};
     option<size_t> projection{*this, "projection", dflt{0UL}};
+    option<size_t> serum_no{*this, 's', "serum", dflt{static_cast<size_t>(-1)}};
     option<bool>   verbose{*this, 'v', "verbose"};
 
     argument<str> chart{*this, arg_name{"chart"}, mandatory};
@@ -31,7 +32,7 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         Options opt(argc, argv);
-        report(opt.chart, opt.projection, opt.json, opt.csv, acmacs::verbose_from(opt.verbose));
+        report(opt.chart, opt.serum_no, opt.projection, opt.json, opt.csv, acmacs::verbose_from(opt.verbose));
     }
     catch (std::exception& err) {
         fmt::print(stderr, "ERROR {}\n", err);
@@ -75,12 +76,12 @@ struct SerumData
     bool valid() const { return !antigens.empty(); }
 };
 
-static std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t projection_no, acmacs::verbose verbose);
+static std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t serum_no, size_t projection_no, acmacs::verbose verbose);
 static void report_text(const acmacs::chart::Chart& chart, const std::vector<SerumData>& sera_data);
 static void report_json(std::ostream& output, const acmacs::chart::Chart& chart, const std::vector<SerumData>& sera_data);
 static void report_csv(std::ostream& output, const std::vector<SerumData>& sera_data);
 
-void report(std::string_view chart_filename, size_t projection_no, std::string_view json_filename, std::string_view csv_filename, acmacs::verbose verbose)
+void report(std::string_view chart_filename, size_t serum_no, size_t projection_no, std::string_view json_filename, std::string_view csv_filename, acmacs::verbose verbose)
 {
     auto chart = acmacs::chart::import_from_file(chart_filename);
     if (chart->number_of_projections() == 0)
@@ -88,7 +89,7 @@ void report(std::string_view chart_filename, size_t projection_no, std::string_v
     if (chart->number_of_projections() <= projection_no)
         throw std::runtime_error("invalid projection number");
     chart->set_homologous(acmacs::chart::find_homologous::all);
-    auto result = collect(*chart, projection_no, verbose);
+    auto result = collect(*chart, serum_no, projection_no, verbose);
     if (verbose == acmacs::verbose::yes)
         std::cerr << "\n\n\n";
 
@@ -103,13 +104,14 @@ void report(std::string_view chart_filename, size_t projection_no, std::string_v
 
 // ----------------------------------------------------------------------
 
-std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t projection_no, acmacs::verbose verbose)
+std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t serum_no, size_t projection_no, acmacs::verbose verbose)
 {
     std::vector<SerumData> result;
     auto antigens = chart.antigens();
     auto sera = chart.sera();
     auto titers = chart.titers();
-    for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
+
+    const auto collect1 = [&](size_t sr_no, auto serum) {
         auto& serum_data = result.emplace_back(sr_no, serum, chart.column_basis(sr_no));
         for (auto ag_no : serum->homologous_antigens()) {
             auto& antigen_data = serum_data.antigens.emplace_back(ag_no, (*antigens)[ag_no], titers->titer(ag_no, sr_no));
@@ -118,6 +120,14 @@ std::vector<SerumData> collect(const acmacs::chart::Chart& chart, size_t project
                 antigen_data.empirical = acmacs::chart::serum_circle_empirical(ag_no, sr_no, chart, projection_no, 2.0, verbose);
             }
         }
+    };
+
+    if (serum_no != static_cast<size_t>(-1)) {
+        collect1(serum_no, sera->at(serum_no));
+    }
+    else {
+        for (auto [sr_no, serum] : acmacs::enumerate(*sera))
+            collect1(sr_no, serum);
     }
     return result;
 

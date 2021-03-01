@@ -184,41 +184,6 @@ acmacs::virus::lineage_t acmacs::chart::Chart::lineage() const
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Chart::serum_coverage(Titer aHomologousTiter, size_t aSerumNo, Indexes& aWithinFold, Indexes& aOutsideFold, double aFold) const
-{
-    if (!aHomologousTiter.is_regular())
-        throw serum_coverage_error(fmt::format("cannot handle non-regular homologous titer: {}", *aHomologousTiter));
-    const double titer_threshold = aHomologousTiter.logged() - aFold;
-    if (titer_threshold <= 0)
-        throw serum_coverage_error(fmt::format("homologous titer is too low: {}", *aHomologousTiter));
-    // AD_DEBUG("titer_threshold {}", titer_threshold);
-    auto tts = titers();
-    for (size_t ag_no = 0; ag_no < number_of_antigens(); ++ag_no) {
-        const Titer titer = tts->titer(ag_no, aSerumNo);
-        const double value = titer.is_dont_care() ? -1 : titer.logged_for_column_bases();
-        // AD_DEBUG("{} -> {}", titer, value);
-        if (value >= titer_threshold)
-            aWithinFold.insert(ag_no);
-        else if (value >= 0 && value < titer_threshold)
-            aOutsideFold.insert(ag_no);
-    }
-    if (aWithinFold->empty()) {
-        AD_WARNING("no antigens within 4fold from homologous titer (for serum coverage)");
-        // throw serum_coverage_error("no antigens within 4fold from homologous titer (for serum coverage)"); // BUG? at least homologous antigen must be there!
-    }
-
-} // acmacs::chart::Chart::serum_coverage
-
-// ----------------------------------------------------------------------
-
-void acmacs::chart::Chart::serum_coverage(size_t aAntigenNo, size_t aSerumNo, Indexes& aWithinFold, Indexes& aOutsideFold, double aFold) const
-{
-    serum_coverage(titers()->titer(aAntigenNo, aSerumNo), aSerumNo, aWithinFold, aOutsideFold, aFold);
-
-} // acmacs::chart::Chart::serum_coverage
-
-// ----------------------------------------------------------------------
-
 void acmacs::chart::Chart::set_homologous(find_homologous options, SeraP aSera, acmacs::debug dbg) const
 {
     if (!aSera)

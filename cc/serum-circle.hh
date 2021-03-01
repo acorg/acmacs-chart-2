@@ -5,6 +5,7 @@
 
 #include "acmacs-base/log.hh"
 #include "acmacs-chart-2/titers.hh"
+#include "acmacs-chart-2/point-index-list.hh"
 
 // ----------------------------------------------------------------------
 
@@ -115,6 +116,43 @@ namespace acmacs::chart
     SerumCircle serum_circle_theoretical(size_t antigen_no, size_t serum_no, double column_basis, const Titers& titers, double fold = 2.0);
     SerumCircle serum_circle_empirical(const PointIndexList& antigens, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold = 2.0, acmacs::verbose verbose = acmacs::verbose::no);
     SerumCircle serum_circle_theoretical(const PointIndexList& antigens, size_t serum_no, double column_basis, const Titers& titers, double fold = 2.0);
+
+    // aWithin4Fold: indices of antigens within 4fold from homologous titer
+        // aOutside4Fold: indices of antigens with titers against aSerumNo outside 4fold distance from homologous titer
+        // aFold: 2 for 4fold, 3 - for 8fold
+        // void serum_coverage(const PointIndexList& antigens, size_t aSerumNo, Indexes& aWithinFold, Indexes& aOutsideFold, double aFold = 2) const;
+
+    // ----------------------------------------------------------------------
+
+    class serum_coverage_error : public std::runtime_error
+    {
+      public:
+        serum_coverage_error(std::string_view msg) : std::runtime_error{fmt::format("serum_coverage: ", msg)} {}
+    };
+
+    struct SerumCoverageIndexes
+    {
+        PointIndexList within;
+        PointIndexList outside;
+        std::optional<size_t> antigen_index;
+        SerumCoverageIndexes& set(size_t ag_no)
+        {
+            antigen_index = ag_no;
+            return *this;
+        }
+    };
+
+    // aWithin4Fold: indices of antigens within 4fold from homologous titer
+    // aOutside4Fold: indices of antigens with titers against aSerumNo outside 4fold distance from homologous titer
+    // aFold: 2 for 4fold, 3 - for 8fold
+
+    SerumCoverageIndexes serum_coverage(const Titers& titers, Titer homologous_titer, size_t serum_no, double fold = 2.0);
+    SerumCoverageIndexes serum_coverage(const Titers& titers, const PointIndexList& antigens, size_t serum_no, double fold = 2.0);
+
+    inline SerumCoverageIndexes serum_coverage(const Titers& titers, size_t antigen_no, size_t serum_no, double fold = 2.0)
+    {
+        return serum_coverage(titers, titers.titer(antigen_no, serum_no), serum_no, fold).set(antigen_no);
+    }
 
 } // namespace acmacs::chart
 
