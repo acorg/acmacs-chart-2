@@ -13,6 +13,7 @@ TARGETS = \
   $(DIST)/chart-table \
   $(DIST)/chart-plot-spec \
   $(DIST)/chart-layout \
+  $(DIST)/chart-distances-between-all-points \
   $(DIST)/chart-convert \
   $(DIST)/chart-txt-to-ace \
   $(DIST)/chart-modify-projection \
