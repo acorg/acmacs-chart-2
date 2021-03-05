@@ -1,0 +1,598 @@
+#! /usr/bin/env python3
+
+import sys, os, json, re, math, datetime, lzma, pprint, subprocess
+import logging; module_logger = logging.getLogger(__name__)
+
+# ----------------------------------------------------------------------
+
+def main(input_file, output_file, prn_read, prn_remove_concentration, warnings):
+    lines = [line.strip() for line in open(input_file)] #  if line and line[0] in ["-", "|"]]
+    lab = None
+    subtype = None
+    assay = None
+    num_antigens = 0
+    num_sera = 0
+    ace = {
+        "  version": "acmacs-ace-v1",
+        "?created": f"imported from {os.path.basename(input_file)} by {os.path.basename(sys.argv[0])} on {datetime.date.today()}",
+        "c": {
+            "i": {}, "a": [], "s": [], "t": {"l": []}
+            }
+    }
+    for line in lines:
+        if line and line[0] == '-':
+            field, value = line[1:].strip().split(":")
+            field = field.strip().lower()
+            value = value.strip()
+            if field == "lab":
+                ace["c"]["i"]["l"] = value
+                lab = value.upper()
+            elif field == "date":
+                ace["c"]["i"]["D"] = value.replace("-", "")
+            elif field == "subtype":
+                ace["c"]["i"]["V"] = value
+                subtype = value.upper()
+            elif field == "assay":
+                ace["c"]["i"]["A"] = value
+                assay = value.upper()
+            elif field == "rbc":
+                ace["c"]["i"]["r"] = value
+            elif field == "lineage":
+                ace["c"]["i"]["s"] = value
+            elif field == "error":
+                raise RuntimeError(f"> ERROR: {value}")
+            else:
+                raise RuntimeError(f"Unrecognized meta field name: \"{field}\"")
+
+    table_rows = [no for no, line in enumerate(lines, start=1) if line and line[0] == "|"]
+    rows = [[cell.strip() for cell in line[1:-1].split("|")] for line in lines if line and line[0] == "|"]
+    if not rows:
+        raise RuntimeError("no table present")
+    # pprint.pprint(rows)
+    ace_antigen_fields = {}
+    serum_columns = []
+    for no, cell in enumerate(rows[0][1:], start=1):
+        if not cell:
+            serum_columns.append(no)
+        else:
+            k, v = antigen_field(no, cell.lower())
+            if k:
+                ace_antigen_fields[k] = v
+    ace_serum_fields = {}
+    antigen_rows = []
+    for no, row in enumerate(rows[1:], start=1):
+        cell = row[0]
+        if not cell:
+            antigen_rows.append(no)
+        else:
+            k, v = serum_field(no, cell.lower())
+            if k:
+                ace_serum_fields[k] = v
+    # print(f"antigens: {ace_antigen_fields} {len(antigen_rows)} {antigen_rows}")
+    # print(f"sera: {ace_serum_fields} {len(serum_columns)} {serum_columns}")
+    # pprint.pprint(ace_antigen_fields)
+
+    # Lineage (sera)
+    for column_no in serum_columns:
+        entry = {}
+        for field, row_no in ace_serum_fields.items():
+            value = make_antigen_serum_field(field, rows[row_no][column_no], lab)
+            if value is not None:
+                entry[field] = value
+        if ace["c"]["i"].get("V") == "B" and ace["c"]["i"].get("s"): # lineage
+            entry["L"] = ace["c"]["i"]["s"][0]
+        if prn_remove_concentration:
+            remove_concentration(entry)
+        ace["c"]["s"].append(entry)
+
+    # Lineage (antigens) and Titers
+    for row_no in antigen_rows:
+        entry = {}
+        for field, column_no in ace_antigen_fields.items():
+            value = make_antigen_serum_field(field, rows[row_no][column_no], lab)
+            if value is not None:
+                entry[field] = value
+        if ace["c"]["i"].get("V") == "B" and ace["c"]["i"].get("s"): # lineage
+            entry["L"] = ace["c"]["i"]["s"][0]
+        if prn_remove_concentration:
+            remove_concentration(entry)
+        ace["c"]["a"].append(entry)
+        ace["c"]["t"]["l"].append([check_titer(rows[row_no][column_no], input_file, table_rows[row_no], column_no, prn_read=prn_read, lab=lab, subtype=subtype, assay=assay, warn_if_not_normal=warnings) for column_no in serum_columns])
+
+    detect_reference(ace["c"]["a"], ace["c"]["s"])
+    if ace["c"]["i"].get("l") == "MELB":
+        fix_melb_serum_ids(ace["c"]["s"])
+
+    # print(json_dumps(ace, indent=2))
+    with open(output_file, "wb") as output:
+        output.write(lzma.compress(json_dumps(ace, indent=2).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
+
+    # subprocess.check_call(["chart-fix-names-passages", output_file, output_file]) # called by whocc-xlsx-torg-ace
+
+# ----------------------------------------------------------------------
+
+def antigen_field(no, cell):
+    if cell == "name":
+        return "N", no
+    elif cell == "date":
+        return "D", no
+    elif cell == "passage":
+        return "P", no
+    elif cell == "reassortant":
+        return "R", no
+    elif cell == "lab_id":
+        return "l", no
+    elif cell == "annotation":
+        return "a", no
+    elif cell == "clade":
+        return "c", no
+    elif cell[0] == "#":
+        return None, no
+    else:
+        raise RuntimeError(f"Unrecognized antigen (first row, column {no}) field name: \"{cell}\"")
+
+# ----------------------------------------------------------------------
+
+sReDelim = re.compile(r"^[\-\+]+$")
+
+def serum_field(no, cell):
+    if cell == "name":
+        return "N", no
+    elif cell == "passage":
+        return "P", no
+    elif cell == "reassortant":
+        return "R", no
+    elif cell == "serum_id":
+        return "I", no
+    elif cell == "annotation":
+        return "a", no
+    elif cell == "species":
+        return "s", no
+    elif cell[0] == "#" or sReDelim.match(cell):
+        return None, no
+    else:
+        raise RuntimeError(f"Unrecognized serum (first column, row {no}) field name: \"{cell}\"")
+
+# ----------------------------------------------------------------------
+
+def make_antigen_serum_field(key, value, lab):
+    if key in ["l", "a"]:
+        if value:
+            if key == "l" and not value.startswith(lab):
+                value = f"{lab}#{value}"
+            return [value]
+        else:
+            return None
+    elif key == "D":
+        if value:
+            return value
+        else:
+            return None
+    else:
+        return value
+
+# ----------------------------------------------------------------------
+
+sReTiter = re.compile(r"^([><]?\d+|\*)$", re.I)
+sNormalTiters = ["10", "20", "40", "80", "160", "320", "640", "1280", "2560", "5120", "10240",
+                 "<10", "<20", "<40", "<80",
+                 ">1280", ">2560", ">5120", ">10240",
+                 "*"
+                 ]
+
+def check_titer(titer, filename, row_no, column_no, lab, subtype, assay, prn_read=False, warn_if_not_normal=True, convert_prn_low_read=False, prn_titer=None):
+    if sReTiter.match(titer):
+        if prn_read:
+             raise RuntimeError(f"PRN Read titer is not available: \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}")
+        if titer not in sNormalTiters and warn_if_not_normal:
+            print(f">> WARNING: unusual titer \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}", file=sys.stderr)
+        if convert_prn_low_read and titer[0] not in ["<", ">", "*"] and int(titer) < 10:
+            titer = "<10"
+        return titer
+    elif titer == "<" and lab == "CRICK" and assay == "PRN":
+        if convert_prn_low_read:
+            return "<10"
+        elif prn_titer:
+            if prn_titer == "<" or int(prn_titer) < 10:
+                return "<10"
+            else:
+                prn_log = math.log2(int(prn_titer) / 10.0)
+                if math.ceil(prn_log) == prn_log:
+                    prn_log += 1
+                else:
+                    prn_log = math.ceil(prn_log)
+                module_logger.debug(f"{titer} {prn_titer} -> {prn_log} -> {int(math.pow(2, prn_log) * 10)}")
+                return "<" + str(int(math.pow(2, prn_log) * 10))
+        else:
+            return "<40"        # unclear
+    elif "/" in titer:
+        hi_titer, prn_titer = (tit.strip() for tit in titer.split("/"))
+        if prn_read:
+            return check_titer(prn_titer, filename, row_no, column_no, lab=lab, subtype=subtype, assay=assay, warn_if_not_normal=False, convert_prn_low_read=True)
+        else:
+            return check_titer(hi_titer, filename, row_no, column_no, lab=lab, subtype=subtype, assay=assay, prn_titer=prn_titer, warn_if_not_normal=warn_if_not_normal)
+    else:
+        raise RuntimeError(f"Unrecognized titer \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}")
+
+# ----------------------------------------------------------------------
+
+# Crick PRN tables have concentration in passage or name, e.g. (10-4), it is perhaps property of the assay and not the property (annotation) of an antigen/serum
+# see Derek's message with subject "Crick H3 VN tables" date 2018-02-14 15:20
+sReConc = re.compile(r"\s+\(?10-\d\)?$")
+
+def remove_concentration(entry):
+    entry["N"] = sReConc.sub("", entry["N"])
+    entry["P"] = sReConc.sub("", entry["P"])
+
+# ----------------------------------------------------------------------
+
+def fix_name_for_comparison(name):
+    fields = name.upper().split("/")
+    try:
+        year = int(fields[-1])
+    except ValueError:
+        year = None
+    if year:
+        if year < 50:
+            year += 2000
+        elif year < 100:
+            year += 1900
+        fields[-1] = str(year)
+    return "/".join(fields)
+
+def detect_reference(antigens, sera):
+    # print("\n".join(fix_name_for_comparison(antigen["N"]) for antigen in antigens), "\n\n", "\n".join(fix_name_for_comparison(serum["N"]) for serum in sera), sep="")
+    for antigen in antigens:
+        if any(fix_name_for_comparison(serum["N"]) == fix_name_for_comparison(antigen["N"]) for serum in sera):
+            antigen["S"] = "R"
+
+# ----------------------------------------------------------------------
+
+sMelbSerumIds = {
+        # H3
+        "F3644": "F3644-13D",
+        "F3814": "F3814-14D",
+        "F4294": "F4294-13D",
+        "F4295": "F4295-13D",
+        "F4296": "F4296-13D",
+        "F4339": "F4339-14D",
+        "F4339-13D": "F4339-14D",
+        "F4369": "F4369-13D",
+        "F4376": "F4376-14D",
+        "F4377": "F4377-14D",
+        "F4378": "F4378-14D",
+        "F4379": "F4379-14D",
+        "F4381": "F4381-14D",
+        "F4434": "F4434-14D",
+        "A8831-14D": "A8831",
+        "A8839-14D": "A8839",
+        "A8859-14D": "A8859",
+        "A8888-14D": "A8888",
+        "A8857-14D": "A8857",
+        "A8889-14D": "A8889",
+
+        # H1pdm
+        "F2771": "F2771-13D",
+        "F3168": "F3168-14D",
+        "F3421": "F3421-21D",
+        "F3492": "F3492-14D",
+        "F3520": "F3520-14D",
+        "F3640": "F3640-13D",
+        "F3641": "F3641-13D",
+        "F3647": "F3647-13D",
+        "F3702": "F3702-12D",
+        "F3809": "F3809-14D",
+        "F4263": "F4263-13D",
+        "F4267": "F4267",
+
+        # B/Vic
+        "F0069": "F0069-13D",
+        "F0099": "F0099-31D",
+        "F0176": "F0176-33D",
+        "F0183": "F0183-33D",
+        "F0207": "F0207-14D",
+        "F0213": "F0213-14D",
+        "F0234": "F0234-14D",
+        "F0256": "F0256-13D",
+        "F0257": "F0257-13D",
+        "F0262": "F0262-28D",
+        "F0263": "F0263-11D",
+        "F0264": "F0264-14D",
+        "F0266": "F0266-14D",
+        "F0267": "F0267-14D",
+        "F0270": "F0270-14D",
+        "F0281": "F0281-13D",
+        "F0282": "F0282-14D",
+        "F0304": "F0304-13D",
+        "F0305": "F0305-13D",
+        "F0320": "F0320-13D",
+        "F0323": "F0323-13D",
+        "F0355": "F0355-13D",
+        "F0356": "F0356-13D",
+        "F0357": "F0357-13D",
+        "F0358": "F0358-12D",
+        "F0359": "F0359-12D",
+        "F0360": "F0360-14D",
+        "F0361": "F0361-14D",
+        "F0368": "F0368-14D",
+        "F0387": "F0387-14D",
+        "F0404": "F0404-13D",
+        "F0405": "F0405-13D",
+        "F0409": "F0409-26D",
+        "F0422": "F0422-28D",
+        "F0423": "F0423-14D",
+        "F0424": "F0424-09D",
+        "F0428": "F0428-20D",
+        "F0428": "F0428-27D",
+        "F0429": "F0429-20D",
+        "F0429": "F0429-25D",
+        "F0433": "F0433-25D",
+        "F0446": "F0446-29D",
+        "F0449": "F0449-24D",
+        "F0453": "F0453-18D",
+        "F0454": "F0454-18D",
+        "F0455": "F0455-18D",
+        "F0456": "F0456-18D",
+        "F0474": "F0474-29D",
+        "F0483": "F0483-20D",
+        "F0575": "F0575-27D",
+        "F0585": "F0585-28D",
+        "F0604": "F0604-26D",
+        "F0622": "F0622-28D",
+        "F0628": "F0628-13D",
+        "F0629": "F0629-28D",
+        "F0640": "F0640-29D",
+        "F0644": "F0644-22D",
+        "F0648": "F0648-17D",
+        "F0649": "F0649-17D",
+        "F0650": "F0650-12D",
+        "F0652": "F0652-12D",
+        "F0653": "F0653-21D",
+        "F0658": "F0658-16D",
+        "F0658": "F0658-21D",
+        "F0659": "F0659-14D",
+        "F0660": "F0660-21D",
+        "F0661": "F0661-21D",
+        "F0662": "F0662-15D",
+        "F0664": "F0664-21D",
+        "F0666": "F0666-21D",
+        "F0668": "F0668-21D",
+        "F0671": "F0671-21D",
+        "F0674": "F0674-21D",
+        "F0675": "F0675-13D",
+        "F0675": "F0675-31D",
+        "F0676": "F0676-13D",
+        "F0677": "F0677-21D",
+        "F0678": "F0678-21D",
+        "F0679": "F0679-21D",
+        "F0680": "F0680-13D",
+        "F0681": "F0681-13D",
+        "F0682": "F0682-21D",
+        "F0683": "F0683-21D",
+        "F0684": "F0684-21D",
+        "F0685": "F0685-21D",
+        "F0686": "F0686-21D",
+        "F0687": "F0687-21D",
+        "F0688": "F0688-21D",
+        "F0689": "F0689-20D",
+        "F0690": "F0690-20D",
+        "F0691": "F0691-20D",
+        "F0693": "F0693-20D",
+        "F0694": "F0694-20D",
+        "F0695": "F0695-21D",
+        "F0696": "F0696-21D",
+        "F0697": "F0697-20D",
+        "F0698": "F0698-20D",
+        "F0702": "F0702-13D",
+        "F0705": "F0705-21D",
+        "F0748": "F0748-21D",
+        "F0751": "F0751-22D",
+        "F0752": "F0752-22D",
+        "F0753": "F0753-22D",
+        "F0884": "F0884-21D",
+        "F0899": "F0899-21D",
+        "F0982": "F0982-21D",
+        "F0997": "F0997-21D",
+        "F1096": "F1096-21D",
+        "F1145": "F1145-13D",
+        "F1149": "F1149-19D",
+        "F1150": "F1150-19D",
+        "F1151": "F1151-19D",
+        "F1171": "F1171-21D",
+        "F1173": "F1173-21D",
+        "F1175": "F1175-21D",
+        "F1233": "F1233-19D",
+        "F1235": "F1235-19D",
+        "F1236": "F1236-19D",
+        "F1323": "F1323-19D",
+        "F1325": "F1325-21D",
+        "F1363": "F1363-21D",
+        "F1364": "F1364-21D",
+        "F1640": "F1640-21D",
+        "F1654": "F1654-21D",
+        "F1658": "F1658-21D",
+        "F1659": "F1659-21D",
+        "F1687": "F1687-21D",
+        "F1880": "F1880-19D",
+        "F1881": "F1881-21D",
+        "F1883": "F1883-21D",
+        "F1900": "F1900-21D",
+        "F1901": "F1901-21D",
+        "F1902": "F1902-21D",
+        "F1904": "F1904-21D",
+        "F2245": "F2245-21D",
+        "F2253": "F2253-22D",
+        "F2254": "F2254-21D",
+        "F2256": "F2256-22D",
+        "F2258": "F2258-22D",
+        "F2259": "F2259-21D",
+        "F2312": "F2312-21D",
+        "F2417": "F2417-19D",
+        "F2424": "F2424-21D",
+        "F2425": "F2425-21D",
+        "F2428": "F2428-21D",
+        "F2504": "F2504-21D",
+        "F2506": "F2506-21D",
+        "F2569": "F2569-21D",
+        "F2570": "F2570-21D",
+        "F2575": "F2575-21D",
+        "F2610": "F2610-21D",
+        "F2650": "F2650-21D",
+        "F2767": "F2767-21D",
+        "F2769": "F2769-21D",
+        "F2893": "F2893-21D",
+        "F2898": "F2898-21D",
+        "F3060": "F3060-13D",
+        "F3061": "F3061-21D",
+        "F3064": "F3064-21D",
+        "F3067": "F3067-21D",
+        "F3128": "F3128-20D",
+        "F3184": "F3184-21D",
+        "F3185": "F3185-21D",
+        "F3186": "F3186-21D",
+        "F3187": "F3187-21D",
+        "F3188": "F3188-21D",
+        "F3191": "F3191-21D",
+        "F3227": "F3227-21D",
+        "F3228": "F3228-21D",
+        "F3273": "F3273-21D",
+        "F3303": "F3303-21D",
+        "F3308": "F3308-21D",
+        "F3365": "F3365-21D",
+        "F3366": "F3366-21D",
+        "F3413": "F3413-21D",
+        "F3524": "F3524-20D",
+        "F3525": "F3525-20D",
+        "F3700": "F3700-18D",
+        "F3810": "F3810-21D",
+        "F4067": "F4067-21D",
+        "F4159": "F4159-20D",
+        "F4398": "F4398-21D",
+        "F4431": "F4431-21D",
+        "F4432": "F4432-21D",
+        "F4440": "F4440-21D",
+        "F4442": "F4442-21D",
+        "F4443": "F4443-21D",
+        "F5545": "F5545-21D",
+        "R0396": "R0396-32D",
+        "R0399": "R0399-32D",
+        "R0560": "R0560-32D",
+        "R0588": "R0588-32D",
+        "R0602": "R0602-32D",
+        "R0604": "R0604-32D",
+        "R0607": "R0607-32D",
+        "R0616": "R0616-32D",
+        "R0943": "R0943-17D",
+        "R0983": "R0983-17D",
+        "R0984": "R0984-17D",
+
+        # B/Yam
+        "F3184": "F3184-21D",
+        "F3186": "F3186-21D",
+        "F3187": "F3187-21D",
+        "F3524": "F3524-20D",
+        "F3645": "F3645-21D",
+        "F4213": "F4213-20D",
+        "F4215": "F4215-20D",
+        "F4375": "F4375-21D",
+        "F4398": "F4398-21D",
+        "F4431": "F4431-21D",
+    }
+
+def fix_melb_serum_ids(sera):
+    for serum in sera:
+        serum["I"] = sMelbSerumIds.get(serum["I"], serum["I"])
+
+# ----------------------------------------------------------------------
+
+def json_dumps(data, indent=2, indent_increment=None, toplevel=True, one_line_max_width=200, object_fields_sorting_key=None):
+    """More compact dumper with wide lines."""
+
+    def simple(d):
+        r = True
+        if isinstance(d, dict):
+            r = not any(isinstance(v, (list, tuple, set, dict)) for v in d.values()) and len(d) < 17
+        elif isinstance(d, (tuple, list)):
+            r = not any(isinstance(v, (list, tuple, set, dict)) for v in d)
+        return r
+
+    def end(symbol, indent):
+        if indent > indent_increment:
+            r = "{:{}s}{}".format("", indent - indent_increment, symbol)
+        else:
+            r = symbol
+        return r
+
+    def make_one_line(data):
+        if isinstance(data, set):
+            s = json.dumps(sorted(data, key=object_fields_sorting_key))
+        elif isinstance(data, dict):
+            s = "{"
+            for no, k in enumerate(sorted(data, key=object_fields_sorting_key), start=1):
+                comma = ", " if no < len(data) else ""
+                s += "{}: {}{}".format(json.dumps(k), json_dumps(data[k], indent=0, indent_increment=None, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma)
+            s += "}"
+        else:
+            s = json.dumps(data, sort_keys=True)
+        return s
+
+    def make_object(data):
+        if toplevel:
+            r = ["{{{:<{}s}\"_\":\"-*- js-indent-level: {} -*-\",".format("", indent_increment - 1, indent_increment)]
+        else:
+            r = ["{"]
+        for no, k in enumerate(sorted(data, key=object_fields_sorting_key), start=1):
+            comma = "," if no < len(data) else ""
+            r.append("{:{}s}{}: {}{}".format("", indent, json.dumps(k), json_dumps(data[k], indent + indent_increment, indent_increment, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma))
+        r.append(end("}", indent))
+        return r
+
+    # --------------------------------------------------
+
+    if indent_increment is None:
+        indent_increment = indent
+    if indent == 0 or simple(data):
+        s = make_one_line(data)
+    else:
+        r = []
+        if isinstance(data, dict):
+            r.extend(make_object(data))
+        elif isinstance(data, (tuple, list)):
+            r.append("[")
+            for no, v in enumerate(data, start=1):
+                comma = "," if no < len(data) else ""
+                r.append("{:{}s}{}{}".format("", indent, json_dumps(v, indent + indent_increment, indent_increment, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma))
+            r.append(end("]", indent))
+        else:
+            raise ValueError("Cannot serialize: {!r}".format(data))
+        s = "\n".join(r)
+        if "\n" in s and len(s) < one_line_max_width:
+            s = make_one_line(data)
+    return s
+
+# ----------------------------------------------------------------------
+
+import argparse, traceback
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO, help='Enable debugging output.')
+    parser.add_argument('--prn-read', action='store_true', dest='prn_read', default=False, help='Export prn-read titers (Crick H3 PRN) into ace.')
+    parser.add_argument('--prn-remove-concentration', action='store_true', dest='prn_remove_concentration', default=False, help='Export prn-read titers (Crick H3 PRN) into ace.')
+    parser.add_argument('-W', "--no-warnings", action='store_false', dest='warnings', default=True, help='Do not print warnings.')
+
+    parser.add_argument("input", nargs=1)
+    parser.add_argument("output", nargs=1)
+
+    args = parser.parse_args()
+    logging.basicConfig(level=args.loglevel, format="%(levelname)s %(asctime)s: %(message)s")
+    exit_code = main(args.input[0], args.output[0], prn_read=args.prn_read, prn_remove_concentration=args.prn_remove_concentration, warnings=args.warnings)
+except Exception as err:
+    logging.error('\n    {}\n> {}'.format(traceback.format_exc().strip().replace("\n", "\n    "), err))
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
+### Local Variables:
+### eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
+### End:
