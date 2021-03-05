@@ -1,4 +1,4 @@
-# Time-stamp: <2021-01-06 10:32:56 eu>
+# Time-stamp: <2021-03-05 14:52:52 eu>
 
 * Description
 
@@ -60,7 +60,7 @@ Available field names (case insensitive):
   - species
 
 * Example
-This file can be parsed using chart-org-table-to-ace
+This file can be parsed using chart-torg-table-to-ace
 
 - Lab: CDC
 - Assay: HI
