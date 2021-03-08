@@ -23,6 +23,7 @@ namespace acmacs::chart
             {
                 fmt::memory_buffer output;
                 for (const auto no0 : indexes) {
+                    fmt::format_to(output, "{}", ag_sr->at(no0)->format(format));
                 }
                 return fmt::to_string(output);
             }

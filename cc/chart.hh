@@ -398,6 +398,8 @@ namespace acmacs::chart
         virtual bool reference() const = 0;
         virtual Continent continent() const { return {}; }
 
+        std::string format(std::string_view pattern) const;
+
         std::string full_name() const { return acmacs::string::join(acmacs::string::join_space, name(), string::join(acmacs::string::join_space, annotations()), reassortant(), passage()); }
         std::string full_name_without_passage() const { return acmacs::string::join(acmacs::string::join_space, name(), string::join(acmacs::string::join_space, annotations()), reassortant()); }
         std::string full_name_with_passage() const { return full_name(); }
@@ -456,6 +458,8 @@ namespace acmacs::chart
         virtual SerumSpecies serum_species() const = 0;
         virtual PointIndexList homologous_antigens() const = 0;
         virtual void set_homologous(const std::vector<size_t>&, acmacs::debug) const {}
+
+        std::string format(std::string_view pattern) const;
 
         std::string full_name() const { return acmacs::string::join(acmacs::string::join_space, name(), string::join(acmacs::string::join_space, annotations()), reassortant(), serum_id()); }
         std::string full_name_without_passage() const { return full_name(); }
