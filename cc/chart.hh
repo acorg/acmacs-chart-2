@@ -3,6 +3,7 @@
 #include <memory>
 #include <cmath>
 #include <optional>
+#include <type_traits>
 
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/range.hh"
@@ -12,7 +13,9 @@
 #include "acmacs-base/log.hh"
 #include "acmacs-base/lab.hh"
 #include "acmacs-base/iterator.hh"
+#include "acmacs-base/regex.hh"
 #include "acmacs-virus/virus-name.hh"
+#include "locationdb/locdb.hh"
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/optimize.hh"
@@ -495,21 +498,220 @@ namespace acmacs::chart
 
     using duplicates_t = std::vector<std::vector<size_t>>;
 
-    class Antigens
+    template <typename AgSr> class AntigensSera
     {
       public:
-        virtual ~Antigens() = default;
-        Antigens() = default;
-        Antigens(const Antigens&) = delete;
+        virtual ~AntigensSera() = default;
+        AntigensSera() = default;
+        AntigensSera(const AntigensSera&) = delete;
 
         virtual size_t size() const = 0;
-        virtual std::shared_ptr<Antigen> operator[](size_t aIndex) const = 0;
-        std::shared_ptr<Antigen> at(size_t aIndex) const { return operator[](aIndex); }
-        using iterator = acmacs::iterator<Antigens, std::shared_ptr<Antigen>>;
+        virtual std::shared_ptr<AgSr> operator[](size_t aIndex) const = 0;
+        std::shared_ptr<AgSr> at(size_t aIndex) const { return operator[](aIndex); }
+
+        using iterator = acmacs::iterator<AntigensSera<AgSr>, std::shared_ptr<AgSr>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
 
         Indexes all_indexes() const { return Indexes{acmacs::filled_with_indexes(size())}; }
+
+        // call func for each antigen and select ag/sr if func returns true
+        template <typename F> Indexes indexes(F&& func) const { return make_indexes(std::forward<F>(func)); }
+
+        void filter_found_in(Indexes& aIndexes, const AntigensSera<AgSr>& aNother) const
+        {
+            remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); });
+        }
+        void filter_not_found_in(Indexes& aIndexes, const AntigensSera<AgSr>& aNother) const
+        {
+            remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); });
+        }
+
+        Indexes reassortant_indexes() const
+        {
+            return make_indexes([](const AgSr& ag) { return !ag.reassortant().empty(); });
+        }
+        void filter_reassortant(Indexes& aIndexes) const
+        {
+            remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); });
+        }
+
+        void filter_egg(Indexes& aIndexes, reassortant_as_egg rae = reassortant_as_egg::yes) const
+        {
+            remove(aIndexes, [rae](const auto& entry) -> bool { return !entry.is_egg(rae); });
+        }
+        void filter_cell(Indexes& aIndexes) const
+        {
+            remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_cell(); });
+        }
+        void filter_passage(Indexes& aIndexes, std::string_view passage) const
+        {
+            remove(aIndexes, [passage](const auto& entry) -> bool { return entry.passage().find(passage) == std::string::npos; });
+        }
+        void filter_passage(Indexes& aIndexes, const std::regex& passage) const
+        {
+            remove(aIndexes, [&passage](const auto& entry) -> bool { return !entry.passage().search(passage); });
+        }
+
+        void filter_lineage(Indexes& aIndexes, BLineage lineage) const
+        {
+            remove(aIndexes, [lineage](const auto& entry) -> bool { return entry.lineage() != lineage; });
+        }
+
+        void filter_country(Indexes& aIndexes, std::string_view aCountry) const
+        {
+            remove(aIndexes, [aCountry](const auto& entry) {
+                try {
+                    return acmacs::locationdb::get().country(acmacs::virus::location(entry.name())) != aCountry;
+                }
+                catch (std::exception&) {
+                    return true;
+                }
+            });
+        }
+
+        void filter_continent(Indexes& aIndexes, std::string_view aContinent) const
+        {
+            remove(aIndexes, [aContinent](const auto& entry) {
+                try {
+                    return acmacs::locationdb::get().continent(acmacs::virus::location(entry.name())) != aContinent;
+                }
+                catch (std::exception&) {
+                    return true;
+                }
+            });
+        }
+
+        void filter_out_distinct(Indexes& aIndexes) const
+        {
+            remove(aIndexes, [&](const auto& entry) -> bool { return entry.annotations().distinct(); });
+        }
+
+        template <typename F> void remove(Indexes& aIndexes, F&& aFilter) const
+        {
+            aIndexes.get().erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
+        }
+
+        // if aName starts with ~, then search by regex in full name
+        virtual bool name_matches(size_t index, std::string_view aName) const
+        {
+            if (!aName.empty() && aName[0] == '~') {
+                const std::regex re{std::next(std::begin(aName), 1), std::end(aName), acmacs::regex::icase};
+                return std::regex_search(at(index)->full_name(), re);
+            }
+            else {
+                const auto name = at(index)->name();
+                if (name == acmacs::virus::name_t{aName})
+                    return true;
+                else if (aName.size() > 2 && name.size() > 2) {
+                    if ((aName[0] == 'A' && aName[1] == '/' && name[0] == 'A' && name[1] == '(' && name.find(")/") != std::string::npos) || (aName[0] == 'B' && aName[1] == '/'))
+                        return name == acmacs::virus::name_t{acmacs::string::concat(name->substr(0, name.find('/')), aName.substr(1))};
+                    else if (aName[1] != '/' && aName[1] != '(')
+                        return name == acmacs::virus::name_t{acmacs::string::concat(name->substr(0, name.find('/') + 1), aName)};
+                }
+                else
+                    return false;
+            }
+            return false; // bug in clang-10?
+        }
+
+        virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const
+        {
+            if (const auto found = std::find_if(begin(), end(), [aFullName](const auto& antigen) -> bool { return antigen->full_name() == aFullName; }); found == end())
+                return std::nullopt;
+            else
+                return found.index();
+        }
+
+        // if aName starts with ~, then search by regex in full name
+        virtual Indexes find_by_name(std::string_view aName) const
+        {
+            if (!aName.empty() && aName[0] == '~')
+                return find_by_name(std::regex{std::next(std::begin(aName), 1), std::end(aName), acmacs::regex::icase});
+
+            auto find = [this](auto name) {
+                Indexes indexes;
+                for (auto iter = begin(); iter != end(); ++iter) {
+                    if ((*iter)->name() == acmacs::virus::name_t{name})
+                        indexes.insert(iter.index());
+                }
+                return indexes;
+            };
+
+            const auto name{::string::upper(aName)};
+            auto indexes = find(name);
+            if (indexes->empty() && name.size() > 2) {
+                if (const auto first_name = (*begin())->name(); first_name.size() > 2) {
+                    // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix (for A and B)
+                    if ((name[0] == 'A' && name[1] == '/' && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos) || (name[0] == 'B' && name[1] == '/'))
+                        indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/')), name.substr(1)));
+                    else if (name[1] != '/' && name[1] != '(')
+                        indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/') + 1), name));
+                }
+            }
+            return indexes;
+        }
+
+        // regex search in full name
+        virtual Indexes find_by_name(const std::regex& re_name) const
+        {
+            Indexes indexes;
+            for (auto iter = begin(); iter != end(); ++iter) {
+                if (std::regex_search((*iter)->full_name(), re_name))
+                    indexes.insert(iter.index());
+            }
+            return indexes;
+        }
+
+        duplicates_t find_duplicates() const
+        {
+            std::map<std::string, std::vector<size_t>> designations_to_indexes;
+            for (size_t index = 0; index < size(); ++index) {
+                auto [pos, inserted] = designations_to_indexes.insert({at(index)->designation(), {}});
+                pos->second.push_back(index);
+            }
+
+            acmacs::chart::duplicates_t result;
+            for (auto [designation, indexes] : designations_to_indexes) {
+                if (indexes.size() > 1 && designation.find(" DISTINCT") == std::string::npos) {
+                    result.push_back(indexes);
+                }
+            }
+            return result;
+        }
+
+      protected:
+        template <typename F> Indexes make_indexes(F&& test) const
+        {
+            const auto call = [&test](size_t no, const std::shared_ptr<AgSr>& ptr) -> bool {
+                if constexpr (std::is_invocable_v<F, const AgSr&>)
+                    return test(*ptr);
+                else if constexpr (std::is_invocable_v<F, size_t, const AgSr&>)
+                    return test(no, *ptr);
+                else if constexpr (std::is_invocable_v<F, const std::shared_ptr<AgSr>&>)
+                    return test(ptr);
+                else if constexpr (std::is_invocable_v<F, size_t, const std::shared_ptr<AgSr>&>)
+                    return test(no, ptr);
+                else
+                    static_assert(std::is_invocable_v<F, void, int>, "unsupported filter function signature");
+            };
+
+            Indexes result;
+            for (size_t no = 0; no < size(); ++no) {
+                if (call(no, at(no)))
+                    result.insert(no);
+            }
+            return result;
+        }
+    };
+
+    // ----------------------------------------------------------------------
+
+    class Antigens : public AntigensSera<Antigen>
+    {
+      public:
+        using AntigensSera<Antigen>::AntigensSera;
+
         Indexes reference_indexes() const
         {
             return make_indexes([](const Antigen& ag) { return ag.reference(); });
@@ -522,10 +724,6 @@ namespace acmacs::chart
         {
             return make_indexes([](const Antigen& ag) { return ag.passage().is_egg() || !ag.reassortant().empty(); });
         }
-        Indexes reassortant_indexes() const
-        {
-            return make_indexes([](const Antigen& ag) { return !ag.reassortant().empty(); });
-        }
 
         void filter_reference(Indexes& aIndexes) const
         {
@@ -536,32 +734,6 @@ namespace acmacs::chart
             remove(aIndexes, [](const auto& entry) -> bool { return entry.reference(); });
         }
 
-        void filter_egg(Indexes& aIndexes, reassortant_as_egg rae = reassortant_as_egg::yes) const
-        {
-            remove(aIndexes, [rae](const auto& entry) -> bool { return !entry.is_egg(rae); });
-        }
-        void filter_cell(Indexes& aIndexes) const
-        {
-            remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_cell(); });
-        }
-        void filter_reassortant(Indexes& aIndexes) const
-        {
-            remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); });
-        }
-        void filter_passage(Indexes& aIndexes, std::string_view passage) const
-        {
-            remove(aIndexes, [passage](const auto& entry) -> bool { return entry.passage().find(passage) == std::string::npos; });
-        }
-        void filter_passage(Indexes& aIndexes, const std::regex& passage) const
-        {
-            remove(aIndexes, [&passage](const auto& entry) -> bool { return !entry.passage().search(passage); });
-        }
-
-        void filter_lineage(Indexes& aIndexes, BLineage lineage) const
-        {
-            remove(aIndexes, [lineage](const auto& entry) -> bool { return entry.lineage() != lineage; });
-        }
-
         void filter_date_range(Indexes& aIndexes, std::string_view first_date, std::string_view after_last_date) const
         {
             remove(aIndexes, [first_date, after_last_date](const auto& entry) { return !entry.date().within_range(first_date, after_last_date); });
@@ -570,68 +742,19 @@ namespace acmacs::chart
         {
             remove(aIndexes, [first_date, after_last_date](const auto& entry) { return entry.date().within_range(first_date, after_last_date); });
         }
-        void filter_country(Indexes& aIndexes, std::string_view aCountry) const;
-        void filter_continent(Indexes& aIndexes, std::string_view aContinent) const;
-        void filter_found_in(Indexes& aIndexes, const Antigens& aNother) const
-        {
-            remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); });
-        }
-        void filter_not_found_in(Indexes& aIndexes, const Antigens& aNother) const
-        {
-            remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); });
-        }
 
-        void filter_out_distinct(Indexes& aIndexes) const
-        {
-            remove(aIndexes, [&](const auto& entry) -> bool { return entry.annotations().distinct(); });
-        }
-
-        virtual bool name_matches(size_t index, std::string_view aName) const; // if aName starts with ~, then search by regex in full name
-        virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const;
-        virtual Indexes find_by_name(std::string_view aName) const; // if aName starts with ~, then search by regex in full name
-        virtual Indexes find_by_name(const std::regex& aName) const; // regex search in full name
-
-        // max_full_name() - see global template below
-
-        duplicates_t find_duplicates() const;
 
         enum class include_reference { no, yes };
         std::vector<Date> all_dates(include_reference inc_ref) const; // list of unique dates of the antigens of a chart
-
-        void remove(Indexes& aIndexes, std::function<bool(const Antigen&)> aFilter) const
-        {
-            aIndexes.get().erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
-        }
-
-      private:
-        Indexes make_indexes(std::function<bool(const Antigen& ag)> test) const
-        {
-            Indexes result;
-            for (size_t no = 0; no < size(); ++no)
-                if (test(*operator[](no)))
-                    result.insert(no);
-            return result;
-        }
 
     }; // class Antigens
 
     // ----------------------------------------------------------------------
 
-    class Sera
+    class Sera : public AntigensSera<Serum>
     {
       public:
-        virtual ~Sera() = default;
-        Sera() = default;
-        Sera(const Sera&) = delete;
-
-        virtual size_t size() const = 0;
-        virtual std::shared_ptr<Serum> operator[](size_t aIndex) const = 0;
-        std::shared_ptr<Serum> at(size_t aIndex) const { return operator[](aIndex); }
-        using iterator = acmacs::iterator<Sera, std::shared_ptr<Serum>>;
-        iterator begin() const { return {*this, 0}; }
-        iterator end() const { return {*this, size()}; }
-
-        Indexes all_indexes() const { return Indexes{acmacs::filled_with_indexes(size())}; }
+        using AntigensSera<Serum>::AntigensSera;
 
         void filter_serum_id(Indexes& aIndexes, std::string_view aSerumId) const
         {
@@ -643,62 +766,7 @@ namespace acmacs::chart
             remove(aIndexes, [&re_serum_id](const auto& entry) -> bool { return !std::regex_search(*entry.serum_id(), re_serum_id); });
         }
 
-        void filter_country(Indexes& aIndexes, std::string_view aCountry) const;
-        void filter_continent(Indexes& aIndexes, std::string_view aContinent) const;
-        void filter_found_in(Indexes& aIndexes, const Sera& aNother) const
-        {
-            remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); });
-        }
-        void filter_not_found_in(Indexes& aIndexes, const Sera& aNother) const
-        {
-            remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); });
-        }
-        void filter_egg(Indexes& aIndexes, reassortant_as_egg rae = reassortant_as_egg::yes) const
-        {
-            remove(aIndexes, [rae](const auto& entry) -> bool { return !entry.is_egg(rae); });
-        }
-        void filter_cell(Indexes& aIndexes) const
-        {
-            remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_cell(); });
-        }
-        void filter_passage(Indexes& aIndexes, std::string_view passage) const
-        {
-            remove(aIndexes, [passage](const auto& entry) -> bool { return entry.passage().find(passage) == std::string::npos; });
-        }
-        void filter_passage(Indexes& aIndexes, const std::regex& passage) const
-        {
-            remove(aIndexes, [&passage](const auto& entry) -> bool { return !entry.passage().search(passage); });
-        }
-
-        void filter_reassortant(Indexes& aIndexes) const
-        {
-            remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); });
-        }
-
-        void filter_lineage(Indexes& aIndexes, BLineage lineage) const
-        {
-            remove(aIndexes, [lineage](const auto& entry) -> bool { return entry.lineage() != lineage; });
-        }
-
-        void filter_out_distinct(Indexes& aIndexes) const
-        {
-            remove(aIndexes, [&](const auto& entry) -> bool { return entry.annotations().distinct(); });
-        }
-
-        virtual bool name_matches(size_t index, std::string_view aName) const; // if aName starts with ~, then search by regex in full name
-        virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const;
-        virtual Indexes find_by_name(std::string_view aName) const; // if aName starts with ~, then search by regex in full name
-        virtual Indexes find_by_name(const std::regex& aName) const; // regex search in full name
-        // max_full_name() - see global template below
-
         void set_homologous(find_homologous options, const Antigens& aAntigens, acmacs::debug dbg = acmacs::debug::no);
-
-        duplicates_t find_duplicates() const;
-
-        void remove(Indexes& aIndexes, std::function<bool(const Serum&)> aFilter) const
-        {
-            aIndexes.get().erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
-        }
 
       private:
         using homologous_canditate_t = Indexes;                              // indexes of antigens
