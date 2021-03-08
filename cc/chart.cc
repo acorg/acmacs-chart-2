@@ -1,6 +1,7 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-join.hh"
 #include "acmacs-base/string-split.hh"
+#include "acmacs-base/string-compare.hh"
 #include "acmacs-base/string-substitute.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/range-v3.hh"
@@ -471,7 +472,27 @@ std::string acmacs::chart::Projections::make_info(size_t max_number_of_projectio
 
 std::string acmacs::chart::Antigen::format(std::string_view pattern) const
 {
-    return acmacs::string::substitute(pattern, std::pair{"full_name", full_name()});
+    using namespace std::string_view_literals;
+    fmt::memory_buffer output;
+    std::string result;
+    for (const auto& chunk : acmacs::string::split_for_formatting(pattern)) {
+        if (chunk.size() > 2 && chunk[0] == '{') {
+            switch (chunk[1]) {
+                case 'f':
+                    if (acmacs::string::startswith(chunk.substr(2), "ull_name"sv))
+                        fmt::format_to(output, chunk, fmt::arg("full_name", full_name()));
+                    else
+                        fmt::format_to(output, "{}", chunk);
+                    break;
+                default:
+                    fmt::format_to(output, "{}", chunk);
+                    break;
+            }
+        }
+        else
+            fmt::format_to(output, "{}", chunk);
+    }
+    return fmt::to_string(output);
 
 } // acmacs::chart::Antigen::format
 
