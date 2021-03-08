@@ -688,9 +688,9 @@ namespace acmacs::chart
                     return test(*ptr);
                 else if constexpr (std::is_invocable_v<F, size_t, const AgSr&>)
                     return test(no, *ptr);
-                else if constexpr (std::is_invocable_v<F, const std::shared_ptr<AgSr>&>)
+                else if constexpr (std::is_invocable_v<F, std::shared_ptr<AgSr>>)
                     return test(ptr);
-                else if constexpr (std::is_invocable_v<F, size_t, const std::shared_ptr<AgSr>&>)
+                else if constexpr (std::is_invocable_v<F, size_t, std::shared_ptr<AgSr>>)
                     return test(no, ptr);
                 else
                     static_assert(std::is_invocable_v<F, void, int>, "unsupported filter function signature");
