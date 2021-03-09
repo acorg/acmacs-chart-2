@@ -84,7 +84,7 @@ namespace acmacs::chart
         acmacs::virus::Reassortant reassortant() const override { return acmacs::virus::Reassortant{data_["R"].get_or_default("")}; }
         LabIds lab_ids() const override { return data_["l"]; }
         Clades clades() const override { return data_["c"]; }
-        Annotations annotations() const override { return data_["a"]; }
+        Annotations annotations() const override { const auto& rann = data_["a"]; Annotations ann(rann.size()); rjson::copy(rann, ann.begin()); return ann; }
         bool reference() const override { return data_["S"].get_or_default("").find("R") != std::string::npos; }
 
      private:
@@ -103,7 +103,7 @@ namespace acmacs::chart
         acmacs::virus::Passage passage() const override { return acmacs::virus::Passage{data_["P"].get_or_default("")}; }
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override { return acmacs::virus::Reassortant{data_["R"].get_or_default("")}; }
-        Annotations annotations() const override { return data_["a"]; }
+        Annotations annotations() const override { const auto& rann = data_["a"]; Annotations ann(rann.size()); rjson::copy(rann, ann.begin()); return ann; }
         SerumId serum_id() const override { return SerumId{data_["I"].get_or_default("")}; }
         SerumSpecies serum_species() const override { return SerumSpecies{data_["s"].get_or_default("")}; }
         PointIndexList homologous_antigens() const override { return data_["h"]; }

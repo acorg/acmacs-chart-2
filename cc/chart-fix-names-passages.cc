@@ -101,7 +101,7 @@ void update_antigens(acmacs::chart::AntigensModify& antigens, const acmacs::viru
         if (auto date = antigen.date(); !date.empty())
             antigen.date(date::display(date::from_string(*date, date::allow_incomplete::no, date::throw_on_error::yes, *lab == "CDC" ? date::month_first::yes : date::month_first::no)));
 
-        full_names.emplace_back(ag_no, antigen.full_name());
+        full_names.emplace_back(ag_no, antigen.format("{name_full}"));
     }
 
     // mark duplicates as distinct
@@ -109,7 +109,7 @@ void update_antigens(acmacs::chart::AntigensModify& antigens, const acmacs::viru
     for (const auto index : range_from_to(1ul, full_names.size())) {
         if (full_names[index - 1].second == full_names[index].second) {
             antigens.at(full_names[index].first).set_distinct();
-            AD_LOG(acmacs::log::distinct, "AG {} \"{}\" vs. AG {}", full_names[index].first, antigens.at(full_names[index].first).full_name(), full_names[index - 1].first);
+            AD_LOG(acmacs::log::distinct, "AG {} \"{}\" vs. AG {}", full_names[index].first, antigens.at(full_names[index].first).format("{name_full}"), full_names[index - 1].first);
         }
     }
 

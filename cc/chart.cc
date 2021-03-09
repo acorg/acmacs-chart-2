@@ -1,8 +1,6 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-join.hh"
 #include "acmacs-base/string-split.hh"
-#include "acmacs-base/string-compare.hh"
-#include "acmacs-base/string-substitute.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/range-v3.hh"
 #include "acmacs-base/counter.hh"
@@ -65,7 +63,7 @@ std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_
         auto titers = this->titers();
         auto sera = this->sera();
         for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-            fmt::format_to(text, "SR {:3d} {}\n", sr_no, serum->full_name_with_passage());
+            fmt::format_to(text, "SR {:3d} {}\n", sr_no, serum->format("{name_full} {passage}"));
             for (const auto layer_no : titers->layers_with_serum(sr_no))
                 fmt::format_to(text, "    {:3d} {}\n", layer_no, info()->source(layer_no)->make_name());
         }
@@ -264,11 +262,11 @@ std::string acmacs::chart::Chart::show_table(std::optional<size_t> layer_no) con
 
     fmt::format_to(output, "{:{}s}", "", max_ag_name + 2);
     for (auto sr_no : serum_indexes)
-        fmt::format_to(output, "{:>7s}", srs->at(sr_no)->abbreviated_location_year());
+        fmt::format_to(output, "{:>7s}", srs->at(sr_no)->format("{location_abbreviated}/{year2}"));
     fmt::format_to(output, "\n");
 
     for (auto ag_no : antigen_indexes) {
-        fmt::format_to(output, "{:<{}s}", ags->at(ag_no)->full_name(), max_ag_name + 2);
+        fmt::format_to(output, "{:<{}s}", ags->at(ag_no)->format("{name_full}"), max_ag_name + 2);
         for (auto sr_no : serum_indexes)
             fmt::format_to(output, "{:>7s}", *tt->titer(ag_no, sr_no));
         fmt::format_to(output, "\n");
@@ -276,7 +274,7 @@ std::string acmacs::chart::Chart::show_table(std::optional<size_t> layer_no) con
     fmt::format_to(output, "\n");
 
     for (auto [sr_ind, sr_no] : acmacs::enumerate(serum_indexes))
-        fmt::format_to(output, "{:3d} {} {}\n", sr_label(sr_ind), srs->at(sr_no)->abbreviated_location_year(), srs->at(sr_no)->full_name());
+        fmt::format_to(output, "{:3d} {} {}\n", sr_label(sr_ind), srs->at(sr_no)->format("{location_abbreviated}/{year2}"), srs->at(sr_no)->format("{name_full}"));
 
     return fmt::to_string(output);
 
@@ -470,42 +468,6 @@ std::string acmacs::chart::Projections::make_info(size_t max_number_of_projectio
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::Antigen::format(std::string_view pattern) const
-{
-    using namespace std::string_view_literals;
-    fmt::memory_buffer output;
-    std::string result;
-    for (const auto& chunk : acmacs::string::split_for_formatting(pattern)) {
-        if (chunk.size() > 2 && chunk[0] == '{') {
-            switch (chunk[1]) {
-                case 'f':
-                    if (acmacs::string::startswith(chunk.substr(2), "ull_name"sv))
-                        fmt::format_to(output, chunk, fmt::arg("full_name", full_name()));
-                    else
-                        fmt::format_to(output, "{}", chunk);
-                    break;
-                default:
-                    fmt::format_to(output, "{}", chunk);
-                    break;
-            }
-        }
-        else
-            fmt::format_to(output, "{}", chunk);
-    }
-    return fmt::to_string(output);
-
-} // acmacs::chart::Antigen::format
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Serum::format(std::string_view pattern) const
-{
-    return acmacs::string::substitute(pattern, std::pair{"full_name", full_name()});
-
-} // acmacs::chart::Serum::format
-
-// ----------------------------------------------------------------------
-
 // size_t acmacs::chart::Projections::projection_no(const acmacs::chart::Projection* projection) const
 // {
 //     std::cerr << "projection_no " << projection << '\n';
@@ -517,196 +479,6 @@ std::string acmacs::chart::Serum::format(std::string_view pattern) const
 //     throw invalid_data("cannot find projection_no, total projections: " + std::to_string(size()));
 
 // } // acmacs::chart::Projections::projection_no
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Antigen::full_name_with_fields() const
-{
-    std::string r{name()};
-    if (const auto value = string::join(acmacs::string::join_space, annotations()); !value.empty())
-        r += " annotations=\"" + value + '"';
-    if (const auto value = reassortant(); !value.empty())
-        r += " reassortant=\"" + *value + '"';
-    if (const auto value = passage(); !value.empty())
-        r += fmt::format(" passage=\"{}\" ptype={}", *value, value.passage_type());
-    if (const auto value = date(); !value.empty())
-        r += " date=" + *value;
-    if (const auto value = lineage(); value != BLineage::Unknown)
-        r += fmt::format(" lineage={}", value);
-    if (reference())
-        r += " reference";
-    if (const auto value = string::join(acmacs::string::join_space, lab_ids()); !value.empty())
-        r += " lab_ids=\"" + value + '"';
-    return r;
-
-} // acmacs::chart::Antigen::full_name_with_fields
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Serum::full_name_with_fields() const
-{
-    std::string r{name()};
-    if (const auto value = string::join(acmacs::string::join_space, annotations()); !value.empty())
-        r += " annotations=\"" + value + '"';
-    if (const auto value = reassortant(); !value.empty())
-        r += " reassortant=\"" + *value + '"';
-    if (const auto value = serum_id(); !value.empty())
-        r += " serum_id=\"" + *value + '"';
-    if (const auto value = passage(); !value.empty())
-        r += fmt::format(" passage=\"{}\" ptype={}", *value, value.passage_type());
-    if (const auto value = serum_species(); !value.empty())
-        r += " serum_species=\"" + *value + '"';
-    if (const auto value = lineage(); value != BLineage::Unknown)
-        r += fmt::format(" lineage={}", value);
-    return r;
-
-} // acmacs::chart::Serum::full_name_with_fields
-
-// ----------------------------------------------------------------------
-
-// std::string name_abbreviated(std::string aName);
-static inline std::string name_abbreviated(std::string_view aName)
-{
-    try {
-        std::string virus_type, host, location, isolation, year, passage, extra;
-        virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
-        return acmacs::string::join(acmacs::string::join_slash, acmacs::locationdb::get().abbreviation(location), isolation, year.substr(2));
-    }
-    catch (virus_name::Unrecognized&) {
-        return std::string{aName};
-    }
-
-} // name_abbreviated
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Antigen::name_abbreviated() const
-{
-    return ::name_abbreviated(name());
-
-} // acmacs::chart::Antigen::name_abbreviated
-
-// ----------------------------------------------------------------------
-
-static inline std::string name_without_subtype(std::string_view aName)
-{
-    try {
-        std::string virus_type, host, location, isolation, year, passage, extra;
-        virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
-        if (virus_type.size() > 1 && virus_type[0] == 'A' && virus_type[1] == '(')
-            virus_type.resize(1);
-        return acmacs::string::join(acmacs::string::join_slash, virus_type, host, location, isolation, year);
-    }
-    catch (virus_name::Unrecognized&) {
-        return std::string{aName};
-    }
-}
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Antigen::name_without_subtype() const
-{
-    return ::name_without_subtype(name());
-
-} // acmacs::chart::Antigen::name_without_subtype
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Antigen::location() const
-{
-    try {
-        return ::virus_name::location(name());
-    }
-    catch (virus_name::Unrecognized&) {
-        return "*no-location-extracted*";
-    }
-
-} // acmacs::chart::Antigen::location
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Antigen::location_abbreviated() const
-{
-    try {
-        return acmacs::locationdb::get().abbreviation(::virus_name::location(name()));
-    }
-    catch (virus_name::Unrecognized&) {
-        return "*no-location-extracted*";
-    }
-
-} // acmacs::chart::Antigen::location_abbreviated
-
-// ----------------------------------------------------------------------
-
-inline std::string abbreviated_location_year(std::string_view aName)
-{
-    try {
-        std::string virus_type, host, location, isolation, year, passage, extra;
-        virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
-        return acmacs::string::join(acmacs::string::join_slash, acmacs::locationdb::get().abbreviation(location), year.substr(2, 2));
-    }
-    catch (virus_name::Unrecognized&) {
-        return std::string{aName};
-    }
-}
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Antigen::abbreviated_location_year() const
-{
-    return ::abbreviated_location_year(name());
-
-} // acmacs::chart::Antigen::abbreviated_location_year
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Serum::name_abbreviated() const
-{
-    return ::name_abbreviated(name());
-
-} // acmacs::chart::Serum::name_abbreviated
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Serum::name_without_subtype() const
-{
-    return ::name_without_subtype(name());
-
-} // acmacs::chart::Serum::name_abbreviated
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Serum::location() const
-{
-    try {
-        return ::virus_name::location(name());
-    }
-    catch (virus_name::Unrecognized&) {
-        return "*no-location-extracted*";
-    }
-
-} // acmacs::chart::Serum::location
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Serum::location_abbreviated() const
-{
-    try {
-        return acmacs::locationdb::get().abbreviation(::virus_name::location(name()));
-    }
-    catch (virus_name::Unrecognized&) {
-        return "*no-location-extracted*";
-    }
-
-} // acmacs::chart::Serum::location_abbreviated
-
-// ----------------------------------------------------------------------
-
-std::string acmacs::chart::Serum::abbreviated_location_year() const
-{
-    return ::abbreviated_location_year(name());
-
-} // acmacs::chart::Serum::abbreviated_location_year
 
 // ----------------------------------------------------------------------
 

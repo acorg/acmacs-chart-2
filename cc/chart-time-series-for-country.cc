@@ -31,7 +31,7 @@ int main(int argc, char* const argv[])
                     std::string key;
                     if (const auto date = antigen->date(); !date.empty())
                         key = date->substr(0, 7);
-                    antigens_per_month[key].push_back(antigen->full_name_with_fields());
+                    antigens_per_month[key].push_back(antigen->format("{name_full} {fields}"));
                 }
             }
             catch (std::exception&) {

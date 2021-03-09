@@ -58,7 +58,7 @@ struct AntigenData
     acmacs::chart::SerumCircle empirical;
 
     AntigenData(size_t ag_no, acmacs::chart::AntigenP ag, const acmacs::chart::Titer& a_titer)
-        : antigen_no{ag_no}, antigen{ag}, infix(make_infix(ag_no, ag->full_name_with_passage())), titer{a_titer} {}
+        : antigen_no{ag_no}, antigen{ag}, infix(make_infix(ag_no, ag->format("{name_full}"))), titer{a_titer} {}
     bool valid_theoretical() const { return theoretical.valid(); }
     bool valid_empirical() const { return empirical.valid(); }
 };
@@ -72,7 +72,7 @@ struct SerumData
     double column_basis;
 
     SerumData(size_t sr_no, acmacs::chart::SerumP sr, double a_column_basis)
-        : serum_no{sr_no}, serum{sr}, infix(make_infix(sr_no, sr->full_name_without_passage())), column_basis{a_column_basis} {}
+        : serum_no{sr_no}, serum{sr}, infix(make_infix(sr_no, sr->format("{name_full}"))), column_basis{a_column_basis} {}
     bool valid() const { return !antigens.empty(); }
 };
 
@@ -140,7 +140,7 @@ void report_text(const acmacs::chart::Chart& chart, const std::vector<SerumData>
     const auto antigen_no_num_digits = static_cast<int>(std::log10(chart.number_of_antigens())) + 1;
     const auto serum_no_num_digits = static_cast<int>(std::log10(chart.number_of_sera())) + 1;
     for (const auto& serum_data : sera_data) {
-        std::cout << "SR " << std::setw(serum_no_num_digits) << serum_data.serum_no << ' ' << serum_data.serum->full_name_with_fields() << " titrations:" << chart.titers()->titrations_for_serum(serum_data.serum_no) << '\n';
+        std::cout << "SR " << std::setw(serum_no_num_digits) << serum_data.serum_no << ' ' << serum_data.serum->format("{name_full} {fields}") << " titrations:" << chart.titers()->titrations_for_serum(serum_data.serum_no) << '\n';
         if (!serum_data.antigens.empty()) {
             std::cout << "   titer theor empir\n";
             for (const auto& antigen_data : serum_data.antigens) {
@@ -153,7 +153,7 @@ void report_text(const acmacs::chart::Chart& chart, const std::vector<SerumData>
                     std::cout << ' ' << std::setw(5) << std::fixed << std::setprecision(2) << antigen_data.empirical.radius();
                 else
                     std::cout << std::setw(6) << ' ';
-                std::cout << "   " << std::setw(antigen_no_num_digits) << antigen_data.antigen_no << ' ' << antigen_data.antigen->full_name_with_passage() << '\n';
+                std::cout << "   " << std::setw(antigen_no_num_digits) << antigen_data.antigen_no << ' ' << antigen_data.antigen->format("{name_full}") << '\n';
             }
         }
         else {
@@ -177,7 +177,7 @@ void report_csv(std::ostream& output, const std::vector<SerumData>& sera_data)
     double diff{0};
     size_t num_diff{0};
     for (const auto& serum_data : sera_data) {
-        writer << serum_data.serum->full_name() << serum_data.serum->passage().passage_type();
+        writer << serum_data.serum->format("{name_full}") << serum_data.serum->passage().passage_type();
         std::string titers;
         double empirical{0}, theoretical{0};
         size_t num_empirical{0}, num_theoretical{0};
@@ -333,7 +333,7 @@ template <typename ... Args> void make_list(mod_type mt, radius_type rt, time_ty
 inline void make_serum_info(std::ostream& output, const SerumData& serum_data)
 {
     output << "    \"?? ==== " << serum_data.infix << " ======================================================================\": false,\n"
-           << "    \"?? SR " << serum_data.serum_no << ' ' << serum_data.serum->full_name_with_passage() << "\": false,\n";
+           << "    \"?? SR " << serum_data.serum_no << ' ' << serum_data.serum->format("{name_full} {passage}") << "\": false,\n";
     if (!serum_data.antigens.empty()) {
         for (const auto& antigen_data : serum_data.antigens) {
             output << "    \"??   titer:" << std::setw(5) << std::right << *antigen_data.titer << " theor:";
@@ -346,7 +346,7 @@ inline void make_serum_info(std::ostream& output, const SerumData& serum_data)
                 output << std::setw(4) << std::fixed << std::setprecision(2) << std::left << antigen_data.empirical.radius();
             else
                 output << "?   ";
-            output << " AG " << std::setw(4) << std::right << antigen_data.antigen_no << ' ' << antigen_data.antigen->full_name_with_passage() << "\": false,\n";
+            output << " AG " << std::setw(4) << std::right << antigen_data.antigen_no << ' ' << antigen_data.antigen->format("{name_full}") << "\": false,\n";
         }
     }
     else {
@@ -401,8 +401,8 @@ template <mod_type mt, std::enable_if_t<mt==mod_type::coverage_circle, int> = 0>
 template <mod_type mt, radius_type rt, time_type tt, std::enable_if_t<tt==time_type::all, int> = 0>
     void make_antigen_mod_3(std::ostream& output, const SerumData& serum_data, const AntigenData& antigen_data, std::string /*lab_assay_tag*/)
 {
-    output << "        {\"N\": \"comment\", \"serum_name\": \"" << serum_data.serum->full_name_with_passage() << "\", \"serum_no\": " << serum_data.serum_no
-           << ", \"antigen_name\": \"" << antigen_data.antigen->full_name_with_passage() << "\", \"antigen_no\": " << antigen_data.antigen_no
+    output << "        {\"N\": \"comment\", \"serum_name\": \"" << serum_data.serum->format("{name_full} {passage}") << "\", \"serum_no\": " << serum_data.serum_no
+           << ", \"antigen_name\": \"" << antigen_data.antigen->format("{name_full}") << "\", \"antigen_no\": " << antigen_data.antigen_no
            << ", \"titer\": \"" << *antigen_data.titer
            << "\", \"theoretical\": " << std::setprecision(2) << std::fixed << antigen_data.theoretical.radius()
            << ", \"empirical\": " << std::setprecision(2) << std::fixed << antigen_data.empirical.radius()
@@ -433,8 +433,8 @@ template <mod_type mt, radius_type rt>
     void make_antigen_title(std::ostream& output, const SerumData& serum_data, const AntigenData& antigen_data)
 {
     output << "        {\"N\": \"title\", \"display_name\": ["
-           << "\"" << serum_data.serum->full_name_with_passage() << "\", "
-           << "\"" << antigen_data.antigen->full_name_with_passage() << "\", "
+           << "\"" << serum_data.serum->format("{name_full} {passage}") << "\", "
+           << "\"" << antigen_data.antigen->format("{name_full}") << "\", "
            << "\"empirical: " << std::setprecision(2) << std::fixed << antigen_data.empirical.radius()
            << "  theoretical: " << std::setprecision(2) << std::fixed << antigen_data.theoretical.radius()
            << "  homo: " << *antigen_data.titer << "  max: " << std::lround(std::exp2(serum_data.column_basis) * 10.0) << "\""
@@ -540,7 +540,7 @@ void report_json(std::ostream& output, const acmacs::chart::Chart& chart, const 
         for (const auto& serum_data : sera_data) {
             for ([[maybe_unused]] const auto& antigen_data : serum_data.antigens) {
                 if (validate_rt(antigen_data)) {
-                    output << "      \"" << serum_data.serum->full_name_with_passage() << "\",\n";
+                    output << "      \"" << serum_data.serum->format("{name_full} {passage}") << "\",\n";
                 }
             }
         }
@@ -550,7 +550,7 @@ void report_json(std::ostream& output, const acmacs::chart::Chart& chart, const 
         for (const auto& serum_data : sera_data) {
             for (const auto& antigen_data : serum_data.antigens) {
                 if (validate_rt(antigen_data)) {
-                    output << "      \"" << antigen_data.antigen->full_name_with_passage() << "\",\n";
+                    output << "      \"" << antigen_data.antigen->format("{name_full}") << "\",\n";
                 }
             }
         }

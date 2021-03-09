@@ -54,7 +54,7 @@ int main(int argc, char* const argv[])
             if (!invalid_sera.empty()) {
                 fmt::print(stderr, "WARNING: {} has invalid sera\n", filename);
                 for (auto serum_no : invalid_sera)
-                    fmt::print(stderr, "  {:3d} {}\n", serum_no + 1, sera->at(serum_no)->full_name());
+                    fmt::print(stderr, "  {:3d} {}\n", serum_no + 1, sera->at(serum_no)->format("{name_full}"));
             }
         }
     }

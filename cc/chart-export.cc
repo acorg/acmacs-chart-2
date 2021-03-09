@@ -34,8 +34,8 @@ int main(int argc, char* const argv[])
         if (opt.names) {
             auto antigens = chart->antigens();
             auto sera = chart->sera();
-            json << to_json::key_val{"antigens", to_json::array(antigens->begin(), antigens->end(), [](const auto& antigen) { return antigen->full_name(); })}
-                 << to_json::key_val{"sera", to_json::array(sera->begin(), sera->end(), [](const auto& serum) { return serum->full_name(); })};
+            json << to_json::key_val{"antigens", to_json::array(antigens->begin(), antigens->end(), [](const auto& antigen) { return antigen->format("{name_full}"); })}
+                 << to_json::key_val{"sera", to_json::array(sera->begin(), sera->end(), [](const auto& serum) { return serum->format("{name_full}"); })};
         }
         if (opt.titers) {
             auto titers = chart->titers();

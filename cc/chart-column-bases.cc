@@ -31,7 +31,7 @@ int main(int argc, char* const argv[])
         auto column_bases = chart->column_bases(min_column_basis);
 
         for (auto serum_no : acmacs::range(sera->size())) {
-            std::cout << "INFO: SR " << std::setw(4) << std::right << serum_no << ' ' << sera->at(serum_no)->full_name() << '\n';
+            std::cout << "INFO: SR " << std::setw(4) << std::right << serum_no << ' ' << sera->at(serum_no)->format("{name_full}") << '\n';
             for (auto antigen_no : acmacs::range(antigens->size())) {
                 if (const auto titer = titers->titer(antigen_no, serum_no); !titer.is_dont_care())
                     std::cout << std::setw(6) << std::right << *titer;

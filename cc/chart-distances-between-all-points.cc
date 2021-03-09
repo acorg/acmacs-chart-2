@@ -77,9 +77,9 @@ void write_text(std::string_view aFilename, size_t projection_no, const acmacs::
     const auto number_of_antigens = antigens->size();
     const auto name = [number_of_antigens, &antigens, &sera](size_t p_no) {
         if (p_no < number_of_antigens)
-            return fmt::format("{}-AG", antigens->at(p_no)->full_name());
+            return fmt::format("{}-AG", antigens->at(p_no)->format("{name_full}"));
         else
-            return fmt::format("{}-SR", sera->at(p_no - number_of_antigens)->full_name());
+            return fmt::format("{}-SR", sera->at(p_no - number_of_antigens)->format("{name_full}"));
     };
 
     const auto number_of_points = layout->number_of_points();
@@ -145,14 +145,14 @@ void write_text(std::string_view aFilename, size_t projection_no, const acmacs::
 //     std::string result;
 //     const auto number_of_dimensions = layout->number_of_dimensions();
 //     for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
-//         result += fmt::format("AG{}{}{}{}", opt.field_separator, ag_no, opt.field_separator, encode_name(antigen->full_name(), opt.field_separator));
+//         result += fmt::format("AG{}{}{}{}", opt.field_separator, ag_no, opt.field_separator, encode_name(antigen->format("{name_full}"), opt.field_separator));
 //         for (auto dim : acmacs::range(number_of_dimensions))
 //             result += acmacs::string::concat(opt.field_separator, acmacs::to_string(layout->coordinate(ag_no, dim)));
 //         result += '\n';
 //     }
 //     const auto number_of_antigens = antigens->size();
 //     for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-//         result += fmt::format("SR{}{}{}{}", opt.field_separator, sr_no, opt.field_separator, encode_name(serum->full_name(), opt.field_separator));
+//         result += fmt::format("SR{}{}{}{}", opt.field_separator, sr_no, opt.field_separator, encode_name(serum->format("{name_full}"), opt.field_separator));
 //         for (auto dim : acmacs::range(number_of_dimensions))
 //             result += acmacs::string::concat(opt.field_separator, acmacs::to_string(layout->coordinate(sr_no + number_of_antigens, dim)));
 //         result += '\n';

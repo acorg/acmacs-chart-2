@@ -175,7 +175,7 @@ class Titers2
             all_sera.insert(en.serum);
         }
         for (const auto& antigen : all_antigens) {
-            fmt::print("{} {} -- {} {}\n", antigen.primary, charts[0]->antigens()->at(antigen.primary)->full_name(), antigen.secondary, charts[1]->antigens()->at(antigen.secondary)->full_name());
+            fmt::print("{} {} -- {} {}\n", antigen.primary, charts[0]->antigens()->at(antigen.primary)->format("{name_full}"), antigen.secondary, charts[1]->antigens()->at(antigen.secondary)->format("{name_full}"));
             for (const auto& serum : all_sera)
                 fmt::print("   {:3d}   ", serum.primary);
             fmt::print("\n");
@@ -195,7 +195,7 @@ class Titers2
             fmt::print("\n\n");
         }
         for (const auto& serum : all_sera)
-            fmt::print("{} {} -- {} {}\n", serum.primary, charts[0]->sera()->at(serum.primary)->full_name(), serum.secondary, charts[1]->sera()->at(serum.secondary)->full_name());
+            fmt::print("{} {} -- {} {}\n", serum.primary, charts[0]->sera()->at(serum.primary)->format("{name_full}"), serum.secondary, charts[1]->sera()->at(serum.secondary)->format("{name_full}"));
     }
 
   private:
@@ -255,7 +255,8 @@ int main(int argc, char* const argv[])
                 auto titers = chart->titers();
                 for (size_t ag_no{0}; ag_no < antigens->size(); ++ag_no) {
                     for (size_t sr_no{0}; sr_no < sera->size(); ++sr_no) {
-                        titer_data.add(antigens->at(ag_no)->full_name(), sera->at(sr_no)->full_name(), sera->at(sr_no)->abbreviated_location_year(), titers->titer(ag_no, sr_no));
+                        titer_data.add(antigens->at(ag_no)->format("{name_full}"), sera->at(sr_no)->format("{name_full}"), sera->at(sr_no)->format("{location_abbreviated}/{year2}"),
+                                       titers->titer(ag_no, sr_no));
                     }
                 }
             }

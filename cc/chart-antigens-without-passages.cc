@@ -26,7 +26,7 @@ int main(int argc, char* const argv[])
             auto antigens = chart->antigens();
             for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
                 if (antigen->passage().empty())
-                    fmt::print("{} {:3d} {}\n", filename, ag_no, antigen->full_name());
+                    fmt::print("{} {:3d} {}\n", filename, ag_no, antigen->format("{name_full}"));
             }
         }
     }

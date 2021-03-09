@@ -1,4 +1,5 @@
 #include "acmacs-base/argv.hh"
+#include "acmacs-virus/virus-name.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
@@ -25,7 +26,7 @@ int main(int argc, char* const argv[])
             auto antigens = chart->antigens();
             for (auto antigen : *antigens) {
                 if (!opt.test_only || !antigen->reference()) {
-                    if (const auto loc = acmacs::locationdb::get().find(antigen->location(), acmacs::locationdb::include_continent::no); loc.has_value())
+                    if (const auto loc = acmacs::locationdb::get().find(acmacs::virus::location(antigen->name()), acmacs::locationdb::include_continent::no); loc.has_value())
                         locations.emplace(loc->location_name);
                 }
             }

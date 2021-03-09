@@ -201,12 +201,12 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
         fmt::format_to(msg, "Merge \"{}\" has duplicates: AG:{} SR:{}\n", result->description(), rda, rds);
         for (const auto& dups : rda) {
             for (const auto ag_no : dups)
-                fmt::format_to(msg, "  AG {:5d} {}\n", ag_no, result_antigens.at(ag_no).full_name());
+                fmt::format_to(msg, "  AG {:5d} {}\n", ag_no, result_antigens.at(ag_no).format("{name_full}"));
             fmt::format_to(msg, "\n");
         }
         for (const auto& dups : rds) {
             for (const auto sr_no : dups)
-                fmt::format_to(msg, "  SR {:5d} {}\n", sr_no, result_sera.at(sr_no).full_name());
+                fmt::format_to(msg, "  SR {:5d} {}\n", sr_no, result_sera.at(sr_no).format("{name_full}"));
             fmt::format_to(msg, "\n");
         }
         const auto err_message = fmt::to_string(msg);
@@ -572,12 +572,12 @@ std::string acmacs::chart::MergeReport::titer_merge_diagnostics(const ChartModif
         fmt::format_to(output, "{:>7d}", sr_label(sr_no));
     fmt::format_to(output, "\n{:{}s}", "", max_field_size + 2);
     for (auto sr_no : sera)
-        fmt::format_to(output, "{:>7s}", srs->at(sr_no)->abbreviated_location_year());
+        fmt::format_to(output, "{:>7s}", srs->at(sr_no)->format("{location_abbreviated}/{year2}"));
     fmt::format_to(output, "\n");
 
     for (auto ag_no : antigens) {
         auto antigen = ags->at(ag_no);
-        fmt::format_to(output, "{}\n", antigen->full_name());
+        fmt::format_to(output, "{}\n", antigen->format("{name_full}"));
         for (auto layer_no : acmacs::range(tt->number_of_layers())) {
             if (layer_no < chart.info()->number_of_sources())
                 fmt::format_to(output, "{:<{}s}", chart.info()->source(layer_no)->name_non_empty(), max_field_size + 2);

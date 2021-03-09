@@ -35,8 +35,8 @@ int main(int argc, char* const argv[])
             throw std::runtime_error{"serum number out of range"};
         auto info = chart->info();
 
-        std::cout << "INFO: AG " << std::setw(4) << std::right << *opt.antigen_no << ' ' << antigens->at(opt.antigen_no)->full_name() << '\n';
-        std::cout << "INFO: SR " << std::setw(4) << std::right << *opt.serum_no << ' ' << sera->at(opt.serum_no)->full_name() << '\n';
+        std::cout << "INFO: AG " << std::setw(4) << std::right << *opt.antigen_no << ' ' << antigens->at(opt.antigen_no)->format("{name_full}") << '\n';
+        std::cout << "INFO: SR " << std::setw(4) << std::right << *opt.serum_no << ' ' << sera->at(opt.serum_no)->format("{name_full}") << '\n';
         std::cout << "INFO: Layers: " << titers->number_of_layers() << '\n';
         std::cout << "INFO: Merged: " << *titers->titer(opt.antigen_no, opt.serum_no) << '\n';
         std::cout << "INFO: In layers:\n"; // << titers->titers_for_layers(antigen_no, serum_no) << '\n';

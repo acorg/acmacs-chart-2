@@ -16,6 +16,7 @@
 #include "acmacs-base/regex.hh"
 #include "acmacs-virus/virus-name.hh"
 #include "locationdb/locdb.hh"
+#include "acmacs-chart-2/annotations.hh"
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/stress.hh"
 #include "acmacs-chart-2/optimize.hh"
@@ -227,27 +228,6 @@ namespace acmacs::chart
 
     }; // class LabIds
 
-    class Annotations : public acmacs::named_vector_t<std::string, struct chart_Annotations_tag_t>
-    {
-      public:
-        constexpr static const char* const distinct_label{"DISTINCT"};
-
-        using acmacs::named_vector_t<std::string, struct chart_Annotations_tag_t>::named_vector_t;
-        Annotations(const rjson::value& src) : acmacs::named_vector_t<std::string, struct chart_Annotations_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
-
-        bool distinct() const { return exists(std::string{distinct_label}); }
-        void set_distinct() { insert_if_not_present(std::string{distinct_label}); }
-        std::string join() const { return string::join(acmacs::string::join_space, begin(), end()); }
-        size_t total_length() const
-        {
-            return std::accumulate(begin(), end(), size_t{0}, [](size_t sum, const auto& element) { return sum + element.size(); });
-        }
-
-        // returns if annotations of antigen and serum matches (e.g. ignores CONC for serum), used for homologous pairs finding
-        static bool match_antigen_serum(const Annotations& antigen, const Annotations& serum);
-
-    }; // class Annotations
-
     class Clades : public acmacs::named_vector_t<std::string, struct chart_Clades_tag_t>
     {
       public:
@@ -378,123 +358,102 @@ namespace acmacs::chart
 
     // ----------------------------------------------------------------------
 
-    class Antigen
+    namespace detail
+    {
+        struct location_data_t
+        {
+            std::string name;
+            std::string country;
+            std::string continent;
+            acmacs::locationdb::Latitude latitude;
+            acmacs::locationdb::Longitude longitude;
+        };
+
+        class AntigenSerum
+        {
+          public:
+            virtual ~AntigenSerum() = default;
+            AntigenSerum() = default;
+            AntigenSerum(const AntigenSerum&) = delete;
+            bool operator==(const AntigenSerum& rhs) const { return name_full() == rhs.name_full(); }
+            bool operator!=(const AntigenSerum& rhs) const { return !operator==(rhs); }
+
+            virtual acmacs::virus::name_t name() const = 0;
+            virtual acmacs::virus::Passage passage() const = 0;
+            virtual BLineage lineage() const = 0;
+            virtual acmacs::virus::Reassortant reassortant() const = 0;
+            virtual Annotations annotations() const = 0;
+
+            virtual Continent continent() const { return {}; }
+
+            // returns if collapsable spaces inserted
+            virtual bool format(fmt::memory_buffer& output, std::string_view pattern) const = 0;
+            std::string format(std::string_view pattern) const;
+            std::string name_full() const { return format("{name_full}"); }
+
+            virtual bool is_egg(reassortant_as_egg rae) const { return rae == reassortant_as_egg::yes ? (!reassortant().empty() || passage().is_egg()) : (reassortant().empty() && passage().is_egg()); }
+            bool is_cell() const { return !is_egg(reassortant_as_egg::yes); }
+
+            std::string_view passage_type(reassortant_as_egg rae = reassortant_as_egg::yes) const
+            {
+                using namespace std::string_view_literals;
+                if (passage().is_egg()) {
+                    if (reassortant().empty() || rae == reassortant_as_egg::yes)
+                        return "egg"sv;
+                    else
+                        return "reassortant"sv;
+                }
+                else
+                    return "cell"sv;
+            }
+
+            bool distinct() const { return annotations().distinct(); }
+
+            const location_data_t& location_data() const; // name-format.cc
+
+          private:
+            mutable bool location_data_filled_{false};
+            mutable location_data_t location_data_;
+        };
+
+    } // namespace detail
+
+    // ----------------------------------------------------------------------
+
+    class Antigen : public detail::AntigenSerum
     {
       public:
-        virtual ~Antigen() = default;
-        Antigen() = default;
-        Antigen(const Antigen&) = delete;
-        bool operator==(const Antigen& rhs) const { return full_name() == rhs.full_name(); }
-        bool operator!=(const Antigen& rhs) const { return !operator==(rhs); }
 
-        virtual acmacs::virus::name_t name() const = 0;
         virtual Date date() const = 0;
-        virtual acmacs::virus::Passage passage() const = 0;
-        virtual BLineage lineage() const = 0;
-        virtual acmacs::virus::Reassortant reassortant() const = 0;
         virtual LabIds lab_ids() const = 0;
         virtual Clades clades() const = 0;
-        virtual Annotations annotations() const = 0;
         virtual bool reference() const = 0;
-        virtual Continent continent() const { return {}; }
 
-        std::string format(std::string_view pattern) const;
-
-        std::string full_name() const { return acmacs::string::join(acmacs::string::join_space, name(), string::join(acmacs::string::join_space, annotations()), reassortant(), passage()); }
-        std::string full_name_without_passage() const { return acmacs::string::join(acmacs::string::join_space, name(), string::join(acmacs::string::join_space, annotations()), reassortant()); }
-        std::string full_name_with_passage() const { return full_name(); }
-        std::string full_name_with_fields() const;
-        std::string full_name_for_seqdb_matching() const
-        {
-            return acmacs::string::join(acmacs::string::join_space, name(), reassortant(), passage(), string::join(acmacs::string::join_space, annotations()));
-        } // annotations may part of the passage in seqdb (NIMR ISOLATE 1)
-        std::string abbreviated_name() const { return acmacs::string::join(acmacs::string::join_space, name_abbreviated(), string::join(acmacs::string::join_space, annotations()), reassortant()); }
-        std::string abbreviated_name_with_passage_type() const { return acmacs::string::join(acmacs::string::join_dash, name_abbreviated(), string::join(acmacs::string::join_space, annotations()), reassortant(), passage_type()); }
-        std::string abbreviated_location_with_passage_type() const { return acmacs::string::join(acmacs::string::join_space, location_abbreviated(), passage_type()); }
-        std::string designation() const { return acmacs::string::join(acmacs::string::join_space, name(), string::join(acmacs::string::join_space, annotations()), reassortant(), passage()); }
-
-        std::string name_abbreviated() const;
-        std::string name_without_subtype() const;
-        std::string location() const;
-        std::string location_abbreviated() const;
-        std::string abbreviated_location_year() const;
-
-        std::string_view passage_type(reassortant_as_egg rae = reassortant_as_egg::yes) const
-        {
-            using namespace std::string_view_literals;
-            if (passage().is_egg()) {
-                if (reassortant().empty() || rae == reassortant_as_egg::yes)
-                    return "egg"sv;
-                else
-                    return "reassortant"sv;
-            }
-            else
-                return "cell"sv;
-        }
-
-        bool is_egg(reassortant_as_egg rae) const { return rae == reassortant_as_egg::yes ? (!reassortant().empty() || passage().is_egg()) : (reassortant().empty() && passage().is_egg()); }
-        bool is_cell() const { return !is_egg(reassortant_as_egg::yes); }
-        bool distinct() const { return annotations().distinct(); }
+        using detail::AntigenSerum::format;
+            // returns if collapsable spaces inserted
+        bool format(fmt::memory_buffer& output, std::string_view pattern) const override; // name-format.cc
 
     }; // class Antigen
 
     // ----------------------------------------------------------------------
 
-    class Serum
+    class Serum : public detail::AntigenSerum
     {
       public:
-        virtual ~Serum() = default;
-        Serum() = default;
-        Serum(const Serum&) = delete;
-        bool operator==(const Serum& rhs) const { return full_name() == rhs.full_name(); }
-        bool operator!=(const Serum& rhs) const { return !operator==(rhs); }
-
-        virtual acmacs::virus::name_t name() const = 0;
-        virtual acmacs::virus::Passage passage() const = 0;
-        virtual BLineage lineage() const = 0;
-        virtual acmacs::virus::Reassortant reassortant() const = 0;
-        virtual Annotations annotations() const = 0;
         virtual SerumId serum_id() const = 0;
         virtual SerumSpecies serum_species() const = 0;
         virtual PointIndexList homologous_antigens() const = 0;
         virtual void set_homologous(const std::vector<size_t>&, acmacs::debug) const {}
 
-        std::string format(std::string_view pattern) const;
+        using detail::AntigenSerum::format;
+            // returns if collapsable spaces inserted
+        bool format(fmt::memory_buffer& output, std::string_view pattern) const override; // name-format.cc
 
-        std::string full_name() const { return acmacs::string::join(acmacs::string::join_space, name(), string::join(acmacs::string::join_space, annotations()), reassortant(), serum_id()); }
-        std::string full_name_without_passage() const { return full_name(); }
-        std::string full_name_with_passage() const { return acmacs::string::join(acmacs::string::join_space, name(), string::join(acmacs::string::join_space, annotations()), reassortant(), serum_id(), passage()); }
-        std::string full_name_with_fields() const;
-        std::string abbreviated_name() const { return acmacs::string::join(acmacs::string::join_space, name_abbreviated(), string::join(acmacs::string::join_space, annotations()), reassortant()); }
-        std::string abbreviated_name_with_serum_id() const { return acmacs::string::join(acmacs::string::join_space, name_abbreviated(), string::join(acmacs::string::join_space, annotations()), reassortant(), serum_id()); }
-        std::string designation() const { return acmacs::string::join(acmacs::string::join_space, name(), string::join(acmacs::string::join_space, annotations()), reassortant(), serum_id()); }
-        std::string designation_without_serum_id() const { return acmacs::string::join(acmacs::string::join_space, name(), string::join(acmacs::string::join_space, annotations()), reassortant()); }
-
-        std::string name_abbreviated() const;
-        std::string name_without_subtype() const;
-        std::string location() const;
-        std::string location_abbreviated() const;
-        std::string abbreviated_location_year() const;
-
-        std::string_view passage_type(reassortant_as_egg rae = reassortant_as_egg::yes) const
-        {
-            using namespace std::string_view_literals;
-            if (is_egg(reassortant_as_egg::yes)) { // note NIID passage cannot be used
-                if (reassortant().empty() || rae == reassortant_as_egg::yes)
-                    return "egg"sv;
-                else
-                    return "reassortant"sv;
-            }
-            else
-                return "cell"sv;
-        }
-
-        bool is_egg(reassortant_as_egg rae) const
+        bool is_egg(reassortant_as_egg rae) const override
         {
             const auto egg = passage().is_egg() || serum_id().find("EGG") != std::string::npos;
             return rae == reassortant_as_egg::yes ? (!reassortant().empty() || egg) : (reassortant().empty() && egg);
         }
-        bool is_cell() const { return !is_egg(reassortant_as_egg::yes); }
 
     }; // class Serum
 
@@ -502,219 +461,223 @@ namespace acmacs::chart
 
     using duplicates_t = std::vector<std::vector<size_t>>;
 
-    template <typename AgSr> class AntigensSera
+    namespace detail
     {
-      public:
-        virtual ~AntigensSera() = default;
-        AntigensSera() = default;
-        AntigensSera(const AntigensSera&) = delete;
+        template <typename AgSr> class AntigensSera
+        {
+          public:
+            virtual ~AntigensSera() = default;
+            AntigensSera() = default;
+            AntigensSera(const AntigensSera&) = delete;
 
-        virtual size_t size() const = 0;
-        virtual std::shared_ptr<AgSr> operator[](size_t aIndex) const = 0;
-        std::shared_ptr<AgSr> at(size_t aIndex) const { return operator[](aIndex); }
+            virtual size_t size() const = 0;
+            virtual std::shared_ptr<AgSr> operator[](size_t aIndex) const = 0;
+            std::shared_ptr<AgSr> at(size_t aIndex) const { return operator[](aIndex); }
 
-        using iterator = acmacs::iterator<AntigensSera<AgSr>, std::shared_ptr<AgSr>>;
-        iterator begin() const { return {*this, 0}; }
-        iterator end() const { return {*this, size()}; }
+            using iterator = acmacs::iterator<AntigensSera<AgSr>, std::shared_ptr<AgSr>>;
+            iterator begin() const { return {*this, 0}; }
+            iterator end() const { return {*this, size()}; }
 
-        Indexes all_indexes() const { return Indexes{acmacs::filled_with_indexes(size())}; }
+            Indexes all_indexes() const { return Indexes{acmacs::filled_with_indexes(size())}; }
 
-        // call func for each antigen and select ag/sr if func returns true
-        template <typename F> Indexes indexes(F&& func) const { return make_indexes(std::forward<F>(func)); }
+            // call func for each antigen and select ag/sr if func returns true
+            template <typename F> Indexes indexes(F&& func) const { return make_indexes(std::forward<F>(func)); }
 
-        void filter_found_in(Indexes& aIndexes, const AntigensSera<AgSr>& aNother) const
-        {
-            remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.full_name()); });
-        }
-        void filter_not_found_in(Indexes& aIndexes, const AntigensSera<AgSr>& aNother) const
-        {
-            remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.full_name()).has_value(); });
-        }
-
-        Indexes reassortant_indexes() const
-        {
-            return make_indexes([](const AgSr& ag) { return !ag.reassortant().empty(); });
-        }
-        void filter_reassortant(Indexes& aIndexes) const
-        {
-            remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); });
-        }
-
-        void filter_egg(Indexes& aIndexes, reassortant_as_egg rae = reassortant_as_egg::yes) const
-        {
-            remove(aIndexes, [rae](const auto& entry) -> bool { return !entry.is_egg(rae); });
-        }
-        void filter_cell(Indexes& aIndexes) const
-        {
-            remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_cell(); });
-        }
-        void filter_passage(Indexes& aIndexes, std::string_view passage) const
-        {
-            remove(aIndexes, [passage](const auto& entry) -> bool { return entry.passage().find(passage) == std::string::npos; });
-        }
-        void filter_passage(Indexes& aIndexes, const std::regex& passage) const
-        {
-            remove(aIndexes, [&passage](const auto& entry) -> bool { return !entry.passage().search(passage); });
-        }
-
-        void filter_lineage(Indexes& aIndexes, BLineage lineage) const
-        {
-            remove(aIndexes, [lineage](const auto& entry) -> bool { return entry.lineage() != lineage; });
-        }
-
-        void filter_country(Indexes& aIndexes, std::string_view aCountry) const
-        {
-            remove(aIndexes, [aCountry](const auto& entry) {
-                try {
-                    return acmacs::locationdb::get().country(acmacs::virus::location(entry.name())) != aCountry;
-                }
-                catch (std::exception&) {
-                    return true;
-                }
-            });
-        }
-
-        void filter_continent(Indexes& aIndexes, std::string_view aContinent) const
-        {
-            remove(aIndexes, [aContinent](const auto& entry) {
-                try {
-                    return acmacs::locationdb::get().continent(acmacs::virus::location(entry.name())) != aContinent;
-                }
-                catch (std::exception&) {
-                    return true;
-                }
-            });
-        }
-
-        void filter_out_distinct(Indexes& aIndexes) const
-        {
-            remove(aIndexes, [&](const auto& entry) -> bool { return entry.annotations().distinct(); });
-        }
-
-        template <typename F> void remove(Indexes& aIndexes, F&& aFilter) const
-        {
-            aIndexes.get().erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
-        }
-
-        // if aName starts with ~, then search by regex in full name
-        virtual bool name_matches(size_t index, std::string_view aName) const
-        {
-            if (!aName.empty() && aName[0] == '~') {
-                const std::regex re{std::next(std::begin(aName), 1), std::end(aName), acmacs::regex::icase};
-                return std::regex_search(at(index)->full_name(), re);
+            void filter_found_in(Indexes& aIndexes, const AntigensSera<AgSr>& aNother) const
+            {
+                remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.format("{name_full}")); });
             }
-            else {
-                const auto name = at(index)->name();
-                if (name == acmacs::virus::name_t{aName})
-                    return true;
-                else if (aName.size() > 2 && name.size() > 2) {
-                    if ((aName[0] == 'A' && aName[1] == '/' && name[0] == 'A' && name[1] == '(' && name.find(")/") != std::string::npos) || (aName[0] == 'B' && aName[1] == '/'))
-                        return name == acmacs::virus::name_t{acmacs::string::concat(name->substr(0, name.find('/')), aName.substr(1))};
-                    else if (aName[1] != '/' && aName[1] != '(')
-                        return name == acmacs::virus::name_t{acmacs::string::concat(name->substr(0, name.find('/') + 1), aName)};
+            void filter_not_found_in(Indexes& aIndexes, const AntigensSera<AgSr>& aNother) const
+            {
+                remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.format("{name_full}")).has_value(); });
+            }
+
+            Indexes reassortant_indexes() const
+            {
+                return make_indexes([](const AgSr& ag) { return !ag.reassortant().empty(); });
+            }
+            void filter_reassortant(Indexes& aIndexes) const
+            {
+                remove(aIndexes, [](const auto& entry) -> bool { return entry.reassortant().empty(); });
+            }
+
+            void filter_egg(Indexes& aIndexes, reassortant_as_egg rae = reassortant_as_egg::yes) const
+            {
+                remove(aIndexes, [rae](const auto& entry) -> bool { return !entry.is_egg(rae); });
+            }
+            void filter_cell(Indexes& aIndexes) const
+            {
+                remove(aIndexes, [](const auto& entry) -> bool { return !entry.is_cell(); });
+            }
+            void filter_passage(Indexes& aIndexes, std::string_view passage) const
+            {
+                remove(aIndexes, [passage](const auto& entry) -> bool { return entry.passage().find(passage) == std::string::npos; });
+            }
+            void filter_passage(Indexes& aIndexes, const std::regex& passage) const
+            {
+                remove(aIndexes, [&passage](const auto& entry) -> bool { return !entry.passage().search(passage); });
+            }
+
+            void filter_lineage(Indexes& aIndexes, BLineage lineage) const
+            {
+                remove(aIndexes, [lineage](const auto& entry) -> bool { return entry.lineage() != lineage; });
+            }
+
+            void filter_country(Indexes& aIndexes, std::string_view aCountry) const
+            {
+                remove(aIndexes, [aCountry](const auto& entry) {
+                    try {
+                        return acmacs::locationdb::get().country(acmacs::virus::location(entry.name())) != aCountry;
+                    }
+                    catch (std::exception&) {
+                        return true;
+                    }
+                });
+            }
+
+            void filter_continent(Indexes& aIndexes, std::string_view aContinent) const
+            {
+                remove(aIndexes, [aContinent](const auto& entry) {
+                    try {
+                        return acmacs::locationdb::get().continent(acmacs::virus::location(entry.name())) != aContinent;
+                    }
+                    catch (std::exception&) {
+                        return true;
+                    }
+                });
+            }
+
+            void filter_out_distinct(Indexes& aIndexes) const
+            {
+                remove(aIndexes, [&](const auto& entry) -> bool { return entry.annotations().distinct(); });
+            }
+
+            template <typename F> void remove(Indexes& aIndexes, F&& aFilter) const
+            {
+                aIndexes.get().erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
+            }
+
+            // if aName starts with ~, then search by regex in full name
+            virtual bool name_matches(size_t index, std::string_view aName) const
+            {
+                if (!aName.empty() && aName[0] == '~') {
+                    const std::regex re{std::next(std::begin(aName), 1), std::end(aName), acmacs::regex::icase};
+                    return std::regex_search(at(index)->format("{name_full}"), re);
                 }
+                else {
+                    const auto name = at(index)->name();
+                    if (name == acmacs::virus::name_t{aName})
+                        return true;
+                    else if (aName.size() > 2 && name.size() > 2) {
+                        if ((aName[0] == 'A' && aName[1] == '/' && name[0] == 'A' && name[1] == '(' && name.find(")/") != std::string::npos) || (aName[0] == 'B' && aName[1] == '/'))
+                            return name == acmacs::virus::name_t{acmacs::string::concat(name->substr(0, name.find('/')), aName.substr(1))};
+                        else if (aName[1] != '/' && aName[1] != '(')
+                            return name == acmacs::virus::name_t{acmacs::string::concat(name->substr(0, name.find('/') + 1), aName)};
+                    }
+                    else
+                        return false;
+                }
+                return false; // bug in clang-10?
+            }
+
+            virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const
+            {
+                if (const auto found = std::find_if(begin(), end(), [aFullName](const auto& antigen) -> bool { return antigen->format("{name_full}") == aFullName; }); found == end())
+                    return std::nullopt;
                 else
-                    return false;
+                    return found.index();
             }
-            return false; // bug in clang-10?
-        }
 
-        virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const
-        {
-            if (const auto found = std::find_if(begin(), end(), [aFullName](const auto& antigen) -> bool { return antigen->full_name() == aFullName; }); found == end())
-                return std::nullopt;
-            else
-                return found.index();
-        }
+            // if aName starts with ~, then search by regex in full name
+            virtual Indexes find_by_name(std::string_view aName) const
+            {
+                if (!aName.empty() && aName[0] == '~')
+                    return find_by_name(std::regex{std::next(std::begin(aName), 1), std::end(aName), acmacs::regex::icase});
 
-        // if aName starts with ~, then search by regex in full name
-        virtual Indexes find_by_name(std::string_view aName) const
-        {
-            if (!aName.empty() && aName[0] == '~')
-                return find_by_name(std::regex{std::next(std::begin(aName), 1), std::end(aName), acmacs::regex::icase});
+                auto find = [this](auto name) {
+                    Indexes indexes;
+                    for (auto iter = begin(); iter != end(); ++iter) {
+                        if ((*iter)->name() == acmacs::virus::name_t{name})
+                            indexes.insert(iter.index());
+                    }
+                    return indexes;
+                };
 
-            auto find = [this](auto name) {
+                const auto name{::string::upper(aName)};
+                auto indexes = find(name);
+                if (indexes->empty() && name.size() > 2) {
+                    if (const auto first_name = (*begin())->name(); first_name.size() > 2) {
+                        // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix (for A and B)
+                        if ((name[0] == 'A' && name[1] == '/' && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos) || (name[0] == 'B' && name[1] == '/'))
+                            indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/')), name.substr(1)));
+                        else if (name[1] != '/' && name[1] != '(')
+                            indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/') + 1), name));
+                    }
+                }
+                return indexes;
+            }
+
+            // regex search in full name
+            virtual Indexes find_by_name(const std::regex& re_name) const
+            {
                 Indexes indexes;
                 for (auto iter = begin(); iter != end(); ++iter) {
-                    if ((*iter)->name() == acmacs::virus::name_t{name})
+                    if (std::regex_search((*iter)->format("{name_full}"), re_name))
                         indexes.insert(iter.index());
                 }
                 return indexes;
-            };
+            }
 
-            const auto name{::string::upper(aName)};
-            auto indexes = find(name);
-            if (indexes->empty() && name.size() > 2) {
-                if (const auto first_name = (*begin())->name(); first_name.size() > 2) {
-                    // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix (for A and B)
-                    if ((name[0] == 'A' && name[1] == '/' && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos) || (name[0] == 'B' && name[1] == '/'))
-                        indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/')), name.substr(1)));
-                    else if (name[1] != '/' && name[1] != '(')
-                        indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/') + 1), name));
+            duplicates_t find_duplicates() const
+            {
+                std::map<std::string, std::vector<size_t>> designations_to_indexes;
+                for (size_t index = 0; index < size(); ++index) {
+                    auto [pos, inserted] = designations_to_indexes.insert({at(index)->format("{designation}"), {}});
+                    pos->second.push_back(index);
                 }
-            }
-            return indexes;
-        }
 
-        // regex search in full name
-        virtual Indexes find_by_name(const std::regex& re_name) const
-        {
-            Indexes indexes;
-            for (auto iter = begin(); iter != end(); ++iter) {
-                if (std::regex_search((*iter)->full_name(), re_name))
-                    indexes.insert(iter.index());
-            }
-            return indexes;
-        }
-
-        duplicates_t find_duplicates() const
-        {
-            std::map<std::string, std::vector<size_t>> designations_to_indexes;
-            for (size_t index = 0; index < size(); ++index) {
-                auto [pos, inserted] = designations_to_indexes.insert({at(index)->designation(), {}});
-                pos->second.push_back(index);
-            }
-
-            acmacs::chart::duplicates_t result;
-            for (auto [designation, indexes] : designations_to_indexes) {
-                if (indexes.size() > 1 && designation.find(" DISTINCT") == std::string::npos) {
-                    result.push_back(indexes);
+                acmacs::chart::duplicates_t result;
+                for (auto [designation, indexes] : designations_to_indexes) {
+                    if (indexes.size() > 1 && designation.find(" DISTINCT") == std::string::npos) {
+                        result.push_back(indexes);
+                    }
                 }
+                return result;
             }
-            return result;
-        }
 
-      protected:
-        template <typename F> Indexes make_indexes(F&& test) const
-        {
-            const auto call = [&test](size_t no, const std::shared_ptr<AgSr>& ptr) -> bool {
-                if constexpr (std::is_invocable_v<F, const AgSr&>)
-                    return test(*ptr);
-                else if constexpr (std::is_invocable_v<F, size_t, const AgSr&>)
-                    return test(no, *ptr);
-                else if constexpr (std::is_invocable_v<F, std::shared_ptr<AgSr>>)
-                    return test(ptr);
-                else if constexpr (std::is_invocable_v<F, size_t, std::shared_ptr<AgSr>>)
-                    return test(no, ptr);
-                else
-                    static_assert(std::is_invocable_v<F, void, int>, "unsupported filter function signature");
-            };
+          protected:
+            template <typename F> Indexes make_indexes(F&& test) const
+            {
+                const auto call = [&test](size_t no, const std::shared_ptr<AgSr>& ptr) -> bool {
+                    if constexpr (std::is_invocable_v<F, const AgSr&>)
+                        return test(*ptr);
+                    else if constexpr (std::is_invocable_v<F, size_t, const AgSr&>)
+                        return test(no, *ptr);
+                    else if constexpr (std::is_invocable_v<F, std::shared_ptr<AgSr>>)
+                        return test(ptr);
+                    else if constexpr (std::is_invocable_v<F, size_t, std::shared_ptr<AgSr>>)
+                        return test(no, ptr);
+                    else
+                        static_assert(std::is_invocable_v<F, void, int>, "unsupported filter function signature");
+                };
 
-            Indexes result;
-            for (size_t no = 0; no < size(); ++no) {
-                if (call(no, at(no)))
-                    result.insert(no);
+                Indexes result;
+                for (size_t no = 0; no < size(); ++no) {
+                    if (call(no, at(no)))
+                        result.insert(no);
+                }
+                return result;
             }
-            return result;
-        }
-    };
+        };
+
+    } // namespace detail
 
     // ----------------------------------------------------------------------
 
-    class Antigens : public AntigensSera<Antigen>
+    class Antigens : public detail::AntigensSera<Antigen>
     {
       public:
-        using AntigensSera<Antigen>::AntigensSera;
+        using detail::AntigensSera<Antigen>::AntigensSera;
 
         Indexes reference_indexes() const
         {
@@ -755,10 +718,10 @@ namespace acmacs::chart
 
     // ----------------------------------------------------------------------
 
-    class Sera : public AntigensSera<Serum>
+    class Sera : public detail::AntigensSera<Serum>
     {
       public:
-        using AntigensSera<Serum>::AntigensSera;
+        using detail::AntigensSera<Serum>::AntigensSera;
 
         void filter_serum_id(Indexes& aIndexes, std::string_view aSerumId) const
         {
@@ -987,7 +950,7 @@ namespace acmacs::chart
         for (auto i1 = a1.begin(), i2 = a2.begin(); i1 != a1.end(); ++i1, ++i2) {
             if (**i1 != **i2) {
                 if (verbose)
-                    fmt::print(stderr, "WARNING: ag/sr different: {} vs {}\n", (*i1)->full_name(), (*i2)->full_name());
+                    fmt::print(stderr, "WARNING: ag/sr different: {} vs {}\n", (*i1)->format("{name_full}"), (*i2)->format("{name_full}"));
                 return false;
             }
         }
@@ -1000,12 +963,12 @@ namespace acmacs::chart
 
     template <typename AgSr> inline size_t max_full_name(const AgSr& ag_sr)
     {
-        return std::accumulate(std::begin(ag_sr), std::end(ag_sr), 0ul, [](size_t max_name, const auto& en) { return std::max(max_name, en->full_name().size()); });
+        return std::accumulate(std::begin(ag_sr), std::end(ag_sr), 0ul, [](size_t max_name, const auto& en) { return std::max(max_name, en->format("{name_full}").size()); });
     }
 
     template <typename AgSr> inline size_t max_full_name(const AgSr& ag_sr, const acmacs::chart::PointIndexList& indexes)
     {
-        return std::accumulate(std::begin(indexes), std::end(indexes), 0ul, [&ag_sr](size_t max_name, size_t index) { return std::max(max_name, ag_sr.at(index)->full_name().size()); });
+        return std::accumulate(std::begin(indexes), std::end(indexes), 0ul, [&ag_sr](size_t max_name, size_t index) { return std::max(max_name, ag_sr.at(index)->format("{name_full}").size()); });
     }
 
     // ----------------------------------------------------------------------
@@ -1067,26 +1030,14 @@ template <> struct fmt::formatter<acmacs::chart::BLineage> : fmt::formatter<acma
 template <> struct fmt::formatter<acmacs::chart::Antigen> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::Antigen& antigen, FormatCtx& ctx)
     {
-        format_to(ctx.out(), "{}", antigen.full_name());
-        if (const auto date = antigen.date(); !date.empty())
-            format_to(ctx.out(), " [{}]", date);
-        if (const auto lab_ids = antigen.lab_ids(); !lab_ids->empty())
-            format_to(ctx.out(), " {}", lab_ids.join());
-        if (const auto lineage = antigen.lineage(); lineage != acmacs::chart::BLineage::Unknown)
-            format_to(ctx.out(), " {}", lineage);
-        return ctx.out();
+        return fmt::format_to(ctx.out(), antigen.format("{name_full} [{date}]{ }{lab_ids}{ }{lineage}"));
     }
 };
 
 template <> struct fmt::formatter<acmacs::chart::Serum> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::Serum& serum, FormatCtx& ctx)
     {
-        format_to(ctx.out(), "{}", serum.full_name());
-        if (const auto lineage = serum.lineage(); lineage != acmacs::chart::BLineage::Unknown)
-            format_to(ctx.out(), " {}", lineage);
-        if (const auto serum_species = serum.serum_species(); !serum_species.empty())
-            format_to(ctx.out(), " {}", serum_species);
-        return ctx.out();
+        return fmt::format_to(ctx.out(), serum.format("{name_full}{ }{lineage}{ }{species}"));
     }
 };
 

@@ -74,7 +74,7 @@ std::string field(const acmacs::chart::Chart& chart, std::string_view field_name
         else if (field_name == "no1")
             return fmt::format("{}", point_no + 1);
         else if (field_name == "name")
-            return antigens->at(point_no)->full_name();
+            return antigens->at(point_no)->format("{name_full}");
         else if (field_name == "fill")
             return fmt::format("{}", chart.plot_spec()->all_styles()[point_no].fill());
         else
@@ -88,7 +88,7 @@ std::string field(const acmacs::chart::Chart& chart, std::string_view field_name
         else if (field_name == "no1")
             return fmt::format("{}", point_no + 1 - antigens->size());
         else if (field_name == "name")
-            return chart.sera()->at(point_no - antigens->size())->full_name();
+            return chart.sera()->at(point_no - antigens->size())->format("{name_full}");
         else if (field_name == "fill")
             return fmt::format("{}", chart.plot_spec()->all_styles()[point_no].fill());
         else
@@ -149,14 +149,14 @@ void write_text(std::string_view aFilename, const Options& opt, const acmacs::ch
     std::string result;
     const auto number_of_dimensions = layout->number_of_dimensions();
     for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
-        result += fmt::format("AG{}{}{}{}", opt.field_separator, ag_no, opt.field_separator, encode_name(antigen->full_name(), opt.field_separator));
+        result += fmt::format("AG{}{}{}{}", opt.field_separator, ag_no, opt.field_separator, encode_name(antigen->format("{name_full}"), opt.field_separator));
         for (auto dim : acmacs::range(number_of_dimensions))
             result += acmacs::string::concat(opt.field_separator, acmacs::to_string(layout->coordinate(ag_no, dim)));
         result += '\n';
     }
     const auto number_of_antigens = antigens->size();
     for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-        result += fmt::format("SR{}{}{}{}", opt.field_separator, sr_no, opt.field_separator, encode_name(serum->full_name(), opt.field_separator));
+        result += fmt::format("SR{}{}{}{}", opt.field_separator, sr_no, opt.field_separator, encode_name(serum->format("{name_full}"), opt.field_separator));
         for (auto dim : acmacs::range(number_of_dimensions))
             result += acmacs::string::concat(opt.field_separator, acmacs::to_string(layout->coordinate(sr_no + number_of_antigens, dim)));
         result += '\n';

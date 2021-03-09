@@ -398,7 +398,7 @@ template <typename DF> std::string acmacs::chart::export_layout(const Chart& aCh
 
     for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
         DF::first_field(result, "AG");
-        DF::second_field(result, antigen->full_name());
+        DF::second_field(result, antigen->format("{name_full}"));
         for (auto dim : acmacs::range<number_of_dimensions_t>(number_of_dimensions))
             DF::second_field(result, (*layout)(ag_no, dim));
         DF::end_of_record(result);
@@ -406,7 +406,7 @@ template <typename DF> std::string acmacs::chart::export_layout(const Chart& aCh
 
     for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
         DF::first_field(result, "SR");
-        DF::second_field(result, serum->full_name());
+        DF::second_field(result, serum->format("{name_full}"));
         for (auto dim : acmacs::range<number_of_dimensions_t>(number_of_dimensions))
             DF::second_field(result, (*layout)(sr_no + number_of_antigens, dim));
         DF::end_of_record(result);
@@ -432,7 +432,7 @@ template <typename DF> std::string acmacs::chart::export_table_map_distances(con
     auto antigens = aChart.antigens();
     auto sera = aChart.sera();
     auto point_name = [&antigens, &sera](size_t point_no) -> std::string {
-        return point_no < antigens->size() ? antigens->at(point_no)->full_name() : sera->at(point_no - antigens->size())->full_name();
+        return point_no < antigens->size() ? antigens->at(point_no)->format("{name_full}") : sera->at(point_no - antigens->size())->format("{name_full}");
     };
 
     std::string result;
@@ -474,11 +474,11 @@ template <typename DF> std::string acmacs::chart::export_distances_between_all_p
     for (auto point_1 : acmacs::range(number_of_points)) {
         const auto ag_1 = point_1 < number_of_antigens;
         const auto no_1 = ag_1 ? point_1 : (point_1 - number_of_antigens);
-        const auto name_1 = ag_1 ? antigens->at(no_1)->full_name() : sera->at(no_1)->full_name();
+        const auto name_1 = ag_1 ? antigens->at(no_1)->format("{name_full}") : sera->at(no_1)->format("{name_full}");
         for (auto point_2 : acmacs::range(point_1 + 1, number_of_points)) {
             const auto ag_2 = point_2 < number_of_antigens;
             const auto no_2 = ag_2 ? point_2 : (point_2 - number_of_antigens);
-            const auto name_2 = ag_2 ? antigens->at(no_2)->full_name() : sera->at(no_2)->full_name();
+            const auto name_2 = ag_2 ? antigens->at(no_2)->format("{name_full}") : sera->at(no_2)->format("{name_full}");
             const auto distance = layout->distance(point_1, point_2);
 
             DF::first_field(result, ag_1 ? "AG" : "SR");
@@ -506,7 +506,7 @@ template <typename DF> std::string acmacs::chart::export_error_lines(const Chart
     auto antigens = aChart.antigens();
     auto sera = aChart.sera();
     auto point_name = [&antigens, &sera](size_t point_no) -> std::string {
-        return point_no < antigens->size() ? antigens->at(point_no)->full_name() : sera->at(point_no - antigens->size())->full_name();
+        return point_no < antigens->size() ? antigens->at(point_no)->format("{name_full}") : sera->at(point_no - antigens->size())->format("{name_full}");
     };
 
     const auto error_lines = aChart.projection(aProjectionNo)->error_lines();

@@ -183,13 +183,13 @@ std::vector<std::vector<size_t>> get_cheating_assays(const Charts& charts)
     const auto pair_order = [](const auto& e1, const auto& e2) { return e1.second < e2.second; };
     const auto get_reference_names = [pair_order](const auto& ag_sr) {
         return *ag_sr.reference_indexes()                                                                             //
-               | ranges::views::transform([&ag_sr](size_t no) { return std::make_pair(no, ag_sr[no]->full_name()); }) //
+               | ranges::views::transform([&ag_sr](size_t no) { return std::make_pair(no, ag_sr[no]->format("{name_full}")); }) //
                | ranges::to_vector                                                                                    //
                | ranges::actions::sort(pair_order);
     };
     const auto get_all_names = [pair_order](const auto& ag_sr) {
         return *ag_sr.all_indexes()                                                                                   //
-               | ranges::views::transform([&ag_sr](size_t no) { return std::make_pair(no, ag_sr[no]->full_name()); }) //
+               | ranges::views::transform([&ag_sr](size_t no) { return std::make_pair(no, ag_sr[no]->format("{name_full}")); }) //
                | ranges::to_vector                                                                                    //
                | ranges::actions::sort(pair_order);
     };

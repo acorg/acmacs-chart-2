@@ -578,7 +578,7 @@ std::optional<size_t> Acd1Antigens::find_by_full_name(std::string_view aFullName
     const std::string name(::virus_name::name(aFullName));
     if (const auto found = mAntigenNameIndex.find(name); found != mAntigenNameIndex.end()) {
         for (auto index: found->second) {
-            if (Acd1Antigen(data_[index]).full_name() == aFullName)
+            if (Acd1Antigen(data_[index]).format("{name_full}") == aFullName)
                 return index;
         }
     }

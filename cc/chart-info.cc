@@ -79,7 +79,7 @@ int main(int argc, char* const argv[])
                 chart->set_homologous(acmacs::chart::find_homologous::all, nullptr, acmacs::debug::yes);
                 auto antigens = chart->antigens();
                 for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-                    fmt::print("SR {:{}d} {} -- {}\n", sr_no, serum_index_num_digits, serum->full_name(), serum->homologous_antigens());
+                    fmt::print("SR {:{}d} {} -- {}\n", sr_no, serum_index_num_digits, serum->format("{name_full}"), serum->homologous_antigens());
                 }
                 fields.emplace_back();
             }

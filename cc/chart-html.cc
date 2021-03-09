@@ -168,15 +168,8 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
                 output << "<td class=\"ag-passage\">" << html_escape(passages[ag_no]) << "</td>";
         }
         else {
-            std::string name = antigen->name_abbreviated();
-            // if (name.size() > 8) {
-            //     std::vector<std::string> fields;
-            //     for (auto field : acmacs::string::split(name, "/", acmacs::string::Split::RemoveEmpty))
-            //         fields.emplace_back(field.substr(0, 2));
-            //     name = string::join(acmacs::string::join_slash, fields);
-            // }
-            output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << has_too_few_numeric_titers_class << "\"><div class=\"tooltip\">" << html_escape(name)
-                   << "<span class=\"tooltiptext\">" << html_escape(antigen->full_name()) << "</span></div></td>";
+            output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << has_too_few_numeric_titers_class << "\"><div class=\"tooltip\">" << html_escape(antigen->format("{name_abbreviated}"))
+                   << "<span class=\"tooltiptext\">" << html_escape(antigen->format("{name_full}")) << "</span></div></td>";
         }
 
         // titers
@@ -329,7 +322,7 @@ std::vector<size_t> serum_rows(std::ostream& output, const acmacs::chart::Chart&
         const auto show_serum_name = [&having_too_few_numeric_titers, number_of_antigens, &output](size_t sr_no, const auto& serum, bool group_begin) {
             const char* has_too_few_numeric_titers_class = having_too_few_numeric_titers.contains(sr_no + number_of_antigens) ? " too-few-numeric-titers" : "";
             output << "<td class=\"sr-name sr-" << sr_no << " passage-" << serum.passage().passage_type() << has_too_few_numeric_titers_class << (group_begin ? " sr-group-begin" : "") << "\">"
-                   << html_escape(serum.name_abbreviated()) << "</td>";
+                   << html_escape(serum.format("{name_abbreviated}")) << "</td>";
         };
 
         show_row(show_serum_name);
@@ -355,7 +348,7 @@ std::vector<size_t> serum_rows(std::ostream& output, const acmacs::chart::Chart&
     }
     else {
         auto show_serum = [&having_too_few_numeric_titers, number_of_antigens, &output](size_t sr_no, const auto& serum, bool group_begin) {
-            std::string name = serum.name_abbreviated();
+            std::string name = serum.format("{name_abbreviated}");
             if (name.size() > 10) {
                 std::vector<std::string> fields;
                 for (auto field : acmacs::string::split(name, "/", acmacs::string::Split::RemoveEmpty)) {
@@ -368,7 +361,7 @@ std::vector<size_t> serum_rows(std::ostream& output, const acmacs::chart::Chart&
             }
             const char* has_too_few_numeric_titers_class = having_too_few_numeric_titers.contains(sr_no + number_of_antigens) ? " too-few-numeric-titers" : "";
             output << "<td class=\"sr-name sr-" << sr_no << " passage-" << serum.passage().passage_type() << has_too_few_numeric_titers_class << (group_begin ? " sr-group-begin" : "")
-                   << "\"><div class=\"tooltip\">" << html_escape(name) << "<span class=\"tooltiptext\">" << html_escape(serum.full_name_with_passage()) << "</span></div></td>";
+                   << "\"><div class=\"tooltip\">" << html_escape(name) << "<span class=\"tooltiptext\">" << html_escape(serum.format("{name_full} {passage}")) << "</span></div></td>";
         };
 
         show_row(show_serum);

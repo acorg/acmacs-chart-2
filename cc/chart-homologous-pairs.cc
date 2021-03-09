@@ -45,9 +45,9 @@ int main(int argc, char* const argv[])
             const auto sr_num_digits = static_cast<int>(std::log10(antigens->size())) + 1;
 
             for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-                std::cout << std::setw(sr_num_digits) << std::right << sr_no << ' ' << serum->full_name_with_passage() << '\n';
+                std::cout << std::setw(sr_num_digits) << std::right << sr_no << ' ' << serum->format("{name_full} {passage}") << '\n';
                 for (auto ag_no : serum->homologous_antigens())
-                    std::cout << "      " << std::setw(ag_num_digits) << std::right << ag_no << ' ' << (*antigens)[ag_no]->full_name() << '\n';
+                    std::cout << "      " << std::setw(ag_num_digits) << std::right << ag_no << ' ' << (*antigens)[ag_no]->format("{name_full}") << '\n';
                 std::cout << '\n';
             }
         }

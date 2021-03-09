@@ -238,7 +238,7 @@ std::optional<size_t> AceAntigens::find_by_full_name(std::string_view aFullName)
     const auto name = ::virus_name::name(aFullName);
     if (const auto found = mAntigenNameIndex.find(name); found != mAntigenNameIndex.end()) {
         for (auto index: found->second) {
-            if (AceAntigen(data_[index]).full_name() == aFullName)
+            if (AceAntigen(data_[index]).format("{name_full}") == aFullName)
                 return index;
         }
     }
@@ -250,7 +250,7 @@ std::optional<size_t> AceAntigens::find_by_full_name(std::string_view aFullName)
 // {
 //     const std::string_view name{virus_name::name(aFullName)};
 //     for (auto iter = data_.begin(); iter != data_.end(); ++iter) {
-//         if ((*iter)["N"] == name && AceAntigen(*iter).full_name() == aFullName) {
+//         if ((*iter)["N"] == name && AceAntigen(*iter).format("{name_full}") == aFullName) {
 //             return static_cast<size_t>(iter - data_.begin());
 //         }
 //     }

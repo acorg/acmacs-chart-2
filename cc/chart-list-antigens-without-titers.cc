@@ -31,10 +31,10 @@ int main(int argc, char* const argv[])
             if (index < antigens->size()) {
                 if (!opt.name_only)
                     fmt::print("AG {:4d} ", index);
-                fmt::print("{}\n", antigens->at(index)->full_name());
+                fmt::print("{}\n", antigens->at(index)->format("{name_full}"));
             }
             else {
-                fmt::print("SR {:3d} {}\n", index - antigens->size(), sera->at(index - antigens->size())->full_name());
+                fmt::print("SR {:3d} {}\n", index - antigens->size(), sera->at(index - antigens->size())->format("{name_full}"));
             }
         }
     }

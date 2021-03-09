@@ -62,7 +62,7 @@ void print_plot_spec(std::string_view chart_filename)
         antigen_fields["I"].push_back(acmacs::to_string(ag_no));
         antigen_fields["name"].emplace_back(antigen->name());
         antigen_fields["reassortant"].emplace_back(antigen->reassortant());
-        antigen_fields["annotations"].push_back(antigen->annotations().join());
+        antigen_fields["annotations"].push_back(fmt::format("{: }", antigen->annotations()));
         antigen_fields["passage"].emplace_back(antigen->passage());
         const auto style = plot_spec->style(ag_no);
         antigen_fields["fill_color"].push_back(fmt::format("{}", style.fill()));
@@ -96,7 +96,7 @@ void print_plot_spec(std::string_view chart_filename)
         serum_fields["I"].push_back(acmacs::to_string(sr_no));
         serum_fields["name"].emplace_back(serum->name());
         serum_fields["reassortant"].emplace_back(serum->reassortant());
-        serum_fields["annotations"].push_back(serum->annotations().join());
+        serum_fields["annotations"].push_back(fmt::format("{: }", serum->annotations()));
         serum_fields["passage"].emplace_back(serum->passage());
         serum_fields["serum_id"].emplace_back(serum->serum_id());
         serum_fields["serum_species"].emplace_back(serum->serum_species());

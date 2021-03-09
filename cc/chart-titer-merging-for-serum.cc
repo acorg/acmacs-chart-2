@@ -28,7 +28,7 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("chart has no layers");
         const auto max_antigen_name = static_cast<int>(max_full_name(*chart->antigens()));
 
-        std::cout << "SR " << opt.serum_no << ' ' << chart->serum(opt.serum_no)->full_name() << ' ' << static_cast<std::string_view>(chart->serum(opt.serum_no)->passage()) << '\n';
+        std::cout << "SR " << opt.serum_no << ' ' << chart->serum(opt.serum_no)->format("{name_full}") << ' ' << static_cast<std::string_view>(chart->serum(opt.serum_no)->passage()) << '\n';
         if (chart->number_of_projections() > 0) {
             if (auto fcb = chart->projection(0)->forced_column_bases(); fcb)
                 std::cout << "forced column basis: " << fcb->column_basis(opt.serum_no) << '\n';
@@ -41,7 +41,7 @@ int main(int argc, char* const argv[])
         for (size_t antigen_no = 0; antigen_no < chart->number_of_antigens(); ++antigen_no) {
             if (std::any_of(acmacs::index_iterator(0UL), acmacs::index_iterator(titers->number_of_layers()),
                             [&titers, antigen_no, serum_no = *opt.serum_no](size_t layer_no) { return !titers->titer_of_layer(layer_no, antigen_no, serum_no).is_dont_care(); })) {
-                std::cout << std::setw(4) << std::right << antigen_no << ' ' << std::setw(max_antigen_name) << std::left << chart->antigen(antigen_no)->full_name()
+                std::cout << std::setw(4) << std::right << antigen_no << ' ' << std::setw(max_antigen_name) << std::left << chart->antigen(antigen_no)->format("{name_full}")
                           << std::setw(6) << std::right << *titers->titer(antigen_no, opt.serum_no);
                 for (size_t layer_no = 0; layer_no < titers->number_of_layers(); ++layer_no) {
                     const auto titer = titers->titer_of_layer(layer_no, antigen_no, opt.serum_no);

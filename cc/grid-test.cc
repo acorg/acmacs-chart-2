@@ -19,11 +19,11 @@ static std::vector<acmacs::chart::GridTest::Result> _gcc72_bug;
 std::string acmacs::chart::GridTest::point_name(size_t point_no) const
 {
     if (antigen(point_no)) {
-        return "AG " + acmacs::to_string(point_no) + ' ' + (*chart_.antigens())[point_no]->full_name();
+        return "AG " + acmacs::to_string(point_no) + ' ' + (*chart_.antigens())[point_no]->format("{name_full}");
     }
     else {
         const auto serum_no = antigen_serum_no(point_no);
-        return "SR " + acmacs::to_string(serum_no) + ' ' + (*chart_.sera())[serum_no]->full_name();
+        return "SR " + acmacs::to_string(serum_no) + ' ' + (*chart_.sera())[serum_no]->format("{name_full}");
     }
 
 } // acmacs::chart::GridTest::point_name
@@ -218,9 +218,9 @@ std::string acmacs::chart::GridTest::Result::report(const Chart& chart) const
     std::string name;
     const auto index_num_digits = acmacs::number_of_decimal_digits(std::max(chart.number_of_antigens(), chart.number_of_sera()));
     if (const auto num_ags = chart.number_of_antigens(); point_no < num_ags)
-        name = fmt::format("[AG {:{}d} {:60s}]", point_no, index_num_digits, chart.antigens()->at(point_no)->full_name());
+        name = fmt::format("[AG {:{}d} {:60s}]", point_no, index_num_digits, chart.antigens()->at(point_no)->format("{name_full}"));
     else
-        name = fmt::format("[SR {:{}d} {:60s}]", point_no - num_ags, index_num_digits, chart.sera()->at(point_no - num_ags)->full_name());
+        name = fmt::format("[SR {:{}d} {:60s}]", point_no - num_ags, index_num_digits, chart.sera()->at(point_no - num_ags)->format("{name_full}"));
     return fmt::format("{} {} diff:{:7.4f} dist:{:7.4f}", diag, name, contribution_diff, distance);
 
 } // acmacs::chart::GridTest::Result::report
@@ -292,7 +292,7 @@ std::string acmacs::chart::GridTest::Results::export_to_json(const Chart& chart)
     const auto export_point = [&chart](const auto& en) -> to_json::object {
         return to_json::object{
             to_json::key_val{"point_no", en.point_no},
-            to_json::key_val{"name", en.point_no < chart.number_of_antigens() ? chart.antigen(en.point_no)->full_name() : chart.serum(en.point_no - chart.number_of_antigens())->full_name()},
+            to_json::key_val{"name", en.point_no < chart.number_of_antigens() ? chart.antigen(en.point_no)->format("{name_full}") : chart.serum(en.point_no - chart.number_of_antigens())->format("{name_full}")},
             to_json::key_val{"distance", en.distance},
             to_json::key_val{"contribution_diff", en.contribution_diff},
             to_json::key_val{"pos", to_json::array(en.pos.begin(), en.pos.end())},
@@ -370,14 +370,14 @@ std::string acmacs::chart::GridTest::Results::export_to_layout_csv(const Chart& 
 
     for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
         DF::first_field(result, "AG");
-        DF::second_field(result, antigen->full_name());
+        DF::second_field(result, antigen->format("{name_full}"));
         add(ag_no);
         DF::end_of_record(result);
     }
 
     for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
         DF::first_field(result, "SR");
-        DF::second_field(result, serum->full_name());
+        DF::second_field(result, serum->format("{name_full}"));
         add(sr_no + number_of_antigens);
         DF::end_of_record(result);
     }

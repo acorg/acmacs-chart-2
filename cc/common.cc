@@ -55,7 +55,7 @@ class CommonAntigensSera::Impl
                     return n_c;
                 if (auto r_c = lhs.reassortant.compare(rhs.reassortant); r_c != 0)
                     return r_c;
-                return ::string::compare(lhs.annotations.join(), rhs.annotations.join());
+                return ::string::compare(fmt::format("{: }", lhs.annotations), fmt::format("{: }", rhs.annotations));
             }
 
         static bool less(const CoreEntry& lhs, const CoreEntry& rhs) { return compare(lhs, rhs) < 0; }
