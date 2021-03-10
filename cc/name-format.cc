@@ -239,39 +239,6 @@ std::string acmacs::chart::collapse_spaces(std::string src)
 
 // ----------------------------------------------------------------------
 
-namespace fmt
-{
-    template <typename FormatMatched, typename FormatNoPattern, typename... Args>
-    void x_substitute_to(FormatMatched&& format_matched, FormatNoPattern&& format_no_pattern, std::string_view pattern, if_no_substitution_found insf, Args&&... args)
-    {
-        const auto match_and_format = [&format_matched](std::string_view look_for, std::string_view pattern_arg, const auto& en) {
-            if (look_for == en.first) {
-                format_matched(pattern_arg, en.first, en.second);
-                return true;
-            }
-            else
-                return false;
-        };
-
-        for (const auto& [key, pattern_arg] : split_for_formatting(pattern)) {
-            if (!key.empty()) {
-                if (!(match_and_format(key, pattern_arg, args) || ...)) {
-                    // not matched
-                    switch (insf) {
-                        case if_no_substitution_found::leave_as_is:
-                            format_no_pattern(pattern_arg);
-                            break;
-                        case if_no_substitution_found::empty:
-                            break;
-                    }
-                }
-            }
-            else
-                format_no_pattern(pattern_arg);
-        }
-    }
-}
-
 std::string acmacs::chart::format_antigen(std::string_view pattern, const acmacs::chart::Chart& chart, size_t antigen_no)
 {
     auto antigens = chart.antigens();
