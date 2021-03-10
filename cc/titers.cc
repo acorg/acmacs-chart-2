@@ -370,14 +370,15 @@ bool acmacs::chart::Titers::has_morethan_in_layers() const
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::PointIndexList acmacs::chart::Titers::having_titers_with(size_t point_no) const
+acmacs::chart::PointIndexList acmacs::chart::Titers::having_titers_with(size_t point_no, bool return_point_no) const
 {
     const auto num_antigens = number_of_antigens();
     PointIndexList result;
     if (point_no < num_antigens) {
+        const auto base = return_point_no ? num_antigens : 0;
         for (const auto& titer_ref : titers_existing()) {
             if (titer_ref.antigen == point_no)
-                result.insert(titer_ref.serum + num_antigens);
+                result.insert(titer_ref.serum + base);
         }
     }
     else {

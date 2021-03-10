@@ -386,8 +386,7 @@ namespace acmacs::chart
 
             virtual Continent continent() const { return {}; }
 
-            // returns if collapsable spaces inserted
-            virtual bool format(fmt::memory_buffer& output, std::string_view pattern) const = 0;
+            virtual void format(fmt::memory_buffer& output, std::string_view pattern) const = 0;
             std::string format(std::string_view pattern) const;
             std::string name_full() const { return format("{name_full}"); }
 
@@ -431,7 +430,7 @@ namespace acmacs::chart
 
         using detail::AntigenSerum::format;
             // returns if collapsable spaces inserted
-        bool format(fmt::memory_buffer& output, std::string_view pattern) const override; // name-format.cc
+        void format(fmt::memory_buffer& output, std::string_view pattern) const override; // name-format.cc
 
     }; // class Antigen
 
@@ -447,7 +446,7 @@ namespace acmacs::chart
 
         using detail::AntigenSerum::format;
             // returns if collapsable spaces inserted
-        bool format(fmt::memory_buffer& output, std::string_view pattern) const override; // name-format.cc
+        void format(fmt::memory_buffer& output, std::string_view pattern) const override; // name-format.cc
 
         bool is_egg(reassortant_as_egg rae) const override
         {

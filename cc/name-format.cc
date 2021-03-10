@@ -1,7 +1,6 @@
 #include <functional>
 
 #include "acmacs-base/string-join.hh"
-#include "acmacs-base/string-substitute.hh"
 #include "acmacs-base/string-compare.hh"
 #include "acmacs-base/regex.hh"
 #include "locationdb/locdb.hh"
@@ -11,13 +10,6 @@
 // ----------------------------------------------------------------------
 
 #define COLLAPSABLE_SPACE "\x01"
-
-template <typename AgSr> using format_subst_t = std::pair<std::string_view, std::function<void(fmt::memory_buffer&, std::string_view format, const AgSr&)>>;
-template <typename AgSr> using format_subst_list_t = std::vector<format_subst_t<AgSr>>;
-
-#define KEY_FUNC_AGSR(key, call) {key, [](fmt::memory_buffer& output, std::string_view format, const AgSr& ag_sr) { fmt::format_to(output, format, fmt::arg(key, call)); }}
-#define KEY_FUNC_AG(key, call) {key, [](fmt::memory_buffer& output, std::string_view format, [[maybe_unused]] const acmacs::chart::Antigen& ag) { fmt::format_to(output, format, fmt::arg(key, call)); }}
-#define KEY_FUNC_SR(key, call) {key, [](fmt::memory_buffer& output, std::string_view format, [[maybe_unused]] const acmacs::chart::Serum& sr) { fmt::format_to(output, format, fmt::arg(key, call)); }}
 
 // ----------------------------------------------------------------------
 
@@ -105,14 +97,15 @@ template <typename AgSr> static std::string fields(const AgSr& ag_sr)
 std::string acmacs::chart::detail::AntigenSerum::format(std::string_view pattern) const
 {
     fmt::memory_buffer output;
-    if (format(output, pattern))
-        return acmacs::chart::collapse_spaces(fmt::to_string(output));
-    else
-        return fmt::to_string(output);
+    format(output, pattern);
+    // acmacs::chart::collapse_spaces(fmt::to_string(output));
+    return fmt::to_string(output);
 
 } // acmacs::chart::detail::AntigenSerum::format
 
 // ----------------------------------------------------------------------
+
+#define FKF(key, call) std::pair{key, [](fmt::memory_buffer& output, std::string_view format, [[maybe_unused]] const auto& ag_sr) { fmt::format_to(output, format, fmt::arg(key, call)); }}
 
 #pragma GCC diagnostic push
 #ifdef __clang__
@@ -120,115 +113,89 @@ std::string acmacs::chart::detail::AntigenSerum::format(std::string_view pattern
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
 #endif
 
-template <typename AgSr>
-const format_subst_list_t<AgSr> format_subst_ag_sr{
-    KEY_FUNC_AGSR("abbreviated_location_with_passage_type", acmacs::string::join(acmacs::string::join_space, location_abbreviated(ag_sr), ag_sr.passage().passage_type())), // mapi
-    KEY_FUNC_AGSR("abbreviated_name_with_passage_type", fmt::format("{}-{}", name_abbreviated(ag_sr), ag_sr.passage().passage_type())),                                     // mapi
-    KEY_FUNC_AGSR("annotations", ag_sr.annotations()),                                                                                                                      //
-    KEY_FUNC_AGSR("continent", ag_sr.location_data().continent),                                                                                                            //
-    KEY_FUNC_AGSR("country", ag_sr.location_data().country),                                                                                                                //
-    KEY_FUNC_AGSR("fields", fields(ag_sr)),                                                                                                                                 //
-    KEY_FUNC_AGSR("full_name", name_full(ag_sr)),                                                                                                                           //
-    KEY_FUNC_AGSR("latitude", ag_sr.location_data().latitude),                                                                                                              //
-    KEY_FUNC_AGSR("lineage", ag_sr.lineage().to_string()),                                                                                                                  //
-    KEY_FUNC_AGSR("location", acmacs::virus::location(ag_sr.name())),                                                                                                       //
-    KEY_FUNC_AGSR("location_abbreviated", location_abbreviated(ag_sr)),                                                                                                     //
-    KEY_FUNC_AGSR("longitude", ag_sr.location_data().longitude),                                                                                                            //
-    KEY_FUNC_AGSR("name", ag_sr.name()),                                                                                                                                    //
-    KEY_FUNC_AGSR("name_abbreviated", name_abbreviated(ag_sr)),                                                                                                             //
-    KEY_FUNC_AGSR("name_full", name_full(ag_sr)),                                                                                                                           //
-    KEY_FUNC_AGSR("name_full_passage", name_full_passage(ag_sr)),                                                                                                           //
-    KEY_FUNC_AGSR("name_without_subtype", acmacs::virus::without_subtype(ag_sr.name())),                                                                                    //
-    KEY_FUNC_AGSR("passage", ag_sr.passage()),                                                                                                                              //
-    KEY_FUNC_AGSR("passage_type", ag_sr.passage().passage_type()),                                                                                                          //
-    KEY_FUNC_AGSR("reassortant", ag_sr.reassortant()),                                                                                                                      //
-    KEY_FUNC_AGSR("year", year4(ag_sr)),                                                                                                                                    //
-    KEY_FUNC_AGSR("year2", year2(ag_sr)),                                                                                                                                   //
-    KEY_FUNC_AGSR("year4", year4(ag_sr)),                                                                                                                                   //
+const std::tuple format_subst_ag_sr{
+    FKF("abbreviated_location_with_passage_type", acmacs::string::join(acmacs::string::join_space, location_abbreviated(ag_sr), ag_sr.passage().passage_type())), // mapi
+    FKF("abbreviated_name_with_passage_type", fmt::format("{}-{}", name_abbreviated(ag_sr), ag_sr.passage().passage_type())),                                     // mapi
+    FKF("annotations", ag_sr.annotations()),                                                                                                                      //
+    FKF("continent", ag_sr.location_data().continent),                                                                                                            //
+    FKF("country", ag_sr.location_data().country),                                                                                                                //
+    FKF("fields", fields(ag_sr)),                                                                                                                                 //
+    FKF("full_name", name_full(ag_sr)),                                                                                                                           //
+    FKF("latitude", ag_sr.location_data().latitude),                                                                                                              //
+    FKF("lineage", ag_sr.lineage().to_string()),                                                                                                                  //
+    FKF("location", acmacs::virus::location(ag_sr.name())),                                                                                                       //
+    FKF("location_abbreviated", location_abbreviated(ag_sr)),                                                                                                     //
+    FKF("longitude", ag_sr.location_data().longitude),                                                                                                            //
+    FKF("name", ag_sr.name()),                                                                                                                                    //
+    FKF("name_abbreviated", name_abbreviated(ag_sr)),                                                                                                             //
+    FKF("name_full", name_full(ag_sr)),                                                                                                                           //
+    FKF("name_full_passage", name_full_passage(ag_sr)),                                                                                                           //
+    FKF("name_without_subtype", acmacs::virus::without_subtype(ag_sr.name())),                                                                                    //
+    FKF("passage", ag_sr.passage()),                                                                                                                              //
+    FKF("passage_type", ag_sr.passage().passage_type()),                                                                                                          //
+    FKF("reassortant", ag_sr.reassortant()),                                                                                                                      //
+    FKF("year", year4(ag_sr)),                                                                                                                                    //
+    FKF("year2", year2(ag_sr)),                                                                                                                                   //
+    FKF("year4", year4(ag_sr)),                                                                                                                                   //
 };
 
-const format_subst_list_t<acmacs::chart::Antigen> format_subst_antigen{
-    KEY_FUNC_AG("ag_sr", "AG"),                                      //
-    KEY_FUNC_AG("date", ag.date()),                                  //
-    KEY_FUNC_AG("date_in_brackets", fmt::format("[{}]", ag.date())), //
-    KEY_FUNC_AG("designation", name_full(ag)),                       //
-    KEY_FUNC_AG("lab_ids", ag.lab_ids().join()),                     //
-    KEY_FUNC_AG("ref", ag.reference() ? "Ref" : ""),                 //
-    KEY_FUNC_AG("serum_species", ""),                                //
-    KEY_FUNC_AG("species", ""),                                      //
+const std::tuple format_subst_antigen{
+    FKF("ag_sr", "AG"),                                         //
+    FKF("date", ag_sr.date()),                                  //
+    FKF("date_in_brackets", fmt::format("[{}]", ag_sr.date())), //
+    FKF("designation", name_full(ag_sr)),                       //
+    FKF("lab_ids", ag_sr.lab_ids().join()),                     //
+    FKF("ref", ag_sr.reference() ? "Ref" : ""),                 //
+    FKF("serum_species", ""),                                   //
+    FKF("species", ""),                                         //
 };
 
-const format_subst_list_t<acmacs::chart::Serum> format_subst_serum{
-    KEY_FUNC_SR("ag_sr", "SR"),                                                                                                 //
-    KEY_FUNC_SR("designation", acmacs::string::join(acmacs::string::join_space, name_full_without_passage(sr), sr.serum_id())), //
-    KEY_FUNC_SR("designation_without_serum_id", name_full_without_passage(sr)),                                                 //
-    KEY_FUNC_SR("serum_id", sr.serum_id()),                                                                                     //
-    KEY_FUNC_SR("serum_species", sr.serum_species()),                                                                           //
-    KEY_FUNC_SR("serum_species", sr.serum_species()),                                                                           //
-    KEY_FUNC_SR("species", sr.serum_species()),                                                                                 //
+const std::tuple format_subst_serum{
+    FKF("ag_sr", "SR"),                                                                                                       //
+    FKF("designation", acmacs::string::join(acmacs::string::join_space, name_full_without_passage(ag_sr), ag_sr.serum_id())), //
+    FKF("designation_without_serum_id", name_full_without_passage(ag_sr)),                                                    //
+    FKF("serum_id", ag_sr.serum_id()),                                                                                        //
+    FKF("serum_species", ag_sr.serum_species()),                                                                              //
+    FKF("serum_species", ag_sr.serum_species()),                                                                              //
+    FKF("species", ag_sr.serum_species()),                                                                                    //
+    FKF("date_in_brackets", ""),                                                                                              //
+    FKF("lab_ids", ""),                                                                                                       //
+    FKF("ref", ""),                                                                                                           //
 };
 
 #pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------
 
-template <typename AgSr, typename List> static inline bool apply(fmt::memory_buffer& output, std::string_view chunk, const List& list, const AgSr& ag_sr)
+template <typename AgSr, typename... Args> static inline void format_ag_sr(fmt::memory_buffer& output, const AgSr& ag_sr, std::string_view pattern, Args&&... args)
 {
-    const auto matches = [chunk](std::string_view name) {
-        if (const auto end = chunk.find(':', 1); end != std::string_view::npos)
-            return chunk.substr(1, end - 1) == name;
+    const auto format_matched = [&output, &ag_sr](std::string_view pattern_arg, std::string_view key, const auto& value) {
+        if constexpr (std::is_invocable_v<decltype(value), fmt::memory_buffer&, std::string_view, const AgSr&>)
+            std::invoke(value, output, pattern_arg, ag_sr);
         else
-            return chunk.substr(1, chunk.size() - 2) == name;
+            fmt::format_to(output, pattern_arg, fmt::arg(key, value));
     };
-
-    for (const auto& [name, func] : list) {
-        if (matches(name)) {
-            func(output, chunk, ag_sr);
-            return true;
-        }
-    }
-    return false;
+    const auto format_no_pattern = [&output](std::string_view no_pattern) { output.append(no_pattern); };
+    const auto format_args = [pattern, format_matched, format_no_pattern](const auto&... fargs) {
+        fmt::substitute_to(format_matched, format_no_pattern, pattern, fmt::if_no_substitution_found::leave_as_is, fargs...);
+    };
+    std::apply(format_args, std::tuple_cat(args...));
 }
 
 // ----------------------------------------------------------------------
 
-bool acmacs::chart::Antigen::format(fmt::memory_buffer& output, std::string_view pattern) const
+
+void acmacs::chart::Antigen::format(fmt::memory_buffer& output, std::string_view pattern) const
 {
-    bool collapsable_spaces{false};
-    for (const auto& chunk : acmacs::string::split_for_formatting(pattern)) {
-        bool applied{false};
-        if (chunk.size() > 3 && chunk[0] == '{')
-            applied = apply(output, chunk, format_subst_ag_sr<decltype(*this)>, *this) || apply(output, chunk, format_subst_antigen, *this);
-        else if (chunk == "{ }") { // collapsable space
-            fmt::format_to(output, COLLAPSABLE_SPACE);
-            collapsable_spaces = true;
-            applied = true;
-        }
-        if (!applied)
-            fmt::format_to(output, "{}", chunk);
-    }
-    return collapsable_spaces;
+    ::format_ag_sr(output, *this, pattern, format_subst_ag_sr, format_subst_antigen);
 
 } // acmacs::chart::Antigen::format
 
 // ----------------------------------------------------------------------
 
-bool acmacs::chart::Serum::format(fmt::memory_buffer& output, std::string_view pattern) const
+void acmacs::chart::Serum::format(fmt::memory_buffer& output, std::string_view pattern) const
 {
-    bool collapsable_spaces{false};
-    for (const auto& chunk : acmacs::string::split_for_formatting(pattern)) {
-        bool applied{false};
-        if (chunk.size() > 3 && chunk[0] == '{')
-            applied = apply(output, chunk, format_subst_ag_sr<decltype(*this)>, *this) || apply(output, chunk, format_subst_serum, *this);
-        else if (chunk == "{ }") { // collapsable space
-            fmt::format_to(output, COLLAPSABLE_SPACE);
-            collapsable_spaces = true;
-            applied = true;
-        }
-        if (!applied)
-            fmt::format_to(output, "{}", chunk);
-    }
-    return collapsable_spaces;
+    ::format_ag_sr(output, *this, pattern, format_subst_ag_sr, format_subst_serum);
 
 } // acmacs::chart::Serum::format
 
@@ -272,6 +239,39 @@ std::string acmacs::chart::collapse_spaces(std::string src)
 
 // ----------------------------------------------------------------------
 
+namespace fmt
+{
+    template <typename FormatMatched, typename FormatNoPattern, typename... Args>
+    void x_substitute_to(FormatMatched&& format_matched, FormatNoPattern&& format_no_pattern, std::string_view pattern, if_no_substitution_found insf, Args&&... args)
+    {
+        const auto match_and_format = [&format_matched](std::string_view look_for, std::string_view pattern_arg, const auto& en) {
+            if (look_for == en.first) {
+                format_matched(pattern_arg, en.first, en.second);
+                return true;
+            }
+            else
+                return false;
+        };
+
+        for (const auto& [key, pattern_arg] : split_for_formatting(pattern)) {
+            if (!key.empty()) {
+                if (!(match_and_format(key, pattern_arg, args) || ...)) {
+                    // not matched
+                    switch (insf) {
+                        case if_no_substitution_found::leave_as_is:
+                            format_no_pattern(pattern_arg);
+                            break;
+                        case if_no_substitution_found::empty:
+                            break;
+                    }
+                }
+            }
+            else
+                format_no_pattern(pattern_arg);
+        }
+    }
+}
+
 std::string acmacs::chart::format_antigen(std::string_view pattern, const acmacs::chart::Chart& chart, size_t antigen_no)
 {
     auto antigens = chart.antigens();
@@ -279,18 +279,14 @@ std::string acmacs::chart::format_antigen(std::string_view pattern, const acmacs
     auto sera = chart.sera();
     const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
 
-    // const auto [location_name, country, continent, latitude, longitude] = location_data(antigen->location());
-
-    AD_DEBUG("format_antigen1 \"{}\"", pattern);
-    const std::string intermediate = antigen->format(pattern);
-    AD_DEBUG("format_antigen2 \"{}\"", intermediate);
-    return fmt::format(
-        intermediate,
-        fmt::arg("no0", fmt::format("{:{}d}", antigen_no, num_digits)),
-        fmt::arg("no0_left", fmt::format("{}", antigen_no)),
-        fmt::arg("no1", fmt::format("{:{}d}", antigen_no + 1, num_digits)),
-        fmt::arg("no1_left", fmt::format("{}", antigen_no + 1)),
-        fmt::arg("sera_with_titrations", chart.titers()->having_titers_with(antigen_no))
+    return fmt::substitute(                                                               //
+        antigen->format(pattern),                                                         //
+        // fmt::if_no_substitution_found::leave_as_is, //
+        std::pair{"no0", [=] { return fmt::format("{:{}d}", antigen_no, num_digits); }},  //
+        std::pair{"no0_left", antigen_no},                             //
+        std::pair{"no1", [=] { return fmt::format("{:{}d}", antigen_no + 1, num_digits); }},              //
+        std::pair{"no1_left", antigen_no + 1},                         //
+        std::pair{"sera_with_titrations", [&chart, antigen_no] { return chart.titers()->having_titers_with(antigen_no, false); }} //
     );
 
 } // acmacs::chart::format_antigen
@@ -304,52 +300,15 @@ std::string acmacs::chart::format_serum(std::string_view pattern, const acmacs::
     auto serum = sera->at(serum_no);
     const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
 
-    // const auto [location_name, country, continent, latitude, longitude] = location_data(serum->location());
-
-    // std::string date;
-    // for (auto ag_no : serum->homologous_antigens()) {
-    //     if (const auto ag_date  = antigens->at(ag_no)->date(); !ag_date.empty()) {
-    //         date = ag_date;
-    //         break;
-    //     }
-    // }
-
-    return acmacs::string::substitute(
+    return fmt::substitute(     //
         serum->format(pattern), //
-        std::pair{"no0", fmt::format("{:{}d}", serum_no, num_digits)}, //
-        std::pair{"no0_left", fmt::format("{}", serum_no)}, //
-        std::pair{"no1", fmt::format("{:{}d}", serum_no + 1, num_digits)}, //
-        std::pair{"no1_left", fmt::format("{}", serum_no + 1)}, //
+        // fmt::if_no_substitution_found::leave_as_is, //
+        std::pair{"no0", [=] { return fmt::format("{:{}d}", serum_no, num_digits); }},                               //
+        std::pair{"no0_left", fmt::format("{}", serum_no)},                                                          //
+        std::pair{"no1", fmt::format("{:{}d}", serum_no + 1, num_digits)},                                           //
+        std::pair{"no1_left", fmt::format("{}", serum_no + 1)},                                                      //
         std::pair{"sera_with_titrations", chart.titers()->having_titers_with(serum_no + chart.number_of_antigens())} //
     );
-    //     fmt::arg("name", *serum->name()),
-    //     fmt::arg("full_name", serum->full_name()),
-    //     fmt::arg("full_name_with_passage", serum->full_name_with_passage()),
-    //     fmt::arg("full_name_with_fields", serum->full_name_with_fields()),
-    //     fmt::arg("serum_species", *serum->serum_species()),
-    //     fmt::arg("date", date),
-    //     fmt::arg("lab_ids", ""),
-    //     fmt::arg("ref", ""),
-    //     fmt::arg("serum_id", *serum->serum_id()),
-    //     fmt::arg("reassortant", *serum->reassortant()),
-    //     fmt::arg("passage", *serum->passage()),
-    //     fmt::arg("passage_type", serum->passage_type()),
-    //     fmt::arg("annotations", acmacs::string::join(acmacs::string::join_space, serum->annotations())),
-    //     fmt::arg("lineage", serum->lineage()),
-    //     fmt::arg("abbreviated_name", serum->abbreviated_name()),
-    //     fmt::arg("abbreviated_name_with_passage_type", serum->abbreviated_name()),
-    //     fmt::arg("abbreviated_name_with_serum_id", serum->abbreviated_name_with_serum_id()),
-    //     fmt::arg("abbreviated_location_with_passage_type", serum->abbreviated_name()),
-    //     fmt::arg("designation", serum->designation()),
-    //     fmt::arg("name_abbreviated", serum->name_abbreviated()),
-    //     fmt::arg("name_without_subtype", serum->name_without_subtype()),
-    //     fmt::arg("location", location_name),
-    //     fmt::arg("location_abbreviated", serum->location_abbreviated()),
-    //     fmt::arg("country", country),
-    //     fmt::arg("continent", continent),
-    //     fmt::arg("latitude", latitude),
-    //     fmt::arg("longitude", longitude),
-    //     fmt::arg("abbreviated_location_year", serum->abbreviated_location_year()),
 
 } // acmacs::chart::format_serum
 

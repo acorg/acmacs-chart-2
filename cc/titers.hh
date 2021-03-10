@@ -254,7 +254,7 @@ namespace acmacs::chart
         std::pair<PointIndexList, PointIndexList> antigens_sera_in_multiple_layers() const;
         bool has_morethan_in_layers() const;
 
-        PointIndexList having_titers_with(size_t point_no) const;
+        PointIndexList having_titers_with(size_t point_no, bool return_point_no = true) const;
           // returns list of points having less than threshold numeric titers
         PointIndexList having_too_few_numeric_titers(size_t threshold = 3) const;
 
