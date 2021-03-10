@@ -26,7 +26,17 @@ template <typename AgSr> static std::string name_full_without_passage(const AgSr
     return acmacs::string::join(acmacs::string::join_space, ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), ag_sr.reassortant());
 }
 
-template <typename AgSr> static std::string name_full(const AgSr& ag_sr)
+inline static std::string name_full(const acmacs::chart::Antigen& ag)
+{
+    return acmacs::string::join(acmacs::string::join_space, name_full_without_passage(ag), ag.passage());
+}
+
+inline static std::string name_full(const acmacs::chart::Serum& sr)
+{
+    return name_full_without_passage(sr);
+}
+
+template <typename AgSr> static std::string name_full_passage(const AgSr& ag_sr)
 {
     return acmacs::string::join(acmacs::string::join_space, name_full_without_passage(ag_sr), ag_sr.passage());
 }
@@ -110,8 +120,6 @@ std::string acmacs::chart::detail::AntigenSerum::format(std::string_view pattern
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
 #endif
 
-// Note: longest keys must be first!
-
 template <typename AgSr>
 const format_subst_list_t<AgSr> format_subst_ag_sr{
     KEY_FUNC_AGSR("abbreviated_location_with_passage_type", acmacs::string::join(acmacs::string::join_space, location_abbreviated(ag_sr), ag_sr.passage().passage_type())), // mapi
@@ -123,6 +131,7 @@ const format_subst_list_t<AgSr> format_subst_ag_sr{
     KEY_FUNC_AGSR("reassortant", ag_sr.reassortant()),                                                                                                                      //
     KEY_FUNC_AGSR("annotations", ag_sr.annotations()),                                                                                                                      //
     KEY_FUNC_AGSR("name_full", name_full(ag_sr)),                                                                                                                           //
+    KEY_FUNC_AGSR("name_full_passage", name_full_passage(ag_sr)),                                                                                                           //
     KEY_FUNC_AGSR("full_name", name_full(ag_sr)),                                                                                                                           //
     KEY_FUNC_AGSR("location", acmacs::virus::location(ag_sr.name())),                                                                                                       //
     KEY_FUNC_AGSR("continent", ag_sr.location_data().continent),                                                                                                            //
@@ -144,6 +153,8 @@ const format_subst_list_t<acmacs::chart::Antigen> format_subst_antigen{
     KEY_FUNC_AG("ag_sr", "AG"),                      //
     KEY_FUNC_AG("date", ag.date()),                  //
     KEY_FUNC_AG("ref", ag.reference() ? "Ref" : ""), //
+    KEY_FUNC_AG("species", ""),  //
+    KEY_FUNC_AG("serum_species", ""),  //
 };
 
 const format_subst_list_t<acmacs::chart::Serum> format_subst_serum {
@@ -152,6 +163,7 @@ const format_subst_list_t<acmacs::chart::Serum> format_subst_serum {
     KEY_FUNC_SR("serum_species", sr.serum_species()),  //
     KEY_FUNC_SR("serum_id", sr.serum_id()),  //
     KEY_FUNC_SR("species", sr.serum_species()),  //
+    KEY_FUNC_SR("serum_species", sr.serum_species()),  //
     KEY_FUNC_SR("ag_sr", "SR"),  //
         // KEY_FUNC_SR("date", date),         // by homologous antigen
 };
@@ -162,8 +174,15 @@ const format_subst_list_t<acmacs::chart::Serum> format_subst_serum {
 
 template <typename AgSr, typename List> static inline bool apply(fmt::memory_buffer& output, std::string_view chunk, const List& list, const AgSr& ag_sr)
 {
+    const auto matches = [chunk](std::string_view name) {
+        if (const auto end = chunk.find(':', 1); end != std::string_view::npos)
+            return chunk.substr(1, end - 1) == name;
+        else
+            return chunk.substr(1, chunk.size() - 2) == name;
+    };
+
     for (const auto& [name, func] : list) {
-        if (acmacs::string::startswith(chunk.substr(1), name)) {
+        if (matches(name)) {
             func(output, chunk, ag_sr);
             return true;
         }
