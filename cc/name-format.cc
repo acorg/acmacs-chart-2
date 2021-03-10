@@ -124,48 +124,48 @@ template <typename AgSr>
 const format_subst_list_t<AgSr> format_subst_ag_sr{
     KEY_FUNC_AGSR("abbreviated_location_with_passage_type", acmacs::string::join(acmacs::string::join_space, location_abbreviated(ag_sr), ag_sr.passage().passage_type())), // mapi
     KEY_FUNC_AGSR("abbreviated_name_with_passage_type", fmt::format("{}-{}", name_abbreviated(ag_sr), ag_sr.passage().passage_type())),                                     // mapi
-    KEY_FUNC_AGSR("location_abbreviated", location_abbreviated(ag_sr)),                                                                                                     //
-    KEY_FUNC_AGSR("name_without_subtype", acmacs::virus::without_subtype(ag_sr.name())),                                                                                    //
-    KEY_FUNC_AGSR("name_abbreviated", name_abbreviated(ag_sr)),                                                                                                             //
-    KEY_FUNC_AGSR("passage_type", ag_sr.passage().passage_type()),                                                                                                          //
-    KEY_FUNC_AGSR("reassortant", ag_sr.reassortant()),                                                                                                                      //
     KEY_FUNC_AGSR("annotations", ag_sr.annotations()),                                                                                                                      //
+    KEY_FUNC_AGSR("continent", ag_sr.location_data().continent),                                                                                                            //
+    KEY_FUNC_AGSR("country", ag_sr.location_data().country),                                                                                                                //
+    KEY_FUNC_AGSR("fields", fields(ag_sr)),                                                                                                                                 //
+    KEY_FUNC_AGSR("full_name", name_full(ag_sr)),                                                                                                                           //
+    KEY_FUNC_AGSR("latitude", ag_sr.location_data().latitude),                                                                                                              //
+    KEY_FUNC_AGSR("lineage", ag_sr.lineage().to_string()),                                                                                                                  //
+    KEY_FUNC_AGSR("location", acmacs::virus::location(ag_sr.name())),                                                                                                       //
+    KEY_FUNC_AGSR("location_abbreviated", location_abbreviated(ag_sr)),                                                                                                     //
+    KEY_FUNC_AGSR("longitude", ag_sr.location_data().longitude),                                                                                                            //
+    KEY_FUNC_AGSR("name", ag_sr.name()),                                                                                                                                    //
+    KEY_FUNC_AGSR("name_abbreviated", name_abbreviated(ag_sr)),                                                                                                             //
     KEY_FUNC_AGSR("name_full", name_full(ag_sr)),                                                                                                                           //
     KEY_FUNC_AGSR("name_full_passage", name_full_passage(ag_sr)),                                                                                                           //
-    KEY_FUNC_AGSR("full_name", name_full(ag_sr)),                                                                                                                           //
-    KEY_FUNC_AGSR("location", acmacs::virus::location(ag_sr.name())),                                                                                                       //
-    KEY_FUNC_AGSR("continent", ag_sr.location_data().continent),                                                                                                            //
-    KEY_FUNC_AGSR("longitude", ag_sr.location_data().longitude),                                                                                                            //
-    KEY_FUNC_AGSR("latitude", ag_sr.location_data().latitude),                                                                                                              //
-    KEY_FUNC_AGSR("country", ag_sr.location_data().country),                                                                                                                //
-    KEY_FUNC_AGSR("lineage", ag_sr.lineage().to_string()),                                                                                                                  //
+    KEY_FUNC_AGSR("name_without_subtype", acmacs::virus::without_subtype(ag_sr.name())),                                                                                    //
     KEY_FUNC_AGSR("passage", ag_sr.passage()),                                                                                                                              //
-    KEY_FUNC_AGSR("fields", fields(ag_sr)),                                                                                                                                 //
-    KEY_FUNC_AGSR("year4", year4(ag_sr)),                                                                                                                                   //
-    KEY_FUNC_AGSR("year2", year2(ag_sr)),                                                                                                                                   //
+    KEY_FUNC_AGSR("passage_type", ag_sr.passage().passage_type()),                                                                                                          //
+    KEY_FUNC_AGSR("reassortant", ag_sr.reassortant()),                                                                                                                      //
     KEY_FUNC_AGSR("year", year4(ag_sr)),                                                                                                                                    //
-    KEY_FUNC_AGSR("name", ag_sr.name()),                                                                                                                                    //
+    KEY_FUNC_AGSR("year2", year2(ag_sr)),                                                                                                                                   //
+    KEY_FUNC_AGSR("year4", year4(ag_sr)),                                                                                                                                   //
 };
 
 const format_subst_list_t<acmacs::chart::Antigen> format_subst_antigen{
-    KEY_FUNC_AG("designation", name_full(ag)),   //
-    KEY_FUNC_AG("lab_ids", ag.lab_ids().join()), //
-    KEY_FUNC_AG("ag_sr", "AG"),                      //
-    KEY_FUNC_AG("date", ag.date()),                  //
-    KEY_FUNC_AG("ref", ag.reference() ? "Ref" : ""), //
-    KEY_FUNC_AG("species", ""),  //
-    KEY_FUNC_AG("serum_species", ""),  //
+    KEY_FUNC_AG("ag_sr", "AG"),                                      //
+    KEY_FUNC_AG("date", ag.date()),                                  //
+    KEY_FUNC_AG("date_in_brackets", fmt::format("[{}]", ag.date())), //
+    KEY_FUNC_AG("designation", name_full(ag)),                       //
+    KEY_FUNC_AG("lab_ids", ag.lab_ids().join()),                     //
+    KEY_FUNC_AG("ref", ag.reference() ? "Ref" : ""),                 //
+    KEY_FUNC_AG("serum_species", ""),                                //
+    KEY_FUNC_AG("species", ""),                                      //
 };
 
-const format_subst_list_t<acmacs::chart::Serum> format_subst_serum {
-    KEY_FUNC_SR("designation_without_serum_id",  name_full_without_passage(sr)), //
-    KEY_FUNC_SR("designation",  acmacs::string::join(acmacs::string::join_space, name_full_without_passage(sr), sr.serum_id())), //
-    KEY_FUNC_SR("serum_species", sr.serum_species()),  //
-    KEY_FUNC_SR("serum_id", sr.serum_id()),  //
-    KEY_FUNC_SR("species", sr.serum_species()),  //
-    KEY_FUNC_SR("serum_species", sr.serum_species()),  //
-    KEY_FUNC_SR("ag_sr", "SR"),  //
-        // KEY_FUNC_SR("date", date),         // by homologous antigen
+const format_subst_list_t<acmacs::chart::Serum> format_subst_serum{
+    KEY_FUNC_SR("ag_sr", "SR"),                                                                                                 //
+    KEY_FUNC_SR("designation", acmacs::string::join(acmacs::string::join_space, name_full_without_passage(sr), sr.serum_id())), //
+    KEY_FUNC_SR("designation_without_serum_id", name_full_without_passage(sr)),                                                 //
+    KEY_FUNC_SR("serum_id", sr.serum_id()),                                                                                     //
+    KEY_FUNC_SR("serum_species", sr.serum_species()),                                                                           //
+    KEY_FUNC_SR("serum_species", sr.serum_species()),                                                                           //
+    KEY_FUNC_SR("species", sr.serum_species()),                                                                                 //
 };
 
 #pragma GCC diagnostic pop
@@ -272,17 +272,6 @@ std::string acmacs::chart::collapse_spaces(std::string src)
 
 // ----------------------------------------------------------------------
 
-// inline std::tuple<std::string, std::string, std::string, acmacs::locationdb::Latitude, acmacs::locationdb::Longitude> location_data(std::string_view location)
-// {
-//     using namespace std::string_literals;
-//     if (const auto loc = acmacs::locationdb::get().find(location, acmacs::locationdb::include_continent::yes); loc.has_value())
-//         return {std::move(loc->name), std::string{loc->country()}, loc->continent, loc->latitude(), loc->longitude()};
-//     else
-//         return {std::string{location}, "*unknown*"s, "*unknown*"s, 360.0, 360.0};
-// }
-
-// ----------------------------------------------------------------------
-
 std::string acmacs::chart::format_antigen(std::string_view pattern, const acmacs::chart::Chart& chart, size_t antigen_no)
 {
     auto antigens = chart.antigens();
@@ -301,34 +290,6 @@ std::string acmacs::chart::format_antigen(std::string_view pattern, const acmacs
         fmt::arg("no0_left", fmt::format("{}", antigen_no)),
         fmt::arg("no1", fmt::format("{:{}d}", antigen_no + 1, num_digits)),
         fmt::arg("no1_left", fmt::format("{}", antigen_no + 1)),
-    //     fmt::arg("name", *antigen->name()),
-    //     fmt::arg("full_name", antigen->full_name()),
-    //     fmt::arg("full_name_with_passage", antigen->full_name_with_passage()),
-    //     fmt::arg("full_name_with_fields", antigen->full_name_with_fields()),
-    //     fmt::arg("serum_species", ""),
-    //     fmt::arg("date", *antigen->date()),
-    //     fmt::arg("lab_ids", acmacs::string::join(acmacs::string::join_space, antigen->lab_ids())),
-    //     fmt::arg("ref", antigen->reference() ? "Ref" : ""),
-    //     fmt::arg("serum_id", ""),
-    //     fmt::arg("reassortant", *antigen->reassortant()),
-    //     fmt::arg("passage", *antigen->passage()),
-    //     fmt::arg("passage_type", antigen->passage_type()),
-    //     fmt::arg("annotations", acmacs::string::join(acmacs::string::join_space, antigen->annotations())),
-    //     fmt::arg("lineage", antigen->lineage()),
-    //     fmt::arg("abbreviated_name", antigen->abbreviated_name()),
-    //     fmt::arg("abbreviated_name_with_passage_type", antigen->abbreviated_name_with_passage_type()),
-    //     fmt::arg("abbreviated_name_with_serum_id", antigen->abbreviated_name()),
-    //     fmt::arg("abbreviated_location_with_passage_type", antigen->abbreviated_location_with_passage_type()),
-    //     fmt::arg("abbreviated_location_year", antigen->abbreviated_location_year()),
-    //     fmt::arg("designation", antigen->designation()),
-    //     fmt::arg("name_abbreviated", antigen->name_abbreviated()),
-    //     fmt::arg("name_without_subtype", antigen->name_without_subtype()),
-    //     fmt::arg("location", location_name),
-    //     fmt::arg("location_abbreviated", antigen->location_abbreviated()),
-    //     fmt::arg("country", country),
-    //     fmt::arg("continent", continent),
-    //     fmt::arg("latitude", latitude),
-    //     fmt::arg("longitude", longitude),
         fmt::arg("sera_with_titrations", chart.titers()->having_titers_with(antigen_no))
     );
 
@@ -353,14 +314,14 @@ std::string acmacs::chart::format_serum(std::string_view pattern, const acmacs::
     //     }
     // }
 
-    const std::string intermediate = serum->format(pattern);
-    AD_DEBUG("format_serum \"{}\"", intermediate);
-    return fmt::format(
-        intermediate,
-        fmt::arg("no0", fmt::format("{:{}d}", serum_no, num_digits)),
-        fmt::arg("no0_left", fmt::format("{}", serum_no)),
-        fmt::arg("no1", fmt::format("{:{}d}", serum_no + 1, num_digits)),
-        fmt::arg("no1_left", fmt::format("{}", serum_no + 1)),
+    return acmacs::string::substitute(
+        serum->format(pattern), //
+        std::pair{"no0", fmt::format("{:{}d}", serum_no, num_digits)}, //
+        std::pair{"no0_left", fmt::format("{}", serum_no)}, //
+        std::pair{"no1", fmt::format("{:{}d}", serum_no + 1, num_digits)}, //
+        std::pair{"no1_left", fmt::format("{}", serum_no + 1)}, //
+        std::pair{"sera_with_titrations", chart.titers()->having_titers_with(serum_no + chart.number_of_antigens())} //
+    );
     //     fmt::arg("name", *serum->name()),
     //     fmt::arg("full_name", serum->full_name()),
     //     fmt::arg("full_name_with_passage", serum->full_name_with_passage()),
@@ -389,8 +350,6 @@ std::string acmacs::chart::format_serum(std::string_view pattern, const acmacs::
     //     fmt::arg("latitude", latitude),
     //     fmt::arg("longitude", longitude),
     //     fmt::arg("abbreviated_location_year", serum->abbreviated_location_year()),
-        fmt::arg("sera_with_titrations", chart.titers()->having_titers_with(serum_no + chart.number_of_antigens()))
-    );
 
 } // acmacs::chart::format_serum
 

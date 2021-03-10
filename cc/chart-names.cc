@@ -15,7 +15,7 @@ struct Options : public argv
     Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::raise) : argv() { parse(a_argc, a_argv, on_err); }
 
     option<bool> fields{*this, "fields", desc{"report names with fields"}};
-    option<str> format{*this, 'f', "format", dflt{"{ag_sr} {no0} {name_full}{ }{species} [{date}]{ }{lab_ids}{ }{ref}\n"}, desc{"\n          run chart-name-format-help to list available formats"}};
+    option<str> format{*this, 'f', "format", dflt{"{ag_sr} {no0} {name_full}{ }{species}{ }{date_in_brackets}{ }{lab_ids}{ }{ref}\n"}, desc{"\n          run chart-name-format-help to list available formats"}};
     // desc{"\n          supported fields:\n            {ag_sr} {no0} {<no0} {no1} {<no1}\n            {name} {full_name_with_passage} {full_name_with_fields} {abbreviated_name}\n
     // {abbreviated_name_with_passage_type} {abbreviated_location_with_passage_type}\n            {abbreviated_name_with_serum_id} {designation} {name_abbreviated} {name_without_subtype}\n
     // {abbreviated_location_year} {location_abbreviated}\n            {location} {country} {continent} {latitude} {longitude}\n            {serum_id} {serum_species} {sera_with_titrations}\n {ref}
