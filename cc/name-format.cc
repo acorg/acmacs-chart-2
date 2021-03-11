@@ -5,11 +5,6 @@
 #include "acmacs-base/regex.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart-modify.hh"
-#include "acmacs-chart-2/name-format.hh"
-
-// ----------------------------------------------------------------------
-
-#define COLLAPSABLE_SPACE "\x01"
 
 // ----------------------------------------------------------------------
 
@@ -94,12 +89,11 @@ template <typename AgSr> static std::string fields(const AgSr& ag_sr)
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::detail::AntigenSerum::format(std::string_view pattern) const
+std::string acmacs::chart::detail::AntigenSerum::format(std::string_view pattern, collapse_spaces_t cs) const
 {
     fmt::memory_buffer output;
     format(output, pattern);
-    // acmacs::chart::collapse_spaces(fmt::to_string(output));
-    return fmt::to_string(output);
+    return acmacs::chart::collapse_spaces(fmt::to_string(output), cs);
 
 } // acmacs::chart::detail::AntigenSerum::format
 
@@ -217,20 +211,31 @@ const acmacs::chart::detail::location_data_t& acmacs::chart::detail::AntigenSeru
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::collapse_spaces(std::string src)
+#define CS_SPACES "([ \t])"
+#define CS_SPACES_OPT CS_SPACES "([ \t]*)"
+#define CS_SPACES_OR_CS_OPT "( |\t|\\{ \\})*"
+#define CS_CS1 "(\\{ \\})+"
+
+std::string acmacs::chart::collapse_spaces(std::string src, collapse_spaces_t cs)
 {
 #include "acmacs-base/global-constructors-push.hh"
     static const std::array replace_data{
-        acmacs::regex::look_replace_t{std::regex("^(\\s*)" COLLAPSABLE_SPACE, std::regex::icase), {"$1$'"}},
-        acmacs::regex::look_replace_t{std::regex(COLLAPSABLE_SPACE "(\\s*)$", std::regex::icase), {"$`$1"}},
-        acmacs::regex::look_replace_t{std::regex("[\\s" COLLAPSABLE_SPACE "]*" COLLAPSABLE_SPACE "[\\s" COLLAPSABLE_SPACE "]*", std::regex::icase), {"$` $'"}},
+        acmacs::regex::look_replace_t{std::regex("^" CS_SPACES_OPT CS_CS1, std::regex::icase), {"$1$'"}},
+        acmacs::regex::look_replace_t{std::regex(CS_CS1 CS_SPACES_OPT "$", std::regex::icase), {"$`$1"}},
+        acmacs::regex::look_replace_t{std::regex(CS_SPACES_OR_CS_OPT CS_CS1 CS_SPACES_OR_CS_OPT, std::regex::icase), {"$` $'"}},
     };
 #include "acmacs-base/diagnostics-pop.hh"
 
-    while (true) {
-        if (const auto replacement = scan_replace(src, replace_data); replacement.has_value())
-            src = replacement->back();
-        else
+    switch (cs) {
+        case collapse_spaces_t::yes:
+            while (true) {
+                if (const auto replacement = scan_replace(src, replace_data); replacement.has_value())
+                    src = replacement->back();
+                else
+                    break;
+            }
+            break;
+        case collapse_spaces_t::no:
             break;
     }
     return src;
@@ -239,43 +244,43 @@ std::string acmacs::chart::collapse_spaces(std::string src)
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::format_antigen(std::string_view pattern, const acmacs::chart::Chart& chart, size_t antigen_no)
+std::string acmacs::chart::format_antigen(std::string_view pattern, const acmacs::chart::Chart& chart, size_t antigen_no, collapse_spaces_t cs)
 {
     auto antigens = chart.antigens();
     auto antigen = antigens->at(antigen_no);
     auto sera = chart.sera();
     const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
 
-    return fmt::substitute(                                                               //
-        antigen->format(pattern),                                                         //
-        // fmt::if_no_substitution_found::leave_as_is, //
-        std::pair{"no0", [=] { return fmt::format("{:{}d}", antigen_no, num_digits); }},  //
-        std::pair{"no0_left", antigen_no},                             //
-        std::pair{"no1", [=] { return fmt::format("{:{}d}", antigen_no + 1, num_digits); }},              //
-        std::pair{"no1_left", antigen_no + 1},                         //
+    const auto substituted = fmt::substitute(                                                                                     //
+        antigen->format(pattern, collapse_spaces_t::no),                                                                            //
+        std::pair{"no0", antigen_no},                                                                                             //
+        std::pair{"no1", antigen_no + 1},                                                                                         //
+        std::pair{"num_digits", num_digits},                                                                                      //
         std::pair{"sera_with_titrations", [&chart, antigen_no] { return chart.titers()->having_titers_with(antigen_no, false); }} //
     );
+
+    return acmacs::chart::collapse_spaces(substituted, cs);
 
 } // acmacs::chart::format_antigen
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::format_serum(std::string_view pattern, const acmacs::chart::Chart& chart, size_t serum_no)
+std::string acmacs::chart::format_serum(std::string_view pattern, const acmacs::chart::Chart& chart, size_t serum_no, collapse_spaces_t cs)
 {
     auto antigens = chart.antigens();
     auto sera = chart.sera();
     auto serum = sera->at(serum_no);
     const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
 
-    return fmt::substitute(     //
-        serum->format(pattern), //
-        // fmt::if_no_substitution_found::leave_as_is, //
-        std::pair{"no0", [=] { return fmt::format("{:{}d}", serum_no, num_digits); }},                               //
-        std::pair{"no0_left", fmt::format("{}", serum_no)},                                                          //
-        std::pair{"no1", fmt::format("{:{}d}", serum_no + 1, num_digits)},                                           //
-        std::pair{"no1_left", fmt::format("{}", serum_no + 1)},                                                      //
+    const auto substituted = fmt::substitute(                                                                        //
+        serum->format(pattern, collapse_spaces_t::no),                                                                 //
+        std::pair{"no0", serum_no},                                                                                  //
+        std::pair{"no1", serum_no + 1},                                                                              //
+        std::pair{"num_digits", num_digits},                                                                         //
         std::pair{"sera_with_titrations", chart.titers()->having_titers_with(serum_no + chart.number_of_antigens())} //
     );
+
+    return acmacs::chart::collapse_spaces(substituted, cs);
 
 } // acmacs::chart::format_serum
 
@@ -284,14 +289,14 @@ std::string acmacs::chart::format_serum(std::string_view pattern, const acmacs::
 constexpr const std::string_view pattern = R"(
 {{ag_sr}}                                  : {ag_sr}
 {{no0}}                                    : {no0}
-{{no0_left}}                               : {no0_left}
+{{no0:}}                                    : {no0}
 {{no1}}                                    : {no1}
-{{no1_left}}                               : {no1_left}
+{{no1:}}                                    : {no1}
 {{name}}                                   : {name}
 {{full_name}}                              : {full_name}
-{{full_name_with_passage}}                 : {full_name_with_passage}
-{{full_name_with_fields}}                  : {full_name_with_fields}
-{{serum_species}}                          : {serum_species}
+{{name_full_passage}}                      : {name_full_passage}
+{{fields}}                                 : {fields}
+{{species}}                                : {species}
 {{date}}                                   : {date}
 {{lab_ids}}                                : {lab_ids}
 {{ref}}                                    : {ref}
@@ -339,7 +344,7 @@ std::string acmacs::chart::format_help()
     serum.serum_id(SerumId{"2020-031"});
     serum.serum_species(SerumSpecies{"RAT"});
 
-    return fmt::format("{}\n\n{}\n", format_antigen(pattern, chart, 67), format_serum(pattern, chart, 12));
+    return fmt::format("{}\n\n{}\n", format_antigen(pattern, chart, 67, acmacs::chart::collapse_spaces_t::yes), format_serum(pattern, chart, 12, acmacs::chart::collapse_spaces_t::yes));
 
 } // acmacs::chart::format_help
 

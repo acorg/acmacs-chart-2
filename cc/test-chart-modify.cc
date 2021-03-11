@@ -359,7 +359,7 @@ void test_insert_antigen(acmacs::chart::ChartP chart, size_t before, const argc_
         auto plot_spec_source = chart->plot_spec(), plot_spec_imported = imported->plot_spec();
 
         auto check_inserted = [&](size_t imported_ag_no) {
-                if (auto new_name = (*antigens_imported)[imported_ag_no]->format("{name_full}"); new_name.empty())
+                if (auto new_name = (*antigens_imported)[imported_ag_no]->name_full(); new_name.empty())
                     throw std::runtime_error("inserted antigen has no name");
                 for (auto sr_no : acmacs::range(sera_source->size())) {
                     if (!titers_imported->titer(imported_ag_no, sr_no).is_dont_care())
@@ -418,7 +418,7 @@ void test_insert_serum(acmacs::chart::ChartP chart, size_t before, const argc_ar
         auto plot_spec_source = chart->plot_spec(), plot_spec_imported = imported->plot_spec();
 
         auto check_inserted = [&](size_t imported_sr_no) {
-            if (auto new_name = (*sera_imported)[imported_sr_no]->format("{name_full}"); new_name.empty())
+            if (auto new_name = (*sera_imported)[imported_sr_no]->name_full(); new_name.empty())
                 throw std::runtime_error("inserted serum has no name");
             for (auto ag_no : acmacs::range(antigens_source->size())) {
                 if (!titers_imported->titer(ag_no, imported_sr_no).is_dont_care())

@@ -201,12 +201,12 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
         fmt::format_to(msg, "Merge \"{}\" has duplicates: AG:{} SR:{}\n", result->description(), rda, rds);
         for (const auto& dups : rda) {
             for (const auto ag_no : dups)
-                fmt::format_to(msg, "  AG {:5d} {}\n", ag_no, result_antigens.at(ag_no).format("{name_full}"));
+                fmt::format_to(msg, "  AG {:5d} {}\n", ag_no, result_antigens.at(ag_no).name_full());
             fmt::format_to(msg, "\n");
         }
         for (const auto& dups : rds) {
             for (const auto sr_no : dups)
-                fmt::format_to(msg, "  SR {:5d} {}\n", sr_no, result_sera.at(sr_no).format("{name_full}"));
+                fmt::format_to(msg, "  SR {:5d} {}\n", sr_no, result_sera.at(sr_no).name_full());
             fmt::format_to(msg, "\n");
         }
         const auto err_message = fmt::to_string(msg);
@@ -577,7 +577,7 @@ std::string acmacs::chart::MergeReport::titer_merge_diagnostics(const ChartModif
 
     for (auto ag_no : antigens) {
         auto antigen = ags->at(ag_no);
-        fmt::format_to(output, "{}\n", antigen->format("{name_full}"));
+        fmt::format_to(output, "{}\n", antigen->name_full());
         for (auto layer_no : acmacs::range(tt->number_of_layers())) {
             if (layer_no < chart.info()->number_of_sources())
                 fmt::format_to(output, "{:<{}s}", chart.info()->source(layer_no)->name_non_empty(), max_field_size + 2);

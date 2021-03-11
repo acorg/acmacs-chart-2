@@ -16,7 +16,7 @@ struct Options : public argv
 
     option<bool> fields{*this, "fields", desc{"report names with fields"}};
     option<str> format{*this, 'f', "format", dflt{"{ag_sr} {no0} {name_full}{ }{species}{ }{date_in_brackets}{ }{lab_ids}{ }{ref}\n"}, desc{"\n          run chart-name-format-help to list available formats"}};
-    // desc{"\n          supported fields:\n            {ag_sr} {no0} {<no0} {no1} {<no1}\n            {name} {full_name_with_passage} {full_name_with_fields} {abbreviated_name}\n
+    // desc{"\n          supported fields:\n            {ag_sr} {no0} {<no0} {no1} {<no1}\n            {name} {name_full_passage} {full_name_with_fields} {abbreviated_name}\n
     // {abbreviated_name_with_passage_type} {abbreviated_location_with_passage_type}\n            {abbreviated_name_with_serum_id} {designation} {name_abbreviated} {name_without_subtype}\n
     // {abbreviated_location_year} {location_abbreviated}\n            {location} {country} {continent} {latitude} {longitude}\n            {serum_id} {serum_species} {sera_with_titrations}\n {ref}
     // {date} {lab_ids} {reassortant} {passage} {passage_type} {annotations} {lineage}"}};
@@ -53,13 +53,13 @@ int main(int argc, char* const argv[])
                 if (std::regex_match(std::begin(ag_data), std::end(ag_data), numbers)) {
                     for (const auto ag_no : acmacs::string::split_into_size_t(ag_data)) {
                         if (ag_indexes_to_report.contains(ag_no))
-                            fmt::print("{}", acmacs::chart::format_antigen(pattern, *chart, ag_no));
+                            fmt::print("{}", acmacs::chart::format_antigen(pattern, *chart, ag_no, acmacs::chart::collapse_spaces_t::yes));
                     }
                 }
                 else {
                     for (const auto ag_no : chart->antigens()->find_by_name(std::regex{std::begin(ag_data), std::end(ag_data), acmacs::regex::icase})) {
                         if (ag_indexes_to_report.contains(ag_no))
-                            fmt::print("{}", acmacs::chart::format_antigen(pattern, *chart, ag_no));
+                            fmt::print("{}", acmacs::chart::format_antigen(pattern, *chart, ag_no, acmacs::chart::collapse_spaces_t::yes));
                     }
                 }
                 reported = true;
@@ -68,13 +68,13 @@ int main(int argc, char* const argv[])
                 if (std::regex_match(std::begin(sr_data), std::end(sr_data), numbers)) {
                     for (const auto sr_no : acmacs::string::split_into_size_t(sr_data)) {
                         if (sr_indexes_to_report.contains(sr_no))
-                            fmt::print("{}", acmacs::chart::format_serum(pattern, *chart, sr_no));
+                            fmt::print("{}", acmacs::chart::format_serum(pattern, *chart, sr_no, acmacs::chart::collapse_spaces_t::yes));
                     }
                 }
                 else {
                     for (const auto sr_no : chart->sera()->find_by_name(std::regex{std::begin(sr_data), std::end(sr_data), acmacs::regex::icase})) {
                         if (sr_indexes_to_report.contains(sr_no))
-                            fmt::print("{}", acmacs::chart::format_serum(pattern, *chart, sr_no));
+                            fmt::print("{}", acmacs::chart::format_serum(pattern, *chart, sr_no, acmacs::chart::collapse_spaces_t::yes));
                     }
                 }
                 reported = true;
@@ -83,11 +83,11 @@ int main(int argc, char* const argv[])
                 const bool antigens_and_sera = !opt.antigens_only && !opt.sera_only;
                 if (antigens_and_sera || opt.antigens_only) {
                     for (const auto ag_no : ag_indexes_to_report)
-                        fmt::print("{}\n", acmacs::string::strip(format_antigen(pattern, *chart, ag_no)));
+                        fmt::print("{}\n", acmacs::string::strip(format_antigen(pattern, *chart, ag_no, acmacs::chart::collapse_spaces_t::yes)));
                 }
                 if (antigens_and_sera || opt.sera_only) {
                     for (const auto sr_no : sr_indexes_to_report)
-                        fmt::print("{}\n", acmacs::string::strip(format_serum(pattern, *chart, sr_no)));
+                        fmt::print("{}\n", acmacs::string::strip(format_serum(pattern, *chart, sr_no, acmacs::chart::collapse_spaces_t::yes)));
                 }
             }
         }

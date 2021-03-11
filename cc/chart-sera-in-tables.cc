@@ -33,7 +33,7 @@ int main(int argc, char* const argv[])
             table_dates.emplace_back(table_date);
             auto sera = chart->sera();
             for (auto serum : *sera)
-                serum_to_tables.try_emplace(serum->format("{name_full}"), std::vector<std::string>{}).first->second.emplace_back(table_date);
+                serum_to_tables.try_emplace(serum->name_full(), std::vector<std::string>{}).first->second.emplace_back(table_date);
         }
 
         fmt::print("Total sera: {}\nTables: {}\n\n", serum_to_tables.size(), table_dates.size());

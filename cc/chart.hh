@@ -16,6 +16,7 @@
 #include "acmacs-base/regex.hh"
 #include "acmacs-virus/virus-name.hh"
 #include "locationdb/locdb.hh"
+#include "acmacs-chart-2/name-format.hh"
 #include "acmacs-chart-2/annotations.hh"
 #include "acmacs-chart-2/titers.hh"
 #include "acmacs-chart-2/stress.hh"
@@ -387,7 +388,7 @@ namespace acmacs::chart
             virtual Continent continent() const { return {}; }
 
             virtual void format(fmt::memory_buffer& output, std::string_view pattern) const = 0;
-            std::string format(std::string_view pattern) const;
+            std::string format(std::string_view pattern, collapse_spaces_t cs = collapse_spaces_t::no) const;
             std::string name_full() const { return format("{name_full}"); }
 
             virtual bool is_egg(reassortant_as_egg rae) const { return rae == reassortant_as_egg::yes ? (!reassortant().empty() || passage().is_egg()) : (reassortant().empty() && passage().is_egg()); }
@@ -484,11 +485,11 @@ namespace acmacs::chart
 
             void filter_found_in(Indexes& aIndexes, const AntigensSera<AgSr>& aNother) const
             {
-                remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.format("{name_full}")); });
+                remove(aIndexes, [&](const auto& entry) -> bool { return !aNother.find_by_full_name(entry.name_full()); });
             }
             void filter_not_found_in(Indexes& aIndexes, const AntigensSera<AgSr>& aNother) const
             {
-                remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.format("{name_full}")).has_value(); });
+                remove(aIndexes, [&](const auto& entry) -> bool { return aNother.find_by_full_name(entry.name_full()).has_value(); });
             }
 
             Indexes reassortant_indexes() const
@@ -561,7 +562,7 @@ namespace acmacs::chart
             {
                 if (!aName.empty() && aName[0] == '~') {
                     const std::regex re{std::next(std::begin(aName), 1), std::end(aName), acmacs::regex::icase};
-                    return std::regex_search(at(index)->format("{name_full}"), re);
+                    return std::regex_search(at(index)->name_full(), re);
                 }
                 else {
                     const auto name = at(index)->name();
@@ -581,7 +582,7 @@ namespace acmacs::chart
 
             virtual std::optional<size_t> find_by_full_name(std::string_view aFullName) const
             {
-                if (const auto found = std::find_if(begin(), end(), [aFullName](const auto& antigen) -> bool { return antigen->format("{name_full}") == aFullName; }); found == end())
+                if (const auto found = std::find_if(begin(), end(), [aFullName](const auto& antigen) -> bool { return antigen->name_full() == aFullName; }); found == end())
                     return std::nullopt;
                 else
                     return found.index();
@@ -621,7 +622,7 @@ namespace acmacs::chart
             {
                 Indexes indexes;
                 for (auto iter = begin(); iter != end(); ++iter) {
-                    if (std::regex_search((*iter)->format("{name_full}"), re_name))
+                    if (std::regex_search((*iter)->name_full(), re_name))
                         indexes.insert(iter.index());
                 }
                 return indexes;
@@ -949,7 +950,7 @@ namespace acmacs::chart
         for (auto i1 = a1.begin(), i2 = a2.begin(); i1 != a1.end(); ++i1, ++i2) {
             if (**i1 != **i2) {
                 if (verbose)
-                    fmt::print(stderr, "WARNING: ag/sr different: {} vs {}\n", (*i1)->format("{name_full}"), (*i2)->format("{name_full}"));
+                    fmt::print(stderr, "WARNING: ag/sr different: {} vs {}\n", (*i1)->name_full(), (*i2)->name_full());
                 return false;
             }
         }
@@ -962,12 +963,12 @@ namespace acmacs::chart
 
     template <typename AgSr> inline size_t max_full_name(const AgSr& ag_sr)
     {
-        return std::accumulate(std::begin(ag_sr), std::end(ag_sr), 0ul, [](size_t max_name, const auto& en) { return std::max(max_name, en->format("{name_full}").size()); });
+        return std::accumulate(std::begin(ag_sr), std::end(ag_sr), 0ul, [](size_t max_name, const auto& en) { return std::max(max_name, en->name_full().size()); });
     }
 
     template <typename AgSr> inline size_t max_full_name(const AgSr& ag_sr, const acmacs::chart::PointIndexList& indexes)
     {
-        return std::accumulate(std::begin(indexes), std::end(indexes), 0ul, [&ag_sr](size_t max_name, size_t index) { return std::max(max_name, ag_sr.at(index)->format("{name_full}").size()); });
+        return std::accumulate(std::begin(indexes), std::end(indexes), 0ul, [&ag_sr](size_t max_name, size_t index) { return std::max(max_name, ag_sr.at(index)->name_full().size()); });
     }
 
     // ----------------------------------------------------------------------
@@ -1029,14 +1030,14 @@ template <> struct fmt::formatter<acmacs::chart::BLineage> : fmt::formatter<acma
 template <> struct fmt::formatter<acmacs::chart::Antigen> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::Antigen& antigen, FormatCtx& ctx)
     {
-        return fmt::format_to(ctx.out(), antigen.format("{name_full} [{date}]{ }{lab_ids}{ }{lineage}"));
+        return fmt::format_to(ctx.out(), antigen.format("{name_full} [{date}]{ }{lab_ids}{ }{lineage}", acmacs::chart::collapse_spaces_t::yes));
     }
 };
 
 template <> struct fmt::formatter<acmacs::chart::Serum> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::Serum& serum, FormatCtx& ctx)
     {
-        return fmt::format_to(ctx.out(), serum.format("{name_full}{ }{lineage}{ }{species}"));
+        return fmt::format_to(ctx.out(), serum.format("{name_full}{ }{lineage}{ }{species}", acmacs::chart::collapse_spaces_t::yes));
     }
 };
 

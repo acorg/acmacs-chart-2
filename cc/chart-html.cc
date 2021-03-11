@@ -169,7 +169,7 @@ void contents(std::ostream& output, const acmacs::chart::Chart& chart, const gro
         }
         else {
             output << "<td class=\"ag-name ag-" << ag_no << " passage-" << passage_type << has_too_few_numeric_titers_class << "\"><div class=\"tooltip\">" << html_escape(antigen->format("{name_abbreviated}"))
-                   << "<span class=\"tooltiptext\">" << html_escape(antigen->format("{name_full}")) << "</span></div></td>";
+                   << "<span class=\"tooltiptext\">" << html_escape(antigen->name_full()) << "</span></div></td>";
         }
 
         // titers
@@ -361,7 +361,7 @@ std::vector<size_t> serum_rows(std::ostream& output, const acmacs::chart::Chart&
             }
             const char* has_too_few_numeric_titers_class = having_too_few_numeric_titers.contains(sr_no + number_of_antigens) ? " too-few-numeric-titers" : "";
             output << "<td class=\"sr-name sr-" << sr_no << " passage-" << serum.passage().passage_type() << has_too_few_numeric_titers_class << (group_begin ? " sr-group-begin" : "")
-                   << "\"><div class=\"tooltip\">" << html_escape(name) << "<span class=\"tooltiptext\">" << html_escape(serum.format("{name_full} {passage}")) << "</span></div></td>";
+                   << "\"><div class=\"tooltip\">" << html_escape(name) << "<span class=\"tooltiptext\">" << html_escape(serum.format("{name_full_passage}")) << "</span></div></td>";
         };
 
         show_row(show_serum);

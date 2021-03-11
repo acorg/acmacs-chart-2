@@ -63,7 +63,7 @@ std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_
         auto titers = this->titers();
         auto sera = this->sera();
         for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-            fmt::format_to(text, "SR {:3d} {}\n", sr_no, serum->format("{name_full} {passage}"));
+            fmt::format_to(text, "SR {:3d} {}\n", sr_no, serum->format("{name_full_passage}"));
             for (const auto layer_no : titers->layers_with_serum(sr_no))
                 fmt::format_to(text, "    {:3d} {}\n", layer_no, info()->source(layer_no)->make_name());
         }
@@ -266,7 +266,7 @@ std::string acmacs::chart::Chart::show_table(std::optional<size_t> layer_no) con
     fmt::format_to(output, "\n");
 
     for (auto ag_no : antigen_indexes) {
-        fmt::format_to(output, "{:<{}s}", ags->at(ag_no)->format("{name_full}"), max_ag_name + 2);
+        fmt::format_to(output, "{:<{}s}", ags->at(ag_no)->name_full(), max_ag_name + 2);
         for (auto sr_no : serum_indexes)
             fmt::format_to(output, "{:>7s}", *tt->titer(ag_no, sr_no));
         fmt::format_to(output, "\n");
@@ -274,7 +274,7 @@ std::string acmacs::chart::Chart::show_table(std::optional<size_t> layer_no) con
     fmt::format_to(output, "\n");
 
     for (auto [sr_ind, sr_no] : acmacs::enumerate(serum_indexes))
-        fmt::format_to(output, "{:3d} {} {}\n", sr_label(sr_ind), srs->at(sr_no)->format("{location_abbreviated}/{year2}"), srs->at(sr_no)->format("{name_full}"));
+        fmt::format_to(output, "{:3d} {} {}\n", sr_label(sr_ind), srs->at(sr_no)->format("{location_abbreviated}/{year2}"), srs->at(sr_no)->name_full());
 
     return fmt::to_string(output);
 

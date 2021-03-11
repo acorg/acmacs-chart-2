@@ -53,7 +53,7 @@ int main(int argc, char* const argv[])
             // ---- test antigens -----
             // std::cerr << "\nDEBUG: layer " << layer_no << '\n';
             for (auto ag_no : antigens) {
-                const auto full_name = result->antigens()->at(ag_no)->format("{name_full}");
+                const auto full_name = result->antigens()->at(ag_no)->name_full();
                 // std::cerr << "DEBUG: AG " << ag_no << ' ' << full_name << '\n';
                 if (auto index = charts[layer_no]->antigens()->find_by_full_name(full_name); !index) {
                     std::cerr << "ERROR: antigen " << ag_no << " from layer " << layer_no << ": [" << full_name << "] not found in the original chart\n";
@@ -64,7 +64,7 @@ int main(int argc, char* const argv[])
             }
             // ---- test sera -----
             for (auto sr_no : sera) {
-                const auto full_name = result->sera()->at(sr_no)->format("{name_full}");
+                const auto full_name = result->sera()->at(sr_no)->name_full();
                 // std::cerr << "DEBUG: SR " << sr_no << ' ' << full_name << '\n';
                 if (auto index = charts[layer_no]->sera()->find_by_full_name(full_name); !index) {
                     std::cerr << "ERROR: serum " << sr_no << " from layer " << layer_no << ": [" << full_name << "] not found in the original chart\n";
@@ -80,9 +80,9 @@ int main(int argc, char* const argv[])
                     const auto titer_orig = charts[layer_no]->titers()->titer(antigen_map[ag_no], serum_map[sr_no]);
                     if (titer != titer_orig) {
                         std::cerr << "ERROR: titer mismatch:\n"
-                                  << *titer << " result: " << ag_no << ' ' << result->antigens()->at(ag_no)->format("{name_full}") << ' ' << sr_no << ' ' << result->sera()->at(sr_no)->format("{name_full}") << '\n'
-                                  << *titer_orig << " orig chart " << layer_no << ' ' << antigen_map[ag_no] << ' ' << charts[layer_no]->antigens()->at(antigen_map[ag_no])->format("{name_full}") << ' '
-                                  << serum_map[sr_no] << ' ' << charts[layer_no]->sera()->at(serum_map[sr_no])->format("{name_full}") << "\n";
+                                  << *titer << " result: " << ag_no << ' ' << result->antigens()->at(ag_no)->name_full() << ' ' << sr_no << ' ' << result->sera()->at(sr_no)->name_full() << '\n'
+                                  << *titer_orig << " orig chart " << layer_no << ' ' << antigen_map[ag_no] << ' ' << charts[layer_no]->antigens()->at(antigen_map[ag_no])->name_full() << ' '
+                                  << serum_map[sr_no] << ' ' << charts[layer_no]->sera()->at(serum_map[sr_no])->name_full() << "\n";
                         assert(titer == titer_orig);
                     }
                 }
