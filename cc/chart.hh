@@ -391,7 +391,7 @@ namespace acmacs::chart
             std::string format(std::string_view pattern, collapse_spaces_t cs = collapse_spaces_t::no) const;
             std::string name_full() const { return format("{name_full}"); }
 
-            virtual bool is_egg(reassortant_as_egg rae) const { return rae == reassortant_as_egg::yes ? (!reassortant().empty() || passage().is_egg()) : (reassortant().empty() && passage().is_egg()); }
+            virtual bool is_egg(reassortant_as_egg rae = reassortant_as_egg::yes) const { return rae == reassortant_as_egg::yes ? (!reassortant().empty() || passage().is_egg()) : (reassortant().empty() && passage().is_egg()); }
             bool is_cell() const { return !is_egg(reassortant_as_egg::yes); }
 
             std::string_view passage_type(reassortant_as_egg rae = reassortant_as_egg::yes) const
@@ -449,7 +449,7 @@ namespace acmacs::chart
             // returns if collapsable spaces inserted
         void format(fmt::memory_buffer& output, std::string_view pattern) const override; // name-format.cc
 
-        bool is_egg(reassortant_as_egg rae) const override
+        bool is_egg(reassortant_as_egg rae = reassortant_as_egg::yes) const override
         {
             const auto egg = passage().is_egg() || serum_id().find("EGG") != std::string::npos;
             return rae == reassortant_as_egg::yes ? (!reassortant().empty() || egg) : (reassortant().empty() && egg);
