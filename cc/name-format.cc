@@ -1,5 +1,3 @@
-#include <functional>
-
 #include "acmacs-base/string-join.hh"
 #include "acmacs-base/string-compare.hh"
 #include "acmacs-base/regex.hh"
@@ -163,11 +161,12 @@ const std::tuple format_subst_serum{
 
 template <typename AgSr, typename... Args> static inline void format_ag_sr(fmt::memory_buffer& output, const AgSr& ag_sr, std::string_view pattern, Args&&... args)
 {
-    const auto format_matched = [&output, &ag_sr](std::string_view pattern_arg, std::string_view key, const auto& value) {
-        if constexpr (std::is_invocable_v<decltype(value), fmt::memory_buffer&, std::string_view, const AgSr&>)
-            std::invoke(value, output, pattern_arg, ag_sr);
+    const auto format_matched = [&output, &ag_sr](std::string_view pattern_arg, const auto& key_value) {
+        static_assert(std::is_same_v<std::decay_t<decltype(std::get<0>(key_value))>, const char*>);
+        if constexpr (std::is_invocable_v<decltype(std::get<1>(key_value)), fmt::memory_buffer&, std::string_view, const AgSr&>)
+            std::invoke(std::get<1>(key_value), output, pattern_arg, ag_sr);
         else
-            fmt::format_to(output, pattern_arg, fmt::arg(key, value));
+            fmt::format_to(output, pattern_arg, fmt::arg(std::get<0>(key_value), std::get<1>(key_value)));
     };
     const auto format_no_pattern = [&output](std::string_view no_pattern) { output.append(no_pattern); };
     const auto format_args = [pattern, format_matched, format_no_pattern](const auto&... fargs) {
@@ -251,15 +250,21 @@ std::string acmacs::chart::format_antigen(std::string_view pattern, const acmacs
     auto sera = chart.sera();
     const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
 
-    const auto substituted = fmt::substitute(                                                                                     //
-        antigen->format(pattern, collapse_spaces_t::no),                                                                            //
-        std::pair{"no0", antigen_no},                                                                                             //
-        std::pair{"no1", antigen_no + 1},                                                                                         //
-        std::pair{"num_digits", num_digits},                                                                                      //
-        std::pair{"sera_with_titrations", [&chart, antigen_no] { return chart.titers()->having_titers_with(antigen_no, false); }} //
-    );
-
-    return acmacs::chart::collapse_spaces(substituted, cs);
+    const auto ag_formatted = antigen->format(pattern, collapse_spaces_t::no);
+    try {
+        const auto substituted = fmt::substitute(                                                                                     //
+            ag_formatted,                                                                                                             //
+            fmt::if_no_substitution_found::leave_as_is,                                                                               //
+            std::tuple{"no0", antigen_no, "num_digits", num_digits},                                                                  //
+            std::tuple{"no1", antigen_no + 1, "num_digits", num_digits},                                                                  //
+            std::pair{"sera_with_titrations", [&chart, antigen_no] { return chart.titers()->having_titers_with(antigen_no, false); }} //
+        );
+        return acmacs::chart::collapse_spaces(substituted, cs);
+    }
+    catch (fmt::format_error& err) {
+        AD_ERROR("format_error in {}: {}", ag_formatted, err);
+        throw;
+    }
 
 } // acmacs::chart::format_antigen
 
@@ -274,9 +279,8 @@ std::string acmacs::chart::format_serum(std::string_view pattern, const acmacs::
 
     const auto substituted = fmt::substitute(                                                                        //
         serum->format(pattern, collapse_spaces_t::no),                                                                 //
-        std::pair{"no0", serum_no},                                                                                  //
-        std::pair{"no1", serum_no + 1},                                                                              //
-        std::pair{"num_digits", num_digits},                                                                         //
+        std::tuple{"no0", serum_no, "num_digits", num_digits},                                                                  //
+        std::tuple{"no1", serum_no + 1, "num_digits", num_digits},                                                                  //
         std::pair{"sera_with_titrations", chart.titers()->having_titers_with(serum_no + chart.number_of_antigens())} //
     );
 
@@ -289,9 +293,9 @@ std::string acmacs::chart::format_serum(std::string_view pattern, const acmacs::
 constexpr const std::string_view pattern = R"(
 {{ag_sr}}                                  : {ag_sr}
 {{no0}}                                    : {no0}
-{{no0:}}                                    : {no0}
+{{no0:{num_digits}d}}                      : {no0:{num_digits}d}
 {{no1}}                                    : {no1}
-{{no1:}}                                    : {no1}
+{{no1:{num_digits}d}}                      : {no1:{num_digits}d}
 {{name}}                                   : {name}
 {{full_name}}                              : {full_name}
 {{name_full_passage}}                      : {name_full_passage}
