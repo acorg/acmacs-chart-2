@@ -1,7 +1,7 @@
 #include "acmacs-base/string.hh"
-#include "acmacs-base/range.hh"
+#include "acmacs-base/range-v3.hh"
+#include "acmacs-chart-2/log.hh"
 #include "acmacs-chart-2/common.hh"
-#include "acmacs-chart-2/chart.hh"
 
 using namespace acmacs::chart;
 
@@ -39,80 +39,8 @@ class CommonAntigensSera::Impl
 {
  public:
     Impl(const Chart& primary, const Chart& secondary, match_level_t match_level);
+    Impl(const Chart& primary, const Chart& secondary, common::antigen_selector_t antigen_entry_extractor, common::serum_selector_t serum_entry_extractor, match_level_t match_level);
     Impl(const Chart& primary);
-
-    struct CoreEntry
-    {
-        CoreEntry() = default;
-        CoreEntry(CoreEntry&&) = default;
-        template <typename AgSr> CoreEntry(size_t a_index, const AgSr& ag_sr)
-            : index(a_index), name(ag_sr.name()), reassortant(ag_sr.reassortant()), annotations(ag_sr.annotations()) {}
-        CoreEntry& operator=(CoreEntry&&) = default;
-
-        static int compare(const CoreEntry& lhs, const CoreEntry& rhs)
-            {
-                if (auto n_c = lhs.name.compare(rhs.name); n_c != 0)
-                    return n_c;
-                if (auto r_c = lhs.reassortant.compare(rhs.reassortant); r_c != 0)
-                    return r_c;
-                return ::string::compare(fmt::format("{: }", lhs.annotations), fmt::format("{: }", rhs.annotations));
-            }
-
-        static bool less(const CoreEntry& lhs, const CoreEntry& rhs) { return compare(lhs, rhs) < 0; }
-
-        size_t index;
-        acmacs::virus::name_t name;
-        acmacs::virus::Reassortant reassortant;
-        Annotations annotations;
-
-    }; // struct CoreEntry
-
-    struct AntigenEntry : public CoreEntry
-    {
-        AntigenEntry() = default;
-        AntigenEntry(AntigenEntry&&) = default;
-        AntigenEntry(size_t a_index, const Antigen& antigen) : CoreEntry(a_index, antigen), passage(antigen.passage()) {}
-        AntigenEntry& operator=(AntigenEntry&&) = default;
-
-        std::string_view ag_sr() const { using namespace std::string_view_literals; return "AG"sv; }
-        std::string full_name() const { return acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), passage); }
-        size_t full_name_length() const { return name.size() + reassortant.size() + annotations.total_length() + passage.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size(); }
-        bool operator<(const AntigenEntry& rhs) const { return compare(*this, rhs) < 0; }
-
-        static int compare(const AntigenEntry& lhs, const AntigenEntry& rhs)
-            {
-                if (auto np_c = CoreEntry::compare(lhs, rhs); np_c != 0)
-                    return np_c;
-                return lhs.passage.compare(rhs.passage);
-            }
-
-        acmacs::virus::Passage passage;
-
-    }; // class AntigenEntry
-
-    struct SerumEntry : public CoreEntry
-    {
-        SerumEntry() = default;
-        SerumEntry(SerumEntry&&) = default;
-        SerumEntry(size_t a_index, const Serum& serum) : CoreEntry(a_index, serum), serum_id(serum.serum_id()), passage(serum.passage()) {}
-        SerumEntry& operator=(SerumEntry&&) = default;
-
-        std::string_view ag_sr() const { using namespace std::string_view_literals; return "SR"sv; }
-        std::string full_name() const { return acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), serum_id, passage); }
-        size_t full_name_length() const { return name.size() + reassortant.size() + annotations.total_length() + serum_id.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size() + passage.size() + (passage.empty() ? 0 : 1); }
-        bool operator<(const SerumEntry& rhs) const { return compare(*this, rhs) < 0; }
-
-        static int compare(const SerumEntry& lhs, const SerumEntry& rhs)
-            {
-                if (auto np_c = CoreEntry::compare(lhs, rhs); np_c != 0)
-                    return np_c;
-                return lhs.serum_id.compare(rhs.serum_id);
-            }
-
-        SerumId serum_id;
-        acmacs::virus::Passage passage;
-
-    }; // class SerumEntry
 
     struct MatchEntry
     {
@@ -127,6 +55,7 @@ class CommonAntigensSera::Impl
     {
      public:
         ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level);
+        template <typename Selector> ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, Selector selector, match_level_t match_level);
         ChartData(const acmacs::chart::Chart& primary);
         std::string report(size_t indent, std::string_view prefix, std::string_view ignored_key) const;
         std::vector<CommonAntigensSera::common_t> common() const;
@@ -168,14 +97,14 @@ class CommonAntigensSera::Impl
 
     }; // class ChartData<AgSrEntry>
 
-    ChartData<AntigenEntry> antigens_;
-    ChartData<SerumEntry> sera_;
+    ChartData<common::AntigenEntry> antigens_;
+    ChartData<common::SerumEntry> sera_;
 
 }; // class CommonAntigensSera::Impl
 
 // ----------------------------------------------------------------------
 
-template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level)
+template <> CommonAntigensSera::Impl::ChartData<common::AntigenEntry>::ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level)
     : primary_(primary.number_of_antigens()), secondary_(secondary.number_of_antigens()),
       primary_base_{0}, secondary_base_{0},
       min_number_{std::min(primary_.size(), secondary_.size())}
@@ -189,13 +118,27 @@ template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::Antige
 
 // ----------------------------------------------------------------------
 
-template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::ChartData(const acmacs::chart::Chart& primary)
+template <> template <> CommonAntigensSera::Impl::ChartData<common::AntigenEntry>::ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, common::antigen_selector_t selector, match_level_t match_level)
+    : primary_(primary.number_of_antigens()), secondary_(secondary.number_of_antigens()),
+      primary_base_{0}, secondary_base_{0},
+      min_number_{std::min(primary_.size(), secondary_.size())}
+{
+    make(primary_, *primary.antigens());
+    std::sort(primary_.begin(), primary_.end());
+    make(secondary_, *secondary.antigens());
+    match(match_level);
+
+} // CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::ChartData
+
+// ----------------------------------------------------------------------
+
+template <> CommonAntigensSera::Impl::ChartData<common::AntigenEntry>::ChartData(const acmacs::chart::Chart& primary)
     : primary_(primary.number_of_antigens()), secondary_(primary.number_of_antigens()), match_(primary.number_of_antigens()), primary_base_{0}, secondary_base_{0}
 {
     make(primary_, *primary.antigens());
     std::sort(primary_.begin(), primary_.end());
     make(secondary_, *primary.antigens());
-    for (auto antigen_no : acmacs::range(match_.size())) {
+    for (const auto antigen_no : range_from_0_to(match_.size())) {
         match_[antigen_no].primary_index = match_[antigen_no].secondary_index = antigen_no;
         match_[antigen_no].score = score_t::full_match;
         match_[antigen_no].use = true;
@@ -206,7 +149,7 @@ template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::Antige
 
 // ----------------------------------------------------------------------
 
-template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level)
+template <> CommonAntigensSera::Impl::ChartData<common::SerumEntry>::ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, match_level_t match_level)
     : primary_(primary.number_of_sera()), secondary_(secondary.number_of_sera()),
       primary_base_{primary.number_of_antigens()}, secondary_base_{secondary.number_of_antigens()},
       min_number_{std::min(primary_.size(), secondary_.size())}
@@ -220,14 +163,28 @@ template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumE
 
 // ----------------------------------------------------------------------
 
-template <> CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData(const acmacs::chart::Chart& primary)
+template <> template <> CommonAntigensSera::Impl::ChartData<common::SerumEntry>::ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, common::serum_selector_t selector, match_level_t match_level)
+    : primary_(primary.number_of_sera()), secondary_(secondary.number_of_sera()),
+      primary_base_{primary.number_of_antigens()}, secondary_base_{secondary.number_of_antigens()},
+      min_number_{std::min(primary_.size(), secondary_.size())}
+{
+    make(primary_, *primary.sera());
+    std::sort(primary_.begin(), primary_.end());
+    make(secondary_, *secondary.sera());
+    match(match_level);
+
+} // CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData
+
+// ----------------------------------------------------------------------
+
+template <> CommonAntigensSera::Impl::ChartData<common::SerumEntry>::ChartData(const acmacs::chart::Chart& primary)
     : primary_(primary.number_of_sera()), secondary_(primary.number_of_sera()),
       match_(primary.number_of_sera()), primary_base_{primary.number_of_antigens()}, secondary_base_{primary.number_of_antigens()}
 {
     make(primary_, *primary.sera());
     std::sort(primary_.begin(), primary_.end());
     make(secondary_, *primary.sera());
-    for (auto serum_no : acmacs::range(match_.size())) {
+    for (const auto serum_no : range_from_0_to(match_.size())) {
         match_[serum_no].primary_index = match_[serum_no].secondary_index = serum_no;
         match_[serum_no].score = score_t::full_match;
         match_[serum_no].use = true;
@@ -346,7 +303,7 @@ score_t CommonAntigensSera::Impl::ChartData<AgSrEntry>::match(const AgSrEntry& p
 
 // ----------------------------------------------------------------------
 
-template <> score_t CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::match_not_ignored(const AntigenEntry& primary, const AntigenEntry& secondary) const
+template <> score_t CommonAntigensSera::Impl::ChartData<common::AntigenEntry>::match_not_ignored(const common::AntigenEntry& primary, const common::AntigenEntry& secondary) const
 {
     auto result = score_t::passage_serum_id_ignored;
     if (primary.passage.empty() || secondary.passage.empty()) {
@@ -365,7 +322,7 @@ template <> score_t CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl
 
 // ----------------------------------------------------------------------
 
-template <> score_t CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::match_not_ignored(const SerumEntry& primary, const SerumEntry& secondary) const
+template <> score_t CommonAntigensSera::Impl::ChartData<common::SerumEntry>::match_not_ignored(const common::SerumEntry& primary, const common::SerumEntry& secondary) const
 {
     auto result = score_t::passage_serum_id_ignored;
     if (primary.serum_id == secondary.serum_id && !primary.serum_id.empty())
@@ -486,6 +443,13 @@ inline CommonAntigensSera::Impl::Impl(const Chart& primary, const Chart& seconda
 
 // ----------------------------------------------------------------------
 
+inline CommonAntigensSera::Impl::Impl(const Chart& primary, const Chart& secondary, common::antigen_selector_t antigen_entry_extractor, common::serum_selector_t serum_entry_extractor, match_level_t match_level)
+    : antigens_(primary, secondary, antigen_entry_extractor, match_level), sera_(primary, secondary, serum_entry_extractor, match_level)
+{
+}
+
+// ----------------------------------------------------------------------
+
 inline CommonAntigensSera::Impl::Impl(const Chart& primary)
     : antigens_(primary), sera_(primary)
 {
@@ -497,6 +461,14 @@ acmacs::chart::CommonAntigensSera::CommonAntigensSera(const Chart& primary, cons
     : impl_(&primary == &secondary ? std::make_unique<Impl>(primary) : std::make_unique<Impl>(primary, secondary, match_level))
 {
 }
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::CommonAntigensSera::CommonAntigensSera(const Chart& primary, const Chart& secondary, common::antigen_selector_t antigen_entry_extractor, common::serum_selector_t serum_entry_extractor, match_level_t match_level)
+    : impl_(std::make_unique<Impl>(primary, secondary, antigen_entry_extractor, serum_entry_extractor, match_level))
+{
+
+} // acmacs::chart::CommonAntigensSera::CommonAntigensSera
 
 // ----------------------------------------------------------------------
 
