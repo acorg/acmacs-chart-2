@@ -1,6 +1,8 @@
 #pragma once
 
+#include "acmacs-base/string-join.hh"
 #include "acmacs-chart-2/chart.hh"
+#include "acmacs-chart-2/name-format.hh"
 
 // ----------------------------------------------------------------------
 
@@ -11,9 +13,11 @@ namespace acmacs::chart
         template <typename AgSr> struct Selected
         {
             // Selected() = default;
-            Selected(std::shared_ptr<AgSr> a_ag_sr) : ag_sr{a_ag_sr}, indexes{a_ag_sr->all_indexes()} {}
+            Selected(std::shared_ptr<Chart> a_chart) : chart{a_chart}, indexes{ag_sr()->all_indexes()} {}
             // call func for each antigen/serum and select ag/sr if func returns true
-            template <typename F> Selected(std::shared_ptr<AgSr> a_ag_sr, F&& func) : ag_sr{a_ag_sr}, indexes{a_ag_sr->indexes(std::forward<F>(func))} {}
+            template <typename F> Selected(std::shared_ptr<Chart> a_chart, F&& func) : chart{a_chart}, indexes{ag_sr()->indexes(std::forward<F>(func))} {}
+
+            std::shared_ptr<AgSr> ag_sr() const;
 
             bool empty() const { return indexes.empty(); }
             size_t size() const { return indexes.size(); }
@@ -21,26 +25,27 @@ namespace acmacs::chart
             // substitutions in format: {no0} {no1} {AG_SR} {name} {full_name}
             std::string report(std::string_view format = "{no0},") const
             {
-                fmt::memory_buffer output;
-                for (const auto no0 : indexes) {
-                    fmt::format_to(output, "{}", ag_sr->at(no0)->format(format));
-                }
-                return fmt::to_string(output);
+                return acmacs::string::join(acmacs::string::join_concat, std::begin(indexes), std::end(indexes),
+                                            [format, this](const auto no0) { return format_antigen_serum<AgSr>(format, *chart, no0, collapse_spaces_t::yes); });
             }
 
-            std::shared_ptr<AgSr> ag_sr;
+            std::shared_ptr<Chart> chart;
             acmacs::chart::Indexes indexes;
         };
+
+        template <> inline std::shared_ptr<Antigens> Selected<Antigens>::ag_sr() const { return chart->antigens(); }
+        template <> inline std::shared_ptr<Sera> Selected<Sera>::ag_sr() const { return chart->sera(); }
+
     } // namespace detail
 
-    struct SelectedAntigens : public detail::Selected<acmacs::chart::Antigens>
+    struct SelectedAntigens : public detail::Selected<Antigens>
     {
-        using detail::Selected<acmacs::chart::Antigens>::Selected;
+        using detail::Selected<Antigens>::Selected;
     };
 
-    struct SelectedSera : public detail::Selected<acmacs::chart::Sera>
+    struct SelectedSera : public detail::Selected<Sera>
     {
-        using detail::Selected<acmacs::chart::Sera>::Selected;
+        using detail::Selected<Sera>::Selected;
     };
 
 } // namespace acmacs::chart

@@ -27,7 +27,7 @@ int main(int argc, char* const argv[])
         auto info = chart->info();
         auto antigens = chart->antigens();
         auto sera = chart->sera();
-        const auto layer_no_width{static_cast<int>(std::log10(titers->number_of_layers() - 1)) + 1};
+        const auto layer_no_width{chart->number_of_digits_for_antigen_serum_index_formatting()};
         for (size_t layer_no{0}; layer_no < titers->number_of_layers(); ++layer_no) {
             auto [antigen_indexes, serum_indexes] = titers->antigens_sera_of_layer(layer_no);
             acmacs::chart::ChartNew output{antigen_indexes.size(), serum_indexes.size()};

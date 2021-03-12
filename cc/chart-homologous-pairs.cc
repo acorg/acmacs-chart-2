@@ -1,9 +1,8 @@
-#include <iostream>
-
 #include "acmacs-base/argc-argv.hh"
-#include "acmacs-base/range.hh"
+#include "acmacs-base/range-v3.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart.hh"
+#include "acmacs-chart-2/name-format.hh"
 
 // ----------------------------------------------------------------------
 
@@ -21,7 +20,7 @@ int main(int argc, char* const argv[])
                            {"-v", false},
                        });
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
-            std::cerr << "Usage: " << args.program() << " [options] <chart-file>\n" << args.usage_options() << '\n';
+            fmt::print(stderr, "Usage: {} [options] <chart-file>\n{}\n", args.program(), args.usage_options());
             exit_code = 1;
         }
         else {
@@ -35,25 +34,22 @@ int main(int argc, char* const argv[])
             else if (args["--mode"] == "all")
                 options = acmacs::chart::find_homologous::all;
             else if (args["--mode"] != "strict")
-                std::cerr << "WARNING: unecognized --mode argument, strict assumed\n";
+                AD_WARNING("unecognized --mode argument, strict assumed");
 
             auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, report);
-            auto antigens = chart->antigens();
             auto sera = chart->sera();
             chart->set_homologous(options, sera);
-            const auto ag_num_digits = static_cast<int>(std::log10(antigens->size())) + 1;
-            const auto sr_num_digits = static_cast<int>(std::log10(antigens->size())) + 1;
 
-            for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-                std::cout << std::setw(sr_num_digits) << std::right << sr_no << ' ' << serum->format("{name_full} {passage}") << '\n';
-                for (auto ag_no : serum->homologous_antigens())
-                    std::cout << "      " << std::setw(ag_num_digits) << std::right << ag_no << ' ' << (*antigens)[ag_no]->format("{name_full}") << '\n';
-                std::cout << '\n';
+            for (const auto sr_no : range_from_0_to(chart->number_of_sera())) {
+                fmt::print("{}\n", acmacs::chart::format_serum("{no0:{num_digits}d} {name_full_passage}", *chart, sr_no, acmacs::chart::collapse_spaces_t::no));
+                for (const auto ag_no : sera->at(sr_no)->homologous_antigens())
+                    fmt::print("      {}\n", acmacs::chart::format_antigen("{no0:{num_digits}d} {name_full}", *chart, ag_no, acmacs::chart::collapse_spaces_t::no));
+                fmt::print("\n");
             }
         }
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;

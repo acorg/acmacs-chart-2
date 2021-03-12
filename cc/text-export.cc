@@ -67,7 +67,7 @@ std::string acmacs::chart::export_table_to_text(const Chart& chart, std::optiona
         fmt::format_to(result, "{: ^8s}", sera->at(serum_no)->format("{location_abbreviated}/{year2}"), column_width);
     fmt::format_to(result, "\n\n");
 
-    const auto ag_no_num_digits = static_cast<int>(std::log10(antigens->size())) + 1;
+    const auto ag_no_num_digits = chart.number_of_digits_for_antigen_serum_index_formatting();
     if (!just_layer.has_value()) {
         // merged table
         for (auto [ag_no, antigen_no] : acmacs::enumerate(antigen_order)) {

@@ -52,7 +52,6 @@ int main(int argc, char* const argv[])
             write_csv(opt.output_layout, opt, *chart, prepend_fields, append_fields);
         else
             write_text(opt.output_layout, opt, *chart, prepend_fields, append_fields);
-        // const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
     }
     catch (std::exception& err) {
         AD_ERROR("{}", err);

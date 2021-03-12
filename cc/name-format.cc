@@ -245,10 +245,8 @@ std::string acmacs::chart::collapse_spaces(std::string src, collapse_spaces_t cs
 
 std::string acmacs::chart::format_antigen(std::string_view pattern, const acmacs::chart::Chart& chart, size_t antigen_no, collapse_spaces_t cs)
 {
-    auto antigens = chart.antigens();
-    auto antigen = antigens->at(antigen_no);
-    auto sera = chart.sera();
-    const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
+    const auto num_digits = chart.number_of_digits_for_antigen_serum_index_formatting();
+    auto antigen = chart.antigens()->at(antigen_no);
 
     const auto ag_formatted = antigen->format(pattern, collapse_spaces_t::no);
     try {
@@ -272,10 +270,8 @@ std::string acmacs::chart::format_antigen(std::string_view pattern, const acmacs
 
 std::string acmacs::chart::format_serum(std::string_view pattern, const acmacs::chart::Chart& chart, size_t serum_no, collapse_spaces_t cs)
 {
-    auto antigens = chart.antigens();
-    auto sera = chart.sera();
-    auto serum = sera->at(serum_no);
-    const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
+    const auto num_digits = chart.number_of_digits_for_antigen_serum_index_formatting();
+    auto serum = chart.sera()->at(serum_no);
 
     const auto substituted = fmt::substitute(                                                                        //
         serum->format(pattern, collapse_spaces_t::no),                                                                 //

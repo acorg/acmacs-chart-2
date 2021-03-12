@@ -34,7 +34,7 @@ int main(int argc, char* const argv[])
         std::cout << chart->make_info() << '\n';
         auto antigens = chart->antigens();
         auto sera = chart->sera();
-        const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
+        const auto num_digits = chart->number_of_digits_for_antigen_serum_index_formatting();
         for (auto [ag_no, antigen] : acmacs::enumerate(*antigens))
             std::cout << "AG " << std::setw(num_digits) << ag_no << ' ' << antigen->name_full() << '\n';
         for (auto [sr_no, serum] : acmacs::enumerate(*sera))

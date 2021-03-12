@@ -37,12 +37,6 @@ int main(int argc, char* const argv[])
             std::tie(result, merge_report) = acmacs::chart::merge(*result, *charts[c_no], settings);
         }
 
-        // const auto num_digits = static_cast<int>(std::log10(std::max(result->antigens()->size(), result->sera()->size()))) + 1;
-        // for (auto [ag_no, antigen]: acmacs::enumerate(*result->antigens()))
-        //     std::cout << "AG " << std::setw(num_digits) << ag_no << ' ' << antigen->full_name() << '\n';
-        // for (auto [sr_no, serum]: acmacs::enumerate(*result->sera()))
-        //     std::cout << "SR " << std::setw(num_digits) << sr_no << ' ' << serum->full_name() << '\n';
-
         acmacs::chart::PointIndexList antigens_visited, sera_visited;
         for (auto [layer_no, chart] : acmacs::enumerate(charts)) {
             const auto [antigens, sera] = result->titers()->antigens_sera_of_layer(layer_no);

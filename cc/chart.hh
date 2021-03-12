@@ -915,6 +915,8 @@ namespace acmacs::chart
 
         std::string show_table(std::optional<size_t> layer_no = {}) const;
 
+        int number_of_digits_for_antigen_serum_index_formatting() const { return static_cast<int>(std::log10(std::max(number_of_antigens(), number_of_sera()))) + 1; }
+
       private:
         mutable std::map<MinimumColumnBasis, std::shared_ptr<ColumnBases>> computed_column_bases_; // cache, computing might be slow for big charts
 

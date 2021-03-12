@@ -42,7 +42,6 @@ int main(int argc, char* const argv[])
             write_json(opt.output_distances, opt.projection_no, *chart);
         else
             write_text(opt.output_distances, opt.projection_no, *chart);
-        // const auto num_digits = static_cast<int>(std::log10(std::max(antigens->size(), sera->size()))) + 1;
     }
     catch (std::exception& err) {
         AD_ERROR("{}", err);
