@@ -91,6 +91,13 @@ class CommonAntigensSera::Impl
                 }
             }
 
+        template <typename AgSr, typename Selector> static void make(std::vector<AgSrEntry>& target, Selector selector, const AgSr& source)
+            {
+                for (size_t index = 0; index < target.size(); ++index) {
+                    target[index] = selector(index, source[index]);
+                }
+            }
+
         void match(match_level_t match_level);
         score_t match(const AgSrEntry& primary, const AgSrEntry& secondary, match_level_t match_level) const;
         score_t match_not_ignored(const AgSrEntry& primary, const AgSrEntry& secondary) const;
@@ -123,9 +130,9 @@ template <> template <> CommonAntigensSera::Impl::ChartData<common::AntigenEntry
       primary_base_{0}, secondary_base_{0},
       min_number_{std::min(primary_.size(), secondary_.size())}
 {
-    make(primary_, *primary.antigens());
+    make(primary_, selector, *primary.antigens());
     std::sort(primary_.begin(), primary_.end());
-    make(secondary_, *secondary.antigens());
+    make(secondary_, selector, *secondary.antigens());
     match(match_level);
 
 } // CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::AntigenEntry>::ChartData
@@ -168,9 +175,9 @@ template <> template <> CommonAntigensSera::Impl::ChartData<common::SerumEntry>:
       primary_base_{primary.number_of_antigens()}, secondary_base_{secondary.number_of_antigens()},
       min_number_{std::min(primary_.size(), secondary_.size())}
 {
-    make(primary_, *primary.sera());
+    make(primary_, selector, *primary.sera());
     std::sort(primary_.begin(), primary_.end());
-    make(secondary_, *secondary.sera());
+    make(secondary_, selector, *secondary.sera());
     match(match_level);
 
 } // CommonAntigensSera::Impl::ChartData<CommonAntigensSera::Impl::SerumEntry>::ChartData
