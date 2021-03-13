@@ -13,9 +13,7 @@ namespace acmacs::chart
         struct CoreEntry
         {
             CoreEntry() = default;
-            CoreEntry(CoreEntry&&) = default;
             template <typename AgSr> CoreEntry(size_t a_index, const AgSr& ag_sr) : index(a_index), name(ag_sr.name()), reassortant(ag_sr.reassortant()), annotations(ag_sr.annotations()) {}
-            CoreEntry& operator=(CoreEntry&&) = default;
 
             static inline int compare(const CoreEntry& lhs, const CoreEntry& rhs)
             {
@@ -38,9 +36,7 @@ namespace acmacs::chart
         struct AntigenEntry : public CoreEntry
         {
             AntigenEntry() = default;
-            AntigenEntry(AntigenEntry&&) = default;
             AntigenEntry(size_t a_index, const Antigen& antigen) : CoreEntry(a_index, antigen), passage(antigen.passage()) {}
-            AntigenEntry& operator=(AntigenEntry&&) = default;
 
             std::string_view ag_sr() const
             {
@@ -65,9 +61,7 @@ namespace acmacs::chart
         struct SerumEntry : public CoreEntry
         {
             SerumEntry() = default;
-            SerumEntry(SerumEntry&&) = default;
             SerumEntry(size_t a_index, const Serum& serum) : CoreEntry(a_index, serum), serum_id(serum.serum_id()), passage(serum.passage()) {}
-            SerumEntry& operator=(SerumEntry&&) = default;
 
             std::string_view ag_sr() const
             {
