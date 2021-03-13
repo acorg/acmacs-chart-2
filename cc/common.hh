@@ -14,6 +14,7 @@ namespace acmacs::chart
         {
             CoreEntry() = default;
             template <typename AgSr> CoreEntry(size_t a_index, const AgSr& ag_sr) : index(a_index), name(ag_sr.name()), reassortant(ag_sr.reassortant()), annotations(ag_sr.annotations()) {}
+            virtual ~CoreEntry() = default;
 
             static inline int compare(const CoreEntry& lhs, const CoreEntry& rhs)
             {
@@ -26,10 +27,19 @@ namespace acmacs::chart
 
             static inline bool less(const CoreEntry& lhs, const CoreEntry& rhs) { return compare(lhs, rhs) < 0; }
 
+            virtual std::string full_name() const = 0; // for make_orig()
+
             size_t index;
             acmacs::virus::name_t name;
             acmacs::virus::Reassortant reassortant;
             Annotations annotations;
+            std::string orig_full_name_;
+
+            void make_orig()    // to report if fields were updated by antigen_selector_t or serum_selector_t (in acmacs-py)
+            {
+                if (orig_full_name_.empty())
+                    orig_full_name_ = full_name();
+            }
 
         }; // struct CoreEntry
 
@@ -43,8 +53,18 @@ namespace acmacs::chart
                 using namespace std::string_view_literals;
                 return "AG"sv;
             }
-            std::string full_name() const { return acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), passage); }
-            size_t full_name_length() const { return name.size() + reassortant.size() + annotations.total_length() + passage.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size(); }
+            std::string full_name() const override
+            {
+                auto fname = acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), passage);
+                if (!orig_full_name_.empty())
+                    fname += fmt::format(" (orig: {})", orig_full_name_);
+                return fname;
+            }
+            size_t full_name_length() const
+            {
+                return name.size() + reassortant.size() + annotations.total_length() + passage.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size() +
+                       (orig_full_name_.empty() ? 0 : orig_full_name_.size() + 9);
+            }
             bool operator<(const AntigenEntry& rhs) const { return compare(*this, rhs) < 0; }
 
             static inline int compare(const AntigenEntry& lhs, const AntigenEntry& rhs)
@@ -68,14 +88,17 @@ namespace acmacs::chart
                 using namespace std::string_view_literals;
                 return "SR"sv;
             }
-            std::string full_name() const
+            std::string full_name() const override
             {
-                return acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), serum_id, passage);
+                auto fname = acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), serum_id, passage);
+                if (!orig_full_name_.empty())
+                    fname += fmt::format(" (orig: {})", orig_full_name_);
+                return fname;
             }
             size_t full_name_length() const
             {
                 return name.size() + reassortant.size() + annotations.total_length() + serum_id.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size() + passage.size() +
-                       (passage.empty() ? 0 : 1);
+                    (passage.empty() ? 0 : 1) + (orig_full_name_.empty() ? 0 : orig_full_name_.size() + 9);
             }
             bool operator<(const SerumEntry& rhs) const { return compare(*this, rhs) < 0; }
 
