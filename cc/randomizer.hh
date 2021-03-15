@@ -82,7 +82,7 @@ namespace acmacs::chart
         void check()
             {
                 if (std::isnan(diameter_) || std::isinf(diameter_) || diameter_ <= 0.0 || diameter_ > 9999)
-                    throw std::runtime_error{fmt::format("LayoutRandomizerPlain: invalid diameter: {}{}", diameter_, AD_DEBUG_FILE_LINE)};
+                    throw std::runtime_error{fmt::format("LayoutRandomizerPlain: invalid diameter: {}  @@ {}:{}: {}", diameter_, __builtin_FILE(), __builtin_LINE(), __builtin_FUNCTION())};
             }
 
         // double get() override {  // c2

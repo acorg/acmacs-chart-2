@@ -305,7 +305,8 @@ double acmacs::chart::Titers::max_distance(const acmacs::chart::ColumnBases& col
         for (const auto& titer_ref : titers_existing()) {
             max_distance = std::max(max_distance, column_bases.column_basis(titer_ref.serum) - titer_ref.titer.logged_with_thresholded());
             if (std::isnan(max_distance) || std::isinf(max_distance))
-                throw std::runtime_error{fmt::format("Titers::max_distance invalid: {} after titer [{}] column_bases:{}{}", max_distance, titer_ref, column_bases, AD_DEBUG_FILE_LINE)};
+                throw std::runtime_error{fmt::format("Titers::max_distance invalid: {} after titer [{}] column_bases:{} @@ {}:{}: {}", max_distance, titer_ref, column_bases, __builtin_FILE(),
+                                                     __builtin_LINE(), __builtin_FUNCTION())};
         }
     }
     else {

@@ -114,7 +114,7 @@ void alglib::lbfgs_optimize(acmacs::chart::optimization_status& status, acmacs::
         status.number_of_stress_calculations = static_cast<size_t>(rep.nfev);
     }
     catch (ap_error& err) {
-        throw acmacs::chart::optimization_error(fmt::format("alglib error (lbfgs_optimize): {}{}", err.msg, AD_DEBUG_FILE_LINE));
+        throw acmacs::chart::optimization_error{"alglib error (lbfgs_optimize):", err.msg};
     }
 
 } // alglib::lbfgs_optimize
@@ -173,7 +173,7 @@ void alglib::cg_optimize(acmacs::chart::optimization_status& status, acmacs::cha
         status.number_of_stress_calculations = static_cast<size_t>(rep.nfev);
     }
     catch (ap_error& err) {
-        throw acmacs::chart::optimization_error(fmt::format("alglib error (cg_optimize): {}{}", err.msg, AD_DEBUG_FILE_LINE));
+        throw acmacs::chart::optimization_error{"alglib error (cg_optimize):", err.msg};
     }
 
 } // alglib::cg_optimize
@@ -220,7 +220,7 @@ void alglib::pca(acmacs::chart::OptimiserCallbackData& callback_data, acmacs::nu
     }
     catch (ap_error& err) {
         AD_ERROR("alglib::pca: {}", err.msg);
-        throw acmacs::chart::optimization_error(fmt::format("alglib::pca error: {}{}", err.msg, AD_DEBUG_FILE_LINE));
+        throw acmacs::chart::optimization_error{"alglib::pca error:", err.msg};
     }
 
 } // alglib::pca
@@ -275,7 +275,7 @@ void alglib::pca_full(acmacs::chart::OptimiserCallbackData& callback_data, acmac
         callback_data.stress.set_coordinates_of_disconnected(arg_first, 0, std::numeric_limits<double>::quiet_NaN(), number_of_dimensions);
     }
     catch (ap_error& err) {
-        throw acmacs::chart::optimization_error(fmt::format("alglib::pca_full error: {}{}", err.msg, AD_DEBUG_FILE_LINE));
+        throw acmacs::chart::optimization_error{"alglib::pca_full error:", err.msg};
     }
 
 } // alglib::pca_full

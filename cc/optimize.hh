@@ -13,13 +13,24 @@ namespace acmacs::chart
 {
     class Stress;
 
-    class optimization_error : public std::runtime_error { public: inline optimization_error(const std::string& msg) : std::runtime_error("invalid_data: " + msg) {} };
+    class optimization_error : public std::runtime_error
+    {
+      public:
+        optimization_error(const std::string& msg, const char* file = __builtin_FILE(), int line = __builtin_LINE(), const char* function = __builtin_FUNCTION())
+            : std::runtime_error(fmt::format("invalid_data: {} @@ {}:{}: {}", msg, file, line, function))
+        {
+        }
+        optimization_error(const std::string& msg1, const std::string& msg2, const char* file = __builtin_FILE(), int line = __builtin_LINE(), const char* function = __builtin_FUNCTION())
+            : std::runtime_error(fmt::format("invalid_data: {} {} @@ {}:{}: {}", msg1, msg2, file, line, function))
+        {
+        }
+    };
 
     class Projection;
     class ChartModify;
     class ProjectionModify;
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     struct optimization_status
     {
@@ -41,22 +52,25 @@ namespace acmacs::chart
 
     struct IntermediateLayout
     {
-        IntermediateLayout(number_of_dimensions_t number_of_dimensions, const double* first, long layout_size, double a_stress) : layout(number_of_dimensions, first, first + layout_size), stress{a_stress} {}
+        IntermediateLayout(number_of_dimensions_t number_of_dimensions, const double* first, long layout_size, double a_stress)
+            : layout(number_of_dimensions, first, first + layout_size), stress{a_stress}
+        {
+        }
         const acmacs::Layout layout;
         const double stress;
     };
 
     using IntermediateLayouts = std::vector<IntermediateLayout>;
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
-      // optimizes existing projection without dimension annealing
+    // optimizes existing projection without dimension annealing
     optimization_status optimize(ProjectionModify& projection, optimization_options options = optimization_options{});
-      // optimizes existing projection without dimension annealing and saves intermediate layouts
+    // optimizes existing projection without dimension annealing and saves intermediate layouts
     optimization_status optimize(ProjectionModify& projection, IntermediateLayouts& intermediate_layouts, optimization_options options = optimization_options{});
-      // optimizes existing projection with dimension annealing
+    // optimizes existing projection with dimension annealing
     optimization_status optimize(ProjectionModify& projection, const dimension_schedule& schedule, optimization_options options = optimization_options{});
-      // creates new projection and optimizes it with or without dimension annealing
+    // creates new projection and optimizes it with or without dimension annealing
     optimization_status optimize(ChartModify& chart, MinimumColumnBasis minimum_column_basis, const dimension_schedule& schedule, optimization_options options = optimization_options{});
 
     optimization_status optimize(optimization_method method, const Stress& stress, double* arg_first, double* arg_last, optimization_precision precision = optimization_precision::fine);
@@ -65,18 +79,19 @@ namespace acmacs::chart
         return optimize(method, stress, arg_first, arg_first + arg_size, precision);
     }
 
-    DimensionAnnelingStatus dimension_annealing(optimization_method optimization_method, const Stress& stress, number_of_dimensions_t source_number_of_dimensions, number_of_dimensions_t target_number_of_dimensions, double* arg_first, double* arg_last);
+    DimensionAnnelingStatus dimension_annealing(optimization_method optimization_method, const Stress& stress, number_of_dimensions_t source_number_of_dimensions,
+                                                number_of_dimensions_t target_number_of_dimensions, double* arg_first, double* arg_last);
 
     // replaces layout in (arg_first, arg_last)
     void pca(const Stress& stress, number_of_dimensions_t number_of_dimensions, double* arg_first, double* arg_last);
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     struct ErrorLine
     {
         ErrorLine(size_t p1, size_t p2, double el) : point_1{p1}, point_2{p2}, error_line{el} {}
         size_t point_1, point_2;
-        double error_line;      // positive: table_dist > map_dist, i.e. draw line in direction opposite to corresponding point
+        double error_line; // positive: table_dist > map_dist, i.e. draw line in direction opposite to corresponding point
 
     }; // struct ErrorLine
 
