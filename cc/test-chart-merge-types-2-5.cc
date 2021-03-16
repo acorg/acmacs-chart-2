@@ -123,16 +123,27 @@ void test_merge_2_frozen(const acmacs::chart::Chart& chart1, const acmacs::chart
         // for (const auto& [index1, index_merge_common] : merge_report.antigens_primary_target)
         //     AD_DEBUG("AG {:3d} {:20.17f}   {:3d} {:20.17f}", index1, (*layout1)[index1], index_merge_common.index, (*merge_layout)[index_merge_common.index]);
         // for (const auto& [index1, index_merge_common] : merge_report.sera_primary_target)
-        //     AD_DEBUG("SR {:3d} {:20.17f}   {:3d} {:20.17f}", index1, (*layout1)[index1 + chart1_num_antigens], index_merge_common.index, (*merge_layout)[index_merge_common.index + merge_num_antigens]);
+        //     AD_DEBUG("SR {:3d} {:20.17f}   {:3d} {:20.17f}", index1, (*layout1)[index1 + chart1_num_antigens], index_merge_common.index, (*merge_layout)[index_merge_common.index +
+        //     merge_num_antigens]);
 
         // primary layout must be copied
         for (const auto& [index1, index_merge_common] : merge_report.antigens_primary_target) {
-            if (!having_too_few_numeric_titers.contains(index_merge_common.index))
-                AD_ASSERT(index1 == index_merge_common.index && (*layout1)[index1] == (*merge_layout)[index_merge_common.index], "projection: {} AG index1:{} {} index_merge_common:{} {}", projection_no, index1, (*layout1)[index1], index_merge_common.index, (*merge_layout)[index_merge_common.index]);
+            if (!having_too_few_numeric_titers.contains(index_merge_common.index)) {
+                if (!(index1 == index_merge_common.index && (*layout1)[index1] == (*merge_layout)[index_merge_common.index])) {
+                    AD_ERROR("ASSERTION FAILED: projection: {} AG index1:{} {} index_merge_common:{} {}", projection_no, index1, (*layout1)[index1], index_merge_common.index,
+                             (*merge_layout)[index_merge_common.index]);
+                    std::abort();
+                }
+            }
         }
         for (const auto& [index1, index_merge_common] : merge_report.sera_primary_target) {
-            if (!having_too_few_numeric_titers.contains(index_merge_common.index + merge_num_antigens))
-                AD_ASSERT(index1 == index_merge_common.index && (*layout1)[index1 + chart1_num_antigens] == (*merge_layout)[index_merge_common.index + merge_num_antigens], "projection: {} SR index1:{} (point_no: {}) {} index_merge_common:{} {}", projection_no, index1, index1 + chart1_num_antigens, (*layout1)[index1 + chart1_num_antigens], index_merge_common.index, (*merge_layout)[index_merge_common.index + merge_num_antigens]);
+            if (!having_too_few_numeric_titers.contains(index_merge_common.index + merge_num_antigens)) {
+                if (!(index1 == index_merge_common.index && (*layout1)[index1 + chart1_num_antigens] == (*merge_layout)[index_merge_common.index + merge_num_antigens])) {
+                    AD_ERROR("projection: {} SR index1:{} (point_no: {}) {} index_merge_common:{} {}", projection_no, index1, index1 + chart1_num_antigens, (*layout1)[index1 + chart1_num_antigens],
+                             index_merge_common.index, (*merge_layout)[index_merge_common.index + merge_num_antigens]);
+                    std::abort();
+                }
+            }
         }
     }
 
