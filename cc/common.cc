@@ -58,6 +58,7 @@ class CommonAntigensSera::Impl
         template <typename Selector> ChartData(const acmacs::chart::Chart& primary, const acmacs::chart::Chart& secondary, Selector selector, match_level_t match_level);
         ChartData(const acmacs::chart::Chart& primary);
         std::string report(size_t indent, std::string_view prefix, std::string_view ignored_key) const;
+        std::string report_unique(size_t indent, std::string_view prefix) const;
         std::vector<CommonAntigensSera::common_t> common() const;
         std::optional<size_t> primary_by_secondary(size_t secondary_no) const;
         std::optional<size_t> secondary_by_primary(size_t primary_no) const;
@@ -101,6 +102,10 @@ class CommonAntigensSera::Impl
         void match(match_level_t match_level);
         score_t match(const AgSrEntry& primary, const AgSrEntry& secondary, match_level_t match_level) const;
         score_t match_not_ignored(const AgSrEntry& primary, const AgSrEntry& secondary) const;
+        int num_digits() const;
+        size_t primary_name_max_size() const;
+        std::vector<MatchEntry> find_common() const;
+        std::pair<std::vector<size_t>, std::vector<size_t>> find_unique(const std::vector<MatchEntry>& common) const;
 
     }; // class ChartData<AgSrEntry>
 
@@ -342,6 +347,39 @@ template <> score_t CommonAntigensSera::Impl::ChartData<common::SerumEntry>::mat
 
 // ----------------------------------------------------------------------
 
+template <typename AgSrEntry> int CommonAntigensSera::Impl::ChartData<AgSrEntry>::num_digits() const
+{
+    return static_cast<int>(std::log10(std::max(primary_.size(), secondary_.size()))) + 1;
+}
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrEntry> size_t CommonAntigensSera::Impl::ChartData<AgSrEntry>::primary_name_max_size() const
+{
+    return ranges::accumulate(primary_, 0ul, [](size_t mx, const auto& ag_sr) { return std::max(mx, ag_sr.full_name_length()); });
+}
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrEntry> std::vector<CommonAntigensSera::Impl::MatchEntry> CommonAntigensSera::Impl::ChartData<AgSrEntry>::find_common() const
+{
+    return ranges::views::filter(match_, [](const auto& match) { return match.use; }) | ranges::to_vector;
+}
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrEntry> std::pair<std::vector<size_t>, std::vector<size_t>> CommonAntigensSera::Impl::ChartData<AgSrEntry>::find_unique(const std::vector<MatchEntry>& common) const
+{
+    std::vector<size_t> unique_in_primary(primary_.size() - common.size()), unique_in_secondary(secondary_.size() - common.size());
+    std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(primary_.size()), unique_in_primary.begin(),
+                 [&common](size_t index) { return std::find_if(std::begin(common), std::end(common), [index](const auto& cmn) { return cmn.primary_index == index; }) == std::end(common); });
+    std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(secondary_.size()), unique_in_secondary.begin(),
+                 [&common](size_t index) { return std::find_if(std::begin(common), std::end(common), [index](const auto& cmn) { return cmn.secondary_index == index; }) == std::end(common); });
+    return {unique_in_primary, unique_in_secondary};
+}
+
+// ----------------------------------------------------------------------
+
 template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<AgSrEntry>::report(size_t indent, std::string_view prefix, std::string_view ignored_key) const
 {
     using namespace std::string_view_literals;
@@ -350,45 +388,27 @@ template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<Ag
 
     fmt::memory_buffer output;
     if (number_of_common_) {
+        const size_t primary_name_size = primary_name_max_size();
         auto find_primary = [this](size_t index) -> const auto&
         {
             return *std::find_if(this->primary_.begin(), this->primary_.end(), [index](const auto& element) { return element.index == index; });
         };
-        size_t primary_name_size = 0,
-               // secondary_name_size = 0,
-            max_number_primary = 0, max_number_secondary = 0;
-        for (const auto& m : match_) {
-            if (m.use) {
-                primary_name_size = std::max(primary_name_size, find_primary(m.primary_index).full_name_length());
-                // secondary_name_size = std::max(secondary_name_size, secondary_[m.secondary_index].full_name_length());
-                max_number_primary = std::max(max_number_primary, m.primary_index);
-                max_number_secondary = std::max(max_number_secondary, m.secondary_index);
-            }
-        }
-        const auto num_digits_primary = max_number_primary ? static_cast<int>(std::log10(max_number_primary)) + 1 : 1;
-        const auto num_digits_secondary = max_number_secondary ? static_cast<int>(std::log10(max_number_secondary)) + 1 : 1;
-        // AD_DEBUG("report 1 score_names_max:{} num_digits_primary:{} max_number_primary:{} primary_name_size:{} max_number_secondary:{} num_digits_secondary:{}", score_names_max, num_digits_primary, max_number_primary, primary_name_size, max_number_secondary, num_digits_secondary);
 
-        fmt::format_to(output, "{:{}c}common {}: {} (total primary: {} secondary: {})\n", ' ', indent, prefix, number_of_common_, primary_.size(), secondary_.size());
-        std::vector<size_t> common_in_primary, common_in_secondary;
-        for (const auto& m : match_) {
-            if (m.use) {
-                fmt::format_to(output, "{:{}c}{:<{}s} {:{}d} {:<{}s} | {:{}d} {}\n", ' ', indent, score_names[static_cast<size_t>(m.score)], score_names_max, m.primary_index, num_digits_primary,
-                               find_primary(m.primary_index).full_name(), primary_name_size, m.secondary_index, num_digits_secondary, secondary_[m.secondary_index].full_name());
-                common_in_primary.push_back(m.primary_index);
-                common_in_secondary.push_back(m.secondary_index);
-            }
+        const auto num_dgt = num_digits();
+        fmt::format_to(output, "{:{}s}common {}: {} (total primary: {} secondary: {})\n", "", indent, prefix, number_of_common_, primary_.size(), secondary_.size());
+        const auto common = find_common();
+        for (const auto& cmn : common) {
+            fmt::format_to(output, "{:{}c}{:<{}s} {:{}d} {:<{}s} | {:{}d} {}\n", ' ', indent, score_names[static_cast<size_t>(cmn.score)], score_names_max, cmn.primary_index, num_dgt,
+                           find_primary(cmn.primary_index).full_name(), primary_name_size, cmn.secondary_index, num_dgt, secondary_[cmn.secondary_index].full_name());
         }
         if (acmacs::log::is_enabled(acmacs::log::common)) {
-            fmt::format_to(output, ">>>> [common] {:{}}common in primary {}: {}\n", ' ', indent, prefix, common_in_primary);
-            fmt::format_to(output, ">>>> [common] {:{}}common in secondary {}: {}\n", ' ', indent, prefix, common_in_secondary);
-            std::vector<size_t> unique_in_primary(primary_.size() - common_in_primary.size()), unique_in_secondary(secondary_.size() - common_in_secondary.size());
-            std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(primary_.size()), unique_in_primary.begin(),
-                         [&common_in_primary](size_t index) { return std::find(std::begin(common_in_primary), std::end(common_in_primary), index) == std::end(common_in_primary); });
-            std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(secondary_.size()), unique_in_secondary.begin(),
-                         [&common_in_secondary](size_t index) { return std::find(std::begin(common_in_secondary), std::end(common_in_secondary), index) == std::end(common_in_secondary); });
-            fmt::format_to(output, ">>>> [common] {:{}}unique in primary {}: {}\n", ' ', indent, prefix, unique_in_primary);
-            fmt::format_to(output, ">>>> [common] {:{}}unique in secondary {}: {}\n", ' ', indent, prefix, unique_in_secondary);
+            fmt::format_to(output, ">>>> [common] {:{}}common in primary {}: {}\n", "", indent, prefix,
+                           ranges::views::transform(common, [](const auto& cmn) { return cmn.primary_index; }) | ranges::to_vector);
+            fmt::format_to(output, ">>>> [common] {:{}}common in secondary {}: {}\n", "", indent, prefix,
+                           ranges::views::transform(common, [](const auto& cmn) { return cmn.secondary_index; }) | ranges::to_vector);
+            const auto [unique_in_primary, unique_in_secondary] = find_unique(common);
+            fmt::format_to(output, ">>>> [common] {:{}}unique in primary {}: {}\n", "", indent, prefix, unique_in_primary);
+            fmt::format_to(output, ">>>> [common] {:{}}unique in secondary {}: {}\n", "", indent, prefix, unique_in_secondary);
         }
     }
     else {
@@ -397,6 +417,29 @@ template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<Ag
     return fmt::to_string(output);
 
 } // CommonAntigensSera::Impl::ChartData<AgSrEntry>::report
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<AgSrEntry>::report_unique(size_t indent, std::string_view prefix) const
+{
+    const auto num_dgt = num_digits();
+    const size_t primary_name_size = primary_name_max_size();
+    const auto [unique_in_primary, unique_in_secondary] = find_unique(find_common());
+    fmt::memory_buffer output;
+    fmt::format_to(output, "{:{}c}unique primary: {} (total: {}) secondary: {} (total: {})\n", ' ', indent, prefix, unique_in_primary.size(), primary_.size(), unique_in_secondary.size(),
+                   secondary_.size());
+    for (const auto no : range_from_0_to(std::max(unique_in_primary.size(), unique_in_secondary.size()))) {
+        if (no < unique_in_primary.size())
+            fmt::format_to(output, "{:{}s}{:{}d} {:<{}s} |", "", indent, unique_in_primary[no], num_dgt, primary_[unique_in_primary[no]].full_name(), primary_name_size);
+        else
+            fmt::format_to(output, "{:{}s}{:{}c} {:{}c} |", "", indent, ' ', num_dgt, ' ', primary_name_size);
+        if (no < unique_in_secondary.size())
+            fmt::format_to(output, " {:{}d} {}", unique_in_secondary[no], num_dgt, secondary_[unique_in_secondary[no]].full_name());
+        fmt::format_to(output, "\n");
+    }
+    return fmt::to_string(output);
+
+} // CommonAntigensSera::Impl::ChartData<AgSrEntry>::report_unique
 
 // ----------------------------------------------------------------------
 
@@ -504,6 +547,15 @@ std::string acmacs::chart::CommonAntigensSera::report(size_t indent) const
     return fmt::format("{}\n{}", impl_->antigens_.report(indent, "antigens"sv, "no-passage"sv), impl_->sera_.report(indent, "sera"sv, "no-serum-id"sv));
 
 } // CommonAntigensSera::report
+
+// ----------------------------------------------------------------------
+
+std::string acmacs::chart::CommonAntigensSera::report_unique(size_t indent) const
+{
+    using namespace std::string_view_literals;
+    return fmt::format("{}\n{}", impl_->antigens_.report_unique(indent, "antigens"sv), impl_->sera_.report_unique(indent, "sera"sv));
+
+} // CommonAntigensSera::report_unique
 
 // ----------------------------------------------------------------------
 

@@ -136,6 +136,7 @@ namespace acmacs::chart
         CommonAntigensSera& operator=(CommonAntigensSera&&);
 
         [[nodiscard]] std::string report(size_t indent = 0) const;
+        [[nodiscard]] std::string report_unique(size_t indent = 0) const;
         operator bool() const;
         size_t common_antigens() const;
         size_t common_sera() const;
