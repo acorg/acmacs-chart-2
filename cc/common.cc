@@ -104,6 +104,7 @@ class CommonAntigensSera::Impl
         score_t match_not_ignored(const AgSrEntry& primary, const AgSrEntry& secondary) const;
         int num_digits() const;
         size_t primary_name_max_size() const;
+        const AgSrEntry& find_primary(size_t index) const;
         std::vector<MatchEntry> find_common() const;
         std::pair<std::vector<size_t>, std::vector<size_t>> find_unique(const std::vector<MatchEntry>& common) const;
 
@@ -361,6 +362,13 @@ template <typename AgSrEntry> size_t CommonAntigensSera::Impl::ChartData<AgSrEnt
 
 // ----------------------------------------------------------------------
 
+template <typename AgSrEntry> const AgSrEntry& CommonAntigensSera::Impl::ChartData<AgSrEntry>::find_primary(size_t index) const
+{
+    return *std::find_if(primary_.begin(), primary_.end(), [index](const auto& element) { return element.index == index; });
+}
+
+// ----------------------------------------------------------------------
+
 template <typename AgSrEntry> std::vector<CommonAntigensSera::Impl::MatchEntry> CommonAntigensSera::Impl::ChartData<AgSrEntry>::find_common() const
 {
     return ranges::views::filter(match_, [](const auto& match) { return match.use; }) | ranges::to_vector;
@@ -389,11 +397,6 @@ template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<Ag
     fmt::memory_buffer output;
     if (number_of_common_) {
         const size_t primary_name_size = primary_name_max_size();
-        auto find_primary = [this](size_t index) -> const auto&
-        {
-            return *std::find_if(this->primary_.begin(), this->primary_.end(), [index](const auto& element) { return element.index == index; });
-        };
-
         const auto num_dgt = num_digits();
         fmt::format_to(output, "{:{}s}common {}: {} (total primary: {} secondary: {})\n", "", indent, prefix, number_of_common_, primary_.size(), secondary_.size());
         const auto common = find_common();
@@ -430,7 +433,7 @@ template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<Ag
                    secondary_.size());
     for (const auto no : range_from_0_to(std::max(unique_in_primary.size(), unique_in_secondary.size()))) {
         if (no < unique_in_primary.size())
-            fmt::format_to(output, "{:{}s}{:{}d} {:<{}s} |", "", indent, unique_in_primary[no], num_dgt, primary_[unique_in_primary[no]].full_name(), primary_name_size);
+            fmt::format_to(output, "{:{}s}{:{}d} {:<{}s} |", "", indent, unique_in_primary[no], num_dgt, find_primary(unique_in_primary[no]).full_name(), primary_name_size);
         else
             fmt::format_to(output, "{:{}s}{:{}c} {:{}c} |", "", indent, ' ', num_dgt, ' ', primary_name_size);
         if (no < unique_in_secondary.size())
