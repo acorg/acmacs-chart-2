@@ -426,7 +426,7 @@ template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<Ag
     const size_t primary_name_size = primary_name_max_size();
     const auto [unique_in_primary, unique_in_secondary] = find_unique(find_common());
     fmt::memory_buffer output;
-    fmt::format_to(output, "{:{}c}unique primary: {} (total: {}) secondary: {} (total: {})\n", ' ', indent, prefix, unique_in_primary.size(), primary_.size(), unique_in_secondary.size(),
+    fmt::format_to(output, "{:{}}unique primary {}: {} (total: {}) secondary: {} (total: {})\n", "", indent, prefix, unique_in_primary.size(), primary_.size(), unique_in_secondary.size(),
                    secondary_.size());
     for (const auto no : range_from_0_to(std::max(unique_in_primary.size(), unique_in_secondary.size()))) {
         if (no < unique_in_primary.size())
