@@ -4,14 +4,22 @@
 
 // ----------------------------------------------------------------------
 
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
+#endif
+
 namespace acmacs::log::inline v1
 {
-    constexpr log_key_t relax{"relax"};
-    constexpr log_key_t report_stresses{"report-stresses"};
-    constexpr log_key_t common{"common"};
-    constexpr log_key_t distinct{"distinct"};
+    const log_key_t relax{"relax"};
+    const log_key_t report_stresses{"report-stresses"};
+    const log_key_t common{"common"};
+    const log_key_t distinct{"distinct"};
 
 } // namespace acmacs::log::inline v1
+
+#pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------
 /// Local Variables:
