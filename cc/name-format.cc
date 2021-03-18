@@ -138,6 +138,7 @@ const std::tuple format_subst_antigen{
     FKF("designation", name_full(ag_sr)),                       //
     FKF("lab_ids", ag_sr.lab_ids().join()),                     //
     FKF("ref", ag_sr.reference() ? "Ref" : ""),                 //
+    FKF("clades", ag_sr.clades()),                                                                                                                  //
     FKF("serum_species", ""),                                   //
     FKF("species", ""),                                         //
 };
@@ -151,6 +152,7 @@ const std::tuple format_subst_serum{
     FKF("serum_species", ag_sr.serum_species()),                                                                              //
     FKF("species", ag_sr.serum_species()),                                                                                    //
     FKF("date_in_brackets", ""),                                                                                              //
+    FKF("clades", ""),                                                                                                        //
     FKF("lab_ids", ""),                                                                                                       //
     FKF("ref", ""),                                                                                                           //
 };
