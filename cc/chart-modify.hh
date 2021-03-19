@@ -204,6 +204,8 @@ namespace acmacs::chart
         Annotations annotations() const override { return annotations_; }
         bool reference() const override { return reference_; }
         Continent continent() const override { return continent_; }
+        std::string sequence_aa() const override { return sequence_aa_; }
+        std::string sequence_nuc() const override { return sequence_nuc_; }
 
         void name(std::string_view value) { name_ = acmacs::virus::name_t{value}; }
         void date(std::string_view value) { date_ = Date{value}; }
@@ -217,6 +219,8 @@ namespace acmacs::chart
         void remove_annotation(std::string_view annotation) { annotations_.remove(std::string{annotation}); }
         template <typename S> void continent(S&& value) { continent_ = Continent{std::forward<S>(value)}; }
         void set_continent();
+        void sequence_aa(std::string_view seq) { sequence_aa_.assign(seq); }
+        void sequence_nuc(std::string_view seq) { sequence_nuc_.assign(seq); }
 
         void replace_with(const Antigen& main);
         void update_with(const Antigen& main);
@@ -232,6 +236,8 @@ namespace acmacs::chart
         Clades clades_;
         Continent continent_;
         bool reference_ = false;
+        std::string sequence_aa_ {};
+        std::string sequence_nuc_{};
 
     }; // class AntigenModify
 
@@ -248,10 +254,13 @@ namespace acmacs::chart
         BLineage lineage() const override { return lineage_; }
         acmacs::virus::Reassortant reassortant() const override { return reassortant_; }
         Annotations annotations() const override { return annotations_; }
+        Clades clades() const override { return clades_; }
         SerumId serum_id() const override { return serum_id_; }
         SerumSpecies serum_species() const override { return serum_species_; }
         PointIndexList homologous_antigens() const override { return homologous_antigens_; }
         void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { homologous_antigens_ = PointIndexList{ags}; }
+        std::string sequence_aa() const override { return sequence_aa_; }
+        std::string sequence_nuc() const override { return sequence_nuc_; }
 
         void name(std::string_view value) { name_ = acmacs::virus::name_t{value}; }
         void passage(const acmacs::virus::Passage& value) { passage_ = value; }
@@ -260,8 +269,11 @@ namespace acmacs::chart
         void serum_id(const SerumId& value) { serum_id_ = value; }
         void serum_species(const SerumSpecies& value) { serum_species_ = value; }
         void add_annotation(std::string_view annotation) { annotations_.insert_if_not_present(std::string{annotation}); }
+        void add_clade(std::string_view clade) { clades_.insert_if_not_present(std::string{clade}); }
         void remove_annotation(std::string_view annotation) { annotations_.remove(std::string{annotation}); }
         void set_continent() {}
+        void sequence_aa(std::string_view seq) { sequence_aa_.assign(seq); }
+        void sequence_nuc(std::string_view seq) { sequence_nuc_.assign(seq); }
 
         void replace_with(const Serum& main);
         void update_with(const Serum& main);
@@ -272,9 +284,12 @@ namespace acmacs::chart
         BLineage lineage_;
         acmacs::virus::Reassortant reassortant_;
         Annotations annotations_;
+        Clades clades_;
         SerumId serum_id_;
         SerumSpecies serum_species_;
         mutable PointIndexList homologous_antigens_;
+        std::string sequence_aa_ {};
+        std::string sequence_nuc_{};
 
     }; // class SerumModify
 

@@ -27,6 +27,8 @@
         "a": ["DISTINCT", "HA-Y156T", "extra"], // annotations: DISTINCT for control duplicate, mutation information, unrecognized extra data preventing merging
         "c": ["5.2.1"],                         // clades, either provided in the original table (e.g. H5) or extracted from sequence database
         "C": "NORTH-AMERICA",                   // continent: ASIA, AUSTRALIA-OCEANIA, NORTH-AMERICA, EUROPE, RUSSIA, AFRICA, MIDDLE-EAST, SOUTH-AMERICA, CENTRAL-AMERICA
+        "A": "",                                // aligned amino-acid sequence
+        "B": "",                                // aligned nucleotide sequence
       }
     ],
     "s": [                      // serum list
@@ -38,9 +40,12 @@
         "R": "reassortant, e.g. NYMC-51C",
         "I": "serum id, e.g. CDC 2016-045"
         "S": "", // string of single letter semantic boolean attributes: E - egg
+        "c": ["5.2.1"],                         // clades by homologous antigen
         "h": [0],                 // homologous antigen indices
         "a": ["BOOSTED", "CONC 2:1", "HA-Y156T", "extra"], // annotations: boosted, conc, mutation information, unrecognized extra data preventing merging
-        "s": "serum species, e.g FERRET"
+        "s": "serum species, e.g FERRET",
+        "A": "",                                // aligned amino-acid sequence
+        "B": "",                                // aligned nucleotide sequence
       }
     ],
     "t": {                      // titer data

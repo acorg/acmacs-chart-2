@@ -384,6 +384,9 @@ namespace acmacs::chart
             virtual BLineage lineage() const = 0;
             virtual acmacs::virus::Reassortant reassortant() const = 0;
             virtual Annotations annotations() const = 0;
+            virtual Clades clades() const = 0;
+            virtual std::string sequence_aa() const { return {}; }
+            virtual std::string sequence_nuc() const { return {}; }
 
             virtual Continent continent() const { return {}; }
 
@@ -391,7 +394,9 @@ namespace acmacs::chart
             std::string format(std::string_view pattern, collapse_spaces_t cs = collapse_spaces_t::no) const;
             std::string name_full() const { return format("{name_full}"); }
 
-            virtual bool is_egg(reassortant_as_egg rae = reassortant_as_egg::yes) const { return rae == reassortant_as_egg::yes ? (!reassortant().empty() || passage().is_egg()) : (reassortant().empty() && passage().is_egg()); }
+            virtual bool is_egg(reassortant_as_egg rae = reassortant_as_egg::yes) const
+            {
+                return rae == reassortant_as_egg::yes ? (!reassortant().empty() || passage().is_egg()) : (reassortant().empty() && passage().is_egg()); }
             bool is_cell() const { return !is_egg(reassortant_as_egg::yes); }
 
             std::string_view passage_type(reassortant_as_egg rae = reassortant_as_egg::yes) const
@@ -426,7 +431,6 @@ namespace acmacs::chart
 
         virtual Date date() const = 0;
         virtual LabIds lab_ids() const = 0;
-        virtual Clades clades() const = 0;
         virtual bool reference() const = 0;
 
         using detail::AntigenSerum::format;

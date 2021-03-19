@@ -136,6 +136,8 @@ void export_antigens(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Antig
         rjson::set_array_field_if_not_empty(object, "c", antigen->clades());
         export_lineage(object, antigen->lineage());
         rjson::set_field_if_not_empty(object, "C", antigen->continent());
+        rjson::set_field_if_not_empty(object, "A", antigen->sequence_aa());
+        rjson::set_field_if_not_empty(object, "B", antigen->sequence_nuc());
     }
 
 } // export_antigens
@@ -155,10 +157,13 @@ void export_sera(rjson::value& aTarget, std::shared_ptr<acmacs::chart::Sera> aSe
         rjson::set_field_if_not_empty(object, "R", serum->reassortant());
         rjson::set_field_if_not_empty(object, "I", serum->serum_id());
         rjson::set_array_field_if_not_empty(object, "a", serum->annotations());
+        rjson::set_array_field_if_not_empty(object, "c", serum->clades());
         rjson::set_field_if_not_empty(object, "s", serum->serum_species());
         rjson::set_array_field_if_not_empty(object, "h", serum->homologous_antigens());
         rjson::set_field_if_not_empty(object, "S", semantic);
         export_lineage(object, serum->lineage());
+        rjson::set_field_if_not_empty(object, "A", serum->sequence_aa());
+        rjson::set_field_if_not_empty(object, "B", serum->sequence_nuc());
     }
 
 } // export_sera

@@ -112,6 +112,7 @@ namespace acmacs::chart
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override;
         Annotations annotations() const override;
+        Clades clades() const override { return {}; /* not implemented */ }
         SerumId serum_id() const override;
         SerumSpecies serum_species() const override { return SerumSpecies{data_["serum_species"].get_or_default("")}; }
         PointIndexList homologous_antigens() const override { return data_["*homologous"]; }

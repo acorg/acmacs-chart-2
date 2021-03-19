@@ -86,8 +86,10 @@ namespace acmacs::chart
         Clades clades() const override { return data_["c"]; }
         Annotations annotations() const override { const auto& rann = data_["a"]; Annotations ann(rann.size()); rjson::copy(rann, ann.begin()); return ann; }
         bool reference() const override { return data_["S"].get_or_default("").find("R") != std::string::npos; }
+        std::string sequence_aa() const override { return data_["A"].get_or_default(""); }
+        std::string sequence_nuc() const override { return data_["B"].get_or_default(""); }
 
-     private:
+      private:
         const rjson::value& data_;
 
     }; // class AceAntigen
@@ -104,10 +106,13 @@ namespace acmacs::chart
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override { return acmacs::virus::Reassortant{data_["R"].get_or_default("")}; }
         Annotations annotations() const override { const auto& rann = data_["a"]; Annotations ann(rann.size()); rjson::copy(rann, ann.begin()); return ann; }
+        Clades clades() const override { return data_["c"]; }
         SerumId serum_id() const override { return SerumId{data_["I"].get_or_default("")}; }
         SerumSpecies serum_species() const override { return SerumSpecies{data_["s"].get_or_default("")}; }
         PointIndexList homologous_antigens() const override { return data_["h"]; }
         void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { const_cast<rjson::value&>(data_)["h"] = rjson::array(ags.begin(), ags.end()); }
+        std::string sequence_aa() const override { return data_["A"].get_or_default(""); }
+        std::string sequence_nuc() const override { return data_["B"].get_or_default(""); }
 
      private:
         const rjson::value& data_;
