@@ -57,8 +57,10 @@ namespace acmacs::chart
         bool is_merge() const override { return main_ ? main_->is_merge() : false; }
 
         InfoModify& info_modify();
-        AntigensModify& antigens_modify();
-        SeraModify& sera_modify();
+        std::shared_ptr<AntigensModify> antigens_modify_ptr();
+        AntigensModify& antigens_modify() { return *antigens_modify_ptr(); }
+        std::shared_ptr<SeraModify> sera_modify_ptr();
+        SeraModify& sera_modify() { return *sera_modify_ptr(); }
         TitersModify& titers_modify();
         std::shared_ptr<TitersModify> titers_modify_ptr() { titers_modify(); return titers_; }
         std::shared_ptr<ColumnBasesModify> forced_column_bases_modify(MinimumColumnBasis aMinimumColumnBasis); // may return nullptr
@@ -298,6 +300,8 @@ namespace acmacs::chart
     template <typename Base, typename Modify, typename ModifyBase> class AntigensSeraModify : public Base
     {
       public:
+        using AntigenSerumType = Modify;
+
         explicit AntigensSeraModify(size_t number_of) : data_(number_of, nullptr)
         {
             std::transform(data_.begin(), data_.end(), data_.begin(), [](const auto&) { return std::make_shared<Modify>(); });

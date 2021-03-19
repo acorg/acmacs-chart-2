@@ -470,6 +470,8 @@ namespace acmacs::chart
         template <typename AgSr> class AntigensSera
         {
           public:
+            using AntigenSerumType = AgSr;
+
             virtual ~AntigensSera() = default;
             AntigensSera() = default;
             AntigensSera(const AntigensSera&) = delete;

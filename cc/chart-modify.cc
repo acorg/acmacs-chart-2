@@ -76,13 +76,13 @@ AntigensP ChartModify::antigens() const
 
 // ----------------------------------------------------------------------
 
-AntigensModify& ChartModify::antigens_modify()
+std::shared_ptr<AntigensModify> ChartModify::antigens_modify_ptr()
 {
     if (!antigens_)
         antigens_ = std::make_shared<AntigensModify>(main_->antigens());
-    return *antigens_;
+    return antigens_;
 
-} // ChartModify::antigens_modify
+} // ChartModify::antigens_modify_ptr
 
 // ----------------------------------------------------------------------
 
@@ -97,13 +97,13 @@ SeraP ChartModify::sera() const
 
 // ----------------------------------------------------------------------
 
-SeraModify& ChartModify::sera_modify()
+std::shared_ptr<SeraModify> ChartModify::sera_modify_ptr()
 {
     if (!sera_)
         sera_ = std::make_shared<SeraModify>(main_->sera());
-    return *sera_;
+    return sera_;
 
-} // ChartModify::sera_modify
+} // ChartModify::sera_modify_ptr
 
 // ----------------------------------------------------------------------
 
