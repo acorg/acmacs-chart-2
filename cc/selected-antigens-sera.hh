@@ -12,6 +12,8 @@ namespace acmacs::chart
     {
         template <typename AgSr> struct Selected
         {
+            using AntigensSeraType = AgSr;
+
             // Selected() = default;
             Selected(std::shared_ptr<Chart> a_chart) : chart{a_chart}, indexes{ag_sr()->all_indexes()} {}
             // call func for each antigen/serum and select ag/sr if func returns true
