@@ -86,6 +86,13 @@ std::shared_ptr<AntigensModify> ChartModify::antigens_modify_ptr()
 
 // ----------------------------------------------------------------------
 
+AntigensModify& ChartModify::antigens_modify()
+{
+    return *antigens_modify_ptr();
+}
+
+// ----------------------------------------------------------------------
+
 SeraP ChartModify::sera() const
 {
     if (sera_)

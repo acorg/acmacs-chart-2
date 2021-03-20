@@ -58,7 +58,7 @@ namespace acmacs::chart
 
         InfoModify& info_modify();
         std::shared_ptr<AntigensModify> antigens_modify_ptr();
-        AntigensModify& antigens_modify() { return *antigens_modify_ptr(); }
+        AntigensModify& antigens_modify();
         std::shared_ptr<SeraModify> sera_modify_ptr();
         SeraModify& sera_modify() { return *sera_modify_ptr(); }
         TitersModify& titers_modify();
