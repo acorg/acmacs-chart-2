@@ -125,7 +125,7 @@ void acmacs::chart::GridTest::test(Result& result)
                 }
             }
         }
-        // AD_DEBUG("GridTest {} area: {:08.1f} units^{}  grid-step: {:5.3f}", result.report(chart_), area.area(), area.num_dim(), grid_step_);
+        // AD_DEBUG("GridTest {} area: {:8.1f} units^{}  grid-step: {:5.3f}", result.report(chart_), area.area(), area.num_dim(), grid_step_);
     }
 
 } // acmacs::chart::GridTest::test
