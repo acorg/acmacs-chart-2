@@ -1,6 +1,7 @@
 #pragma once
 
 #include "acmacs-base/string-join.hh"
+#include "acmacs-base/range-v3.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/name-format.hh"
 
@@ -39,8 +40,17 @@ namespace acmacs::chart
                     modifier(index, ag_sr()->ptr_at(index));
             }
 
+            PointIndexList points() const
+            {
+                if constexpr (std::is_same_v<Antigens, AgSr> || std::is_same_v<AntigensModify, AgSr>)
+                    return indexes;
+                else
+                    return PointIndexList{ranges::views::transform(indexes, [number_of_antigens = chart->number_of_antigens()](size_t index) { return index + number_of_antigens; }) |
+                                          ranges::to_vector};
+            }
+
             std::shared_ptr<Chrt> chart;
-            acmacs::chart::Indexes indexes;
+            PointIndexList indexes;
         };
 
         template <> inline std::shared_ptr<Antigens> Selected<Antigens, Chart>::ag_sr() const { return chart->antigens(); }

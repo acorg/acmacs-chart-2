@@ -27,8 +27,6 @@
 
 namespace acmacs::chart
 {
-    using Indexes = PointIndexList;
-
     class invalid_data : public std::runtime_error
     {
       public:

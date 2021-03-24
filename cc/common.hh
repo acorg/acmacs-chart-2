@@ -6,8 +6,6 @@
 
 namespace acmacs::chart
 {
-    using Indexes = PointIndexList;
-
     namespace common
     {
         struct CoreEntry

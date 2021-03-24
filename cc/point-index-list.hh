@@ -111,6 +111,8 @@ namespace acmacs::chart
 
     }; // class PointIndexList
 
+    using Indexes = PointIndexList;
+
     // ----------------------------------------------------------------------
 
     class UnmovablePoints : public PointIndexList
