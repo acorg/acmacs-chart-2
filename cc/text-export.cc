@@ -255,20 +255,6 @@ std::string export_extensions_to_text(const acmacs::chart::Chart& chart)
 } // export_extensions_to_text
 
 // ----------------------------------------------------------------------
-
-std::string acmacs::chart::export_names_to_text(const Chart& chart, std::string_view format, const SelectedAntigens& antigens, const SelectedSera& sera)
-{
-    fmt::memory_buffer out;
-    for (const auto ag_no : antigens.indexes)
-        fmt::format_to(out, "{}", acmacs::chart::format_antigen(format, chart, ag_no, collapse_spaces_t::yes));
-    fmt::format_to(out, "\n");
-    for (const auto sr_no : sera.indexes)
-        fmt::format_to(out, "{}", acmacs::chart::format_serum(format, chart, sr_no, collapse_spaces_t::yes));
-    return fmt::to_string(out);
-
-} // acmacs::chart::export_names_to_text
-
-// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
