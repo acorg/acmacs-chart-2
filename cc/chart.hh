@@ -463,6 +463,17 @@ namespace acmacs::chart
 
     // ----------------------------------------------------------------------
 
+    // Argument for antigen/serum selecting object
+    template <typename AgSr> struct SelectionData
+    {
+        size_t index;
+        size_t point_no;
+        std::shared_ptr<AgSr> ag_sr;
+        PointCoordinates coord;
+    };
+
+    // ----------------------------------------------------------------------
+
     using duplicates_t = std::vector<std::vector<size_t>>;
 
     namespace detail
@@ -488,6 +499,7 @@ namespace acmacs::chart
 
             // call func for each antigen and select ag/sr if func returns true
             template <typename F> Indexes indexes(F&& func) const { return make_indexes(std::forward<F>(func)); }
+            template <typename F> Indexes indexes(const Layout& layout, size_t index_base, F&& func) const { return make_indexes(layout, index_base, std::forward<F>(func)); }
 
             void filter_found_in(Indexes& aIndexes, const AntigensSera<AgSr>& aNother) const
             {
@@ -663,6 +675,8 @@ namespace acmacs::chart
                         return test(ptr);
                     else if constexpr (std::is_invocable_v<F, size_t, std::shared_ptr<AgSr>>)
                         return test(no, ptr);
+                    else if constexpr (std::is_invocable_v<F, const SelectionData<AgSr>&>)
+                        return test(SelectionData<AntigenSerumType>{.index = no, .point_no = static_cast<size_t>(-1), .ag_sr = ptr, .coord = PointCoordinates{PointCoordinates::nan2D}});
                     else
                         static_assert(std::is_invocable_v<F, void, int>, "unsupported filter function signature");
                 };
@@ -674,7 +688,17 @@ namespace acmacs::chart
                 }
                 return result;
             }
-        };
+
+            template <typename F> Indexes make_indexes(const Layout& layout, size_t index_base, F&& test) const
+            {
+                Indexes result;
+                for (size_t no = 0; no < size(); ++no) {
+                    if (test(SelectionData<AntigenSerumType>{.index = no, .point_no = no + index_base, .ag_sr = at(no), .coord = layout.at(no + index_base)}))
+                        result.insert(no);
+                }
+                return result;
+            }
+            };
 
     } // namespace detail
 
@@ -822,6 +846,7 @@ namespace acmacs::chart
         virtual bool empty() const = 0;
         virtual size_t size() const = 0;
         virtual std::shared_ptr<Projection> operator[](size_t aIndex) const = 0;
+        std::shared_ptr<Projection> at(size_t aIndex) const { return operator[](aIndex); }
         virtual std::shared_ptr<Projection> best() const { return operator[](0); }
         using iterator = acmacs::iterator<Projections, std::shared_ptr<Projection>>;
         iterator begin() const { return {*this, 0}; }
@@ -922,6 +947,20 @@ namespace acmacs::chart
         std::string show_table(std::optional<size_t> layer_no = {}) const;
 
         int number_of_digits_for_antigen_serum_index_formatting() const { return static_cast<int>(std::log10(std::max(number_of_antigens(), number_of_sera()))) + 1; }
+
+        template <typename AgSr, typename F> Indexes indexes(const AgSr& ag_sr, F&& func, size_t projection_no) const
+        {
+            auto prj = projections();
+            if (projection_no < prj->size()) {
+                size_t index_base{0};
+                if constexpr (std::is_base_of_v<Sera, AgSr>)
+                    index_base = number_of_antigens();
+                return ag_sr.indexes(*prj->at(projection_no)->transformed_layout(), index_base, std::forward<F>(func));
+            }
+            else {
+                return ag_sr.indexes(std::forward<F>(func));
+            }
+        }
 
       private:
         mutable std::map<MinimumColumnBasis, std::shared_ptr<ColumnBases>> computed_column_bases_; // cache, computing might be slow for big charts

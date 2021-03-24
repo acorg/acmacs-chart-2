@@ -13,11 +13,13 @@ namespace acmacs::chart
         template <typename AgSr, typename Chrt> struct Selected
         {
             using AntigensSeraType = AgSr;
+            enum None { None };
 
             // Selected() = default;
             Selected(std::shared_ptr<Chrt> a_chart) : chart{a_chart}, indexes{ag_sr()->all_indexes()} {}
+            Selected(std::shared_ptr<Chrt> a_chart, enum None) : chart{a_chart}, indexes{} {}
             // call func for each antigen/serum and select ag/sr if func returns true
-            template <typename F> Selected(std::shared_ptr<Chrt> a_chart, F&& func) : chart{a_chart}, indexes{ag_sr()->indexes(std::forward<F>(func))} {}
+            template <typename F> Selected(std::shared_ptr<Chrt> a_chart, F&& func, size_t projection_no) : chart{a_chart}, indexes{a_chart->template indexes<AgSr, F>(*ag_sr(), std::forward<F>(func), projection_no)} {}
 
             std::shared_ptr<AgSr> ag_sr() const;
 
