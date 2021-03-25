@@ -26,6 +26,8 @@ namespace acmacs::chart
             static_assert(std::is_same_v<AgSr, acmacs::chart::Sera>);
     }
 
+    std::string format_point(std::string_view pattern, const acmacs::chart::Chart& chart, size_t point_no, collapse_spaces_t cs);
+
     std::string format_help();
 
 } // namespace acmacs::chart

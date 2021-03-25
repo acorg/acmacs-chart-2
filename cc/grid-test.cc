@@ -6,6 +6,7 @@
 #include "acmacs-base/to-json.hh"
 #include "acmacs-base/data-formatter.hh"
 #include "acmacs-chart-2/grid-test.hh"
+#include "acmacs-chart-2/name-format.hh"
 
 // ----------------------------------------------------------------------
 
@@ -162,7 +163,7 @@ acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all([[maybe_unuse
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::GridTest::Projection acmacs::chart::GridTest::make_new_projection_and_relax(const Results& results, bool verbose)
+acmacs::chart::ProjectionModifyP acmacs::chart::GridTest::make_new_projection_and_relax(const Results& results, bool verbose)
 {
     auto projection = chart_.projections_modify().new_by_cloning(*projection_);
     auto layout = projection->layout_modified();
@@ -193,53 +194,49 @@ std::string acmacs::chart::GridTest::Results::report() const
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::GridTest::Result::report(const Chart& chart) const
+std::string acmacs::chart::GridTest::Results::report(const ChartModify& chart, std::string_view pattern) const
 {
-    using namespace std::string_view_literals;
-
-    std::string_view diag;
-    switch (diagnosis) {
-      case excluded:
-          diag = "excl"sv;
-          break;
-      case not_tested:
-          diag = "nott"sv;
-          break;
-      case normal:
-          diag = "norm"sv;
-          break;
-      case trapped:
-          diag = "trap"sv;
-          break;
-      case hemisphering:
-          diag = "hemi"sv;
-          break;
+    fmt::memory_buffer out;
+    fmt::format_to(out, "{}\n", report());
+    for (const auto& result : *this) {
+        if (result)
+            fmt::format_to(out, "{} {} diff:{:8.4f} dist:{:7.4f}\n", result.diagnosis_str(true), format_point(pattern, chart, result.point_no, collapse_spaces_t::yes), result.contribution_diff, result.distance);
     }
-    std::string name;
-    const auto index_num_digits = acmacs::number_of_decimal_digits(std::max(chart.number_of_antigens(), chart.number_of_sera()));
-    if (const auto num_ags = chart.number_of_antigens(); point_no < num_ags)
-        name = fmt::format("[AG {:{}d} {:60s}]", point_no, index_num_digits, chart.antigens()->at(point_no)->format("{name_full}"));
-    else
-        name = fmt::format("[SR {:{}d} {:60s}]", point_no - num_ags, index_num_digits, chart.sera()->at(point_no - num_ags)->format("{name_full}"));
-    return fmt::format("{} {} diff:{:7.4f} dist:{:7.4f}", diag, name, contribution_diff, distance);
+    return fmt::to_string(out);
 
-} // acmacs::chart::GridTest::Result::report
+} // acmacs::chart::GridTest::Results::report
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::GridTest::Result::diagnosis_str() const
+std::string acmacs::chart::GridTest::Result::diagnosis_str(bool brief) const
 {
-    switch (diagnosis) {
-      case excluded:
-          return "excluded";
-      case not_tested:
-          return "not_tested";
-      case normal:
-          return "normal";
-      case trapped:
-          return "trapped";
-      case hemisphering:
-          return "hemisphering";
+    if (brief) {
+        switch (diagnosis) {
+            case excluded:
+                return "excl";
+            case not_tested:
+                return "nott";
+            case normal:
+                return "norm";
+            case trapped:
+                return "trap";
+            case hemisphering:
+                return "hemi";
+        }
+    }
+    else {
+        switch (diagnosis) {
+            case excluded:
+                return "excluded";
+            case not_tested:
+                return "not_tested";
+            case normal:
+                return "normal";
+            case trapped:
+                return "trapped";
+            case hemisphering:
+                return "hemisphering";
+        }
     }
     return "not_tested";
 
@@ -287,7 +284,7 @@ void acmacs::chart::GridTest::Results::exclude_disconnected(const acmacs::chart:
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::GridTest::Results::export_to_json(const Chart& chart) const
+std::string acmacs::chart::GridTest::Results::export_to_json(const ChartModify& chart) const
 {
     const auto export_point = [&chart](const auto& en) -> to_json::object {
         return to_json::object{
@@ -328,7 +325,7 @@ std::string acmacs::chart::GridTest::Results::export_to_json(const Chart& chart)
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::GridTest::Results::export_to_layout_csv(const Chart& chart, const acmacs::chart::Projection& projection) const
+std::string acmacs::chart::GridTest::Results::export_to_layout_csv(const ChartModify& chart, const acmacs::chart::Projection& projection) const
 {
     using DF = acmacs::DataFormatterCSV;
 

@@ -288,6 +288,17 @@ std::string acmacs::chart::format_serum(std::string_view pattern, const acmacs::
 
 // ----------------------------------------------------------------------
 
+std::string acmacs::chart::format_point(std::string_view pattern, const Chart& chart, size_t point_no, collapse_spaces_t cs)
+{
+    if (const auto num_ags = chart.number_of_antigens(); point_no < num_ags)
+        return format_antigen(pattern, chart, point_no, cs);
+    else
+        return format_serum(pattern, chart, point_no - num_ags, cs);
+
+} // acmacs::chart::format_point
+
+// ----------------------------------------------------------------------
+
 constexpr const std::string_view pattern = R"(
 {{ag_sr}}                                  : {ag_sr}
 {{no0}}                                    : {no0}
