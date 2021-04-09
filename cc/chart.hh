@@ -30,12 +30,12 @@ namespace acmacs::chart
     class invalid_data : public std::runtime_error
     {
       public:
-        invalid_data(std::string_view msg) : std::runtime_error{fmt::format("invalid_data: {}", msg)} {}
+        template <typename S> invalid_data(S&& msg) : std::runtime_error{fmt::format("invalid_data: {}", std::forward<S>(msg))} {}
     };
     class chart_is_read_only : public std::runtime_error
     {
       public:
-        chart_is_read_only(std::string_view msg) : std::runtime_error{fmt::format("chart_is_read_only: ", msg)} {}
+        template <typename S> chart_is_read_only(S&& msg) : std::runtime_error{fmt::format("chart_is_read_only: ", std::forward<S>(msg))} {}
     };
 
     enum class find_homologous {

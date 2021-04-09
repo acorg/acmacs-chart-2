@@ -251,25 +251,30 @@ acmacs::chart::TiterIteratorMaker acmacs::chart::RjsonTiters::titers_existing() 
 
 // ----------------------------------------------------------------------
 
-
 acmacs::chart::TiterIteratorMaker acmacs::chart::RjsonTiters::titers_existing_from_layer(size_t layer_no) const
 {
-    return acmacs::chart::TiterIteratorMaker(std::make_shared<TiterGetterExistingDict>(data_[keys_.layers][layer_no]));
+    const auto& data = data_[keys_.layers][layer_no];
+    if (data.empty())
+        throw invalid_data{AD_FORMAT("titers_existing_from_layer: empty list of titers, expected either list of lists or list of objects")};
+    if (data[0].is_object())
+        return acmacs::chart::TiterIteratorMaker(std::make_shared<TiterGetterExistingDict>(data));
+    else if (data[0].is_array())
+        return acmacs::chart::TiterIteratorMaker(std::make_shared<TiterGetterExistingList>(data));
+    else
+        throw invalid_data{AD_FORMAT("titers_existing_from_layer: invalid titers per antigen value ({}), expected either list of lists or list of objects", data[0])};
 
 } // acmacs::chart::RjsonTiters::titers_existing
 
 // ----------------------------------------------------------------------
 
-
-acmacs::chart::rjson_import::Layout::Layout(const rjson::value& aData)
-    : acmacs::Layout(aData.size(), rjson_import::number_of_dimensions(aData))
+acmacs::chart::rjson_import::Layout::Layout(const rjson::value& aData) : acmacs::Layout(aData.size(), rjson_import::number_of_dimensions(aData))
 {
     auto coord = Vec::begin();
-    rjson::for_each(aData, [&coord,num_dim=number_of_dimensions()](const rjson::value& point) {
+    rjson::for_each(aData, [&coord, num_dim = number_of_dimensions()](const rjson::value& point) {
         if (point.size() == *num_dim)
             rjson::transform(point, coord, [](const rjson::value& coordinate) -> double { return coordinate.to<double>(); });
         else if (!point.empty())
-            throw invalid_data("rjson_import::Layout: point has invalid number of coordinates: " + std::to_string(point.size()) + ", expected 0 or " + acmacs::to_string(num_dim));
+            throw invalid_data{AD_FORMAT("rjson_import::Layout: point has invalid number of coordinates: {}, expected 0 or {}", point.size(), num_dim)};
         coord += static_cast<decltype(coord)::difference_type>(*num_dim);
     });
 

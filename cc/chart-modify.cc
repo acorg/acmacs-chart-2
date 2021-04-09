@@ -859,7 +859,7 @@ TitersModify::TitersModify(TitersP main)
                     else if (source_row.is_array())
                         rjson::transform(source_row, std::back_inserter(target[ag_no]), [](const rjson::value& titer, size_t serum_no) -> value_type { return {serum_no, acmacs::chart::Titer{titer.to<std::string_view>()}}; });
                     else
-                        throw invalid_data{acmacs::string::concat("invalid layer ", ag_no, " type: ", source_row.actual_type())};
+                        throw invalid_data{AD_FORMAT("invalid layer {} type: ", ag_no, source_row.actual_type())};
                 });
                   // sort entries by serum no
                 for (auto& row : target)
@@ -995,7 +995,7 @@ void TitersModify::remove_layers()
 void TitersModify::create_layers(size_t number_of_layers, size_t number_of_antigens)
 {
     if (number_of_layers < 2)
-        throw invalid_data{acmacs::string::concat("invalid number of layers to create: ", number_of_layers)};
+        throw invalid_data{AD_FORMAT("invalid number of layers to create: {}", number_of_layers)};
     if (!layers_.empty())
         throw invalid_data{"cannot create layers: already present"};
     layers_.resize(number_of_layers);
@@ -1707,7 +1707,7 @@ void ProjectionsModify::remove_all()
 void ProjectionsModify::remove(size_t projection_no)
 {
     if (projection_no >= projections_.size())
-        throw invalid_data{fmt::format("invalid projection number: {}", projection_no)};
+        throw invalid_data{AD_FORMAT("invalid projection number: {}", projection_no)};
     projections_.erase(projections_.begin() + static_cast<decltype(projections_)::difference_type>(projection_no));
     set_projection_no();
 
@@ -1719,7 +1719,7 @@ void ProjectionsModify::remove_all_except(size_t projection_no)
 {
     using diff_t = decltype(projections_)::difference_type;
     if (projection_no >= projections_.size())
-        throw invalid_data{fmt::format("invalid projection number: {}", projection_no)};
+        throw invalid_data{AD_FORMAT("invalid projection number: {}", projection_no)};
     projections_.erase(projections_.begin() + static_cast<diff_t>(projection_no + 1), projections_.end());
     projections_.erase(projections_.begin(), projections_.begin() + static_cast<diff_t>(projection_no));
     set_projection_no();
@@ -1968,7 +1968,7 @@ void ProjectionModifyNew::connect(const PointIndexList& to_connect)
         auto& disconnected = get_disconnected();
         const auto found = std::find(disconnected.begin(), disconnected.end(), point_no);
         if (found == disconnected.end())
-            throw invalid_data{fmt::format("Point was not disconnected: {}: cannot connect it", point_no)};
+            throw invalid_data{AD_FORMAT("Point was not disconnected: {}: cannot connect it", point_no)};
         disconnected.erase(found);
     }
 

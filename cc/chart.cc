@@ -11,19 +11,6 @@
 
 // ----------------------------------------------------------------------
 
-// #include "acmacs-base/global-constructors-push.hh"
-// static const std::regex sDate{"[12][90][0-9][0-9]-[0-2][0-9]-[0-3][0-9]"};
-// #include "acmacs-base/diagnostics-pop.hh"
-
-// void acmacs::chart::Date::checkx() const
-// {
-//     if (!empty() && !std::regex_match(std::begin(this->get()), std::end(this->get()), sDate))
-//         throw invalid_data{fmt::format("invalid date (YYYY-MM-DD expected): {}", **this)};
-
-// } // acmacs::chart::Date::check
-
-// ----------------------------------------------------------------------
-
 std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_show, unsigned inf) const
 {
     fmt::memory_buffer text;
@@ -476,7 +463,7 @@ std::string acmacs::chart::Projections::make_info(size_t max_number_of_projectio
 //         if (operator[](index).get() == projection)
 //             return index;
 //     }
-//     throw invalid_data("cannot find projection_no, total projections: " + std::to_string(size()));
+//     throw invalid_data{AD_FORMAT("cannot find projection_no, total projections: {}", size())};
 
 // } // acmacs::chart::Projections::projection_no
 
