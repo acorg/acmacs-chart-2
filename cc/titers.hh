@@ -294,7 +294,7 @@ template <> struct fmt::formatter<std::vector<acmacs::chart::Titer>> : fmt::form
 template <> struct fmt::formatter<std::set<acmacs::chart::Titer>> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const std::set<acmacs::chart::Titer>& titers, FormatCtx& ctx)
     {
-        format_to(ctx.out(), "{");
+        format_to(ctx.out(), "{{");
         bool first{true};
         for (const auto& titer: titers) {
             if (first)
@@ -303,7 +303,7 @@ template <> struct fmt::formatter<std::set<acmacs::chart::Titer>> : fmt::formatt
                 format_to(ctx.out(), ", ");
             format_to(ctx.out(), "{}", titer);
         }
-        return format_to(ctx.out(), "}");
+        return format_to(ctx.out(), "}}");
     }
 };
 
