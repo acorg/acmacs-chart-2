@@ -106,7 +106,8 @@ SOURCES = \
   lispmds-token.cc        \
   bounding-ball.cc        \
   name-format.cc          \
-  column-bases.cc
+  column-bases.cc         \
+  titer-data.cc
 
 #  optim.cc
 
