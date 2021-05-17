@@ -6,6 +6,11 @@
 void acmacs::chart::TiterData::add(const Chart& chart)
 {
     const auto t_no = add_table(chart);
+    for (size_t antigen_no = 0; antigen_no < chart.antigens()->size(); ++antigen_no) {
+        for (size_t serum_no = 0; serum_no < chart.sera()->size(); ++serum_no) {
+            auto [it, added] = titers_.try_emplace(ASName{chart.antigens()->at(antigen_no)->name_full(), chart.sera()->at(serum_no)->name_full()}, std::vector<Titer>{});
+        }
+    }
 
 } // acmacs::chart::TiterData::add
 

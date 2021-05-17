@@ -24,7 +24,7 @@ namespace acmacs::chart
             bool operator<(const ASName& rhs) const { return antigen == rhs.antigen ? serum < rhs.serum : antigen < rhs.antigen; }
         };
 
-        std::map<ASName, std::vector<acmacs::chart::Titer>>;
+        std::map<ASName, std::vector<acmacs::chart::Titer>> titers_;
         std::vector<std::string> table_names_;
 
         size_t add_table(const Chart& chart);
