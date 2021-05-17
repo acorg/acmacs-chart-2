@@ -18,7 +18,7 @@ inline static std::string name_full(const acmacs::chart::Antigen& ag)
 
 inline static std::string name_full(const acmacs::chart::Serum& sr)
 {
-    return name_full_without_passage(sr);
+    return acmacs::string::join(acmacs::string::join_space, name_full_without_passage(sr), sr.serum_id());
 }
 
 template <typename AgSr> static std::string name_full_passage(const AgSr& ag_sr)
