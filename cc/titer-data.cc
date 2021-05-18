@@ -4,7 +4,7 @@
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::TiterData::add(const Chart& chart)
+void acmacs::chart::ReferencePanelPlotData::add(const Chart& chart)
 {
     const auto t_no = add_table(chart);
     for (size_t antigen_no = 0; antigen_no < chart.antigens()->size(); ++antigen_no) {
@@ -15,20 +15,20 @@ void acmacs::chart::TiterData::add(const Chart& chart)
         }
     }
 
-} // acmacs::chart::TiterData::add
+} // acmacs::chart::ReferencePanelPlotData::add
 
 // ----------------------------------------------------------------------
 
-size_t acmacs::chart::TiterData::add_table(const Chart& chart)
+size_t acmacs::chart::ReferencePanelPlotData::add_table(const Chart& chart)
 {
     table_names_.push_back(chart.info()->make_name());
     return table_names_.size() - 1;
 
-} // acmacs::chart::TiterData::add_table
+} // acmacs::chart::ReferencePanelPlotData::add_table
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::TiterData::collect_titer_set()
+void acmacs::chart::ReferencePanelPlotData::collect_titer_set()
 {
     for (const auto& [as_name, titers] : titers_) {
         for (const auto& titer : titers) {
@@ -37,7 +37,7 @@ void acmacs::chart::TiterData::collect_titer_set()
         }
     }
 
-} // acmacs::chart::TiterData::collect_titer_set
+} // acmacs::chart::ReferencePanelPlotData::collect_titer_set
 
 // ----------------------------------------------------------------------
 
@@ -51,23 +51,23 @@ template <typename Extractor> static inline std::vector<std::string> antigens_se
            | ranges::actions::unique;              //
 }
 
-std::vector<std::string> acmacs::chart::TiterData::antigens(size_t min_tables) const
+std::vector<std::string> acmacs::chart::ReferencePanelPlotData::antigens(size_t min_tables) const
 {
     return antigens_sera(titers_, min_tables, [](const auto& en) { return en.first.antigen; });
 
-} // acmacs::chart::TiterData::all_antigens
+} // acmacs::chart::ReferencePanelPlotData::all_antigens
 
 // ----------------------------------------------------------------------
 
-std::vector<std::string> acmacs::chart::TiterData::sera(size_t min_tables) const
+std::vector<std::string> acmacs::chart::ReferencePanelPlotData::sera(size_t min_tables) const
 {
     return antigens_sera(titers_, min_tables, [](const auto& en) { return en.first.serum; });
 
-} // acmacs::chart::TiterData::all_sera
+} // acmacs::chart::ReferencePanelPlotData::all_sera
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::TiterData::ASTable acmacs::chart::TiterData::make_antigen_serum_table(const std::vector<std::string>& antigens, const std::vector<std::string>& sera) const
+acmacs::chart::ReferencePanelPlotData::ASTable acmacs::chart::ReferencePanelPlotData::make_antigen_serum_table(const std::vector<std::string>& antigens, const std::vector<std::string>& sera) const
 {
     const auto cell_no = [&antigens, &sera](const ASName& as_pair) {
         std::pair<ssize_t, ssize_t> cn { -1, -1 };
@@ -100,7 +100,7 @@ acmacs::chart::TiterData::ASTable acmacs::chart::TiterData::make_antigen_serum_t
 
     return table;
 
-} // acmacs::chart::TiterData::make_antigen_serum_table
+} // acmacs::chart::ReferencePanelPlotData::make_antigen_serum_table
 
 // ----------------------------------------------------------------------
 

@@ -11,7 +11,7 @@ namespace acmacs::chart
 {
     class Chart;
 
-    class TiterData
+    class ReferencePanelPlotData
     {
       public:
         struct Titers : public std::vector<Titer>
