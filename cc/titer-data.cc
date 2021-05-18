@@ -1,3 +1,4 @@
+#include <limits>
 #include "acmacs-chart-2/titer-data.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -63,6 +64,43 @@ std::vector<std::string> acmacs::chart::TiterData::sera(size_t min_tables) const
     return antigens_sera(titers_, min_tables, [](const auto& en) { return en.first.serum; });
 
 } // acmacs::chart::TiterData::all_sera
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::TiterData::ASTable acmacs::chart::TiterData::make_antigen_serum_table(const std::vector<std::string>& antigens, const std::vector<std::string>& sera) const
+{
+    const auto cell_no = [&antigens, &sera](const ASName& as_pair) {
+        std::pair<ssize_t, ssize_t> cn { -1, -1 };
+        if (const auto it = std::find(std::begin(antigens), std::end(antigens), as_pair.antigen); it != std::end(antigens))
+            cn.first = it - std::begin(antigens);
+        if (const auto it = std::find(std::begin(sera), std::end(sera), as_pair.serum); it != std::end(sera))
+            cn.second = it - std::begin(sera);
+        return cn;
+    };
+
+    ASTable table(antigens.size(), std::vector<AntigenSerumData>(sera.size()));
+    size_t min_table_index{std::numeric_limits<size_t>::max()}, max_table_index{0};
+    for (const auto& [as_name, titers] : titers_) {
+        if (const auto cell = cell_no(as_name); cell.first >= 0 && cell.second >= 0) {
+            table[static_cast<size_t>(cell.first)][static_cast<size_t>(cell.second)].titers = titers;
+            min_table_index = std::min(min_table_index, titers.first_non_dontcare_index());
+            max_table_index = std::max(max_table_index, titers.last_non_dontcare_index());
+        }
+    }
+
+    // remove titers in each cell of the table that are not in the inclusive range [min_table_index, max_table_index]
+    for (auto& row : table) {
+        for (auto& cell : row) {
+            cell.titers.erase(std::next(cell.titers.begin(), static_cast<ssize_t>(max_table_index) + 1), cell.titers.end());
+            cell.titers.erase(cell.titers.begin(), std::next(cell.titers.begin(), static_cast<ssize_t>(min_table_index)));
+        }
+    }
+
+    // calculate median
+
+    return table;
+
+} // acmacs::chart::TiterData::make_antigen_serum_table
 
 // ----------------------------------------------------------------------
 
