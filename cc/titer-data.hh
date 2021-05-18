@@ -15,6 +15,10 @@ namespace acmacs::chart
       public:
         // collect titers from a chart
         void add(const Chart& chart);
+        void collect_titer_set();
+
+        std::vector<std::string> all_antigens() const;
+        std::vector<std::string> all_sera() const;
 
       private:
         struct ASName
@@ -26,6 +30,7 @@ namespace acmacs::chart
 
         std::map<ASName, std::vector<acmacs::chart::Titer>> titers_;
         std::vector<std::string> table_names_;
+        std::set<Titer> all_titers_;
 
         size_t add_table(const Chart& chart);
     };
