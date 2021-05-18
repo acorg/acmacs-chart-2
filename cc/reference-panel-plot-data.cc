@@ -92,7 +92,10 @@ acmacs::chart::ReferencePanelPlotData::ASTable acmacs::chart::ReferencePanelPlot
     // calculate median
     for (auto& row : table) {
         for (auto& cell : row) {
-            cell.titers.erase(std::next(cell.titers.begin(), static_cast<ssize_t>(max_table_index) + 1), cell.titers.end());
+            if (cell.titers.size() <= max_table_index)
+                cell.titers.resize(max_table_index + 1);
+            else
+                cell.titers.erase(std::next(cell.titers.begin(), static_cast<ssize_t>(max_table_index) + 1), cell.titers.end());
             cell.titers.erase(cell.titers.begin(), std::next(cell.titers.begin(), static_cast<ssize_t>(min_table_index)));
             cell.find_median();
         }

@@ -19,6 +19,7 @@ namespace acmacs::chart
         struct Titers : public std::vector<Titer>
         {
             using std::vector<Titer>::vector;
+            Titers& operator=(const Titers&) = default;
 
             size_t count_non_dontcare() const
             {
