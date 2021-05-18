@@ -1,5 +1,5 @@
 #include <limits>
-#include "acmacs-chart-2/titer-data.hh"
+#include "acmacs-chart-2/reference-panel-plot-data.hh"
 #include "acmacs-chart-2/chart.hh"
 
 // ----------------------------------------------------------------------
@@ -97,7 +97,6 @@ acmacs::chart::ReferencePanelPlotData::ASTable acmacs::chart::ReferencePanelPlot
             cell.find_median();
         }
     }
-
 
     return table;
 

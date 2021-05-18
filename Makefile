@@ -107,7 +107,7 @@ SOURCES = \
   bounding-ball.cc        \
   name-format.cc          \
   column-bases.cc         \
-  titer-data.cc
+  reference-panel-plot-data.cc
 
 #  optim.cc
 
