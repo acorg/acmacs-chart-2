@@ -89,18 +89,32 @@ acmacs::chart::ReferencePanelPlotData::ASTable acmacs::chart::ReferencePanelPlot
     }
 
     // remove titers in each cell of the table that are not in the inclusive range [min_table_index, max_table_index]
+    // calculate median
     for (auto& row : table) {
         for (auto& cell : row) {
             cell.titers.erase(std::next(cell.titers.begin(), static_cast<ssize_t>(max_table_index) + 1), cell.titers.end());
             cell.titers.erase(cell.titers.begin(), std::next(cell.titers.begin(), static_cast<ssize_t>(min_table_index)));
+            cell.find_median();
         }
     }
 
-    // calculate median
 
     return table;
 
 } // acmacs::chart::ReferencePanelPlotData::make_antigen_serum_table
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::ReferencePanelPlotData::AntigenSerumData::find_median()
+{
+    auto good_titers = titers | ranges::views::filter(is_dont_care) | ranges::to_vector;
+    ranges::actions::sort(good_titers);
+    if (good_titers.size() % 2)
+        median_titer = good_titers[good_titers.size() / 2];
+    else
+        median_titer = good_titers[good_titers.size() / 2 - 1];
+
+} // acmacs::chart::ReferencePanelPlotData::AntigenSerumData::find_median
 
 // ----------------------------------------------------------------------
 

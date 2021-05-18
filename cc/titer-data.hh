@@ -14,6 +14,8 @@ namespace acmacs::chart
     class ReferencePanelPlotData
     {
       public:
+        static inline bool is_dont_care(const Titer& titer) { return titer.is_dont_care(); }
+
         struct Titers : public std::vector<Titer>
         {
             using std::vector<Titer>::vector;
@@ -25,33 +27,20 @@ namespace acmacs::chart
 
             size_t first_non_dontcare_index() const
             {
-                return static_cast<size_t>(std::distance(std::find_if(begin(), end(), [](const auto& titer) { return !titer.is_dont_care(); }), begin()));
+                return static_cast<size_t>(std::distance(std::find_if_not(begin(), end(), is_dont_care), begin()));
             }
             size_t last_non_dontcare_index() const
             {
-                return static_cast<size_t>(std::distance(std::find_if(rbegin(), rend(), [](const auto& titer) { return !titer.is_dont_care(); }), rend()));
+                return static_cast<size_t>(std::distance(std::find_if_not(rbegin(), rend(), is_dont_care), rend()));
             }
         };
 
-        class AntigenSerumData
+        struct AntigenSerumData
         {
-          public:
-            // bool empty() const { return titer_per_table.empty(); }
-            // size_t number_of_tables() const
-            // {
-            //     return std::accumulate(titer_per_table.begin(), titer_per_table.end(), 0U, [](size_t acc, auto& element) { return element.first.is_dont_care() ? acc : (acc + 1); });
-            // }
-            // size_t first_table_no() const
-            // {
-            //     for (auto [no, entry] : acmacs::enumerate(titer_per_table))
-            //         if (!entry.first.is_dont_care())
-            //             return no;
-            //     return 0;
-            // }
-
-            acmacs::chart::Titer median_titer;
-            int median_titer_index{-1};
+            acmacs::chart::Titer median_titer{};
             Titers titers;
+
+            void find_median();
         };
 
         using ASTable = std::vector<std::vector<AntigenSerumData>>;
@@ -79,7 +68,6 @@ namespace acmacs::chart
 
         size_t add_table(const Chart& chart);
 
-        // returns table indexes where at least one antigen/serum pair has a non-dontcare titer
         std::vector<size_t> tables_of_antigens_sera(const std::vector<std::string>& antigens, const std::vector<std::string>& sera) const;
 
     };
