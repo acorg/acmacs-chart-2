@@ -78,11 +78,11 @@ acmacs::chart::ReferencePanelPlotData::ASTable acmacs::chart::ReferencePanelPlot
         return cn;
     };
 
-    ASTable table(antigens.size(), std::vector<AntigenSerumData>(sera.size()));
+    ASTable table{.antigens = antigens, .sera = sera, .data = ASTable::Data(antigens.size(), std::vector<AntigenSerumData>(sera.size()))};
     size_t min_table_index{std::numeric_limits<size_t>::max()}, max_table_index{0};
     for (const auto& [as_name, titers] : titers_) {
         if (const auto cell = cell_no(as_name); cell.first >= 0 && cell.second >= 0) {
-            table[static_cast<size_t>(cell.first)][static_cast<size_t>(cell.second)].titers = titers;
+            table.data[static_cast<size_t>(cell.first)][static_cast<size_t>(cell.second)].titers = titers;
             min_table_index = std::min(min_table_index, titers.first_non_dontcare_index());
             max_table_index = std::max(max_table_index, titers.last_non_dontcare_index());
         }
@@ -90,7 +90,7 @@ acmacs::chart::ReferencePanelPlotData::ASTable acmacs::chart::ReferencePanelPlot
 
     // remove titers in each cell of the table that are not in the inclusive range [min_table_index, max_table_index]
     // calculate median
-    for (auto& row : table) {
+    for (auto& row : table.data) {
         for (auto& cell : row) {
             if (cell.titers.size() <= max_table_index)
                 cell.titers.resize(max_table_index + 1);

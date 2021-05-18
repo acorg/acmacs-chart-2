@@ -44,10 +44,18 @@ namespace acmacs::chart
             void find_median();
         };
 
-        using ASTable = std::vector<std::vector<AntigenSerumData>>;
+        struct ASTable
+        {
+            using Data = std::vector<std::vector<AntigenSerumData>>;
+
+            std::vector<std::string> antigens;
+            std::vector<std::string> sera;
+            Data data;
+        };
 
         // collect titers from a chart
-        void add(const Chart& chart);
+        void
+        add(const Chart& chart);
         void collect_titer_set();
 
         ASTable make_antigen_serum_table(const std::vector<std::string>& antigens, const std::vector<std::string>& sera) const;
