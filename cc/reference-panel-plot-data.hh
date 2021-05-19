@@ -28,7 +28,7 @@ namespace acmacs::chart
 
             size_t first_non_dontcare_index() const
             {
-                return static_cast<size_t>(std::distance(std::find_if_not(begin(), end(), is_dont_care), begin()));
+                return static_cast<size_t>(std::distance(begin(), std::find_if_not(begin(), end(), is_dont_care)));
             }
             size_t last_non_dontcare_index() const
             {
@@ -81,6 +81,10 @@ namespace acmacs::chart
 
     };
 } // namespace acmacs::chart
+
+template <> struct fmt::formatter<acmacs::chart::ReferencePanelPlotData::Titers> : fmt::formatter<std::vector<acmacs::chart::Titer>>
+{
+};
 
 // ----------------------------------------------------------------------
 /// Local Variables:

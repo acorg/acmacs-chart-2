@@ -70,7 +70,7 @@ std::vector<std::string> acmacs::chart::ReferencePanelPlotData::sera(size_t min_
 acmacs::chart::ReferencePanelPlotData::ASTable acmacs::chart::ReferencePanelPlotData::make_antigen_serum_table(const std::vector<std::string>& antigens, const std::vector<std::string>& sera) const
 {
     const auto cell_no = [&antigens, &sera](const ASName& as_pair) {
-        std::pair<ssize_t, ssize_t> cn { -1, -1 };
+        std::pair<ssize_t, ssize_t> cn{-1, -1};
         if (const auto it = std::find(std::begin(antigens), std::end(antigens), as_pair.antigen); it != std::end(antigens))
             cn.first = it - std::begin(antigens);
         if (const auto it = std::find(std::begin(sera), std::end(sera), as_pair.serum); it != std::end(sera))
@@ -88,10 +88,13 @@ acmacs::chart::ReferencePanelPlotData::ASTable acmacs::chart::ReferencePanelPlot
         }
     }
 
+    AD_ASSERT(min_table_index < max_table_index, "min_table_index: {} max_table_index: {}", min_table_index, max_table_index);
+
     // remove titers in each cell of the table that are not in the inclusive range [min_table_index, max_table_index]
     // calculate median
     for (auto& row : table.data) {
         for (auto& cell : row) {
+            // AD_DEBUG("size: {} max_table_index:{} min_table_index:{}", cell.titers.size(), max_table_index, min_table_index);
             if (cell.titers.size() <= max_table_index)
                 cell.titers.resize(max_table_index + 1);
             else
