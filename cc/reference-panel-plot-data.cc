@@ -112,7 +112,7 @@ acmacs::chart::ReferencePanelPlotData::ASTable acmacs::chart::ReferencePanelPlot
 
 void acmacs::chart::ReferencePanelPlotData::AntigenSerumData::find_median()
 {
-    auto good_titers = titers | ranges::views::filter(is_dont_care) | ranges::to_vector;
+    auto good_titers = titers | ranges::views::filter(is_not_dont_care) | ranges::to_vector;
     ranges::actions::sort(good_titers);
     if (good_titers.size() % 2)
         median_titer = good_titers[good_titers.size() / 2];

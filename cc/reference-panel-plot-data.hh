@@ -15,6 +15,7 @@ namespace acmacs::chart
     {
       public:
         static inline bool is_dont_care(const Titer& titer) { return titer.is_dont_care(); }
+        static inline bool is_not_dont_care(const Titer& titer) { return !titer.is_dont_care(); }
 
         struct Titers : public std::vector<Titer>
         {
@@ -28,11 +29,11 @@ namespace acmacs::chart
 
             size_t first_non_dontcare_index() const
             {
-                return static_cast<size_t>(std::distance(begin(), std::find_if_not(begin(), end(), is_dont_care)));
+                return static_cast<size_t>(std::distance(begin(), std::find_if(begin(), end(), is_not_dont_care)));
             }
             size_t last_non_dontcare_index() const
             {
-                return static_cast<size_t>(std::distance(std::find_if_not(rbegin(), rend(), is_dont_care), rend()));
+                return static_cast<size_t>(std::distance(std::find_if(rbegin(), rend(), is_not_dont_care), rend()));
             }
         };
 
