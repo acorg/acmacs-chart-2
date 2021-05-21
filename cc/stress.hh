@@ -64,6 +64,7 @@ namespace acmacs::chart
         constexpr StressParameters& parameters() { return parameters_; }
         void set_disconnected(const DisconnectedPoints& to_disconnect) { parameters_.disconnected = to_disconnect; }
         void extend_disconnected(const PointIndexList& to_disconnect) { parameters_.disconnected.extend(to_disconnect); }
+        size_t number_of_disconnected() const { return parameters_.disconnected.size(); }
         void set_unmovable(const UnmovablePoints& unmovable) { parameters_.unmovable = unmovable; }
         void set_unmovable_in_the_last_dimension(const UnmovableInTheLastDimensionPoints& unmovable_in_the_last_dimension) { parameters_.unmovable_in_the_last_dimension = unmovable_in_the_last_dimension; }
 

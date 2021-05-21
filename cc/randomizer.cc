@@ -52,7 +52,7 @@ std::shared_ptr<acmacs::chart::LayoutRandomizer> randomizer_plain_from_sample_op
     const auto mm = projection.layout_modified()->minmax();
     const auto diameter = std::sqrt(std::accumulate(mm.begin(), mm.end(), 0.0, [&sq](double sum, const auto& p) { return sum + sq(p.second - p.first); }));
     if (std::isnan(diameter) || float_zero(diameter))
-        throw std::runtime_error(acmacs::string::concat("randomizer_plain_from_sample_optimization_internal: diameter is ", diameter));
+        throw std::runtime_error{AD_FORMAT("randomizer_plain_from_sample_optimization_internal: diameter is {}", diameter)};
     rnd->diameter(diameter * diameter_multiplier);
     return rnd;
 

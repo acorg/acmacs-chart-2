@@ -285,6 +285,8 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     report_disconnected_unmovable(projection->get_disconnected(), projection->get_unmovable());
     auto layout = projection->layout_modified();
     auto stress = acmacs::chart::stress_factory(*projection, options.mult);
+    if (const auto num_connected = projection->layout_modified()->number_of_points() - stress.number_of_disconnected(); num_connected < 3)
+        throw std::runtime_error{AD_FORMAT("cannot relax projection: too few connected points: {}", num_connected)};
     auto rnd = randomizer_plain_from_sample_optimization(*projection, stress, options.randomization_diameter_multiplier, seed);
     projection->randomize_layout(rnd);
     auto status = acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
@@ -318,6 +320,8 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
     stress.set_disconnected(disconnect_points);
     if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
         stress.extend_disconnected(titrs->having_too_few_numeric_titers());
+    if (const auto num_connected = number_of_antigens() + number_of_sera() - stress.number_of_disconnected(); num_connected < 3)
+        throw std::runtime_error{AD_FORMAT("cannot relax: too few connected points: {}", num_connected)};
     report_disconnected_unmovable(stress.parameters().disconnected, stress.parameters().unmovable);
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, start_num_dim, minimum_column_basis, options.randomization_diameter_multiplier);
 
@@ -395,6 +399,8 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
         stress.extend_disconnected(to_disconnect);
     }
 
+    if (const auto num_connected = number_of_antigens() + number_of_sera() - stress.number_of_disconnected(); num_connected < 3)
+        throw std::runtime_error{AD_FORMAT("cannot relax: too few connected points: {}", num_connected)};
     report_disconnected_unmovable(stress.parameters().disconnected, stress.parameters().unmovable);
 
     // AD_DEBUG("relax_incremental: {}", number_of_points());
