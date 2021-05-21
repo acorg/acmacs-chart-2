@@ -119,7 +119,7 @@ int main(int argc, char* const argv[])
             acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name());
     }
     catch (std::exception& err) {
-        fmt::print(stderr, "ERROR: {}\n", err);
+        AD_ERROR("{}", err);
         exit_code = 2;
     }
     return exit_code;
