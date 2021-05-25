@@ -137,11 +137,19 @@ std::shared_ptr<acmacs::chart::ColumnBases> acmacs::chart::Chart::column_bases(a
 
 double acmacs::chart::Chart::column_basis(size_t serum_no, size_t projection_no) const
 {
-    auto prj = projection(projection_no);
-    if (auto forced = prj->forced_column_bases(); forced)
-        return forced->column_basis(serum_no);
-    else
-        return computed_column_bases(prj->minimum_column_basis(), use_cache::yes)->column_basis(serum_no);
+    if (number_of_projections()) {
+        auto prj = projection(projection_no);
+        if (auto forced = prj->forced_column_bases(); forced)
+            return forced->column_basis(serum_no);
+        else
+            return computed_column_bases(prj->minimum_column_basis(), use_cache::yes)->column_basis(serum_no);
+    }
+    else {
+        if (auto forced = forced_column_bases({}); forced)
+            return forced->column_basis(serum_no);
+        else
+            return computed_column_bases({}, use_cache::yes)->column_basis(serum_no);
+    }
 
 } // acmacs::chart::Chart::column_basis
 

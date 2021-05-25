@@ -27,6 +27,13 @@ namespace acmacs::chart
             bool empty() const { return indexes.empty(); }
             size_t size() const { return indexes.size(); }
 
+            // no is not a antigen_no/serum_no, it's no in index, i.e. 0 to size()
+            auto operator[](size_t no) const
+            {
+                const auto ag_sr_no = indexes[no];
+                return std::pair{ag_sr_no, ag_sr()->ptr_at(ag_sr_no)};
+            }
+
             // substitutions in format: {no0} {no1} {AG_SR} {name} {full_name}
             std::string report(std::string_view format = "{no0},") const
             {
