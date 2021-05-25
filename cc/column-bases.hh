@@ -69,6 +69,7 @@ namespace acmacs::chart
       public:
         ColumnBasesData(size_t number_of_sera, double aMinimumColumnBasis = 0.0) : data_(number_of_sera, aMinimumColumnBasis) {}
         ColumnBasesData(const ColumnBases& aSource) : data_(aSource.size()) { for (size_t serum_no = 0; serum_no < data_.size(); ++serum_no) data_[serum_no] = aSource.column_basis(serum_no); }
+        ColumnBasesData(const std::vector<double>& source) : data_{source} {}
 
         double column_basis(size_t aSerumNo) const override { return data_.at(aSerumNo); }
         size_t size() const override { return data_.size(); }
