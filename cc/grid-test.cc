@@ -286,7 +286,7 @@ void acmacs::chart::GridTest::Results::exclude_disconnected(const acmacs::chart:
 
 // ----------------------------------------------------------------------
 
-std::string acmacs::chart::GridTest::Results::export_to_json(const ChartModify& chart) const
+std::string acmacs::chart::GridTest::Results::export_to_json(const ChartModify& chart, size_t number_of_relaxations) const
 {
     const auto export_point = [&chart](const auto& en) -> to_json::object {
         return to_json::object{
@@ -320,7 +320,8 @@ std::string acmacs::chart::GridTest::Results::export_to_json(const ChartModify& 
             to_json::key_val{"chart", chart.make_name()},
             // to_json::key_val{"tested", std::move(tested)},
             to_json::key_val{"hemisphering", std::move(hemisphering)},
-            to_json::key_val{"trapped", std::move(trapped)}
+            to_json::key_val{"trapped", std::move(trapped)},
+            to_json::key_val{"relaxed", number_of_relaxations}
         });
 
 } // acmacs::chart::GridTest::Results::export_to_json
@@ -415,7 +416,9 @@ std::pair<acmacs::chart::GridTest::Results, size_t> acmacs::chart::grid_test(Cha
     chart.projections_modify().sort();
 
     if (!export_filename.empty())
-        acmacs::file::write(export_filename, results.export_to_json(chart));
+        acmacs::file::write(export_filename, results.export_to_json(chart, grid_projections));
+
+    AD_PRINT(verb == verbose::yes, "\n");
 
     return {results, grid_projections};
 

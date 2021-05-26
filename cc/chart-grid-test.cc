@@ -77,7 +77,7 @@ int main(int argc, char* const argv[])
             results = test.test(*points);
             fmt::print("{}\n", results.report());
             if (opt.grid_json)
-                acmacs::file::write(opt.grid_json, results.export_to_json(chart));
+                acmacs::file::write(opt.grid_json, results.export_to_json(chart, 0));
         }
         if (opt.csv)
             acmacs::file::write(opt.csv, results.export_to_layout_csv(chart, *chart.projection(opt.projection)));

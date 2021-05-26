@@ -44,7 +44,7 @@ namespace acmacs::chart
 
             std::string report() const; // brief
             std::string report(const ChartModify& chart, std::string_view pattern = "{ag_sr} {no0:{num_digits}d} {name_full_passage:<60s}") const; // detailed
-            std::string export_to_json(const ChartModify& chart) const;
+            std::string export_to_json(const ChartModify& chart, size_t number_of_relaxations = 0) const;
             std::string export_to_layout_csv(const ChartModify& chart, const acmacs::chart::Projection& projection) const;
             auto count_trapped_hemisphering() const { return std::count_if(begin(), end(), [](const auto& r) { return r.diagnosis == Result::trapped || r.diagnosis == Result::hemisphering; }); }
             number_of_dimensions_t num_dimensions() const { return front().pos.number_of_dimensions(); }

@@ -5,6 +5,7 @@
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
+#include "acmacs-chart-2/grid-test.hh"
 
 // ----------------------------------------------------------------------
 
@@ -48,9 +49,17 @@ int main(int argc, char* const argv[])
         chart.relax_incremental(source_projection_no, acmacs::chart::number_of_optimizations_t{*opt.number_of_attempts}, options,
                                 opt.remove_source_projection ? acmacs::chart::remove_source_projection::yes : acmacs::chart::remove_source_projection::no,
                                 opt.unmovable_non_nan_points ? acmacs::chart::unmovable_non_nan_points::yes : acmacs::chart::unmovable_non_nan_points::no);
+
+        size_t grid_projections{0};
+        if (opt.grid) {
+            acmacs::chart::GridTest::Results grid_results;
+            const size_t projection_no_to_test{0}, relax_attempts{20};
+            std::tie(grid_results, grid_projections) = acmacs::chart::grid_test(chart, projection_no_to_test, opt.grid_step, opt.threads, relax_attempts, opt.grid_json);
+        }
+
         auto& projections = chart.projections_modify();
-        if (opt.keep_projections > 0 && projections.size() > opt.keep_projections)
-            projections.keep_just(opt.keep_projections);
+        if (opt.keep_projections > 0 && projections.size() > (opt.keep_projections + grid_projections))
+            projections.keep_just(opt.keep_projections + grid_projections);
         fmt::print("{}\n", chart.make_info());
         if (!opt.output_chart.empty())
             acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name(), report);
