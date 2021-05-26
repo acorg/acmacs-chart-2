@@ -18,9 +18,9 @@ struct Options : public argv
 
     option<bool>   relax{*this, "relax", desc{"move trapped points and relax, test again, repeat while there are trapped points"}};
     option<size_t> projection{*this, "projection", dflt{0UL}, desc{"projection number to test"}};
-    option<double> step{*this, "step", dflt{0.1}, desc{"grid step"}};
+    option<double> grid_step{*this, "step", dflt{0.1}, desc{"grid step"}};
     option<str>    points_to_test{*this, "points", dflt{"all"}, desc{"comma separated list of point numbers or names to test, \"all\" to test all"}};
-    option<str>    json{*this, "json", desc{"export test results into json"}};
+    option<str>    grid_json{*this, "json", desc{"export test results into json"}};
     option<str>    csv{*this, "csv", desc{"export layout and test results into csv"}};
     option<int>    threads{*this, "threads", dflt{0}, desc{"number of threads to use for test (omp): 0 - autodetect, 1 - sequential"}};
     option<bool>   report_time{*this, "time", desc{"report time of loading chart"}};
@@ -40,43 +40,25 @@ int main(int argc, char* const argv[])
 
         acmacs::chart::GridTest::Results results;
         if (opt.points_to_test == "all") {
-            std::vector<size_t> projections_to_reorient;
-            size_t projection_no_to_test = opt.projection;
-            for (auto attempt = 1; attempt < 10; ++attempt) {
-                acmacs::chart::GridTest test(chart, projection_no_to_test, opt.step);
-                results = test.test_all(opt.threads);
-                fmt::print("{}\n", results.report());
-                if (opt.verbose || !opt.relax) {
-                    for (const auto& entry : results) {
-                        if (entry)
-                            fmt::print("{}\n", entry.report(chart));
-                    }
-                }
-                if (!opt.relax)
-                    break;
-                auto projection = test.make_new_projection_and_relax(results, true);
-                projection->comment("grid-test-" + acmacs::to_string(attempt));
-                projection_no_to_test = projection->projection_no();
-                projections_to_reorient.push_back(projection_no_to_test);
-                if (std::all_of(results.begin(), results.end(), [](const auto& result) { return result.diagnosis != acmacs::chart::GridTest::Result::trapped; }))
-                    break;
-            }
+            auto master_projection = chart.projection(opt.projection);
+            const size_t relax_attempts = 20;
+            const auto [grid_results, grid_projections] = acmacs::chart::grid_test(chart, opt.projection, opt.grid_step, opt.threads, relax_attempts, opt.grid_json);
+
             if (opt.output.has_value()) {
-                if (!projections_to_reorient.empty()) {
+                if (grid_projections) {
                     acmacs::chart::CommonAntigensSera common(chart);
-                    auto master_projection = chart.projection(opt.projection);
-                    for (auto projection_to_reorient : projections_to_reorient) {
+                    for (size_t projection_to_reorient{0}; projection_to_reorient < grid_projections; ++projection_to_reorient) {
                         const auto procrustes_data = acmacs::chart::procrustes(*master_projection, *chart.projection(projection_to_reorient), common.points(), acmacs::chart::procrustes_scaling_t::no);
                         chart.projection_modify(projection_to_reorient)->transformation(procrustes_data.transformation);
                     }
                 }
-                chart.projections_modify().sort();
+                // chart.projections_modify().sort();
                 acmacs::chart::export_factory(chart, opt.output, opt.program_name(), report);
             }
             fmt::print(stderr, "{}\n", chart.make_info());
         }
         else {
-            acmacs::chart::GridTest test(chart, opt.projection, opt.step);
+            acmacs::chart::GridTest test(chart, opt.projection, opt.grid_step);
             auto antigens = chart.antigens();
             acmacs::chart::Indexes points;
             for (const auto& point_ref : acmacs::string::split(*opt.points_to_test, ",")) {
@@ -94,12 +76,12 @@ int main(int argc, char* const argv[])
             }
             results = test.test(*points);
             fmt::print("{}\n", results.report());
+            if (opt.grid_json)
+                acmacs::file::write(opt.grid_json, results.export_to_json(chart));
         }
-        if (opt.json)
-            acmacs::file::write(opt.json, results.export_to_json(chart));
         if (opt.csv)
             acmacs::file::write(opt.csv, results.export_to_layout_csv(chart, *chart.projection(opt.projection)));
-        if (!opt.json && !opt.csv) {
+        if (!opt.grid_json && !opt.csv) {
             for (const auto& res : results) {
                 if (res.diagnosis == acmacs::chart::GridTest::Result::trapped || res.diagnosis == acmacs::chart::GridTest::Result::hemisphering)
                     fmt::print("{}\n", res.report(chart));

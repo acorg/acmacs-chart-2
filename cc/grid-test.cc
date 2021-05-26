@@ -4,9 +4,12 @@
 #include "acmacs-base/fmt.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/to-json.hh"
+#include "acmacs-base/range-v3.hh"
+#include "acmacs-base/read-file.hh"
 #include "acmacs-base/data-formatter.hh"
 #include "acmacs-chart-2/grid-test.hh"
 #include "acmacs-chart-2/name-format.hh"
+#include "acmacs-chart-2/log.hh"
 
 // ----------------------------------------------------------------------
 
@@ -163,7 +166,7 @@ acmacs::chart::GridTest::Results acmacs::chart::GridTest::test_all([[maybe_unuse
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::ProjectionModifyP acmacs::chart::GridTest::make_new_projection_and_relax(const Results& results, bool verbose)
+acmacs::chart::ProjectionModifyP acmacs::chart::GridTest::make_new_projection_and_relax(const Results& results, verbose verb)
 {
     auto projection = chart_.projections_modify().new_by_cloning(*projection_);
     auto layout = projection->layout_modified();
@@ -173,8 +176,7 @@ acmacs::chart::ProjectionModifyP acmacs::chart::GridTest::make_new_projection_an
         }
     }
     const auto status = acmacs::chart::optimize(optimization_method_, stress_, layout->data(), layout->data() + layout->size(), acmacs::chart::optimization_precision::fine);
-    if (verbose)
-        std::cout << "stress: " << projection_->stress() << " --> " << status.final_stress << '\n';
+    AD_INFO(verb, "stress: {} --> {}", projection_->stress(), status.final_stress);
     return projection;
 
 } // acmacs::chart::GridTest::make_new_projection_and_relax
@@ -382,6 +384,42 @@ std::string acmacs::chart::GridTest::Results::export_to_layout_csv(const ChartMo
     return result;
 
 } // acmacs::chart::GridTest::Results::export_to_layout_csv
+
+// ----------------------------------------------------------------------
+
+std::pair<acmacs::chart::GridTest::Results, size_t> acmacs::chart::grid_test(ChartModify& chart, size_t projection_no, double grid_step, int threads, size_t relax_attempts, std::string_view export_filename, verbose verb)
+{
+    const Timeit ti_grid("grid test: ", verb == verbose::yes ? report_time::yes : report_time::no);
+    const size_t total_attempts = relax_attempts ? relax_attempts : 1;
+    size_t grid_projections = 0;
+    GridTest::Results results;
+    for (size_t attempt = 0; attempt < total_attempts; ++attempt) {
+        GridTest test{chart, projection_no, grid_step};
+        results = test.test_all(threads);
+        AD_INFO(verb, "{}", results.report());
+        for (const auto& result : results) {
+            if (result)
+                AD_LOG(acmacs::log::report_stresses, "{}", result.report(chart));
+        }
+        if (relax_attempts) {
+            auto projection = test.make_new_projection_and_relax(results, verb);
+            ++grid_projections;
+            projection->comment("grid-test-" + acmacs::to_string(attempt));
+            projection_no = projection->projection_no();
+            if (ranges::all_of(results, [](const auto& result) { return result.diagnosis != acmacs::chart::GridTest::Result::trapped; }))
+                break;
+            // if (std::all_of(results.begin(), results.end(), [](const auto& result) { return result.diagnosis != acmacs::chart::GridTest::Result::trapped; }))
+            //     break;
+        }
+    }
+    chart.projections_modify().sort();
+
+    if (!export_filename.empty())
+        acmacs::file::write(export_filename, results.export_to_json(chart));
+
+    return {results, grid_projections};
+
+} // acmacs::chart::grid_test
 
 // ----------------------------------------------------------------------
 

@@ -71,7 +71,7 @@ namespace acmacs::chart
         Result test(size_t point_no);
         Results test(const std::vector<size_t>& points, int threads = 0);
         Results test_all(int threads = 0);
-        acmacs::chart::ProjectionModifyP make_new_projection_and_relax(const Results& results, bool verbose);
+        acmacs::chart::ProjectionModifyP make_new_projection_and_relax(const Results& results, verbose verb);
 
       private:
         ChartModify& chart_;
@@ -90,6 +90,11 @@ namespace acmacs::chart
         acmacs::Area area_for(const Stress::TableDistancesForPoint& table_distances_for_point) const;
 
     }; // class GridTest::chart
+
+    // if relax_attempts > 1, move trapped points and relax, test again, repeat while there are trapped points
+    // if export_filename is not empty, exports in the json format
+    // returns last grid test result and the number of grid test projections
+    std::pair<GridTest::Results, size_t> grid_test(ChartModify& chart, size_t projection_no, double grid_step, int threads, size_t relax_attempts, std::string_view export_filename, verbose verb = verbose::yes);
 
 } // namespace acmacs
 

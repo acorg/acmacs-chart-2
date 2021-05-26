@@ -22,6 +22,7 @@ struct Options : public argv
     option<size_t> number_of_dimensions{*this, 'd', dflt{2UL}, desc{"number of dimensions"}};
     option<str>    minimum_column_basis{*this, 'm', dflt{"none"}, desc{"minimum column basis"}};
     option<str>    reorient{*this, "reorient", dflt{""}, desc{"chart to re-orient resulting projections to"}};
+    option<str>    grid_json{*this, "grid-json", desc{"export grid test results into json"}};
     option<double> grid_step{*this, "step", dflt{0.1}};
     option<str>    method{*this, "method", dflt{"alglib-cg"}, desc{"method: alglib-lbfgs, alglib-cg, optim-bfgs, optim-differential-evolution"}};
     option<bool>   dimension_annealing{*this, "dimension-annealing"};
@@ -75,33 +76,9 @@ int main(int argc, char* const argv[])
             chart.projection_modify(0)->relax(options);
         }
 
-        size_t grid_projections = 0;
+        const size_t projection_no_to_test = 0, relax_attempts = 20;
+        const auto [grid_results, grid_projections] = acmacs::chart::grid_test(chart, projection_no_to_test, opt.grid_step, opt.threads, relax_attempts, opt.grid_json);
 
-        {
-            // grid test
-            const Timeit ti_grid(fmt::format("grid test: ", opt.number_of_optimizations), report_time::yes);
-            size_t projection_no_to_test = 0;
-            for (auto attempt = 1; attempt < 20; ++attempt) {
-                acmacs::chart::GridTest test(chart, projection_no_to_test, opt.grid_step);
-                const auto results = test.test_all(opt.threads);
-                fmt::print("{}\n", results.report());
-                if (acmacs::log::is_enabled(acmacs::log::report_stresses)) {
-                    for (const auto& entry : results) {
-                        if (entry)
-                            fmt::print("{}\n", entry.report(chart));
-                    }
-                }
-                auto projection = test.make_new_projection_and_relax(results, true);
-                ++grid_projections;
-                projection->comment("grid-test-" + acmacs::to_string(attempt));
-                projection_no_to_test = projection->projection_no();
-                // projections_to_reorient.push_back(projection_no_to_test);
-                if (std::all_of(results.begin(), results.end(), [](const auto& result) { return result.diagnosis != acmacs::chart::GridTest::Result::trapped; }))
-                    break;
-            }
-        }
-
-        projections.sort();
         if (const size_t keep_projections = opt.keep_projections; keep_projections > 0 && projections.size() > (keep_projections + grid_projections))
             projections.keep_just(keep_projections + grid_projections);
 

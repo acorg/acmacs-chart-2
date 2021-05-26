@@ -24,8 +24,9 @@ struct Options : public argv
     option<bool>   incremental{*this, "incremental", desc{"only randomize points having NaN coordinates"}};
     option<bool>   unmovable_non_nan_points{*this, "unmovable-non-nan-points", desc{"requires --incremental, keep ag/sr of primary chart frozen (unmovable)"}};
     option<bool>   grid{*this, "grid", desc{"perform grid test after optimization until no trapped points left"}};
+    option<str>    grid_json{*this, "grid-json", desc{"export grid test results into json"}};
     option<double> grid_step{*this, "grid-step", dflt{0.1}};
-    option<bool>   export_pre_grid{*this, "export-pre-grid", desc{"export chart before running grid test (to help debugging crashes)"}};
+    // option<bool>   export_pre_grid{*this, "export-pre-grid", desc{"export chart before running grid test (to help debugging crashes)"}};
     option<bool>   no_dimension_annealing{*this, "no-dimension-annealing"};
     option<bool>   dimension_annealing{*this, "dimension-annealing"};
     option<str>    method{*this, "method", dflt{"alglib-cg"}, desc{"method: alglib-lbfgs, alglib-cg, optim-bfgs, optim-differential-evolution"}};
@@ -91,31 +92,9 @@ int main(int argc, char* const argv[])
                 chart.relax(acmacs::chart::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions},
                             dimension_annealing, options, disconnected);
 
-            // ---- grid test ----
             if (opt.grid) {
-                projections.sort();
-                size_t grid_projections = 0;
-                size_t projection_no_to_test = 0;
-                for (auto attempt = 1; attempt < 20; ++attempt) {
-                    if (opt.export_pre_grid && opt.output_chart.has_value())
-                        acmacs::chart::export_factory(chart, fmt::format("{}.before-grid-{}.ace", opt.output_chart->substr(0, opt.output_chart->size() - 4), attempt), opt.program_name());
-                    acmacs::chart::GridTest test(chart, projection_no_to_test, opt.grid_step);
-                    const auto results = test.test_all(opt.threads);
-                    fmt::print("{}\n", results.report());
-                    if (acmacs::log::is_enabled(acmacs::log::report_stresses)) {
-                        for (const auto& entry : results) {
-                            if (entry)
-                                fmt::print("{}\n", entry.report(chart));
-                        }
-                    }
-                    auto projection = test.make_new_projection_and_relax(results, true);
-                    ++grid_projections;
-                    projection->comment("grid-test-" + acmacs::to_string(attempt));
-                    projection_no_to_test = projection->projection_no();
-                    // projections_to_reorient.push_back(projection_no_to_test);
-                    if (std::all_of(results.begin(), results.end(), [](const auto& result) { return result.diagnosis != acmacs::chart::GridTest::Result::trapped; }))
-                        break;
-                }
+                const size_t projection_no_to_test = 0, relax_attempts = 20;
+                const auto [grid_results, grid_projections] = acmacs::chart::grid_test(chart, projection_no_to_test, opt.grid_step, opt.threads, relax_attempts, opt.grid_json);
             }
         }
 

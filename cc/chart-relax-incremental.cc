@@ -18,6 +18,9 @@ struct Options : public argv
     option<bool>   unmovable_non_nan_points{*this, "unmovable-non-nan-points", desc{"keep ag/sr of primary chart frozen (unmovable)"}};
     option<bool>   remove_source_projection{*this, "remove-source-projection"};
     option<bool>   rough{*this, "rough"};
+    option<bool>   grid{*this, "grid-test"};
+    option<str>    grid_json{*this, "grid-json", desc{"export grid test results into json"}};
+    option<double> grid_step{*this, "grid-step", dflt{0.1}};
     option<str>    method{*this, "method", dflt{"alglib-cg"}, desc{"method: alglib-lbfgs, alglib-cg, optim-bfgs, optim-differential-evolution"}};
     option<double> randomization_diameter_multiplier{*this, "md", dflt{2.0}, desc{"randomization diameter multiplier"}};
     option<size_t> keep_projections{*this, "keep-projections", dflt{0ul}, desc{"number of projections to keep, 0 - keep all"}};
