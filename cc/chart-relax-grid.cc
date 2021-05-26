@@ -78,6 +78,7 @@ int main(int argc, char* const argv[])
 
         const size_t projection_no_to_test = 0, relax_attempts = 20;
         const auto [grid_results, grid_projections] = acmacs::chart::grid_test(chart, projection_no_to_test, opt.grid_step, opt.threads, relax_attempts, opt.grid_json);
+        AD_PRINT(""); // new line after grid test report
 
         if (const size_t keep_projections = opt.keep_projections; keep_projections > 0 && projections.size() > (keep_projections + grid_projections))
             projections.keep_just(keep_projections + grid_projections);

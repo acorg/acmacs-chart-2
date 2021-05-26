@@ -418,8 +418,6 @@ std::pair<acmacs::chart::GridTest::Results, size_t> acmacs::chart::grid_test(Cha
     if (!export_filename.empty())
         acmacs::file::write(export_filename, results.export_to_json(chart, grid_projections));
 
-    AD_PRINT(verb == verbose::yes, "\n");
-
     return {results, grid_projections};
 
 } // acmacs::chart::grid_test

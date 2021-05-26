@@ -55,6 +55,7 @@ int main(int argc, char* const argv[])
             acmacs::chart::GridTest::Results grid_results;
             const size_t projection_no_to_test{0}, relax_attempts{20};
             std::tie(grid_results, grid_projections) = acmacs::chart::grid_test(chart, projection_no_to_test, opt.grid_step, opt.threads, relax_attempts, opt.grid_json);
+            AD_PRINT(""); // new line after grid test report
         }
 
         auto& projections = chart.projections_modify();
