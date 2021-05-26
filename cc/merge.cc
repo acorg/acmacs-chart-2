@@ -503,7 +503,7 @@ std::string acmacs::chart::MergeReport::titer_merge_report(const ChartModify& ch
     const auto max_field = std::max(static_cast<int>(std::max(max_full_name(*chart.antigens()), chart.info()->max_source_name())), 20);
 
     fmt::memory_buffer output;
-    fmt::format_to(output, "Acmacs merge table and diagnositics (in Derek's style)\n\n{}\n{}\n\n", chart.description(), chart.show_table());
+    fmt::format_to(output, "Acmacs merge table and diagnositics\n\n{}\n{}\n\n", chart.description(), chart.show_table());
 
     fmt::format_to(output, "                                   DIAGNOSTICS\n         (common titers, and how they merged, and the individual tables)\n\n");
     fmt::format_to(output, "{}\n", titer_merge_diagnostics(chart, PointIndexList{filled_with_indexes(chart.antigens()->size())}, PointIndexList{filled_with_indexes(chart.sera()->size())}, max_field));
@@ -531,7 +531,7 @@ std::string acmacs::chart::MergeReport::titer_merge_report_common_only(const Cha
     const auto max_field = std::max(static_cast<int>(std::max(max_full_name(*chart.antigens()), chart.info()->max_source_name())), 20);
 
     fmt::memory_buffer output;
-    fmt::format_to(output, "Acmacs merge diagnositics for common antigens and sera (in Derek's style)\n\n{}\n\n", chart.description());
+    fmt::format_to(output, "Acmacs merge diagnositics for common antigens and sera\n\n{}\n\n", chart.description());
 
     if (common.common_antigens() && common.common_sera()) {
         fmt::format_to(output, "                                   DIAGNOSTICS\n         (common titers, and how they merged, and the individual tables)\n\n");
