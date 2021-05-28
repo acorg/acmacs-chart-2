@@ -11,6 +11,8 @@ namespace acmacs::chart
 {
     namespace detail
     {
+        template <typename AgSr, typename Chrt> struct SelectedIterator;
+
         template <typename AgSr, typename Chrt> struct Selected
         {
             using AntigensSeraType = AgSr;
@@ -56,9 +58,33 @@ namespace acmacs::chart
                                           ranges::to_vector};
             }
 
+            SelectedIterator<AgSr, Chrt> begin();
+            SelectedIterator<AgSr, Chrt> end();
+
             std::shared_ptr<Chrt> chart;
             PointIndexList indexes;
         };
+
+        template <typename AgSr, typename Chrt> struct SelectedIterator
+        {
+          public:
+            SelectedIterator(Selected<AgSr, Chrt>& parent, typename PointIndexList::const_iterator current) : parent_{parent}, current_{current} {}
+
+            SelectedIterator& operator++()
+            {
+                ++current_;
+                return *this;
+            }
+
+            auto operator*() { return parent_[current_ - parent_.indexes.begin()]; }
+
+          private:
+            Selected<AgSr, Chrt> parent_;
+            PointIndexList::const_iterator current_;
+        };
+
+        template <typename AgSr, typename Chrt> SelectedIterator<AgSr, Chrt> Selected<AgSr, Chrt>::begin() { return SelectedIterator<AgSr, Chrt>{*this, indexes.begin()}; }
+        template <typename AgSr, typename Chrt> SelectedIterator<AgSr, Chrt> Selected<AgSr, Chrt>::end() { return SelectedIterator<AgSr, Chrt>{*this, indexes.end()}; }
 
         template <> inline std::shared_ptr<Antigens> Selected<Antigens, Chart>::ag_sr() const { return chart->antigens(); }
         template <> inline std::shared_ptr<AntigensModify> Selected<AntigensModify, ChartModify>::ag_sr() const { return chart->antigens_modify_ptr(); }
