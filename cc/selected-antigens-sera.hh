@@ -76,7 +76,9 @@ namespace acmacs::chart
                 return *this;
             }
 
-            auto operator*() { return parent_[current_ - parent_.indexes.begin()]; }
+            auto operator*() { return parent_[static_cast<size_t>(current_ - parent_.indexes.begin())]; }
+
+            bool operator==(const SelectedIterator& rhs) const { return current_ == rhs.current_; }
 
           private:
             Selected<AgSr, Chrt> parent_;
