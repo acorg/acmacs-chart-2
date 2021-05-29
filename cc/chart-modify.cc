@@ -416,7 +416,7 @@ void ChartModify::relax_incremental(size_t source_projection_no, number_of_optim
         return result;
     };
     const auto points_with_nan_coordinates = make_points_with_nan_coordinates();
-    // fmt::print("INFO: about to randomize coordinates of {} points\n", points_with_nan_coordinates.size());
+    // AD_INFO("about to randomize coordinates of {} points", points_with_nan_coordinates.size());
 
     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
     std::transform(projections.begin(), projections.end(), projections.begin(), [&stress, &source_projection, this](const auto&) {
@@ -536,7 +536,7 @@ SerumModifyP ChartModify::insert_serum(size_t before)
     projections_modify().insert_serum(before, number_of_antigens());
     plot_spec_modify().insert_serum(before);
     if (auto fcb = forced_column_bases_modify(MinimumColumnBasis{}); fcb) {
-        fmt::print(stderr, "WARNING: inserting serum in the table having forced column bases, please set column basis for that serum\n");
+        AD_WARNING("inserting serum in the table having forced column bases, please set column basis for that serum");
         fcb->insert(before, 7.0); // all titers for the new serum are dont-care, there is no real column basis, use 1280 just to have something
     }
     return result;
@@ -688,16 +688,18 @@ TableDate InfoModify::date(Compute aCompute) const
 // ----------------------------------------------------------------------
 
 AntigenModify::AntigenModify(const Antigen& main)
-    :
-    name_{main.name()},
-    date_{main.date()},
-    passage_{main.passage()},
-    lineage_{main.lineage()},
-    reassortant_{main.reassortant()},
-    annotations_{main.annotations()},
-    lab_ids_{main.lab_ids()},
-    clades_{main.clades()},
-    reference_{main.reference()}
+    : name_{main.name()},               //
+      date_{main.date()},               //
+      passage_{main.passage()},         //
+      lineage_{main.lineage()},         //
+      reassortant_{main.reassortant()}, //
+      annotations_{main.annotations()}, //
+      lab_ids_{main.lab_ids()},         //
+      clades_{main.clades()},           //
+      continent_{main.continent()},     //
+      reference_{main.reference()},     //
+      sequence_aa_{main.sequence_aa()}, //
+      sequence_nuc_{main.sequence_nuc()}
 {
 } // AntigenModify::AntigenModify
 
@@ -713,7 +715,10 @@ void AntigenModify::replace_with(const Antigen& main)
     annotations_ = main.annotations();
     lab_ids_ = main.lab_ids();
     clades_ = main.clades();
+    continent_ = main.continent();
     reference_ = main.reference();
+    sequence_aa_ = main.sequence_aa();
+    sequence_nuc_ = main.sequence_nuc();
 
 } // AntigenModify::replace_with
 
@@ -725,14 +730,14 @@ void AntigenModify::update_with(const Antigen& main)
         date_ = main.date();
     }
     else if (!main.date().empty() && date_ != main.date()) {
-        fmt::print(stderr, "WARNING: merged antigen dates {} vs. {}\n", *date_, *main.date());
+        AD_WARNING("merged antigen dates {} vs. {}", *date_, *main.date());
     }
 
     if (lineage_ == BLineage::Unknown) {
         lineage_ = main.lineage();
     }
     else if (main.lineage() != BLineage::Unknown && lineage_ != main.lineage()) {
-        fmt::print(stderr, "WARNING: merged antigen lineages {} vs. {}\n", lineage_, main.lineage());
+        AD_WARNING("merged antigen lineages {} vs. {}", lineage_, main.lineage());
     }
     lab_ids_.merge_in(main.lab_ids());
     clades_.merge_in(main.clades());
@@ -751,10 +756,10 @@ void AntigenModify::set_continent()
                 continent(locdb.continent(::virus_name::location(name())));
             }
             catch (std::exception& err) {
-                fmt::print(stderr, "WARNING: cannot figure out continent for \"{}\": {}\n", *name(), err);
+                AD_WARNING("cannot figure out continent for \"{}\": {}", *name(), err);
             }
             catch (...) {
-                fmt::print(stderr, "WARNING: cannot figure out continent for \"{}\": unknown exception\n", *name());
+                AD_WARNING("cannot figure out continent for \"{}\": unknown exception", *name());
             }
         }
     }
@@ -764,15 +769,17 @@ void AntigenModify::set_continent()
 // ----------------------------------------------------------------------
 
 SerumModify::SerumModify(const Serum& main)
-    :
-    name_{main.name()},
-    passage_{main.passage()},
-    lineage_{main.lineage()},
-    reassortant_{main.reassortant()},
-    annotations_{main.annotations()},
-    serum_id_{main.serum_id()},
-    serum_species_{main.serum_species()},
-    homologous_antigens_{main.homologous_antigens()}
+    : name_{main.name()},                               //
+      passage_{main.passage()},                         //
+      lineage_{main.lineage()},                         //
+      reassortant_{main.reassortant()},                 //
+      annotations_{main.annotations()},                 //
+      clades_{main.clades()},                           //
+      serum_id_{main.serum_id()},                       //
+      serum_species_{main.serum_species()},             //
+      homologous_antigens_{main.homologous_antigens()}, //
+      sequence_aa_{main.sequence_aa()},                 //
+      sequence_nuc_{main.sequence_nuc()}
 {
 } // SerumModify::SerumModify
 
@@ -785,9 +792,12 @@ void SerumModify::replace_with(const Serum& main)
     lineage_ = main.lineage();
     reassortant_ = main.reassortant();
     annotations_ = main.annotations();
+    clades_ = main.clades();
     serum_id_ = main.serum_id();
     serum_species_ = main.serum_species();
     // homologous_antigens_ = main.homologous_antigens();
+    sequence_aa_ = main.sequence_aa();
+    sequence_nuc_ = main.sequence_nuc();
 
 } // SerumModify::replace_with
 
@@ -799,14 +809,14 @@ void SerumModify::update_with(const Serum& main)
         lineage_ = main.lineage();
     }
     else if (main.lineage() != BLineage::Unknown && lineage_ != main.lineage()) {
-        std::cerr << fmt::format("WARNING: merged serum lineages {} vs. {}\n", lineage_, main.lineage());
+        AD_WARNING("merged serum lineages {} vs. {}", lineage_, main.lineage());
     }
 
     if (serum_species_.empty()) {
         serum_species_ = main.serum_species();
     }
     else if (!main.serum_species().empty() && serum_species_ != main.serum_species()) {
-        std::cerr << fmt::format("WARNING: merged serum serum_speciess {} vs. {}\n", *serum_species_, *main.serum_species());
+        AD_WARNING("merged serum serum_speciess {} vs. {}", *serum_species_, *main.serum_species());
     }
 
 } // SerumModify::update_with
@@ -1056,7 +1066,7 @@ std::unique_ptr<TitersModify::titer_merge_report> TitersModify::set_from_layers(
     auto titer_merge_report = set_titers_from_layers(more_than_thresholded::to_dont_care);
     if (column_bases) {
         chart.forced_column_bases_modify(*column_bases);
-        fmt::print("INFO: forced column bases: {}\n", *chart.forced_column_bases(no_column_bases));
+        AD_INFO("forced column bases: {}", *chart.forced_column_bases(no_column_bases));
     }
     return titer_merge_report;
 

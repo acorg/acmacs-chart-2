@@ -238,7 +238,7 @@ namespace acmacs::chart
         Clades clades_;
         Continent continent_;
         bool reference_ = false;
-        std::string sequence_aa_ {};
+        std::string sequence_aa_{};
         std::string sequence_nuc_{};
 
     }; // class AntigenModify
