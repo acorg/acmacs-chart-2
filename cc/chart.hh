@@ -960,6 +960,9 @@ namespace acmacs::chart
             }
         }
 
+        // check if at least one antigen has a sequences (sequence_aa or sequence_nuc)
+        virtual bool has_sequences() const = 0;
+
       private:
         mutable std::map<MinimumColumnBasis, std::shared_ptr<ColumnBases>> computed_column_bases_; // cache, computing might be slow for big charts
 

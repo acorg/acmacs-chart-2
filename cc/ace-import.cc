@@ -164,6 +164,14 @@ bool AceChart::is_merge() const
 
 // ----------------------------------------------------------------------
 
+bool AceChart::has_sequences() const
+{
+    return !rjson::find_if(data_.get("c", "a"), [](const auto& antigen) { return !antigen["A"].empty() || !antigen["B"].empty(); }).is_null();
+
+} // AceChart::has_sequences
+
+// ----------------------------------------------------------------------
+
 std::string AceInfo::name(Compute aCompute) const
 {
     std::string result{data_["N"].get_or_default("")};

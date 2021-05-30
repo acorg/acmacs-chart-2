@@ -21,6 +21,7 @@ namespace acmacs::chart
         ProjectionsP projections() const override;
         PlotSpecP plot_spec() const override;
         bool is_merge() const override { return false; }
+        bool has_sequences() const override { return false; }
 
         size_t number_of_antigens() const override;
         size_t number_of_sera() const override;

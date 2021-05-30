@@ -275,6 +275,15 @@ void ChartModify::report_disconnected_unmovable(const DisconnectedPoints& discon
 
 // ----------------------------------------------------------------------
 
+bool ChartModify::has_sequences() const
+{
+    auto ags = antigens();
+    return std::any_of(ags->begin(), ags->end(), [](const auto& ag) { return !ag->sequence_aa().empty() || !ag->sequence_nuc().empty(); });
+
+} // ChartModify::has_sequences
+
+// ----------------------------------------------------------------------
+
 std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, optimization_options options, LayoutRandomizer::seed_t seed, const DisconnectedPoints& disconnect_points)
 {
     const auto start = std::chrono::high_resolution_clock::now();

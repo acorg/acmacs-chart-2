@@ -55,6 +55,7 @@ namespace acmacs::chart
         const rjson::value& extension_fields() const override;
 
         bool is_merge() const override { return main_ ? main_->is_merge() : false; }
+        bool has_sequences() const override;
 
         InfoModify& info_modify();
         std::shared_ptr<AntigensModify> antigens_modify_ptr();

@@ -26,6 +26,7 @@ namespace acmacs::chart
         ProjectionsP projections() const override;
         PlotSpecP plot_spec() const override;
         bool is_merge() const override;
+        bool has_sequences() const override { return false; }
 
         void verify_data(Verify aVerify) const;
 
