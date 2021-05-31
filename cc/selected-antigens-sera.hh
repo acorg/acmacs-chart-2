@@ -39,8 +39,10 @@ namespace acmacs::chart
             // substitutions in format: {no0} {no1} {AG_SR} {name} {full_name}
             std::string report(std::string_view format = "{no0},") const
             {
-                return acmacs::string::join(acmacs::string::join_concat, std::begin(indexes), std::end(indexes),
-                                            [format, this](const auto no0) { return format_antigen_serum<AgSr>(format, *chart, no0, collapse_spaces_t::yes); });
+                fmt::memory_buffer out;
+                for (const auto index : indexes)
+                    format_antigen_serum<AgSr>(out, format, *chart, index, collapse_spaces_t::yes);
+                return fmt::to_string(out);
             }
 
             void for_each(const std::function<void(size_t, std::shared_ptr<typename AgSr::AntigenSerumType>)>& modifier)

@@ -26,6 +26,16 @@ namespace acmacs::chart
             static_assert(std::is_same_v<AgSr, acmacs::chart::Sera>);
     }
 
+    template <typename AgSr> void format_antigen_serum(fmt::memory_buffer& out, std::string_view pattern, const acmacs::chart::Chart& chart, size_t no, collapse_spaces_t cs)
+    {
+        if constexpr (std::is_base_of_v<acmacs::chart::Antigens, AgSr>)
+            fmt::format_to(out, format_antigen(pattern, chart, no, cs));
+        else if constexpr (std::is_base_of_v<acmacs::chart::Sera, AgSr>)
+            fmt::format_to(out, format_serum(pattern, chart, no, cs));
+        else
+            static_assert(std::is_same_v<AgSr, acmacs::chart::Sera>);
+    }
+
     std::string format_point(std::string_view pattern, const acmacs::chart::Chart& chart, size_t point_no, collapse_spaces_t cs);
 
     std::string format_help();
