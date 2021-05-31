@@ -60,6 +60,8 @@ namespace acmacs::chart
                                           ranges::to_vector};
             }
 
+            void exclude(const Selected<AgSr, Chrt>& to_exclude) { indexes.remove(ReverseSortedIndexes{*to_exclude.indexes}); }
+
             SelectedIterator<AgSr, Chrt> begin();
             SelectedIterator<AgSr, Chrt> end();
 
