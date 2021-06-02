@@ -45,6 +45,18 @@ namespace acmacs::chart
                 return fmt::to_string(out);
             }
 
+            // substitutions in format: {no0} {no1} {AG_SR} {name} {full_name}
+            std::vector<std::string> report_list(std::string_view format = "{name}") const
+            {
+                std::vector<std::string> result(indexes.size());
+                std::transform(std::begin(indexes), std::end(indexes), std::begin(result), [this, format](auto index) {
+                    fmt::memory_buffer out;
+                    format_antigen_serum<AgSr>(out, format, *chart, index, collapse_spaces_t::yes);
+                    return fmt::to_string(out);
+                });
+                return result;
+            }
+
             void for_each(const std::function<void(size_t, std::shared_ptr<typename AgSr::AntigenSerumType>)>& modifier)
             {
                 for (const auto index : indexes)
