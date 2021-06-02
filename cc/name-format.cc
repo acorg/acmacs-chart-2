@@ -1,6 +1,7 @@
 #include "acmacs-base/string-join.hh"
 #include "acmacs-base/string-compare.hh"
 #include "acmacs-base/regex.hh"
+#include "acmacs-base/named-type.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 
@@ -97,6 +98,57 @@ std::string acmacs::chart::detail::AntigenSerum::format(std::string_view pattern
 
 // ----------------------------------------------------------------------
 
+// from seqdb sequence.hh
+struct sequence_aligned_t : public acmacs::named_string_t<struct seqdb_sequence_aligned_tag_t>
+{
+    using base = named_string_t<struct seqdb_sequence_aligned_tag_t>;
+    using base::named_string_t;
+    char at(size_t pos0) const noexcept { return pos0 < size() ? operator[](pos0) : ' '; }
+    size_t size() const noexcept { return base::size(); }
+};
+
+// {} - whole sequence
+// {:193} - at 193
+// {:193:6} - at 193-198 (inclusive)
+template <> struct fmt::formatter<sequence_aligned_t>
+{
+    template <typename ParseContext> auto parse(ParseContext& ctx)
+    {
+        auto it = ctx.begin();
+        const auto get = [&it, &ctx]() -> size_t {
+            if (it != ctx.end() && *it == ':')
+                ++it;
+            if (it == ctx.end() || *it == '}')
+                return 0;
+            char* end;
+            const auto value = std::strtoul(&*it, &end, 10);
+            it = std::next(it, end - &*it);
+            return value;
+        };
+
+        first_ = get();
+        len_ = get();
+        while (it != ctx.end() && *it != '}')
+            ++it;
+        return it;
+    }
+
+    template <typename Seq, typename FormatContext> auto format(const Seq& seq, FormatContext& ctx)
+    {
+        if (first_ == 0)
+            return format_to(ctx.out(), "{}", *seq);
+        else
+            return format_to(ctx.out(), "{}", seq->substr(first_ - 1, len_ ? len_ : 1));
+    }
+
+  private:
+    size_t first_{0};
+    size_t len_{0};
+};
+
+
+// ----------------------------------------------------------------------
+
 #define FKF(key, call) std::pair{key, [](fmt::memory_buffer& output, std::string_view format, [[maybe_unused]] const auto& ag_sr) { fmt::format_to(output, format, fmt::arg(key, call)); }}
 
 #pragma GCC diagnostic push
@@ -129,6 +181,8 @@ const std::tuple format_subst_ag_sr{
     FKF("year", year4(ag_sr)),                                                                                                                                    //
     FKF("year2", year2(ag_sr)),                                                                                                                                   //
     FKF("year4", year4(ag_sr)),                                                                                                                                   //
+    FKF("aa", sequence_aligned_t{ag_sr.sequence_aa()}),                                                                                                           //
+    FKF("nuc", sequence_aligned_t{ag_sr.sequence_nuc()}),                                                                                                         //
 };
 
 const std::tuple format_subst_antigen{
@@ -334,6 +388,10 @@ constexpr const std::string_view pattern = R"(
 {{latitude}}                               : {latitude}
 {{longitude}}                              : {longitude}
 {{sera_with_titrations}}                   : {sera_with_titrations}
+{{aa}}                                     : {aa}
+{{aa:193}}                                 : {aa:193}
+{{aa:193:6}}                               : {aa:193:6}
+{{nuc}}                                    : {nuc}
 )";
 
 std::string acmacs::chart::format_help()
