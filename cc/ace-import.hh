@@ -174,10 +174,20 @@ namespace acmacs::chart
         AceColumnBases(const rjson::value& data) : data_{data} {}
         AceColumnBases(const rjson::value& data, MinimumColumnBasis minimum_column_basis) : data_{data}, minimum_column_basis_{minimum_column_basis} {}
 
-        double column_basis(size_t aSerumNo) const override { return minimum_column_basis_.apply(data_[aSerumNo].to<double>()); }
+        double column_basis(size_t aSerumNo) const override
+        {
+            try {
+                return minimum_column_basis_.apply(data_[aSerumNo].to<double>());
+            }
+            catch (std::exception& err) {
+                AD_ERROR("cannot read column bases (serum no: {}): {}\ndata: {}", aSerumNo, err, data_);
+                throw;
+            }
+        }
+
         size_t size() const override { return data_.size(); }
 
-     private:
+      private:
         const rjson::value& data_;
         MinimumColumnBasis minimum_column_basis_;
 

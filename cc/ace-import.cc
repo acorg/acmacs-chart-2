@@ -296,8 +296,16 @@ void AceAntigens::make_name_index() const
 
 ColumnBasesP AceProjection::forced_column_bases() const
 {
-    if (const auto& cb = data()["C"]; !cb.empty())
-        return std::make_shared<AceColumnBases>(cb);
+    if (const auto& cb = data()["C"]; !cb.empty()) {
+        try {
+            AD_DEBUG("forced_column_bases 0");
+            return std::make_shared<AceColumnBases>(cb);
+        }
+        catch (std::exception& err) {
+            AD_ERROR("cannot read column bases: {}\ndata: {}", err, cb);
+            throw;
+        }
+    }
     return nullptr;
 
 } // AceProjection::forced_column_bases
