@@ -166,8 +166,12 @@ std::string convert_to_json(std::string_view aData)
               break;
           case ')': // lab_id is set of tuples
               if (aData[input + 1] == '}') {
-                  result.append(1, ']').append(1, ']');
+                  result.append("]]");
                   ++input;
+              }
+              else if (aData.substr(input + 1, 3) == ", (") {
+                  result.append("], [");
+                  input += 3;
               }
               else
                   result.append(1, aData[input]);
