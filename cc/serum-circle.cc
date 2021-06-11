@@ -74,19 +74,19 @@ const char* acmacs::chart::detail::SerumCirclePerAntigen::report_reason() const
 
 class TiterDistance
 {
- public:
-    inline TiterDistance(acmacs::chart::Titer aTiter, double aColumnBase, double aDistance)
-        : titer(aTiter), similarity(aTiter.is_dont_care() ? 0.0 : aTiter.logged_for_column_bases()),
-          final_similarity(std::min(aColumnBase, similarity)), distance(aDistance) {}
-    inline TiterDistance() : similarity(0), final_similarity(0), distance(std::numeric_limits<double>::quiet_NaN()) {}
-    inline operator bool() const { return !titer.is_dont_care() && !std::isnan(distance); }
+  public:
+    TiterDistance(acmacs::chart::Titer aTiter, double aColumnBase, double aDistance)
+        : titer(aTiter), similarity(aTiter.is_dont_care() ? 0.0 : aTiter.logged_for_column_bases()), final_similarity(std::min(aColumnBase, similarity)), distance(aDistance)
+    {
+    }
+    TiterDistance() : similarity(0), final_similarity(0), distance(std::numeric_limits<double>::quiet_NaN()) {}
+    operator bool() const { return !titer.is_dont_care() && !std::isnan(distance); }
 
     acmacs::chart::Titer titer;
     double similarity;
     double final_similarity;
     double distance;
 };
-
 
 // ----------------------------------------------------------------------
 

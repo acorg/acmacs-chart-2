@@ -31,8 +31,8 @@ class TiterMerger
 
     enum MoreThanHandling { MoreThanIgnore, MoreThanAdjust };
 
-    inline TiterMerger() = default;
-    inline TiterMerger(std::vector<acmacs::chart::Titer>&& titers_for_layers, acmacs::chart::Titer&& merged)
+    TiterMerger() = default;
+    TiterMerger(std::vector<acmacs::chart::Titer>&& titers_for_layers, acmacs::chart::Titer&& merged)
         : mTiters(std::move(titers_for_layers)), mMerged(std::move(merged)) {}
 
     Type merge();

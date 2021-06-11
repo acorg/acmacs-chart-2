@@ -83,6 +83,9 @@ namespace acmacs::chart
     Stress stress_factory(const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
     Stress stress_factory(const Chart& chart, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular = dodgy_titer_is_regular::no);
 
+    // avidity test support
+    Stress stress_factory(const Projection& projection, size_t antigen_no, double logged_avidity_adjust, multiply_antigen_titer_until_column_adjust mult);
+
     TableDistances table_distances(const acmacs::chart::Chart& chart, MinimumColumnBasis minimum_column_basis, dodgy_titer_is_regular a_dodgy_titer_is_regular = dodgy_titer_is_regular::no);
 
     constexpr inline double SigmoidMutiplier() { return 10.0; }

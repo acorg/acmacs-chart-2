@@ -12,10 +12,10 @@ using namespace std::string_literals;
 
 class Tokenizer
 {
- public:
-    inline Tokenizer(std::string_view aData) : mData{aData} {}
+  public:
+    Tokenizer(std::string_view aData) : mData{aData} {}
 
-    enum Token : char { End = 'E', Symbol = '\'', Keyword = ':', Number = 'N', String = 'S', OpenList = '(', CloseList = ')'};
+    enum Token : char { End = 'E', Symbol = '\'', Keyword = ':', Number = 'N', String = 'S', OpenList = '(', CloseList = ')' };
 
     using Result = std::pair<Token, std::string_view>;
 
@@ -23,7 +23,7 @@ class Tokenizer
 
     static acmacs::lispmds::value to_value(Token token, std::string_view aText);
 
- private:
+  private:
     std::string_view mData;
     size_t mPos = 0;
 
@@ -34,7 +34,6 @@ class Tokenizer
     Result extract_symbol(Token result = Symbol);
 
 }; // class Tokenizer
-
 
 // ----------------------------------------------------------------------
 

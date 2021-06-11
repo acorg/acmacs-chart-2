@@ -22,16 +22,16 @@ namespace acmacs::lispmds
     class nil
     {
      public:
-        inline nil() = default;
+        nil() = default;
 
     }; // class nil
 
     class boolean
     {
      public:
-        inline boolean(bool aValue = false) : mValue{aValue} {}
+        boolean(bool aValue = false) : mValue{aValue} {}
 
-        inline operator bool() const { return mValue; }
+        operator bool() const { return mValue; }
 
      private:
         bool mValue;
@@ -41,8 +41,8 @@ namespace acmacs::lispmds
     class number
     {
      public:
-        inline number() = default;
-        inline number(std::string aValue) : mValue(aValue)
+        number() = default;
+        number(std::string aValue) : mValue(aValue)
             {
                 for (auto& c: mValue) {
                     switch (c) {
@@ -54,12 +54,12 @@ namespace acmacs::lispmds
                     }
                 }
             }
-        inline number(std::string_view aValue) : number(std::string{aValue}) {}
+        number(std::string_view aValue) : number(std::string{aValue}) {}
 
-        inline operator double() const { return std::stod(mValue); }
-        inline operator float() const { return std::stof(mValue); }
-        inline operator unsigned long() const { return std::stoul(mValue); }
-        inline operator long() const { return std::stol(mValue); }
+        operator double() const { return std::stod(mValue); }
+        operator float() const { return std::stof(mValue); }
+        operator unsigned long() const { return std::stoul(mValue); }
+        operator long() const { return std::stol(mValue); }
 
      private:
         std::string mValue;
@@ -91,31 +91,31 @@ namespace acmacs::lispmds
     class list
     {
      public:
-        inline list() = default;
+        list() = default;
 
         using iterator = decltype(std::declval<const std::vector<value>>().begin());
         using reverse_iterator = decltype(std::declval<const std::vector<value>>().rbegin());
-        inline iterator begin() const { return mContent.begin(); }
-        inline iterator end() const { return mContent.end(); }
-        inline iterator begin() { return mContent.begin(); }
-        inline iterator end() { return mContent.end(); }
-        inline reverse_iterator rbegin() const { return mContent.rbegin(); }
+        iterator begin() const { return mContent.begin(); }
+        iterator end() const { return mContent.end(); }
+        iterator begin() { return mContent.begin(); }
+        iterator end() { return mContent.end(); }
+        reverse_iterator rbegin() const { return mContent.rbegin(); }
 
-        inline value& append(value&& to_add)
+        value& append(value&& to_add)
             {
                 mContent.push_back(std::move(to_add));
                 return mContent.back();
             }
 
-        inline const value& operator[](size_t aIndex) const
+        const value& operator[](size_t aIndex) const
             {
                 return mContent.at(aIndex);
             }
 
         const value& operator[](std::string_view aKeyword) const;
 
-        inline size_t size() const { return mContent.size(); }
-        inline bool empty() const { return mContent.empty(); }
+        size_t size() const { return mContent.size(); }
+        bool empty() const { return mContent.empty(); }
 
      private:
         std::vector<value> mContent;

@@ -46,6 +46,20 @@ acmacs::chart::Stress acmacs::chart::stress_factory(const acmacs::chart::Project
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::Stress acmacs::chart::stress_factory(const Projection& projection, size_t antigen_no, double logged_avidity_adjust, multiply_antigen_titer_until_column_adjust mult)
+{
+    Stress stress(projection, mult);
+    stress.parameters().avidity_adjusts.set_logged(antigen_no, logged_avidity_adjust);
+    auto cb = projection.forced_column_bases();
+    if (!cb)
+        cb = projection.chart().column_bases(projection.minimum_column_basis());
+    projection.chart().titers()->update(stress.table_distances(), *cb, stress.parameters());
+    return stress;
+
+} // acmacs::chart::stress_factory
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::Stress acmacs::chart::stress_factory(const acmacs::chart::Chart& chart, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular)
 {
     Stress stress(number_of_dimensions, chart.number_of_points(), mult, a_dodgy_titer_is_regular);

@@ -699,7 +699,7 @@ namespace acmacs::chart
 
         explicit ProjectionModifyNew(const ProjectionModify& aSource, const Chart& chart)
             : ProjectionModify(aSource, chart), minimum_column_basis_(aSource.minimum_column_basis()), dodgy_titer_is_regular_(aSource.dodgy_titer_is_regular()),
-              stress_diff_to_stop_(aSource.stress_diff_to_stop())
+              stress_diff_to_stop_(aSource.stress_diff_to_stop()), avidity_adjusts_{aSource.avidity_adjusts()}
         {
             const auto& source_layout = *aSource.layout();
             new_layout(source_layout.number_of_points(), source_layout.number_of_dimensions());
@@ -727,12 +727,14 @@ namespace acmacs::chart
         DisconnectedPoints disconnected() const override { return get_disconnected(); }
         void connect(const PointIndexList& to_connect);
         UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const override { return get_unmovable_in_the_last_dimension(); }
-        AvidityAdjusts avidity_adjusts() const override { return {}; }
+        AvidityAdjusts avidity_adjusts() const override { return avidity_adjusts_; }
+        AvidityAdjusts& avidity_adjusts_modify() { return avidity_adjusts_; }
 
       private:
         MinimumColumnBasis minimum_column_basis_;
         enum dodgy_titer_is_regular dodgy_titer_is_regular_ = dodgy_titer_is_regular::no;
         double stress_diff_to_stop_{0};
+        AvidityAdjusts avidity_adjusts_;
 
     }; // class ProjectionModifyNew
 
