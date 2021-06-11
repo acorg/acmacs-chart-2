@@ -54,6 +54,7 @@ int main(int argc, char* const argv[])
         using namespace acmacs::chart::avidity;
         const auto results = test(chart, opt.projection, Settings{.step = opt.adjust_step, .min_adjust = opt.min_adjust, .max_adjust = opt.max_adjust},
              optimization_options{optimization_method_from_string(opt.method), opt.rough ? optimization_precision::rough : optimization_precision::fine});
+        AD_PRINT("{}", results);
 
         // auto projection = chart.projection_modify(opt.projection);
         // // const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));

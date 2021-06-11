@@ -54,7 +54,7 @@ acmacs::chart::avidity::PerAdjust acmacs::chart::avidity::test(const acmacs::cha
     auto layout = projection.layout_modified();
     auto stress = stress_factory(projection, antigen_no, logged_adjust, options.mult);
     const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
-    AD_DEBUG("AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
+    // AD_DEBUG("AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
 
     PerAdjust result{.logged_adjust = logged_adjust,
                      .angle_test_antigen = 0.0, // todo

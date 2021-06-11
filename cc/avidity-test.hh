@@ -69,6 +69,40 @@ namespace acmacs::chart
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------
+
+template <> struct fmt::formatter<acmacs::chart::avidity::PerAdjust> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const acmacs::chart::avidity::PerAdjust& per_adjust, FormatCtx& ctx)
+    {
+        return format_to(ctx.out(), "{:.1f} dist:{:7.4f} diff:{:8.4f}\n", per_adjust.logged_adjust, per_adjust.distance_test_antigen, per_adjust.stress_diff);
+    }
+};
+
+template <> struct fmt::formatter<acmacs::chart::avidity::Result> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const acmacs::chart::avidity::Result& result, FormatCtx& ctx)
+    {
+        format_to(ctx.out(), "AG {}\n", result.antigen_no);
+        if (const auto found = std::find_if(std::begin(result.adjusts), std::end(result.adjusts), [best = result.best_logged_adjust](const auto& en) {
+            return float_equal(best, en.logged_adjust); }); found != std::end(result.adjusts))
+            format_to(ctx.out(), "    {}\n", *found);
+        else
+            format_to(ctx.out(), "    *no best*\n");
+        for (const auto& en : result.adjusts)
+            format_to(ctx.out(), "        {}\n", en);
+        return ctx.out();
+    }
+};
+
+template <> struct fmt::formatter<acmacs::chart::avidity::Results> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const acmacs::chart::avidity::Results& results, FormatCtx& ctx)
+    {
+        for (const auto& result : results.results)
+            format_to(ctx.out(), "{}\n\n", result);
+        return ctx.out();
+    }
+};
+
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
