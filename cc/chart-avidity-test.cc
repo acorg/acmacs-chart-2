@@ -30,8 +30,6 @@ struct Options : public argv
     // argument<str>  output_chart{*this, arg_name{"output-chart"}};
 };
 
-// static void avidity_test(const acmacs::chart::ChartModify& chart, const acmacs::chart::ProjectionModify& original_projection, size_t antigen_no, double logged_adjust, const acmacs::chart::optimization_options& opt);
-
 int main(int argc, char* const argv[])
 {
     using namespace std::string_view_literals;
@@ -55,29 +53,6 @@ int main(int argc, char* const argv[])
         const auto results = test(chart, opt.projection, Settings{.step = opt.adjust_step, .min_adjust = opt.min_adjust, .max_adjust = opt.max_adjust},
              optimization_options{optimization_method_from_string(opt.method), opt.rough ? optimization_precision::rough : optimization_precision::fine});
         AD_PRINT("{}", results);
-
-        // auto projection = chart.projection_modify(opt.projection);
-        // // const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
-
-        // const acmacs::chart::avidity::Settings settings{.step = opt.adjust_step, .min_adjust = opt.min_adjust, .max_adjust = opt.max_adjust};
-        // for (size_t ag_no{0}; ag_no < chart.number_of_antigens(); ++ag_no) {
-        //     const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, settings, opt_opt);
-
-        //     // // low avidity
-        //     // for (double adjust = opt.adjust_step; adjust <= opt.max_adjust; adjust += opt.adjust_step) {
-        //     //     const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, adjust, opt_opt);
-        //     // }
-        //     // // orig (debugging)
-        //     // // avidity_test(chart, *projection, ag_no, 0.0, opt_opt);
-        //     // // high avidity
-        //     // for (double adjust = -opt.adjust_step; adjust >= opt.min_adjust; adjust -= opt.adjust_step) {
-        //     //     const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, adjust, opt_opt);
-        //     // }
-        //     AD_DEBUG("");
-        // }
-
-        // if (opt.output_chart.has_value())
-        //     acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name(), report);
     }
     catch (std::exception& err) {
         AD_ERROR("{}", err);
@@ -85,24 +60,6 @@ int main(int argc, char* const argv[])
     }
     return exit_code;
 }
-
-// ----------------------------------------------------------------------
-
-// void avidity_test(const acmacs::chart::ChartModify& chart, const acmacs::chart::ProjectionModify& original_projection, size_t antigen_no, double logged_adjust, const acmacs::chart::optimization_options& options)
-// {
-//     using namespace acmacs::chart;
-
-//     const auto original_stress = original_projection.stress();
-//     ProjectionModifyNew projection{original_projection, chart};
-//     projection.avidity_adjusts_modify().resize(chart.number_of_antigens() + chart.number_of_sera());
-//     auto layout = projection.layout_modified();
-//     auto stress = stress_factory(projection, antigen_no, logged_adjust, options.mult);
-//     const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
-//     AD_DEBUG("AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
-
-// } // avidity_test
-
-// ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------
 /// Local Variables:
