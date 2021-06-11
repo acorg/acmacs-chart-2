@@ -40,12 +40,16 @@ namespace acmacs::chart
             double best_logged_adjust;
             PointCoordinates original;
             std::vector<PerAdjust> adjusts;
+
+            void post_process();
         };
 
         struct Results
         {
             double original_stress;
             std::vector<Result> results;
+
+            void post_process();
         };
 
         struct Settings
@@ -73,7 +77,7 @@ namespace acmacs::chart
 template <> struct fmt::formatter<acmacs::chart::avidity::PerAdjust> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::avidity::PerAdjust& per_adjust, FormatCtx& ctx)
     {
-        return format_to(ctx.out(), "{:.1f} dist:{:7.4f} diff:{:8.4f}\n", per_adjust.logged_adjust, per_adjust.distance_test_antigen, per_adjust.stress_diff);
+        return format_to(ctx.out(), "{:4.1f} dist:{:7.4f} diff:{:8.4f}", per_adjust.logged_adjust, per_adjust.distance_test_antigen, per_adjust.stress_diff);
     }
 };
 
@@ -96,7 +100,7 @@ template <> struct fmt::formatter<acmacs::chart::avidity::Results> : fmt::format
     template <typename FormatCtx> auto format(const acmacs::chart::avidity::Results& results, FormatCtx& ctx)
     {
         for (const auto& result : results.results)
-            format_to(ctx.out(), "{}\n\n", result);
+            format_to(ctx.out(), "{}\n", result);
         return ctx.out();
     }
 };

@@ -10,6 +10,7 @@ acmacs::chart::avidity::Results acmacs::chart::avidity::test(ChartModify& chart,
     Results results{.original_stress = projection->stress()};
     for (size_t ag_no{0}; ag_no < chart.number_of_antigens(); ++ag_no)
         results.results.push_back(test(chart, *projection, ag_no, settings, options));
+    results.post_process();
     return results;
 
 } // acmacs::chart::avidity::test
@@ -22,6 +23,7 @@ acmacs::chart::avidity::Results acmacs::chart::avidity::test(ChartModify& chart,
     Results results{.original_stress = projection->stress()};
     for (size_t ag_no : antigens_to_test)
         results.results.push_back(test(chart, *projection, ag_no, settings, options));
+    results.post_process();
     return results;
 
 } // acmacs::chart::avidity::test
@@ -65,6 +67,27 @@ acmacs::chart::avidity::PerAdjust acmacs::chart::avidity::test(const acmacs::cha
     return result;
 
 } // acmacs::chart::avidity::test
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::avidity::Result::post_process()
+{
+    if (const auto best = std::min_element(std::begin(adjusts), std::end(adjusts), [](const auto& en1, const auto& en2) { return en1.stress_diff < en2.stress_diff; });
+        best != std::end(adjusts) && best->stress_diff < 0) {
+        best_logged_adjust = best->logged_adjust;
+    }
+
+} // acmacs::chart::avidity::Result::post_process
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::avidity::Results::post_process()
+{
+    for (auto& result : results)
+        result.post_process();
+
+} // acmacs::chart::avidity::Results::post_process
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:
