@@ -130,7 +130,8 @@ TitersP AceChart::titers() const
 
 ColumnBasesP AceChart::forced_column_bases(MinimumColumnBasis aMinimumColumnBasis) const
 {
-    if (const auto& cb = data_.get("c", "C"); !cb.empty())
+    // Racmacs may store "C": [null, null, ...], !cb[0].is_null() below handles it
+    if (const auto& cb = data_.get("c", "C"); !cb.empty() && !cb[0].is_null())
         return std::make_shared<AceColumnBases>(cb, aMinimumColumnBasis);
     return nullptr;
 
@@ -296,9 +297,9 @@ void AceAntigens::make_name_index() const
 
 ColumnBasesP AceProjection::forced_column_bases() const
 {
-    if (const auto& cb = data()["C"]; !cb.empty()) {
+    // Racmacs stores "C": [null, null, ...], !cb[0].is_null() below handles it
+    if (const auto& cb = data()["C"]; !cb.empty() && !cb[0].is_null()) {
         try {
-            AD_DEBUG("forced_column_bases 0");
             return std::make_shared<AceColumnBases>(cb);
         }
         catch (std::exception& err) {
