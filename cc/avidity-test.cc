@@ -4,6 +4,23 @@
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::avidity::Result acmacs::chart::avidity::test(const ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, const Settings& settings,
+                                                            const optimization_options& options)
+{
+    Result result{.antigen_no = antigen_no, .best_logged_adjust = 0.0, .original = original_projection.layout()->at(antigen_no)};
+    // low avidity
+    for (double adjust = settings.step; adjust <= settings.max_adjust; adjust += settings.step)
+        result.adjusts.push_back(test(chart, original_projection, antigen_no, adjust, options));
+    // high avidity
+    for (double adjust = - settings.step; adjust >= settings.min_adjust; adjust -= settings.step)
+        result.adjusts.push_back(test(chart, original_projection, antigen_no, adjust, options));
+
+    return result;
+
+} // acmacs::chart::avidity::test
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::avidity::PerAdjust acmacs::chart::avidity::test(const acmacs::chart::ChartModify& chart, const acmacs::chart::ProjectionModify& original_projection, size_t antigen_no,
                                                                double logged_adjust, const acmacs::chart::optimization_options& options)
 {

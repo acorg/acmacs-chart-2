@@ -47,22 +47,26 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("chart has no projections");
         if (static_cast<size_t>(opt.projection) >= chart.number_of_projections())
             throw std::runtime_error("invalid projection number");
-        const acmacs::chart::optimization_options opt_opt(acmacs::chart::optimization_method_from_string(opt.method), opt.rough ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine);
+        const acmacs::chart::optimization_options opt_opt(acmacs::chart::optimization_method_from_string(opt.method),
+                                                          opt.rough ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine);
 
         auto projection = chart.projection_modify(opt.projection);
         // const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
 
+        const acmacs::chart::avidity::Settings settings{.step = opt.adjust_step, .min_adjust = opt.min_adjust, .max_adjust = opt.max_adjust};
         for (size_t ag_no{0}; ag_no < chart.number_of_antigens(); ++ag_no) {
-            // low avidity
-            for (double adjust = opt.adjust_step; adjust <= opt.max_adjust; adjust += opt.adjust_step) {
-                const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, adjust, opt_opt);
-            }
-            // orig (debugging)
-            // avidity_test(chart, *projection, ag_no, 0.0, opt_opt);
-            // high avidity
-            for (double adjust = -opt.adjust_step; adjust >= opt.min_adjust; adjust -= opt.adjust_step) {
-                const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, adjust, opt_opt);
-            }
+            const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, settings, opt_opt);
+
+            // // low avidity
+            // for (double adjust = opt.adjust_step; adjust <= opt.max_adjust; adjust += opt.adjust_step) {
+            //     const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, adjust, opt_opt);
+            // }
+            // // orig (debugging)
+            // // avidity_test(chart, *projection, ag_no, 0.0, opt_opt);
+            // // high avidity
+            // for (double adjust = -opt.adjust_step; adjust >= opt.min_adjust; adjust -= opt.adjust_step) {
+            //     const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, adjust, opt_opt);
+            // }
             AD_DEBUG("");
         }
 
