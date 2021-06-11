@@ -4,6 +4,30 @@
 
 // ----------------------------------------------------------------------
 
+acmacs::chart::avidity::Results acmacs::chart::avidity::test(ChartModify& chart, size_t projection_no, const Settings& settings, const optimization_options& options)
+{
+    auto projection = chart.projection_modify(projection_no);
+    Results results{.original_stress = projection->stress()};
+    for (size_t ag_no{0}; ag_no < chart.number_of_antigens(); ++ag_no)
+        results.results.push_back(test(chart, *projection, ag_no, settings, options));
+    return results;
+
+} // acmacs::chart::avidity::test
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::avidity::Results acmacs::chart::avidity::test(ChartModify& chart, size_t projection_no, const std::vector<size_t>& antigens_to_test, const Settings& settings, const optimization_options& options)
+{
+    auto projection = chart.projection_modify(projection_no);
+    Results results{.original_stress = projection->stress()};
+    for (size_t ag_no : antigens_to_test)
+        results.results.push_back(test(chart, *projection, ag_no, settings, options));
+    return results;
+
+} // acmacs::chart::avidity::test
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::avidity::Result acmacs::chart::avidity::test(const ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, const Settings& settings,
                                                             const optimization_options& options)
 {

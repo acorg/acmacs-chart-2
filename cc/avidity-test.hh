@@ -53,8 +53,15 @@ namespace acmacs::chart
             double step{1.0};
             double min_adjust{-6.0};
             double max_adjust{6.0};
+            size_t threads{0};
         };
 
+        // test all antigens
+        Results test(ChartModify& chart, size_t projection_no, const Settings& settings, const optimization_options& options);
+        // test some antigens
+        Results test(ChartModify& chart, size_t projection_no, const std::vector<size_t>& antigens_to_test, const Settings& settings, const optimization_options& options);
+
+        // test steps
         Result test(const ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, const Settings& settings, const optimization_options& options);
         PerAdjust test(const ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, double logged_adjust, const optimization_options& options);
 

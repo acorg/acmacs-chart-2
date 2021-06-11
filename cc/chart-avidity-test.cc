@@ -50,25 +50,30 @@ int main(int argc, char* const argv[])
         const acmacs::chart::optimization_options opt_opt(acmacs::chart::optimization_method_from_string(opt.method),
                                                           opt.rough ? acmacs::chart::optimization_precision::rough : acmacs::chart::optimization_precision::fine);
 
-        auto projection = chart.projection_modify(opt.projection);
-        // const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
+        using namespace acmacs::chart;
+        using namespace acmacs::chart::avidity;
+        const auto results = test(chart, opt.projection, Settings{.step = opt.adjust_step, .min_adjust = opt.min_adjust, .max_adjust = opt.max_adjust},
+             optimization_options{optimization_method_from_string(opt.method), opt.rough ? optimization_precision::rough : optimization_precision::fine});
 
-        const acmacs::chart::avidity::Settings settings{.step = opt.adjust_step, .min_adjust = opt.min_adjust, .max_adjust = opt.max_adjust};
-        for (size_t ag_no{0}; ag_no < chart.number_of_antigens(); ++ag_no) {
-            const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, settings, opt_opt);
+        // auto projection = chart.projection_modify(opt.projection);
+        // // const auto status = projection->relax(acmacs::chart::optimization_options(method, precision));
 
-            // // low avidity
-            // for (double adjust = opt.adjust_step; adjust <= opt.max_adjust; adjust += opt.adjust_step) {
-            //     const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, adjust, opt_opt);
-            // }
-            // // orig (debugging)
-            // // avidity_test(chart, *projection, ag_no, 0.0, opt_opt);
-            // // high avidity
-            // for (double adjust = -opt.adjust_step; adjust >= opt.min_adjust; adjust -= opt.adjust_step) {
-            //     const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, adjust, opt_opt);
-            // }
-            AD_DEBUG("");
-        }
+        // const acmacs::chart::avidity::Settings settings{.step = opt.adjust_step, .min_adjust = opt.min_adjust, .max_adjust = opt.max_adjust};
+        // for (size_t ag_no{0}; ag_no < chart.number_of_antigens(); ++ag_no) {
+        //     const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, settings, opt_opt);
+
+        //     // // low avidity
+        //     // for (double adjust = opt.adjust_step; adjust <= opt.max_adjust; adjust += opt.adjust_step) {
+        //     //     const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, adjust, opt_opt);
+        //     // }
+        //     // // orig (debugging)
+        //     // // avidity_test(chart, *projection, ag_no, 0.0, opt_opt);
+        //     // // high avidity
+        //     // for (double adjust = -opt.adjust_step; adjust >= opt.min_adjust; adjust -= opt.adjust_step) {
+        //     //     const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, adjust, opt_opt);
+        //     // }
+        //     AD_DEBUG("");
+        // }
 
         // if (opt.output_chart.has_value())
         //     acmacs::chart::export_factory(chart, opt.output_chart, opt.program_name(), report);
