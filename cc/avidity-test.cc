@@ -1,6 +1,7 @@
 #include "acmacs-chart-2/avidity-test.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/optimize.hh"
+#include "acmacs-chart-2/procrustes.hh"
 
 // ----------------------------------------------------------------------
 
@@ -57,6 +58,30 @@ acmacs::chart::avidity::PerAdjust acmacs::chart::avidity::test(const acmacs::cha
     auto stress = stress_factory(projection, antigen_no, logged_adjust, options.mult);
     const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
     // AD_DEBUG("AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
+
+    // std::auto_ptr<Matrix<FloatType> > transformation(procrustes(*mLayoutAsMatrix, *layout_as_matrix, false, true));
+    // std::auto_ptr<Matrix<FloatType> > transformed(applyProcrustes(*layout_as_matrix, *transformation));
+    const auto pc_data = procrustes(original_projection, projection, CommonAntigensSera{chart}.points(), procrustes_scaling_t::no);
+    auto transformed_layout = pc_data.apply(*layout);
+
+    // ProcrustesDistancesSummaryParameters procrustes_distances_summary_parameters(layout.numberOfAntigens(), aAntigenNo, parameters().vaccineAntigen());
+    // std::auto_ptr<ProcrustesDistancesSummaryResults> summary(procrustesDistancesSummary(*mLayoutAsMatrix, *transformed, procrustes_distances_summary_parameters));
+
+    // aResult.distanceTestAntigen((*summary->antigens_distances)[aAntigenNo]);
+    // aResult.angleTestAntigen(summary->test_antigen_angle);
+    // aResult.averageProcrustesDistancesExceptTestAntigen(summary->average_distance);
+    // if (parameters().validVaccineAntigen()) {
+    //     aResult.distanceVaccineToTestAntigen(summary->distance_vaccine_to_test_antigen);
+    //     aResult.angleVaccineToTestAntigen(summary->angle_vaccine_to_test_antigen);
+    // }
+
+    //   // build most moved antigens list and their distances (sorted by distances, longest first)
+    // aResult.mostMovedAntigens().resize(0);
+    // for (Array<Index>::const_iterator mm = summary->antigens_by_distance->begin(); mm != summary->antigens_by_distance->end() && Index(aResult.mostMovedAntigens().size()) <
+    // parameters().mostMovedAntigens(); ++mm) {
+    //     if (*mm != aAntigenNo) // do not put antigen being tested into the most moved list
+    //         aResult.mostMovedAntigens().push_back(LowHighAvidityTestResultForMostMoved(*mm, (*summary->antigens_distances)[*mm]));
+    // }
 
     PerAdjust result{.logged_adjust = logged_adjust,
                      .angle_test_antigen = 0.0, // todo
