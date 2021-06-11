@@ -3,6 +3,7 @@
 #include "acmacs-base/timeit.hh"
 #include "acmacs-chart-2/factory-import.hh"
 // #include "acmacs-chart-2/factory-export.hh"
+#include "acmacs-chart-2/avidity-test.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/optimize.hh"
 #include "acmacs-chart-2/log.hh"
@@ -29,7 +30,7 @@ struct Options : public argv
     // argument<str>  output_chart{*this, arg_name{"output-chart"}};
 };
 
-static void avidity_test(const acmacs::chart::ChartModify& chart, const acmacs::chart::ProjectionModify& original_projection, size_t antigen_no, double logged_adjust, const acmacs::chart::optimization_options& opt);
+// static void avidity_test(const acmacs::chart::ChartModify& chart, const acmacs::chart::ProjectionModify& original_projection, size_t antigen_no, double logged_adjust, const acmacs::chart::optimization_options& opt);
 
 int main(int argc, char* const argv[])
 {
@@ -54,13 +55,13 @@ int main(int argc, char* const argv[])
         for (size_t ag_no{0}; ag_no < chart.number_of_antigens(); ++ag_no) {
             // low avidity
             for (double adjust = opt.adjust_step; adjust <= opt.max_adjust; adjust += opt.adjust_step) {
-                avidity_test(chart, *projection, ag_no, adjust, opt_opt);
+                const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, adjust, opt_opt);
             }
             // orig (debugging)
-            avidity_test(chart, *projection, ag_no, 0.0, opt_opt);
+            // avidity_test(chart, *projection, ag_no, 0.0, opt_opt);
             // high avidity
             for (double adjust = -opt.adjust_step; adjust >= opt.min_adjust; adjust -= opt.adjust_step) {
-                avidity_test(chart, *projection, ag_no, adjust, opt_opt);
+                const auto result = acmacs::chart::avidity::test(chart, *projection, ag_no, adjust, opt_opt);
             }
             AD_DEBUG("");
         }
@@ -77,19 +78,19 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-void avidity_test(const acmacs::chart::ChartModify& chart, const acmacs::chart::ProjectionModify& original_projection, size_t antigen_no, double logged_adjust, const acmacs::chart::optimization_options& options)
-{
-    using namespace acmacs::chart;
+// void avidity_test(const acmacs::chart::ChartModify& chart, const acmacs::chart::ProjectionModify& original_projection, size_t antigen_no, double logged_adjust, const acmacs::chart::optimization_options& options)
+// {
+//     using namespace acmacs::chart;
 
-    const auto original_stress = original_projection.stress();
-    ProjectionModifyNew projection{original_projection, chart};
-    projection.avidity_adjusts_modify().resize(chart.number_of_antigens() + chart.number_of_sera());
-    auto layout = projection.layout_modified();
-    auto stress = stress_factory(projection, antigen_no, logged_adjust, options.mult);
-    const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
-    AD_DEBUG("AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
+//     const auto original_stress = original_projection.stress();
+//     ProjectionModifyNew projection{original_projection, chart};
+//     projection.avidity_adjusts_modify().resize(chart.number_of_antigens() + chart.number_of_sera());
+//     auto layout = projection.layout_modified();
+//     auto stress = stress_factory(projection, antigen_no, logged_adjust, options.mult);
+//     const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
+//     AD_DEBUG("AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
 
-} // avidity_test
+// } // avidity_test
 
 // ----------------------------------------------------------------------
 

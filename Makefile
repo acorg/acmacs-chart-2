@@ -93,6 +93,7 @@ SOURCES = \
   optimize.cc             \
   alglib.cc               \
   grid-test.cc            \
+  avidity-test.cc         \
   lispmds-export.cc       \
   common.cc               \
   titers.cc               \
