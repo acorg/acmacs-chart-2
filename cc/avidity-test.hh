@@ -41,6 +41,15 @@ namespace acmacs::chart
             PointCoordinates original;
             std::vector<PerAdjust> adjusts;
 
+            const PerAdjust& best_adjust() const
+            {
+                if (const auto found = std::find_if(std::begin(adjusts), std::end(adjusts), [best = best_logged_adjust](const auto& en) { return float_equal(best, en.logged_adjust); });
+                    found != std::end(adjusts))
+                    return *found;
+                else
+                    throw std::runtime_error{AD_FORMAT("avidity: no best adjust entry for {} (internal error)", best_logged_adjust)};
+            }
+
             void post_process();
         };
 
@@ -85,12 +94,7 @@ template <> struct fmt::formatter<acmacs::chart::avidity::PerAdjust> : fmt::form
 template <> struct fmt::formatter<acmacs::chart::avidity::Result> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::avidity::Result& result, FormatCtx& ctx)
     {
-        format_to(ctx.out(), "AG {}\n", result.antigen_no);
-        if (const auto found = std::find_if(std::begin(result.adjusts), std::end(result.adjusts), [best = result.best_logged_adjust](const auto& en) {
-            return float_equal(best, en.logged_adjust); }); found != std::end(result.adjusts))
-            format_to(ctx.out(), "    {}\n", *found);
-        else
-            format_to(ctx.out(), "    *no best*\n");
+        format_to(ctx.out(), "AG {}\n    {}\n", result.antigen_no, result.best_adjust());
         for (const auto& en : result.adjusts)
             format_to(ctx.out(), "        {}\n", en);
         return ctx.out();
