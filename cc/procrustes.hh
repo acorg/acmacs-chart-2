@@ -21,9 +21,9 @@ namespace acmacs::chart
         Transformation transformation;
         double scale{1};
         double rms{0};
-          // distance_summary = backend.ProcrustesDistancesSummaryResults
+        std::shared_ptr<Layout> secondary_transformed;
 
-        std::shared_ptr<acmacs::Layout> apply(const acmacs::Layout& source) const;
+        std::shared_ptr<Layout> apply(const acmacs::Layout& source) const;
 
     }; // class ProcrustesData
 

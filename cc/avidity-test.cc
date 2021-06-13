@@ -57,12 +57,12 @@ acmacs::chart::avidity::PerAdjust acmacs::chart::avidity::test(const acmacs::cha
     auto layout = projection.layout_modified();
     auto stress = stress_factory(projection, antigen_no, logged_adjust, options.mult);
     const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
-    // AD_DEBUG("AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
+    // AD_DEBUG("avidity relax AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
 
     const auto pc_data = procrustes(original_projection, projection, CommonAntigensSera{chart}.points(), procrustes_scaling_t::no);
-    auto transformed_layout = pc_data.apply(*layout);
+    // AD_DEBUG("AG {} pc-rms:{}", antigen_no, pc_data.rms);
     const auto summary =
-        procrustes_summary(*original_projection.layout(), *transformed_layout, ProcrustesSummaryParameters{.number_of_antigens = chart.number_of_antigens(), .antigen_being_tested = antigen_no});
+        procrustes_summary(*original_projection.layout(), *pc_data.secondary_transformed, ProcrustesSummaryParameters{.number_of_antigens = chart.number_of_antigens(), .antigen_being_tested = antigen_no});
 
     PerAdjust result{.logged_adjust = logged_adjust,
                      .distance_test_antigen = summary.antigen_distances[antigen_no],

@@ -188,11 +188,11 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     }
 
     // rms
-    auto secondary_transformed = result.apply(*secondary_layout);
+    result.secondary_transformed = result.apply(*secondary_layout);
     result.rms = 0.0;
     size_t num_rows = 0;
     for (const auto& cp : common_without_disconnected) {
-        if (const auto pc = primary_layout->at(cp.primary), sc = secondary_transformed->at(cp.secondary); pc.exists() && sc.exists()) {
+        if (const auto pc = primary_layout->at(cp.primary), sc = result.secondary_transformed->at(cp.secondary); pc.exists() && sc.exists()) {
             ++num_rows;
             const auto make_rms_inc = [&pc, &sc](auto sum, auto dim) { return sum + square(pc[dim] - sc[dim]); };
             result.rms = std::accumulate(acmacs::index_iterator<number_of_dimensions_t>(0UL), acmacs::index_iterator(number_of_dimensions), result.rms, make_rms_inc);
@@ -342,26 +342,22 @@ void singular_value_decomposition(const alglib::real_2d_array& matrix, alglib::r
 acmacs::chart::ProcrustesSummary acmacs::chart::procrustes_summary(const acmacs::Layout& primary, const acmacs::Layout& transformed_secondary, const ProcrustesSummaryParameters& parameters)
 {
     ProcrustesSummary results{parameters.number_of_antigens, primary.number_of_points() - parameters.number_of_antigens};
-    double sum = 0;
+    double sum_distance = 0;
     for (const auto ag_no : range_from_0_to(parameters.number_of_antigens)) {
-        double dist = 0;
-        for (const auto dim : acmacs::range(primary.number_of_dimensions()))
-            dist += square(primary(ag_no, dim) - transformed_secondary(ag_no, dim));
-        dist = std::sqrt(dist);
+        const double dist = distance(primary[ag_no], transformed_secondary[ag_no]);
+        // AD_DEBUG("    distance AG {:2d}: {:7.4f}", ag_no, dist);
         results.antigen_distances[ag_no] = dist;
-        sum += dist;
+        sum_distance += dist;
         results.longest_distance = std::max(results.longest_distance, dist);
     }
     if (parameters.number_of_antigens > 1)
-        results.average_distance = (sum - results.antigen_distances[parameters.antigen_being_tested]) / static_cast<double>(parameters.number_of_antigens - 1);
+        results.average_distance = (sum_distance - results.antigen_distances[parameters.antigen_being_tested]) / static_cast<double>(parameters.number_of_antigens - 1);
     else
         results.average_distance = 0;
+    // AD_DEBUG("average_distance (without AG {}): {:7.4f}", parameters.antigen_being_tested, results.average_distance);
 
     for (const auto sr_no : range_from_0_to(results.serum_distances.size())) {
-        double dist = 0;
-        for (const auto dim : acmacs::range(primary.number_of_dimensions()))
-            dist += square(primary(sr_no + parameters.number_of_antigens, dim) - transformed_secondary(sr_no + parameters.number_of_antigens, dim));
-        dist = std::sqrt(dist);
+        const double dist = distance(primary[sr_no + parameters.number_of_antigens], transformed_secondary[sr_no + parameters.number_of_antigens]);
         results.serum_distances[sr_no] = dist;
         results.longest_distance = std::max(results.longest_distance, dist);
     }
