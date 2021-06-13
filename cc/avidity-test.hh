@@ -58,6 +58,14 @@ namespace acmacs::chart
             double original_stress;
             std::vector<Result> results;
 
+            const Result& get(size_t antigen_no) const
+            {
+                if (const auto found = std::find_if(std::begin(results), std::end(results), [antigen_no](const auto& en) { return en.antigen_no == antigen_no; }); found != std::end(results))
+                    return *found;
+                else
+                    throw std::runtime_error{AD_FORMAT("avidity: no result entry for AG {} (internal error)", antigen_no)};
+            }
+
             void post_process();
         };
 
