@@ -369,7 +369,7 @@ acmacs::chart::ProcrustesSummary acmacs::chart::procrustes_summary(const acmacs:
     if (parameters.number_of_antigens > 0) {
         for (const auto ag_no : range_from_0_to(parameters.number_of_antigens))
             results.antigens_by_distance[ag_no] = ag_no;
-        std::sort(results.antigens_by_distance.begin(), results.antigens_by_distance.end(), ProcrustesDistancesSorter(*results.antigens_distances));
+        std::sort(results.antigens_by_distance.begin(), results.antigens_by_distance.end(), [&results](auto ag1, auto ag2) { return results.antigens_distances[ag2] < results.antigens_distances[ag1]; });
 
         if (const double x_diff = transformed_secondary(parameters.antigen_being_tested, number_of_dimensions_t{0}) - primary(parameters.antigen_being_tested, number_of_dimensions_t{0});
             !float_zero(x_diff)) {
@@ -377,16 +377,18 @@ acmacs::chart::ProcrustesSummary acmacs::chart::procrustes_summary(const acmacs:
                 std::atan((transformed_secondary(parameters.antigen_being_tested, number_of_dimensions_t{1}) - primary(parameters.antigen_being_tested, number_of_dimensions_t{1})) / x_diff);
         }
 
-        // if (parameters.vaccine_antigen != size_t(-1)) { // compute only if vaccine antigen is valid
-        //     for (const auto dim : range_from_0_to(primary.number_of_dimensions()))
-        //         results.distance_vaccine_to_test_antigen += square(transformed_secondary(parameters.antigen_being_tested, dim) - transformed_secondary(parameters.vaccine_antigen, dim));
-        //     results.distance_vaccine_to_test_antigen = std::sqrt(results.distance_vaccine_to_test_antigen);
+        if (parameters.vaccine_antigen.has_value()) { // compute only if vaccine antigen is valid
+            for (const auto dim : acmacs::range(primary.number_of_dimensions()))
+                results.distance_vaccine_to_test_antigen += square(transformed_secondary(parameters.antigen_being_tested, dim) - transformed_secondary(*parameters.vaccine_antigen, dim));
+            results.distance_vaccine_to_test_antigen = std::sqrt(results.distance_vaccine_to_test_antigen);
 
-        //     if (const double xv_diff = transformed_secondary.get(parameters.antigen_being_tested, 0) - transformed_secondary.get(parameters.vaccine_antigen, 0); !float_zero(xv_diff)) {
-        //         results.angle_vaccine_to_test_antigen = std::atan(
-        //             (transformed_secondary(parameters.antigen_being_tested, number_of_dimensions_t{1}) - transformed_secondary.get(parameters.vaccine_antigen, number_of_dimensions_t{1})) / xv_diff);
-        //     }
-        // }
+            if (const double xv_diff =
+                    transformed_secondary(parameters.antigen_being_tested, number_of_dimensions_t{0}) - transformed_secondary(*parameters.vaccine_antigen, number_of_dimensions_t{0});
+                !float_zero(xv_diff)) {
+                results.angle_vaccine_to_test_antigen = std::atan(
+                    (transformed_secondary(parameters.antigen_being_tested, number_of_dimensions_t{1}) - transformed_secondary(*parameters.vaccine_antigen, number_of_dimensions_t{1})) / xv_diff);
+            }
+        }
     }
 
     return results;

@@ -45,15 +45,15 @@ namespace acmacs::chart
         std::vector<double> sera_distances;       // from primary to secondary points
         std::vector<size_t> antigens_by_distance; // indices antigens sorted by distance (longest first)
         double test_antigen_angle{0.0};           // angle between primary and secondary point for the antigen being tested
-        // double distance_vaccine_to_test_antigen{0.0};  // in secondary points
-        // double angle_vaccine_to_test_antigen{0.0};     // in secondary points
+        double distance_vaccine_to_test_antigen{0.0};  // in secondary points
+        double angle_vaccine_to_test_antigen{0.0};     // in secondary points
     };
 
     struct ProcrustesSummaryParameters
     {
         size_t number_of_antigens;
         size_t antigen_being_tested;
-        // size_t vaccine_antigen;
+        std::optional<size_t> vaccine_antigen;
     };
 
       // Computes some summary information for procrustes results (used by routine_diagnostics.LowAvidityTest):
