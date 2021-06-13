@@ -1,4 +1,5 @@
-#include "acmacs-base/range.hh"
+#include "acmacs-base/range-v3.hh"
+#include "acmacs-base/float.hh"
 #include "acmacs-chart-2/procrustes.hh"
 #include "acmacs-chart-2/chart.hh"
 
@@ -110,16 +111,19 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
         throw invalid_data("procrustes: projections have different number of dimensions");
 
     auto common_without_disconnected = common;
-    common_without_disconnected.erase(std::remove_if(std::begin(common_without_disconnected), std::end(common_without_disconnected), [&primary_layout,&secondary_layout](const auto& en) {
-        return std::isnan(primary_layout->coordinate(en.primary, number_of_dimensions_t{0})) || std::isnan(secondary_layout->coordinate(en.secondary, number_of_dimensions_t{0}));
-    }), std::end(common_without_disconnected));
+    common_without_disconnected.erase(std::remove_if(std::begin(common_without_disconnected), std::end(common_without_disconnected),
+                                                     [&primary_layout, &secondary_layout](const auto& en) {
+                                                         return std::isnan(primary_layout->coordinate(en.primary, number_of_dimensions_t{0})) ||
+                                                                std::isnan(secondary_layout->coordinate(en.secondary, number_of_dimensions_t{0}));
+                                                     }),
+                                      std::end(common_without_disconnected));
     // std::cerr << "common: " << common.size() << " common_without_disconnected: " << common_without_disconnected.size() << '\n';
 
     alglib::real_2d_array x, y;
     x.setlength(cint(common_without_disconnected.size()), cint(number_of_dimensions));
     y.setlength(cint(common_without_disconnected.size()), cint(number_of_dimensions));
     for (size_t point_no = 0; point_no < common_without_disconnected.size(); ++point_no) {
-        for (auto dim : range(number_of_dimensions)) {
+        for (auto dim : acmacs::range(number_of_dimensions)) {
             x(cint(point_no), cint(dim)) = primary_layout->coordinate(common_without_disconnected[point_no].primary, dim);
             y(cint(point_no), cint(dim)) = secondary_layout->coordinate(common_without_disconnected[point_no].secondary, dim);
         }
@@ -177,9 +181,9 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     // translation
     auto m5 = multiply(y, transformation);
     multiply_add(m5, -1, x);
-    for (auto dim : range(number_of_dimensions)) {
-        const auto t_i =
-            std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(common_without_disconnected.size())), 0.0, [&m5, dim = cint(dim)](auto sum, auto row) { return sum + m5(row, dim); });
+    for (auto dim : acmacs::range(number_of_dimensions)) {
+        const auto t_i = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(common_without_disconnected.size())), 0.0,
+                                         [&m5, dim = cint(dim)](auto sum, auto row) { return sum + m5(row, dim); });
         result.transformation.translation(dim) = t_i / static_cast<double>(common_without_disconnected.size());
     }
 
@@ -190,19 +194,16 @@ ProcrustesData acmacs::chart::procrustes(const Projection& primary, const Projec
     for (const auto& cp : common_without_disconnected) {
         if (const auto pc = primary_layout->at(cp.primary), sc = secondary_transformed->at(cp.secondary); pc.exists() && sc.exists()) {
             ++num_rows;
-            auto make_rms_inc = [&pc, &sc](auto sum, auto dim) {
-                auto square = [](auto v) { return v * v; };
-                return sum + square(pc[dim] - sc[dim]);
-            };
+            const auto make_rms_inc = [&pc, &sc](auto sum, auto dim) { return sum + square(pc[dim] - sc[dim]); };
             result.rms = std::accumulate(acmacs::index_iterator<number_of_dimensions_t>(0UL), acmacs::index_iterator(number_of_dimensions), result.rms, make_rms_inc);
-              //std::cerr << cp.primary << ' ' << cp.secondary << ' ' << result.rms << '\n';
+            // std::cerr << cp.primary << ' ' << cp.secondary << ' ' << result.rms << '\n';
         }
     }
     result.rms = std::sqrt(result.rms / static_cast<double>(num_rows));
 
-      // std::cerr << "common points (without disconnected): " << common_without_disconnected.size() << '\n';
-      // std::cerr << "transformation: " << acmacs::to_string(result.transformation) << '\n';
-      // std::cerr << "rms: " << acmacs::to_string(result.rms) << '\n';
+    // std::cerr << "common points (without disconnected): " << common_without_disconnected.size() << '\n';
+    // std::cerr << "transformation: " << acmacs::to_string(result.transformation) << '\n';
+    // std::cerr << "rms: " << acmacs::to_string(result.rms) << '\n';
 
     return result;
 
@@ -218,7 +219,7 @@ std::shared_ptr<acmacs::Layout> acmacs::chart::ProcrustesData::apply(const acmac
     // multiply source by transformation
     for (size_t row_no = 0; row_no < source.number_of_points(); ++row_no) {
         if (const auto row = source[row_no]; row.exists()) {
-            for (auto dim : range(transformation.number_of_dimensions)) {
+            for (auto dim : acmacs::range(transformation.number_of_dimensions)) {
                 auto sum_squares = [&source, this, row_no, dim](auto sum, auto index) { return sum + source(row_no, index) * this->transformation(index, dim); };
                 result->coordinate(row_no, dim) = std::accumulate(acmacs::index_iterator<number_of_dimensions_t>(0UL), acmacs::index_iterator(source.number_of_dimensions()), 0.0, sum_squares) + transformation.translation(dim);
             }
@@ -335,6 +336,62 @@ void singular_value_decomposition(const alglib::real_2d_array& matrix, alglib::r
     alglib::rmatrixsvd(matrix, matrix.rows(), matrix.cols(), 2/*u-needed*/, 2/*vt-needed*/, 2 /*additionalmemory -> max performance*/, w, u, vt);
 
 } // singular_value_decomposition
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::ProcrustesSummary acmacs::chart::procrustes_summary(const acmacs::Layout& primary, const acmacs::Layout& transformed_secondary, const ProcrustesSummaryParameters& parameters)
+{
+    ProcrustesSummary results{parameters.number_of_antigens, primary.number_of_points() - parameters.number_of_antigens};
+    double sum = 0;
+    for (const auto ag_no : range_from_0_to(parameters.number_of_antigens)) {
+        double dist = 0;
+        for (const auto dim : acmacs::range(primary.number_of_dimensions()))
+            dist += square(primary(ag_no, dim) - transformed_secondary(ag_no, dim));
+        dist = std::sqrt(dist);
+        results.antigens_distances[ag_no] = dist;
+        sum += dist;
+        results.longest_distance = std::max(results.longest_distance, dist);
+    }
+    if (parameters.number_of_antigens > 1)
+        results.average_distance = (sum - results.antigens_distances[parameters.antigen_being_tested]) / static_cast<double>(parameters.number_of_antigens - 1);
+    else
+        results.average_distance = 0;
+
+    for (const auto sr_no : range_from_0_to(results.sera_distances.size())) {
+        double dist = 0;
+        for (const auto dim : acmacs::range(primary.number_of_dimensions()))
+            dist += square(primary(sr_no + parameters.number_of_antigens, dim) - transformed_secondary(sr_no + parameters.number_of_antigens, dim));
+        dist = std::sqrt(dist);
+        results.sera_distances[sr_no] = dist;
+        results.longest_distance = std::max(results.longest_distance, dist);
+    }
+
+    if (parameters.number_of_antigens > 0) {
+        for (const auto ag_no : range_from_0_to(parameters.number_of_antigens))
+            results.antigens_by_distance[ag_no] = ag_no;
+        std::sort(results.antigens_by_distance.begin(), results.antigens_by_distance.end(), ProcrustesDistancesSorter(*results.antigens_distances));
+
+        if (const double x_diff = transformed_secondary(parameters.antigen_being_tested, number_of_dimensions_t{0}) - primary(parameters.antigen_being_tested, number_of_dimensions_t{0});
+            !float_zero(x_diff)) {
+            results.test_antigen_angle =
+                std::atan((transformed_secondary(parameters.antigen_being_tested, number_of_dimensions_t{1}) - primary(parameters.antigen_being_tested, number_of_dimensions_t{1})) / x_diff);
+        }
+
+        // if (parameters.vaccine_antigen != size_t(-1)) { // compute only if vaccine antigen is valid
+        //     for (const auto dim : range_from_0_to(primary.number_of_dimensions()))
+        //         results.distance_vaccine_to_test_antigen += square(transformed_secondary(parameters.antigen_being_tested, dim) - transformed_secondary(parameters.vaccine_antigen, dim));
+        //     results.distance_vaccine_to_test_antigen = std::sqrt(results.distance_vaccine_to_test_antigen);
+
+        //     if (const double xv_diff = transformed_secondary.get(parameters.antigen_being_tested, 0) - transformed_secondary.get(parameters.vaccine_antigen, 0); !float_zero(xv_diff)) {
+        //         results.angle_vaccine_to_test_antigen = std::atan(
+        //             (transformed_secondary(parameters.antigen_being_tested, number_of_dimensions_t{1}) - transformed_secondary.get(parameters.vaccine_antigen, number_of_dimensions_t{1})) / xv_diff);
+        //     }
+        // }
+    }
+
+    return results;
+
+} // acmacs::chart::summary
 
 // ----------------------------------------------------------------------
 

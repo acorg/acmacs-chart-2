@@ -59,13 +59,13 @@ acmacs::chart::avidity::PerAdjust acmacs::chart::avidity::test(const acmacs::cha
     const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
     // AD_DEBUG("AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
 
-    // std::auto_ptr<Matrix<FloatType> > transformation(procrustes(*mLayoutAsMatrix, *layout_as_matrix, false, true));
-    // std::auto_ptr<Matrix<FloatType> > transformed(applyProcrustes(*layout_as_matrix, *transformation));
+// std::auto_ptr<Matrix<FloatType> > transformation(procrustes(*mLayoutAsMatrix, *layout_as_matrix, false, true));
+// std::auto_ptr<Matrix<FloatType> > transformed(applyProcrustes(*layout_as_matrix, *transformation));
+// ProcrustesDistancesSummaryParameters procrustes_distances_summary_parameters(layout.numberOfAntigens(), aAntigenNo, parameters().vaccineAntigen());
+// std::auto_ptr<ProcrustesDistancesSummaryResults> summary(procrustesDistancesSummary(*mLayoutAsMatrix, *transformed, procrustes_distances_summary_parameters));
     const auto pc_data = procrustes(original_projection, projection, CommonAntigensSera{chart}.points(), procrustes_scaling_t::no);
     auto transformed_layout = pc_data.apply(*layout);
-
-    // ProcrustesDistancesSummaryParameters procrustes_distances_summary_parameters(layout.numberOfAntigens(), aAntigenNo, parameters().vaccineAntigen());
-    // std::auto_ptr<ProcrustesDistancesSummaryResults> summary(procrustesDistancesSummary(*mLayoutAsMatrix, *transformed, procrustes_distances_summary_parameters));
+    const auto summary = procrustes_summary(*original_projection.layout(), *transformed_layout, ProcrustesSummaryParameters{.number_of_antigens=chart.number_of_antigens(), .antigen_being_tested=antigen_no});
 
     // aResult.distanceTestAntigen((*summary->antigens_distances)[aAntigenNo]);
     // aResult.angleTestAntigen(summary->test_antigen_angle);
