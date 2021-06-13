@@ -37,12 +37,12 @@ namespace acmacs::chart
 
     struct ProcrustesSummary
     {
-        ProcrustesSummary(size_t number_of_antigens, size_t number_of_sera) : antigens_distances(number_of_antigens), sera_distances(number_of_sera), antigens_by_distance(number_of_antigens) {}
+        ProcrustesSummary(size_t number_of_antigens, size_t number_of_sera) : antigen_distances(number_of_antigens), serum_distances(number_of_sera), antigens_by_distance(number_of_antigens) {}
 
         double average_distance{0.0};
         double longest_distance{0.0};
-        std::vector<double> antigens_distances;   // from primary to secondary points
-        std::vector<double> sera_distances;       // from primary to secondary points
+        std::vector<double> antigen_distances;   // from primary to secondary points
+        std::vector<double> serum_distances;       // from primary to secondary points
         std::vector<size_t> antigens_by_distance; // indices antigens sorted by distance (longest first)
         double test_antigen_angle{0.0};           // angle between primary and secondary point for the antigen being tested
         double distance_vaccine_to_test_antigen{0.0};  // in secondary points
@@ -58,8 +58,8 @@ namespace acmacs::chart
 
       // Computes some summary information for procrustes results (used by routine_diagnostics.LowAvidityTest):
       // - the average procrustes distances for all antigens (number_of_antigens) excluding antigen_being_tested -> average_distance
-      // - procrustes distances for all antigens -> antigens_distances
-      // - procrustes distances for all sera -> sera_distances
+      // - procrustes distances for all antigens -> antigen_distances
+      // - procrustes distances for all sera -> serum_distances
       // - list of antigens indices sorted by distance moved -> antigens_by_distance
       // - angle at which test antigen was moved (vector from primary to secondary point) -> test_antigen_angle
       // - distance between vaccine_antigen and antigen_being_tested in the secondary points

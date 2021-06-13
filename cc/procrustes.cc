@@ -348,28 +348,28 @@ acmacs::chart::ProcrustesSummary acmacs::chart::procrustes_summary(const acmacs:
         for (const auto dim : acmacs::range(primary.number_of_dimensions()))
             dist += square(primary(ag_no, dim) - transformed_secondary(ag_no, dim));
         dist = std::sqrt(dist);
-        results.antigens_distances[ag_no] = dist;
+        results.antigen_distances[ag_no] = dist;
         sum += dist;
         results.longest_distance = std::max(results.longest_distance, dist);
     }
     if (parameters.number_of_antigens > 1)
-        results.average_distance = (sum - results.antigens_distances[parameters.antigen_being_tested]) / static_cast<double>(parameters.number_of_antigens - 1);
+        results.average_distance = (sum - results.antigen_distances[parameters.antigen_being_tested]) / static_cast<double>(parameters.number_of_antigens - 1);
     else
         results.average_distance = 0;
 
-    for (const auto sr_no : range_from_0_to(results.sera_distances.size())) {
+    for (const auto sr_no : range_from_0_to(results.serum_distances.size())) {
         double dist = 0;
         for (const auto dim : acmacs::range(primary.number_of_dimensions()))
             dist += square(primary(sr_no + parameters.number_of_antigens, dim) - transformed_secondary(sr_no + parameters.number_of_antigens, dim));
         dist = std::sqrt(dist);
-        results.sera_distances[sr_no] = dist;
+        results.serum_distances[sr_no] = dist;
         results.longest_distance = std::max(results.longest_distance, dist);
     }
 
     if (parameters.number_of_antigens > 0) {
         for (const auto ag_no : range_from_0_to(parameters.number_of_antigens))
             results.antigens_by_distance[ag_no] = ag_no;
-        std::sort(results.antigens_by_distance.begin(), results.antigens_by_distance.end(), [&results](auto ag1, auto ag2) { return results.antigens_distances[ag2] < results.antigens_distances[ag1]; });
+        std::sort(results.antigens_by_distance.begin(), results.antigens_by_distance.end(), [&results](auto ag1, auto ag2) { return results.antigen_distances[ag2] < results.antigen_distances[ag1]; });
 
         if (const double x_diff = transformed_secondary(parameters.antigen_being_tested, number_of_dimensions_t{0}) - primary(parameters.antigen_being_tested, number_of_dimensions_t{0});
             !float_zero(x_diff)) {

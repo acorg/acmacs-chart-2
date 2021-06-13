@@ -24,10 +24,10 @@ namespace acmacs::chart
         struct PerAdjust
         {
             double logged_adjust;
+            double distance_test_antigen;
             double angle_test_antigen;
             double average_procrustes_distances_except_test_antigen;
-            double distance_test_antigen;
-            PointCoordinates final;
+            PointCoordinates final_coordinates;
             double stress_diff;
             std::array<MostMoved, number_of_most_moved_antigens> most_moved;
         };
@@ -77,7 +77,8 @@ namespace acmacs::chart
 template <> struct fmt::formatter<acmacs::chart::avidity::PerAdjust> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::avidity::PerAdjust& per_adjust, FormatCtx& ctx)
     {
-        return format_to(ctx.out(), "{:4.1f} dist:{:7.4f} diff:{:8.4f}", per_adjust.logged_adjust, per_adjust.distance_test_antigen, per_adjust.stress_diff);
+        return format_to(ctx.out(), "{:4.1f}  diff:{:8.4f} dist:{:7.4f} angle:{:7.4f} aver_pc_dist:{:7.4f}", per_adjust.logged_adjust, per_adjust.stress_diff, per_adjust.distance_test_antigen,
+                         per_adjust.angle_test_antigen, per_adjust.average_procrustes_distances_except_test_antigen);
     }
 };
 

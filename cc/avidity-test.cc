@@ -59,36 +59,30 @@ acmacs::chart::avidity::PerAdjust acmacs::chart::avidity::test(const acmacs::cha
     const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
     // AD_DEBUG("AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
 
-// std::auto_ptr<Matrix<FloatType> > transformation(procrustes(*mLayoutAsMatrix, *layout_as_matrix, false, true));
-// std::auto_ptr<Matrix<FloatType> > transformed(applyProcrustes(*layout_as_matrix, *transformation));
-// ProcrustesDistancesSummaryParameters procrustes_distances_summary_parameters(layout.numberOfAntigens(), aAntigenNo, parameters().vaccineAntigen());
-// std::auto_ptr<ProcrustesDistancesSummaryResults> summary(procrustesDistancesSummary(*mLayoutAsMatrix, *transformed, procrustes_distances_summary_parameters));
     const auto pc_data = procrustes(original_projection, projection, CommonAntigensSera{chart}.points(), procrustes_scaling_t::no);
     auto transformed_layout = pc_data.apply(*layout);
-    const auto summary = procrustes_summary(*original_projection.layout(), *transformed_layout, ProcrustesSummaryParameters{.number_of_antigens=chart.number_of_antigens(), .antigen_being_tested=antigen_no});
-
-    // aResult.distanceTestAntigen((*summary->antigens_distances)[aAntigenNo]);
-    // aResult.angleTestAntigen(summary->test_antigen_angle);
-    // aResult.averageProcrustesDistancesExceptTestAntigen(summary->average_distance);
-    // if (parameters().validVaccineAntigen()) {
-    //     aResult.distanceVaccineToTestAntigen(summary->distance_vaccine_to_test_antigen);
-    //     aResult.angleVaccineToTestAntigen(summary->angle_vaccine_to_test_antigen);
-    // }
-
-    //   // build most moved antigens list and their distances (sorted by distances, longest first)
-    // aResult.mostMovedAntigens().resize(0);
-    // for (Array<Index>::const_iterator mm = summary->antigens_by_distance->begin(); mm != summary->antigens_by_distance->end() && Index(aResult.mostMovedAntigens().size()) <
-    // parameters().mostMovedAntigens(); ++mm) {
-    //     if (*mm != aAntigenNo) // do not put antigen being tested into the most moved list
-    //         aResult.mostMovedAntigens().push_back(LowHighAvidityTestResultForMostMoved(*mm, (*summary->antigens_distances)[*mm]));
-    // }
+    const auto summary =
+        procrustes_summary(*original_projection.layout(), *transformed_layout, ProcrustesSummaryParameters{.number_of_antigens = chart.number_of_antigens(), .antigen_being_tested = antigen_no});
 
     PerAdjust result{.logged_adjust = logged_adjust,
-                     .angle_test_antigen = 0.0, // todo
-                     .average_procrustes_distances_except_test_antigen = 0.0, // todo
-                     .distance_test_antigen = 0.0, // todo
-                     .final = layout->at(antigen_no),
+                     .distance_test_antigen = summary.antigen_distances[antigen_no],
+                     .angle_test_antigen = summary.test_antigen_angle,
+                     .average_procrustes_distances_except_test_antigen = summary.average_distance,
+                     .final_coordinates = layout->at(antigen_no),
                      .stress_diff = status.final_stress - original_stress};
+    size_t most_moved_no { 0 };
+    for (const auto ag_no : summary.antigens_by_distance) {
+        if (ag_no != antigen_no) { // do not put antigen being tested into the most moved list
+            result.most_moved[most_moved_no] = MostMoved {ag_no, summary.antigen_distances[ag_no]};
+            ++most_moved_no;
+            if (most_moved_no >= result.most_moved.size())
+                break;
+        }
+    }
+    // if (parameters().validVaccineAntigen()) {
+    //     result.distance_vaccine_to_test_antigen = summary.distance_vaccine_to_test_antigen;
+    //     result.angle_vaccine_to_test_antigen = summary.angle_vaccine_to_test_antigen;
+    // }
     return result;
 
 } // acmacs::chart::avidity::test
