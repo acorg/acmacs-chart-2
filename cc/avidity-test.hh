@@ -82,6 +82,10 @@ namespace acmacs::chart
         // test some antigens
         Results test(ChartModify& chart, size_t projection_no, const std::vector<size_t>& antigens_to_test, const Settings& settings, const optimization_options& options);
 
+        // adds new projection with antigens moved to their better positions and avidity data changed
+        // returns new projection
+        std::shared_ptr<ProjectionModify> move_antigens(ChartModify& chart, size_t projection_no, const Results& avidity_results);
+
         // test steps
         Result test(const ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, const Settings& settings, const optimization_options& options);
         PerAdjust test(const ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, double logged_adjust, const optimization_options& options);
