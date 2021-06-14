@@ -704,6 +704,7 @@ namespace acmacs::chart
             const auto& source_layout = *aSource.layout();
             new_layout(source_layout.number_of_points(), source_layout.number_of_dimensions());
             set_layout(source_layout);
+            transformation(aSource.transformation());
             set_forced_column_bases(aSource.forced_column_bases());
             set_disconnected(aSource.disconnected());
             set_unmovable(aSource.unmovable());
