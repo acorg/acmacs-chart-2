@@ -2,6 +2,8 @@
 
 #include "acmacs-base/fmt.hh"
 #include "acmacs-base/point-coordinates.hh"
+#include "acmacs-chart-2/column-bases.hh"
+#include "acmacs-chart-2/optimize-options.hh"
 
 // ----------------------------------------------------------------------
 
@@ -10,6 +12,7 @@ namespace acmacs::chart
     class ChartModify;
     class ProjectionModify;
     struct optimization_options;
+    class AvidityAdjusts;
 
     namespace avidity
     {
@@ -87,8 +90,11 @@ namespace acmacs::chart
         std::shared_ptr<ProjectionModify> move_antigens(ChartModify& chart, size_t projection_no, const Results& avidity_results);
 
         // test steps
-        Result test(const ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, const Settings& settings, const optimization_options& options);
-        PerAdjust test(const ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, double logged_adjust, const optimization_options& options);
+        Result test(ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, const Settings& settings, const optimization_options& options);
+        PerAdjust test(ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, double logged_adjust, const optimization_options& options, bool add_new_projection_to_chart = false);
+
+        // relax chart from scratch with avidity adjusts
+        void relax(ChartModify& chart, number_of_optimizations_t number_of_optimizations, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, const AvidityAdjusts& avidity_adjusts, const optimization_options& options);
 
     } // namespace avidity
 } // namespace acmacs::chart

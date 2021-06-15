@@ -18,6 +18,13 @@ namespace acmacs::chart
             return get().empty() || std::all_of(begin(), end(), [](double val) -> bool { return float_equal(val, 1.0); });
         }
 
+        AvidityAdjusts& from_logged(const std::vector<double>& logged_adjusts)
+        {
+            resize(logged_adjusts.size());
+            std::transform(std::begin(logged_adjusts), std::end(logged_adjusts), begin(), [](double logged) { return std::exp2(logged); });
+            return *this;
+        }
+
         std::vector<double> logged(size_t number_of_points) const
         {
             std::vector<double> logged_adjusts(number_of_points, 0.0);

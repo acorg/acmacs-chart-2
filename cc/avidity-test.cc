@@ -1,3 +1,4 @@
+#include "acmacs-base/range-v3.hh"
 #include "acmacs-chart-2/avidity-test.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/optimize.hh"
@@ -31,7 +32,7 @@ acmacs::chart::avidity::Results acmacs::chart::avidity::test(ChartModify& chart,
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::avidity::Result acmacs::chart::avidity::test(const ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, const Settings& settings,
+acmacs::chart::avidity::Result acmacs::chart::avidity::test(ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, const Settings& settings,
                                                             const optimization_options& options)
 {
     Result result{.antigen_no = antigen_no, .best_logged_adjust = 0.0, .original = original_projection.layout()->at(antigen_no)};
@@ -48,17 +49,21 @@ acmacs::chart::avidity::Result acmacs::chart::avidity::test(const ChartModify& c
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::avidity::PerAdjust acmacs::chart::avidity::test(const ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, double logged_adjust, const optimization_options& options)
+acmacs::chart::avidity::PerAdjust acmacs::chart::avidity::test(ChartModify& chart, const ProjectionModify& original_projection, size_t antigen_no, double logged_adjust, const optimization_options& options, bool add_new_projection_to_chart)
 {
     const auto original_stress = original_projection.stress();
-    ProjectionModifyNew projection{original_projection};
-    projection.avidity_adjusts_modify().resize(chart.number_of_antigens() + chart.number_of_sera());
-    auto layout = projection.layout_modified();
-    auto stress = stress_factory(projection, antigen_no, logged_adjust, options.mult);
+    auto projection = chart.projections_modify().new_by_cloning(original_projection, add_new_projection_to_chart);
+    auto& avidity_adjusts = projection->avidity_adjusts_modify();
+    avidity_adjusts.resize(chart.number_of_antigens() + chart.number_of_sera());
+    avidity_adjusts.set_logged(antigen_no, logged_adjust);
+    projection->comment(fmt::format("avidity {:+.1f}", logged_adjust));
+    auto stress = stress_factory(*projection, options.mult);
+    // auto stress = stress_factory(*projection, antigen_no, logged_adjust, options.mult);
+    auto layout = projection->layout_modified();
     const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
     // AD_DEBUG("avidity relax AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
 
-    const auto pc_data = procrustes(original_projection, projection, CommonAntigensSera{chart}.points(), procrustes_scaling_t::no);
+    const auto pc_data = procrustes(original_projection, *projection, CommonAntigensSera{chart}.points(), procrustes_scaling_t::no);
     // AD_DEBUG("AG {} pc-rms:{}", antigen_no, pc_data.rms);
     const auto summary = procrustes_summary(*original_projection.layout(), *pc_data.secondary_transformed,
                                             ProcrustesSummaryParameters{.number_of_antigens = chart.number_of_antigens(), .antigen_being_tested = antigen_no});
@@ -122,6 +127,20 @@ std::shared_ptr<acmacs::chart::ProjectionModify> acmacs::chart::avidity::move_an
     return projection;
 
 } // acmacs::chart::avidity::move_antigens
+
+// ----------------------------------------------------------------------
+
+void acmacs::chart::avidity::relax(ChartModify& chart, number_of_optimizations_t number_of_optimizations, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, const AvidityAdjusts& avidity_adjusts, const optimization_options& options)
+{
+    const auto first_projection_no = chart.number_of_projections();
+    for ([[maybe_unused]] const auto  p_no : range_from_0_to(*number_of_optimizations)) {
+        auto projection = chart.projections_modify().new_from_scratch(number_of_dimensions, minimum_column_basis);
+        projection->avidity_adjusts_modify() = avidity_adjusts;
+        projection->comment("avidity");
+    }
+    chart.relax_projections(options, first_projection_no);
+
+} // acmacs::chart::avidity::relax
 
 // ----------------------------------------------------------------------
 /// Local Variables:

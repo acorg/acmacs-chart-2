@@ -284,7 +284,7 @@ bool ChartModify::has_sequences() const
 
 // ----------------------------------------------------------------------
 
-std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, optimization_options options, LayoutRandomizer::seed_t seed, const DisconnectedPoints& disconnect_points)
+std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions, use_dimension_annealing dimension_annealing, const optimization_options& options, LayoutRandomizer::seed_t seed, const DisconnectedPoints& disconnect_points)
 {
     const auto start = std::chrono::high_resolution_clock::now();
     const auto start_num_dim = dimension_annealing == use_dimension_annealing::yes && *number_of_dimensions < 5 ? number_of_dimensions_t{5} : number_of_dimensions;
@@ -321,7 +321,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
 // ----------------------------------------------------------------------
 
 void ChartModify::relax(number_of_optimizations_t number_of_optimizations, MinimumColumnBasis minimum_column_basis, number_of_dimensions_t number_of_dimensions,
-                        use_dimension_annealing dimension_annealing, acmacs::chart::optimization_options options, const DisconnectedPoints& disconnect_points)
+                        use_dimension_annealing dimension_annealing, const optimization_options& options, const DisconnectedPoints& disconnect_points)
 {
     const auto start_num_dim = dimension_annealing == use_dimension_annealing::yes && *number_of_dimensions < 5 ? number_of_dimensions_t{5} : number_of_dimensions;
     auto titrs = titers();
@@ -374,7 +374,49 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
 
 // ----------------------------------------------------------------------
 
-void ChartModify::relax_incremental(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, acmacs::chart::optimization_options options, remove_source_projection rsp,
+void ChartModify::relax_projections(const optimization_options& options, size_t first_projection_no, const DisconnectedPoints& disconnect_points)
+{
+    auto titrs = titers();
+    auto& projections = projections_modify();
+
+#ifdef _OPENMP
+    const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
+    const int slot_size = number_of_antigens() < 1000 ? 4 : 1;
+#endif
+#pragma omp parallel for default(shared) num_threads(num_threads) schedule(static, slot_size)
+    for (size_t p_no = first_projection_no; p_no < projections.size(); ++p_no) {
+        auto projection = projections.at(p_no);
+
+        auto stress = acmacs::chart::stress_factory(*projection, options.mult);
+        stress.set_disconnected(disconnect_points);
+        if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
+            stress.extend_disconnected(titrs->having_too_few_numeric_titers());
+        if (const auto num_connected = number_of_antigens() + number_of_sera() - stress.number_of_disconnected(); num_connected < 3)
+            throw std::runtime_error{AD_FORMAT("cannot relax: too few connected points: {}", num_connected)};
+
+        auto rnd = randomizer_plain_from_sample_optimization(*this, stress, projection->number_of_dimensions(), projection->minimum_column_basis(), options.randomization_diameter_multiplier);
+        projection->randomize_layout(rnd);
+        projection->set_disconnected(stress.parameters().disconnected);
+        projection->set_unmovable(stress.parameters().unmovable);
+        auto layout = projection->layout_modified();
+        const auto status1 =
+            acmacs::chart::optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
+        if (!std::isnan(status1.final_stress))
+            projection->stress_ = status1.final_stress;
+        projection->transformation_reset();
+        // if (p_no < (first_projection_no + 5))
+        // AD_DEBUG("stress {}: {}", p_no, *projection->stress_);
+        AD_LOG(acmacs::log::report_stresses, "{:3d} {:.4f}", p_no, *projection->stress_);
+    }
+
+    // AD_DEBUG("stress 2: {}", projections[2]->stress(RecalculateStress::no));
+    // AD_DEBUG("{}", make_info());
+
+} // ChartModify::relax_all_projections
+
+// ----------------------------------------------------------------------
+
+void ChartModify::relax_incremental(size_t source_projection_no, number_of_optimizations_t number_of_optimizations, const optimization_options& options, remove_source_projection rsp,
                                     unmovable_non_nan_points unnp)
 {
     auto source_projection = projection_modify(source_projection_no);

@@ -345,7 +345,7 @@ void acmacs::chart::Stress::gradient_with_unmovable(const double* first, const d
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Stress::set_coordinates_of_disconnected(double* first, size_t num_args, double value, number_of_dimensions_t number_of_dimensions) const
+void acmacs::chart::Stress::set_coordinates_of_disconnected(double* first, [[maybe_unused]] size_t num_args, double value, number_of_dimensions_t number_of_dimensions) const
 {
     // do not use number_of_dimensions_! after pca its value is wrong!
     for (auto p_no : parameters_.disconnected) {
