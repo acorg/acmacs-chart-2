@@ -379,11 +379,14 @@ void ChartModify::relax_projections(const optimization_options& options, size_t 
     auto titrs = titers();
     auto& projections = projections_modify();
 
+    auto first_projection = projections.at(first_projection_no);
+    auto rnd = randomizer_plain_from_sample_optimization(*this, acmacs::chart::stress_factory(*first_projection, options.mult), first_projection->number_of_dimensions(), first_projection->minimum_column_basis(), options.randomization_diameter_multiplier);
+
 #ifdef _OPENMP
     const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
     const int slot_size = number_of_antigens() < 1000 ? 4 : 1;
 #endif
-#pragma omp parallel for default(shared) num_threads(num_threads) schedule(static, slot_size)
+#pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(rnd) schedule(static, slot_size)
     for (size_t p_no = first_projection_no; p_no < projections.size(); ++p_no) {
         auto projection = projections.at(p_no);
 
@@ -394,7 +397,6 @@ void ChartModify::relax_projections(const optimization_options& options, size_t 
         if (const auto num_connected = number_of_antigens() + number_of_sera() - stress.number_of_disconnected(); num_connected < 3)
             throw std::runtime_error{AD_FORMAT("cannot relax: too few connected points: {}", num_connected)};
 
-        auto rnd = randomizer_plain_from_sample_optimization(*this, stress, projection->number_of_dimensions(), projection->minimum_column_basis(), options.randomization_diameter_multiplier);
         projection->randomize_layout(rnd);
         projection->set_disconnected(stress.parameters().disconnected);
         projection->set_unmovable(stress.parameters().unmovable);
