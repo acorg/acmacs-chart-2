@@ -411,9 +411,6 @@ void ChartModify::relax_projections(const optimization_options& options, size_t 
         AD_LOG(acmacs::log::report_stresses, "{:3d} {:.4f}", p_no, *projection->stress_);
     }
 
-    // AD_DEBUG("stress 2: {}", projections[2]->stress(RecalculateStress::no));
-    // AD_DEBUG("{}", make_info());
-
 } // ChartModify::relax_all_projections
 
 // ----------------------------------------------------------------------
