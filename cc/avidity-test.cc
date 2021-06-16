@@ -56,7 +56,7 @@ acmacs::chart::avidity::PerAdjust acmacs::chart::avidity::test(ChartModify& char
     auto& avidity_adjusts = projection->avidity_adjusts_modify();
     avidity_adjusts.resize(chart.number_of_antigens() + chart.number_of_sera());
     avidity_adjusts.set_logged(antigen_no, logged_adjust);
-    projection->comment(fmt::format("avidity {:+.1f}", logged_adjust));
+    projection->comment(fmt::format("avidity {:+.1f} AG {}", logged_adjust, antigen_no));
     auto stress = stress_factory(*projection, options.mult);
     // auto stress = stress_factory(*projection, antigen_no, logged_adjust, options.mult);
     auto layout = projection->layout_modified();
