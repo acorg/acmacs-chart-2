@@ -620,6 +620,19 @@ void ChartModify::detect_reference_antigens(remove_reference_before_detecting rr
 
 // ----------------------------------------------------------------------
 
+void ChartModify::combine_projections(ChartModify& merge_in)
+{
+    if (!acmacs::chart::same_tables(*this, merge_in, true))
+        throw std::runtime_error{AD_FORMAT("cannot combine projections, tables are not the same")};
+    auto& merge_in_projections = merge_in.projections_modify();
+    for (const auto proj_no : range_from_0_to(merge_in_projections.size()))
+        projections_modify().new_by_cloning(*merge_in_projections.at(proj_no), *this);
+    projections_modify().sort();
+
+} // ChartModify::combine_projections
+
+// ----------------------------------------------------------------------
+
 ChartNew::ChartNew(size_t number_of_antigens, size_t number_of_sera)
     : ChartModify(number_of_antigens, number_of_sera)
 {

@@ -29,14 +29,14 @@ int main(int argc, char* const argv[])
 
         acmacs::chart::ChartModify master{acmacs::chart::import_from_file(opt.source_charts->at(0))};
         for (const auto& chart_filename : ranges::views::drop(*opt.source_charts, 1)) {
-            acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(chart_filename)};
-            if (!acmacs::chart::same_tables(master, chart, true))
-                throw std::runtime_error(fmt::format("Tables of {} and {} are not the same!\n", opt.source_charts->at(0), chart_filename));
-            // fmt::print("INFO: tables are the same, combining projections of {} and {}\n", opt.source_charts->at(0), chart_filename);
-            for (size_t p_no = 0; p_no < chart.projections_modify().size(); ++p_no)
-                master.projections_modify().new_by_cloning(*chart.projections_modify().at(p_no), master);
+            acmacs::chart::ChartModify merge_in{acmacs::chart::import_from_file(chart_filename)};
+            try {
+                master.combine_projections(merge_in);
+            }
+            catch (std::exception& err) {
+                throw std::runtime_error{AD_FORMAT("cannot combine projections of {} and {}: {}", opt.source_charts->at(0), chart_filename, err)};
+            }
         }
-
         master.projections_modify().sort();
         if (opt.info)
             fmt::print("{}\n", master.make_info());

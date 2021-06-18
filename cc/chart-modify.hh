@@ -90,6 +90,7 @@ namespace acmacs::chart
         void detect_reference_antigens(remove_reference_before_detecting rrbd);
 
         void merge(const Chart& merge_in);
+        void combine_projections(ChartModify& merge_in);
 
       protected:
         explicit ChartModify(size_t number_of_antigens, size_t number_of_sera);
