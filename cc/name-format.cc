@@ -50,7 +50,7 @@ template <typename AgSr> static std::string year2(const AgSr& ag_sr)
 
 template <typename AgSr> static std::string name_abbreviated(const AgSr& ag_sr)
 {
-    return acmacs::string::join(acmacs::string::join_slash, location_abbreviated(ag_sr), acmacs::virus::isolation(ag_sr.name()), year2(ag_sr));
+    return acmacs::string::join(acmacs::string::join_dash, acmacs::string::join(acmacs::string::join_slash, location_abbreviated(ag_sr), acmacs::virus::isolation(ag_sr.name()), year2(ag_sr)), ag_sr.reassortant());
 }
 
 template <typename AgSr> static std::string fields(const AgSr& ag_sr)
