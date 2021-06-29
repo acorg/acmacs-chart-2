@@ -383,6 +383,7 @@ namespace acmacs::chart
             virtual acmacs::virus::Reassortant reassortant() const = 0;
             virtual Annotations annotations() const = 0;
             virtual Clades clades() const = 0;
+            virtual bool sequenced() const { return false; }
             virtual std::string sequence_aa() const { return {}; }
             virtual std::string sequence_nuc() const { return {}; }
 

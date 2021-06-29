@@ -87,6 +87,7 @@ namespace acmacs::chart
         Clades clades() const override { return data_["c"]; }
         Annotations annotations() const override { const auto& rann = data_["a"]; Annotations ann(rann.size()); rjson::copy(rann, ann.begin()); return ann; }
         bool reference() const override { return data_["S"].get_or_default("").find("R") != std::string::npos; }
+        bool sequenced() const override { return !data_["A"].empty(); }
         std::string sequence_aa() const override { return data_["A"].get_or_default(""); }
         std::string sequence_nuc() const override { return data_["B"].get_or_default(""); }
 
@@ -112,6 +113,7 @@ namespace acmacs::chart
         SerumSpecies serum_species() const override { return SerumSpecies{data_["s"].get_or_default("")}; }
         PointIndexList homologous_antigens() const override { return data_["h"]; }
         void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { const_cast<rjson::value&>(data_)["h"] = rjson::array(ags.begin(), ags.end()); }
+        bool sequenced() const override { return !data_["A"].empty(); }
         std::string sequence_aa() const override { return data_["A"].get_or_default(""); }
         std::string sequence_nuc() const override { return data_["B"].get_or_default(""); }
 

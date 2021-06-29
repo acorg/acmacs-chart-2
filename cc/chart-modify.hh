@@ -209,6 +209,7 @@ namespace acmacs::chart
         Annotations annotations() const override { return annotations_; }
         bool reference() const override { return reference_; }
         Continent continent() const override { return continent_; }
+        bool sequenced() const override { return !sequence_aa_.empty(); }
         std::string sequence_aa() const override { return sequence_aa_; }
         std::string sequence_nuc() const override { return sequence_nuc_; }
 
@@ -264,6 +265,7 @@ namespace acmacs::chart
         SerumSpecies serum_species() const override { return serum_species_; }
         PointIndexList homologous_antigens() const override { return homologous_antigens_; }
         void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { homologous_antigens_ = PointIndexList{ags}; }
+        bool sequenced() const override { return !sequence_aa_.empty(); }
         std::string sequence_aa() const override { return sequence_aa_; }
         std::string sequence_nuc() const override { return sequence_nuc_; }
 
