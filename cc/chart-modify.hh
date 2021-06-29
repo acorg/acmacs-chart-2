@@ -608,6 +608,8 @@ namespace acmacs::chart
         void clone_from(const Projection& aSource);
         std::shared_ptr<Layout> transformed_layout_modified() const
         {
+            if (!layout_present())
+                throw std::runtime_error{AD_FORMAT("transformed_layout_modified(): no layout_")};
             if (!transformed_layout_)
                 transformed_layout_ = layout_->transform(transformation_);
             return transformed_layout_;

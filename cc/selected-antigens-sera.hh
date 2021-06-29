@@ -29,9 +29,9 @@ namespace acmacs::chart
             bool empty() const { return indexes.empty(); }
             size_t size() const { return indexes.size(); }
 
-            // no is not a antigen_no/serum_no, it's no in index, i.e. 0 to size()
             auto operator[](size_t no) const
             {
+                // no is not a antigen_no/serum_no, it's no in index, i.e. 0 to size()
                 const auto ag_sr_no = indexes[no];
                 return std::pair{ag_sr_no, ag_sr()->ptr_at(ag_sr_no)};
             }
@@ -77,6 +77,9 @@ namespace acmacs::chart
             SelectedIterator<AgSr, Chrt> begin();
             SelectedIterator<AgSr, Chrt> end();
 
+            SelectedIterator<AgSr, Chrt> begin() const;
+            SelectedIterator<AgSr, Chrt> end() const;
+
             std::shared_ptr<Chrt> chart;
             PointIndexList indexes;
         };
@@ -84,7 +87,7 @@ namespace acmacs::chart
         template <typename AgSr, typename Chrt> struct SelectedIterator
         {
           public:
-            SelectedIterator(Selected<AgSr, Chrt>& parent, typename PointIndexList::const_iterator current) : parent_{parent}, current_{current} {}
+            SelectedIterator(const Selected<AgSr, Chrt>& parent, typename PointIndexList::const_iterator current) : parent_{parent}, current_{current} {}
 
             SelectedIterator& operator++()
             {
@@ -103,6 +106,9 @@ namespace acmacs::chart
 
         template <typename AgSr, typename Chrt> SelectedIterator<AgSr, Chrt> Selected<AgSr, Chrt>::begin() { return SelectedIterator<AgSr, Chrt>{*this, indexes.begin()}; }
         template <typename AgSr, typename Chrt> SelectedIterator<AgSr, Chrt> Selected<AgSr, Chrt>::end() { return SelectedIterator<AgSr, Chrt>{*this, indexes.end()}; }
+
+        template <typename AgSr, typename Chrt> SelectedIterator<AgSr, Chrt> Selected<AgSr, Chrt>::begin() const { return SelectedIterator<AgSr, Chrt>{*this, indexes.begin()}; }
+        template <typename AgSr, typename Chrt> SelectedIterator<AgSr, Chrt> Selected<AgSr, Chrt>::end() const { return SelectedIterator<AgSr, Chrt>{*this, indexes.end()}; }
 
         template <> inline std::shared_ptr<Antigens> Selected<Antigens, Chart>::ag_sr() const { return chart->antigens(); }
         template <> inline std::shared_ptr<AntigensModify> Selected<AntigensModify, ChartModify>::ag_sr() const { return chart->antigens_modify_ptr(); }
