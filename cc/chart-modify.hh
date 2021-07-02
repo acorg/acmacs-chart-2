@@ -580,6 +580,13 @@ namespace acmacs::chart
             modify();
             disconnected_ = disconnect;
         }
+        void connect_all_disconnected()
+        {
+            if (!disconnected_.empty()) {
+                modify();
+                disconnected_.clear();
+            }
+        }
         void disconnect_having_too_few_numeric_titers(optimization_options options, const Titers& titers);
         void set_unmovable_in_the_last_dimension(const UnmovableInTheLastDimensionPoints& a_unmovable_in_the_last_dimension)
         {
