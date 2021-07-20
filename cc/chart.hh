@@ -469,6 +469,7 @@ namespace acmacs::chart
         size_t point_no;
         std::shared_ptr<AgSr> ag_sr;
         PointCoordinates coord;
+        std::shared_ptr<Titers> titers{nullptr};
     };
 
     // ----------------------------------------------------------------------
@@ -497,8 +498,8 @@ namespace acmacs::chart
             Indexes all_indexes() const { return Indexes{acmacs::filled_with_indexes(size())}; }
 
             // call func for each antigen and select ag/sr if func returns true
-            template <typename F> Indexes indexes(F&& func) const { return make_indexes(std::forward<F>(func)); }
-            template <typename F> Indexes indexes(const Layout& layout, size_t index_base, F&& func) const { return make_indexes(layout, index_base, std::forward<F>(func)); }
+            template <typename F> Indexes indexes(F&& func, std::shared_ptr<Titers> titers) const { return make_indexes(std::forward<F>(func), titers); }
+            template <typename F> Indexes indexes(const Layout& layout, size_t index_base, F&& func, std::shared_ptr<Titers> titers) const { return make_indexes(layout, index_base, std::forward<F>(func), titers); }
 
             void filter_found_in(Indexes& aIndexes, const AntigensSera<AgSr>& aNother) const
             {
@@ -663,9 +664,9 @@ namespace acmacs::chart
             }
 
           protected:
-            template <typename F> Indexes make_indexes(F&& test) const
+            template <typename F> Indexes make_indexes(F&& test, std::shared_ptr<Titers> titers = nullptr) const
             {
-                const auto call = [&test](size_t no, const std::shared_ptr<AgSr>& ptr) -> bool {
+                const auto call = [&](size_t no, const std::shared_ptr<AgSr>& ptr) -> bool {
                     if constexpr (std::is_invocable_v<F, const AgSr&>)
                         return test(*ptr);
                     else if constexpr (std::is_invocable_v<F, size_t, const AgSr&>)
@@ -675,7 +676,8 @@ namespace acmacs::chart
                     else if constexpr (std::is_invocable_v<F, size_t, std::shared_ptr<AgSr>>)
                         return test(no, ptr);
                     else if constexpr (std::is_invocable_v<F, const SelectionData<AgSr>&>)
-                        return test(SelectionData<AntigenSerumType>{.index = no, .point_no = static_cast<size_t>(-1), .ag_sr = ptr, .coord = PointCoordinates{PointCoordinates::nan2D}});
+                        return test(
+                            SelectionData<AntigenSerumType>{.index = no, .point_no = static_cast<size_t>(-1), .ag_sr = ptr, .coord = PointCoordinates{PointCoordinates::nan2D}, .titers = titers});
                     else
                         static_assert(std::is_invocable_v<F, void, int>, "unsupported filter function signature");
                 };
@@ -688,16 +690,16 @@ namespace acmacs::chart
                 return result;
             }
 
-            template <typename F> Indexes make_indexes(const Layout& layout, size_t index_base, F&& test) const
+            template <typename F> Indexes make_indexes(const Layout& layout, size_t index_base, F&& test, std::shared_ptr<Titers> titers) const
             {
                 Indexes result;
                 for (size_t no = 0; no < size(); ++no) {
-                    if (test(SelectionData<AntigenSerumType>{.index = no, .point_no = no + index_base, .ag_sr = at(no), .coord = layout.at(no + index_base)}))
+                    if (test(SelectionData<AntigenSerumType>{.index = no, .point_no = no + index_base, .ag_sr = at(no), .coord = layout.at(no + index_base), .titers = titers}))
                         result.insert(no);
                 }
                 return result;
             }
-            };
+        };
 
     } // namespace detail
 
