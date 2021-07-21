@@ -956,10 +956,10 @@ namespace acmacs::chart
                 size_t index_base{0};
                 if constexpr (std::is_base_of_v<Sera, AgSr>)
                     index_base = number_of_antigens();
-                return ag_sr.indexes(*prj->at(projection_no)->transformed_layout(), index_base, std::forward<F>(func));
+                return ag_sr.indexes(*prj->at(projection_no)->transformed_layout(), index_base, std::forward<F>(func), titers());
             }
             else {
-                return ag_sr.indexes(std::forward<F>(func));
+                return ag_sr.indexes(std::forward<F>(func), titers());
             }
         }
 
