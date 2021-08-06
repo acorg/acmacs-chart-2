@@ -36,7 +36,7 @@ namespace acmacs::chart
                 return std::pair{ag_sr_no, ag_sr()->ptr_at(ag_sr_no)};
             }
 
-            // substitutions in format: {no0} {no1} {AG_SR} {name} {full_name}
+            // substitutions in format: {no0} {no1} {ag_sr} {name} {full_name}
             std::string report(std::string_view format = "{no0},") const
             {
                 fmt::memory_buffer out;
@@ -45,7 +45,7 @@ namespace acmacs::chart
                 return fmt::to_string(out);
             }
 
-            // substitutions in format: {no0} {no1} {AG_SR} {name} {full_name}
+            // substitutions in format: {no0} {no1} {ag_sr} {name} {full_name}
             std::vector<std::string> report_list(std::string_view format = "{name}") const
             {
                 std::vector<std::string> result(indexes.size());
