@@ -43,7 +43,7 @@ int main(int argc, char* const argv[])
             auto master_projection = chart.projection(opt.projection);
             const size_t relax_attempts = 20;
             const auto [grid_results, grid_projections] = acmacs::chart::grid_test(chart, opt.projection, opt.grid_step, opt.threads, relax_attempts, opt.grid_json);
-            AD_PRINT(""); // new line after grid test report
+            AD_PRINT_NEWLINE();
 
             if (opt.output.has_value()) {
                 if (grid_projections) {

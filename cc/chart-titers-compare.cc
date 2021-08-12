@@ -98,7 +98,7 @@ class Titers
                     for (const auto [sr_no, titer] : acmacs::enumerate(per_table_per_serum[table_no])) {
                         if (titer) {
                             if (const auto* titer1 = per_table_per_serum[0][sr_no]; table_no == 0 || !titer1 || *titer1 != *titer)
-                                fmt::format_to_mb(result, "{: >{}s}", *titer, column_width);
+                                fmt::format_to_mb(result, "{: >{}s}", fmt::format("{}", *titer), column_width);
                             else
                                 fmt::format_to_mb(result, "{: >{}s}", "^", column_width);
                         }
@@ -182,14 +182,14 @@ class Titers2
             for (const auto& serum : all_sera) {
                 for (const auto& en : data_) {
                     if (en.antigen.primary == antigen.primary && en.antigen.secondary == antigen.secondary && en.serum.primary == serum.primary && en.serum.secondary == serum.secondary)
-                        fmt::print(" {:>7s} ", en.titers[0]);
+                        fmt::print(" {:>7s} ", fmt::format("{}", en.titers[0]));
                 }
             }
             fmt::print("\n");
             for (const auto& serum : all_sera) {
                 for (const auto& en : data_) {
                     if (en.antigen.primary == antigen.primary && en.antigen.secondary == antigen.secondary && en.serum.primary == serum.primary && en.serum.secondary == serum.secondary)
-                        fmt::print(" {:>7s} ", en.titers[1]);
+                        fmt::print(" {:>7s} ", fmt::format("{}", en.titers[1]));
                 }
             }
             fmt::print("\n\n");

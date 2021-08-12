@@ -177,9 +177,9 @@ void acmacs::chart::detail::serum_circle_empirical(const SerumCircle& circle_dat
         fmt::print(stderr, "  AG    distance   titer   simil   fsimil\n");
         for (auto ag_no : antigens_by_distances) {
             if (titers_and_distances[ag_no])
-                fmt::print(stderr, " {:4d}   {:7.4f}  {:>6s}     {:4.2f}    {:4.2f}\n", ag_no, titers_and_distances[ag_no].distance, titers_and_distances[ag_no].titer, titers_and_distances[ag_no].similarity, titers_and_distances[ag_no].final_similarity);
+                fmt::print(stderr, " {:4d}   {:7.4f}  {:>6s}     {:4.2f}    {:4.2f}\n", ag_no, titers_and_distances[ag_no].distance, fmt::format("{}", titers_and_distances[ag_no].titer), titers_and_distances[ag_no].similarity, titers_and_distances[ag_no].final_similarity);
             else if (!titers_and_distances[ag_no].titer.is_dont_care())
-                fmt::print(stderr, " {:4d}   disconn  {:>6s}     {:4.2f}    {:4.2f}\n", ag_no, titers_and_distances[ag_no].titer, titers_and_distances[ag_no].similarity, titers_and_distances[ag_no].final_similarity);
+                fmt::print(stderr, " {:4d}   disconn  {:>6s}     {:4.2f}    {:4.2f}\n", ag_no, fmt::format("{}", titers_and_distances[ag_no].titer), titers_and_distances[ag_no].similarity, titers_and_distances[ag_no].final_similarity);
         }
     }
 

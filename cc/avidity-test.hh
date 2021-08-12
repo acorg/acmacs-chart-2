@@ -102,7 +102,7 @@ namespace acmacs::chart
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<acmacs::chart::avidity::PerAdjust> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::chart::avidity::PerAdjust& per_adjust, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const acmacs::chart::avidity::PerAdjust& per_adjust, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), "{:4.1f}  diff:{:8.4f} dist:{:7.4f} angle:{:7.4f} aver_pc_dist:{:7.4f}", per_adjust.logged_adjust, per_adjust.stress_diff, per_adjust.distance_test_antigen,
                          per_adjust.angle_test_antigen, per_adjust.average_procrustes_distances_except_test_antigen);
@@ -110,7 +110,7 @@ template <> struct fmt::formatter<acmacs::chart::avidity::PerAdjust> : fmt::form
 };
 
 template <> struct fmt::formatter<acmacs::chart::avidity::Result> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::chart::avidity::Result& result, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const acmacs::chart::avidity::Result& result, FormatCtx& ctx) const
     {
         format_to(ctx.out(), "AG {}\n    {}\n", result.antigen_no, result.best_adjust());
         for (const auto& en : result.adjusts)
@@ -120,7 +120,7 @@ template <> struct fmt::formatter<acmacs::chart::avidity::Result> : fmt::formatt
 };
 
 template <> struct fmt::formatter<acmacs::chart::avidity::Results> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::chart::avidity::Results& results, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const acmacs::chart::avidity::Results& results, FormatCtx& ctx) const
     {
         for (const auto& result : results.results)
             format_to(ctx.out(), "{}\n", result);

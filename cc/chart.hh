@@ -1074,21 +1074,20 @@ template <> struct std::iterator_traits<acmacs::chart::Projections::iterator>
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<acmacs::chart::BLineage> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::chart::BLineage& lineage, FormatCtx& ctx) { return format_to(ctx.out(), "{}", lineage.to_string()); }
+    template <typename FormatCtx> auto format(const acmacs::chart::BLineage& lineage, FormatCtx& ctx) const { return format_to(ctx.out(), "{}", lineage.to_string()); }
 };
 
-
 template <> struct fmt::formatter<acmacs::chart::Antigen> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::chart::Antigen& antigen, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const acmacs::chart::Antigen& antigen, FormatCtx& ctx) const
     {
-        return fmt::format_to(ctx.out(), antigen.format("{name_full} [{date}]{ }{lab_ids}{ }{lineage}", acmacs::chart::collapse_spaces_t::yes));
+        return fmt::format_to(ctx.out(), fmt::runtime(antigen.format("{name_full} [{date}]{ }{lab_ids}{ }{lineage}", acmacs::chart::collapse_spaces_t::yes)));
     }
 };
 
 template <> struct fmt::formatter<acmacs::chart::Serum> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::chart::Serum& serum, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const acmacs::chart::Serum& serum, FormatCtx& ctx) const
     {
-        return fmt::format_to(ctx.out(), serum.format("{name_full}{ }{lineage}{ }{species}", acmacs::chart::collapse_spaces_t::yes));
+        return fmt::format_to(ctx.out(), fmt::runtime(serum.format("{name_full}{ }{lineage}{ }{species}", acmacs::chart::collapse_spaces_t::yes)));
     }
 };
 

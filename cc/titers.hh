@@ -269,15 +269,19 @@ namespace acmacs::chart
 
 // ----------------------------------------------------------------------
 
+template <> struct fmt::formatter<acmacs::chart::Titer> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const acmacs::chart::Titer& titer, FormatCtx& ctx) const { return fmt::format_to(ctx.out(), "{}", titer.get()); }
+};
+
 template <> struct fmt::formatter<acmacs::chart::TiterIterator::Data> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::chart::TiterIterator::Data& value, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const acmacs::chart::TiterIterator::Data& value, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), "ag:{} sr:{} t:{}", value.antigen, value.serum, value.titer);
     }
 };
 
 template <> struct fmt::formatter<std::vector<acmacs::chart::Titer>> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const std::vector<acmacs::chart::Titer>& titers, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const std::vector<acmacs::chart::Titer>& titers, FormatCtx& ctx) const
     {
         format_to(ctx.out(), "[");
         bool first{true};
@@ -293,7 +297,7 @@ template <> struct fmt::formatter<std::vector<acmacs::chart::Titer>> : fmt::form
 };
 
 template <> struct fmt::formatter<std::set<acmacs::chart::Titer>> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const std::set<acmacs::chart::Titer>& titers, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const std::set<acmacs::chart::Titer>& titers, FormatCtx& ctx) const
     {
         format_to(ctx.out(), "{{");
         bool first{true};

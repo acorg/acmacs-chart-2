@@ -766,8 +766,8 @@ acmacs::chart::CommonAntigensSera::match_level_t acmacs::chart::CommonAntigensSe
                 match_level = match_level_t::automatic;
                 break;
             default:
-              AD_WARNING(fmt::format("unrecognized match level: \"{}\", automatic assumed", source));
-              break;
+                AD_WARNING("unrecognized match level: \"{}\", automatic assumed", source);
+                break;
         }
     }
     return match_level;
