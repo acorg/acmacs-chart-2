@@ -398,24 +398,24 @@ template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<Ag
     if (number_of_common_) {
         const size_t primary_name_size = primary_name_max_size();
         const auto num_dgt = num_digits();
-        fmt::format_to(output, "{:{}s}common {}: {} (total primary: {} secondary: {})\n", "", indent, prefix, number_of_common_, primary_.size(), secondary_.size());
+        fmt::format_to_mb(output, "{:{}s}common {}: {} (total primary: {} secondary: {})\n", "", indent, prefix, number_of_common_, primary_.size(), secondary_.size());
         const auto common = find_common();
         for (const auto& cmn : common) {
-            fmt::format_to(output, "{:{}c}{:<{}s} {:{}d} {:<{}s} | {:{}d} {}\n", ' ', indent, score_names[static_cast<size_t>(cmn.score)], score_names_max, cmn.primary_index, num_dgt,
+            fmt::format_to_mb(output, "{:{}c}{:<{}s} {:{}d} {:<{}s} | {:{}d} {}\n", ' ', indent, score_names[static_cast<size_t>(cmn.score)], score_names_max, cmn.primary_index, num_dgt,
                            find_primary(cmn.primary_index).full_name(), primary_name_size, cmn.secondary_index, num_dgt, secondary_[cmn.secondary_index].full_name());
         }
         if (acmacs::log::is_enabled(acmacs::log::common)) {
-            fmt::format_to(output, ">>>> [common] {:{}}common in primary {}: {}\n", "", indent, prefix,
+            fmt::format_to_mb(output, ">>>> [common] {:{}}common in primary {}: {}\n", "", indent, prefix,
                            ranges::views::transform(common, [](const auto& cmn) { return cmn.primary_index; }) | ranges::to_vector);
-            fmt::format_to(output, ">>>> [common] {:{}}common in secondary {}: {}\n", "", indent, prefix,
+            fmt::format_to_mb(output, ">>>> [common] {:{}}common in secondary {}: {}\n", "", indent, prefix,
                            ranges::views::transform(common, [](const auto& cmn) { return cmn.secondary_index; }) | ranges::to_vector);
             const auto [unique_in_primary, unique_in_secondary] = find_unique(common);
-            fmt::format_to(output, ">>>> [common] {:{}}unique in primary {}: {}\n", "", indent, prefix, unique_in_primary);
-            fmt::format_to(output, ">>>> [common] {:{}}unique in secondary {}: {}\n", "", indent, prefix, unique_in_secondary);
+            fmt::format_to_mb(output, ">>>> [common] {:{}}unique in primary {}: {}\n", "", indent, prefix, unique_in_primary);
+            fmt::format_to_mb(output, ">>>> [common] {:{}}unique in secondary {}: {}\n", "", indent, prefix, unique_in_secondary);
         }
     }
     else {
-        fmt::format_to(output, "{:{}}no common {}\n", ' ', indent, prefix);
+        fmt::format_to_mb(output, "{:{}}no common {}\n", ' ', indent, prefix);
     }
     return fmt::to_string(output);
 
@@ -429,16 +429,16 @@ template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<Ag
     const size_t primary_name_size = primary_name_max_size();
     const auto [unique_in_primary, unique_in_secondary] = find_unique(find_common());
     fmt::memory_buffer output;
-    fmt::format_to(output, "{:{}}unique primary {}: {} (total: {}) secondary: {} (total: {})\n", "", indent, prefix, unique_in_primary.size(), primary_.size(), unique_in_secondary.size(),
+    fmt::format_to_mb(output, "{:{}}unique primary {}: {} (total: {}) secondary: {} (total: {})\n", "", indent, prefix, unique_in_primary.size(), primary_.size(), unique_in_secondary.size(),
                    secondary_.size());
     for (const auto no : range_from_0_to(std::max(unique_in_primary.size(), unique_in_secondary.size()))) {
         if (no < unique_in_primary.size())
-            fmt::format_to(output, "{:{}s}{:{}d} {:<{}s} |", "", indent, unique_in_primary[no], num_dgt, find_primary(unique_in_primary[no]).full_name(), primary_name_size);
+            fmt::format_to_mb(output, "{:{}s}{:{}d} {:<{}s} |", "", indent, unique_in_primary[no], num_dgt, find_primary(unique_in_primary[no]).full_name(), primary_name_size);
         else
-            fmt::format_to(output, "{:{}s}{:{}c} {:{}c} |", "", indent, ' ', num_dgt, ' ', primary_name_size);
+            fmt::format_to_mb(output, "{:{}s}{:{}c} {:{}c} |", "", indent, ' ', num_dgt, ' ', primary_name_size);
         if (no < unique_in_secondary.size())
-            fmt::format_to(output, " {:{}d} {}", unique_in_secondary[no], num_dgt, secondary_[unique_in_secondary[no]].full_name());
-        fmt::format_to(output, "\n");
+            fmt::format_to_mb(output, " {:{}d} {}", unique_in_secondary[no], num_dgt, secondary_[unique_in_secondary[no]].full_name());
+        fmt::format_to_mb(output, "\n");
     }
     return fmt::to_string(output);
 

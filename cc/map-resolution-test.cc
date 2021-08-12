@@ -208,7 +208,7 @@ void create_directory_for_intermediate_charts(const acmacs::chart::map_resolutio
             fs::create_directory(parameters.save_charts_to);
         else if (!fs::is_directory(parameters.save_charts_to))
             throw std::runtime_error(fmt::format("{} exists and it is not a directory", parameters.save_charts_to));
-        acmacs::file::write(fmt::format("{}/README.acmacs-map-resolution-test", parameters.save_charts_to), fmt::format(readme_text, parameters));
+        acmacs::file::write(fmt::format("{}/README.acmacs-map-resolution-test", parameters.save_charts_to), fmt::format(fmt::runtime(readme_text), parameters));
     }
 
 } // create_directory_for_intermediate_charts

@@ -198,16 +198,16 @@ std::pair<acmacs::chart::ChartModifyP, acmacs::chart::MergeReport> acmacs::chart
     merge_antigens_sera(result_sera, *chart2.sera(), report.sera_secondary_target, false);
     if (const auto rda = result_antigens.find_duplicates(), rds = result_sera.find_duplicates(); !rda.empty() || !rds.empty()) {
         fmt::memory_buffer msg;
-        fmt::format_to(msg, "Merge \"{}\" has duplicates: AG:{} SR:{}\n", result->description(), rda, rds);
+        fmt::format_to_mb(msg, "Merge \"{}\" has duplicates: AG:{} SR:{}\n", result->description(), rda, rds);
         for (const auto& dups : rda) {
             for (const auto ag_no : dups)
-                fmt::format_to(msg, "  AG {:5d} {}\n", ag_no, result_antigens.at(ag_no).name_full());
-            fmt::format_to(msg, "\n");
+                fmt::format_to_mb(msg, "  AG {:5d} {}\n", ag_no, result_antigens.at(ag_no).name_full());
+            fmt::format_to_mb(msg, "\n");
         }
         for (const auto& dups : rds) {
             for (const auto sr_no : dups)
-                fmt::format_to(msg, "  SR {:5d} {}\n", sr_no, result_sera.at(sr_no).name_full());
-            fmt::format_to(msg, "\n");
+                fmt::format_to_mb(msg, "  SR {:5d} {}\n", sr_no, result_sera.at(sr_no).name_full());
+            fmt::format_to_mb(msg, "\n");
         }
         const auto err_message = fmt::to_string(msg);
         // AD_ERROR("{}", err_message);
@@ -503,22 +503,22 @@ std::string acmacs::chart::MergeReport::titer_merge_report(const ChartModify& ch
     const auto max_field = std::max(static_cast<int>(std::max(max_full_name(*chart.antigens()), chart.info()->max_source_name())), 20);
 
     fmt::memory_buffer output;
-    fmt::format_to(output, "Acmacs merge table and diagnositics\n\n{}\n{}\n\n", chart.description(), chart.show_table());
+    fmt::format_to_mb(output, "Acmacs merge table and diagnositics\n\n{}\n{}\n\n", chart.description(), chart.show_table());
 
-    fmt::format_to(output, "                                   DIAGNOSTICS\n         (common titers, and how they merged, and the individual tables)\n\n");
-    fmt::format_to(output, "{}\n", titer_merge_diagnostics(chart, PointIndexList{filled_with_indexes(chart.antigens()->size())}, PointIndexList{filled_with_indexes(chart.sera()->size())}, max_field));
+    fmt::format_to_mb(output, "                                   DIAGNOSTICS\n         (common titers, and how they merged, and the individual tables)\n\n");
+    fmt::format_to_mb(output, "{}\n", titer_merge_diagnostics(chart, PointIndexList{filled_with_indexes(chart.antigens()->size())}, PointIndexList{filled_with_indexes(chart.sera()->size())}, max_field));
 
     for (auto layer_no : acmacs::range(chart.titers()->number_of_layers())) {
         if (layer_no < chart.info()->number_of_sources())
-            fmt::format_to(output, "{}\n", chart.info()->source(layer_no)->name_non_empty());
+            fmt::format_to_mb(output, "{}\n", chart.info()->source(layer_no)->name_non_empty());
         else
-            fmt::format_to(output, "layer {}\n", layer_no);
-        fmt::format_to(output, "{}\n\n", chart.show_table(layer_no));
+            fmt::format_to_mb(output, "layer {}\n", layer_no);
+        fmt::format_to_mb(output, "{}\n\n", chart.show_table(layer_no));
     }
 
-    fmt::format_to(output, "    Table merge subset showing only rows and columns that have merged values\n        (same as first diagnostic output, but subsetted for changes only)\n");
+    fmt::format_to_mb(output, "    Table merge subset showing only rows and columns that have merged values\n        (same as first diagnostic output, but subsetted for changes only)\n");
     const auto [antigens, sera] = chart.titers()->antigens_sera_in_multiple_layers();
-    fmt::format_to(output, "{}\n", titer_merge_diagnostics(chart, antigens, sera, max_field));
+    fmt::format_to_mb(output, "{}\n", titer_merge_diagnostics(chart, antigens, sera, max_field));
 
     return fmt::to_string(output);
 
@@ -531,26 +531,26 @@ std::string acmacs::chart::MergeReport::titer_merge_report_common_only(const Cha
     const auto max_field = std::max(static_cast<int>(std::max(max_full_name(*chart.antigens()), chart.info()->max_source_name())), 20);
 
     fmt::memory_buffer output;
-    fmt::format_to(output, "Acmacs merge diagnositics for common antigens and sera\n\n{}\n\n", chart.description());
+    fmt::format_to_mb(output, "Acmacs merge diagnositics for common antigens and sera\n\n{}\n\n", chart.description());
 
     if (common.common_antigens() && common.common_sera()) {
-        fmt::format_to(output, "                                   DIAGNOSTICS\n         (common titers, and how they merged, and the individual tables)\n\n");
-        fmt::format_to(output, "{}\n", titer_merge_diagnostics(chart, common.common_primary_antigens(), common.common_primary_sera(), max_field));
+        fmt::format_to_mb(output, "                                   DIAGNOSTICS\n         (common titers, and how they merged, and the individual tables)\n\n");
+        fmt::format_to_mb(output, "{}\n", titer_merge_diagnostics(chart, common.common_primary_antigens(), common.common_primary_sera(), max_field));
 
         // for (auto layer_no : acmacs::range(chart.titers()->number_of_layers())) {
         //     if (layer_no < chart.info()->number_of_sources())
-        //         fmt::format_to(output, "{}\n", chart.info()->source(layer_no)->name_non_empty());
+        //         fmt::format_to_mb(output, "{}\n", chart.info()->source(layer_no)->name_non_empty());
         //     else
-        //         fmt::format_to(output, "layer {}\n", layer_no);
-        //     fmt::format_to(output, "{}\n\n", chart.show_table(layer_no));
+        //         fmt::format_to_mb(output, "layer {}\n", layer_no);
+        //     fmt::format_to_mb(output, "{}\n\n", chart.show_table(layer_no));
         // }
 
-        // fmt::format_to(output, "    Table merge subset showing only rows and columns that have merged values\n        (same as first diagnostic output, but subsetted for changes only)\n");
+        // fmt::format_to_mb(output, "    Table merge subset showing only rows and columns that have merged values\n        (same as first diagnostic output, but subsetted for changes only)\n");
         // const auto [antigens, sera] = chart.titers()->antigens_sera_in_multiple_layers();
-        // fmt::format_to(output, "{}\n", titer_merge_diagnostics(chart, antigens, sera, max_field));
+        // fmt::format_to_mb(output, "{}\n", titer_merge_diagnostics(chart, antigens, sera, max_field));
     }
     else
-        fmt::format_to(output, ">> WARNING: common only report cannot be done: common antigens: {} common sera: {}", common.common_antigens(), common.common_sera());
+        fmt::format_to_mb(output, ">> WARNING: common only report cannot be done: common antigens: {} common sera: {}", common.common_antigens(), common.common_sera());
 
     return fmt::to_string(output);
 
@@ -567,44 +567,44 @@ std::string acmacs::chart::MergeReport::titer_merge_diagnostics(const ChartModif
     auto tt = chart.titers();
 
     fmt::memory_buffer output;
-    fmt::format_to(output, "{:{}s}", "", max_field_size);
+    fmt::format_to_mb(output, "{:{}s}", "", max_field_size);
     for (auto sr_no : sera)
-        fmt::format_to(output, "{:>7d}", sr_label(sr_no));
-    fmt::format_to(output, "\n{:{}s}", "", max_field_size + 2);
+        fmt::format_to_mb(output, "{:>7d}", sr_label(sr_no));
+    fmt::format_to_mb(output, "\n{:{}s}", "", max_field_size + 2);
     for (auto sr_no : sera)
-        fmt::format_to(output, "{:>7s}", srs->at(sr_no)->format("{location_abbreviated}/{year2}"));
-    fmt::format_to(output, "\n");
+        fmt::format_to_mb(output, "{:>7s}", srs->at(sr_no)->format("{location_abbreviated}/{year2}"));
+    fmt::format_to_mb(output, "\n");
 
     for (auto ag_no : antigens) {
         auto antigen = ags->at(ag_no);
-        fmt::format_to(output, "{}\n", antigen->name_full());
+        fmt::format_to_mb(output, "{}\n", antigen->name_full());
         for (auto layer_no : acmacs::range(tt->number_of_layers())) {
             if (layer_no < chart.info()->number_of_sources())
-                fmt::format_to(output, "{:<{}s}", chart.info()->source(layer_no)->name_non_empty(), max_field_size + 2);
+                fmt::format_to_mb(output, "{:<{}s}", chart.info()->source(layer_no)->name_non_empty(), max_field_size + 2);
             else
-                fmt::format_to(output, "{:<{}s}", fmt::format("layer {}", layer_no), max_field_size + 2);
+                fmt::format_to_mb(output, "{:<{}s}", fmt::format("layer {}", layer_no), max_field_size + 2);
             for (auto sr_no : sera) {
                 auto titer = tt->titer_of_layer(layer_no, ag_no, sr_no);
-                fmt::format_to(output, "{:>7s}", (titer.is_dont_care() ? "" : *titer));
+                fmt::format_to_mb(output, "{:>7s}", (titer.is_dont_care() ? "" : *titer));
             }
-            fmt::format_to(output, "\n");
+            fmt::format_to_mb(output, "\n");
         }
-        fmt::format_to(output, "{:<{}s}", "Merge", max_field_size + 2);
+        fmt::format_to_mb(output, "{:<{}s}", "Merge", max_field_size + 2);
         for (auto sr_no : sera)
-            fmt::format_to(output, "{:>7s}", *tt->titer(ag_no, sr_no));
-        fmt::format_to(output, "\n");
+            fmt::format_to_mb(output, "{:>7s}", *tt->titer(ag_no, sr_no));
+        fmt::format_to_mb(output, "\n");
 
-        fmt::format_to(output, "{:<{}s}", "Report (see below)", max_field_size + 2);
+        fmt::format_to_mb(output, "{:<{}s}", "Report (see below)", max_field_size + 2);
         for (auto sr_no : sera) {
             if (const auto found = std::find_if(titer_report->begin(), titer_report->end(), [ag_no=ag_no,sr_no](const auto& entry) { return entry.antigen == ag_no && entry.serum == sr_no; }); found != titer_report->end())
-                fmt::format_to(output, "{:>7s}", TitersModify::titer_merge_report_brief(found->report));
+                fmt::format_to_mb(output, "{:>7s}", TitersModify::titer_merge_report_brief(found->report));
             else
-                fmt::format_to(output, "       ");
+                fmt::format_to_mb(output, "       ");
         }
-        fmt::format_to(output, "\n\n");
+        fmt::format_to_mb(output, "\n\n");
     }
 
-    fmt::format_to(output, "{}\n", TitersModify::titer_merge_report_description());
+    fmt::format_to_mb(output, "{}\n", TitersModify::titer_merge_report_description());
 
     return fmt::to_string(output);
 

@@ -90,7 +90,7 @@ namespace acmacs::chart
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<acmacs::chart::ColumnBases> : fmt::formatter<acmacs::fmt_helper::float_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::chart::ColumnBases& cb, FormatCtx& ctx) {
+    template <typename FormatCtx> auto format(const acmacs::chart::ColumnBases& cb, FormatCtx& ctx) const {
         format_to(ctx.out(), "[");
         for (size_t sr_no{0}; sr_no < cb.size(); ++sr_no) {
             if (sr_no)
@@ -102,7 +102,7 @@ template <> struct fmt::formatter<acmacs::chart::ColumnBases> : fmt::formatter<a
 };
 
 template <> struct fmt::formatter<std::shared_ptr<acmacs::chart::ColumnBases>> : fmt::formatter<acmacs::chart::ColumnBases> {
-    template <typename FormatCtx> auto format(const std::shared_ptr<acmacs::chart::ColumnBases>& cb, FormatCtx& ctx) {
+    template <typename FormatCtx> auto format(const std::shared_ptr<acmacs::chart::ColumnBases>& cb, FormatCtx& ctx) const {
         if (cb)
             return fmt::formatter<acmacs::chart::ColumnBases>::format(*cb, ctx);
         else
@@ -111,7 +111,7 @@ template <> struct fmt::formatter<std::shared_ptr<acmacs::chart::ColumnBases>> :
 };
 
 template <> struct fmt::formatter<acmacs::chart::MinimumColumnBasis> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const acmacs::chart::MinimumColumnBasis& mcb, FormatCtx& ctx) { return fmt::formatter<std::string>::format(static_cast<std::string>(mcb), ctx); }
+    template <typename FormatCtx> auto format(const acmacs::chart::MinimumColumnBasis& mcb, FormatCtx& ctx) const { return fmt::formatter<std::string>::format(static_cast<std::string>(mcb), ctx); }
 };
 
 // ----------------------------------------------------------------------

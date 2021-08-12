@@ -56,32 +56,32 @@ template <typename AgSr> static std::string name_abbreviated(const AgSr& ag_sr)
 template <typename AgSr> static std::string fields(const AgSr& ag_sr)
 {
     fmt::memory_buffer output;
-    fmt::format_to(output, "{}", ag_sr.name());
+    fmt::format_to_mb(output, "{}", ag_sr.name());
     if (const auto value = fmt::format("{: }", ag_sr.annotations()); !value.empty())
-        fmt::format_to(output, " annotations=\"{}\"", value);
+        fmt::format_to_mb(output, " annotations=\"{}\"", value);
     if (const auto value = ag_sr.reassortant(); !value.empty())
-        fmt::format_to(output, " reassortant=\"{}\"", *value);
+        fmt::format_to_mb(output, " reassortant=\"{}\"", *value);
     if constexpr (std::is_same_v<AgSr, acmacs::chart::Serum>) {
         if (const auto value = ag_sr.serum_id(); !value.empty())
-            fmt::format_to(output, " serum_id=\"{}\"", *value);
+            fmt::format_to_mb(output, " serum_id=\"{}\"", *value);
     }
     if (const auto value = ag_sr.passage(); !value.empty())
-        fmt::format_to(output, " passage=\"{}\" ptype={}", *value, value.passage_type());
+        fmt::format_to_mb(output, " passage=\"{}\" ptype={}", *value, value.passage_type());
     if constexpr (std::is_same_v<AgSr, acmacs::chart::Antigen>) {
         if (const auto value = ag_sr.date(); !value.empty())
-            fmt::format_to(output, " date={}", *value);
+            fmt::format_to_mb(output, " date={}", *value);
     }
     else {
         if (const auto value = ag_sr.serum_species(); !value.empty())
-            fmt::format_to(output, " serum_species=\"{}\"", *value);
+            fmt::format_to_mb(output, " serum_species=\"{}\"", *value);
     }
     if (const auto value = ag_sr.lineage(); value != acmacs::chart::BLineage::Unknown)
-        fmt::format_to(output, " lineage={}", value);
+        fmt::format_to_mb(output, " lineage={}", value);
     if constexpr (std::is_same_v<AgSr, acmacs::chart::Antigen>) {
         if (ag_sr.reference())
-            fmt::format_to(output, " reference");
+            fmt::format_to_mb(output, " reference");
         if (const auto value = ag_sr.lab_ids().join(); !value.empty())
-            fmt::format_to(output, " lab_ids=\"{}\"", value);
+            fmt::format_to_mb(output, " lab_ids=\"{}\"", value);
     }
     return fmt::to_string(output);
 }
@@ -149,7 +149,7 @@ template <> struct fmt::formatter<sequence_aligned_t>
 
 // ----------------------------------------------------------------------
 
-#define FKF(key, call) std::pair{key, [](fmt::memory_buffer& output, std::string_view format, [[maybe_unused]] const auto& ag_sr) { fmt::format_to(output, format, fmt::arg(key, call)); }}
+#define FKF(key, call) std::pair{key, [](fmt::memory_buffer& output, std::string_view format, [[maybe_unused]] const auto& ag_sr) { fmt::format_to_mb(output, fmt::runtime(format), fmt::arg(key, call)); }}
 
 #pragma GCC diagnostic push
 #ifdef __clang__
@@ -222,7 +222,7 @@ template <typename AgSr, typename... Args> static inline void format_ag_sr(fmt::
         if constexpr (std::is_invocable_v<decltype(std::get<1>(key_value)), fmt::memory_buffer&, std::string_view, const AgSr&>)
             std::invoke(std::get<1>(key_value), output, pattern_arg, ag_sr);
         else
-            fmt::format_to(output, pattern_arg, fmt::arg(std::get<0>(key_value), std::get<1>(key_value)));
+            fmt::format_to_mb(output, fmt::runtime(pattern_arg), fmt::arg(std::get<0>(key_value), std::get<1>(key_value)));
     };
     const auto format_no_pattern = [&output](std::string_view no_pattern) { output.append(no_pattern); };
     const auto format_args = [pattern, format_matched, format_no_pattern](const auto&... fargs) {

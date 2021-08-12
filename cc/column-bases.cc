@@ -9,13 +9,13 @@
 // std::string acmacs::to_string(const acmacs::chart::ColumnBases& aColumnBases)
 // {
 //     fmt::memory_buffer result;
-//     fmt::format_to(result, "[");
+//     fmt::format_to_mb(result, "[");
 //     for (auto serum_no: acmacs::range(0, aColumnBases.size())) {
 //         if (serum_no)
-//             fmt::format_to(result, " ");
-//         fmt::format_to(result, "{}", aColumnBases.column_basis(serum_no));
+//             fmt::format_to_mb(result, " ");
+//         fmt::format_to_mb(result, "{}", aColumnBases.column_basis(serum_no));
 //     }
-//     fmt::format_to(result, "]");
+//     fmt::format_to_mb(result, "]");
 //     return fmt::to_string(result);
 
 // } // acmacs::to_string
@@ -46,12 +46,12 @@ std::string acmacs::chart::MinimumColumnBasis::format(std::string_view format, u
 {
     if (is_none()) {
         if (un == use_none::yes)
-            return fmt::format(format, "none");
+            return fmt::format(fmt::runtime(format), "none");
         else
             return {};
     }
     else
-        return fmt::format(format, std::lround(std::exp2(value_) * 10.0));
+        return fmt::format(fmt::runtime(format), std::lround(std::exp2(value_) * 10.0));
 
 } // acmacs::chart::MinimumColumnBasis::format
 

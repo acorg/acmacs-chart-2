@@ -5,4 +5,4 @@
 >   plot-style-per-point: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 8 8 8 19 19 19 19 20 20
 >   styles: 21
 96a97
->     20 shown:true fill:"pink" outline:"black" outline_width:1 size:25 rotation:0 aspect:1 shape:BOX label:{ shown:false text:"" font_family:"" slant:"normal" weight:"normal" size:10 color:"black" rotation:0 interline:0.2 offset:{0, 1}
+>     20 shown:true fill:"pink" outline:"black" outline_width:1 size:25 rotation:0 aspect:1 shape:BOX label:{ shown:false text:"" font_family:"" slant:"normal" weight:"normal" size:10 color:"black" rotation:0 interline:0.2 offset:[0, 1]

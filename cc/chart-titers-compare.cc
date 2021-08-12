@@ -47,14 +47,14 @@ class Titers
         for (const auto [table_no, table] : acmacs::enumerate(all_tables_))
             fmt::print("{:3d} {}\n", table_no, table);
 
-        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name_ + table_prefix + table_no_width + 5);
+        fmt::format_to_mb(result, "{: >{}s}  ", "", max_antigen_name_ + table_prefix + table_no_width + 5);
         for (auto serum_no : acmacs::range(all_sera_.size()))
-            fmt::format_to(result, "{: ^{}d}", serum_no + 1, column_width);
-        fmt::format_to(result, "\n");
-        fmt::format_to(result, "{: >{}s}  ", "", max_antigen_name_ + table_prefix + table_no_width + 5);
+            fmt::format_to_mb(result, "{: ^{}d}", serum_no + 1, column_width);
+        fmt::format_to_mb(result, "\n");
+        fmt::format_to_mb(result, "{: >{}s}  ", "", max_antigen_name_ + table_prefix + table_no_width + 5);
         for (auto serum : all_sera_)
-            fmt::format_to(result, "{: ^8s}", serum.second, column_width);
-        fmt::format_to(result, "\n\n");
+            fmt::format_to_mb(result, "{: ^8s}", serum.second, column_width);
+        fmt::format_to_mb(result, "\n\n");
 
 
         for (const auto [ag_no, antigen] : acmacs::enumerate(all_antigens_)) {
@@ -84,39 +84,39 @@ class Titers
                 if (present_in_table(table_no)) {
                     ++present_in_tables;
                     if (first_table) {
-                        fmt::format_to(result, "{:3d}  {: <{}s} ", ag_no + 1, antigen, max_antigen_name_);
-                        fmt::format_to(result, "{:{}d}{:<2s} ", table_no + 1, table_no_width, "");
+                        fmt::format_to_mb(result, "{:3d}  {: <{}s} ", ag_no + 1, antigen, max_antigen_name_);
+                        fmt::format_to_mb(result, "{:{}d}{:<2s} ", table_no + 1, table_no_width, "");
                     }
                     else {
                         bool matches{true};
                         for (const auto [sr_no, titer] : acmacs::enumerate(per_table_per_serum[table_no]))
                             matches &= !titer || !per_table_per_serum[0][sr_no] || *titer == *per_table_per_serum[0][sr_no];
-                        fmt::format_to(result, "{: >{}s} ", "", max_antigen_name_ + table_prefix);
-                        fmt::format_to(result, "{:{}d}{:<2s} ", table_no + 1, table_no_width, matches ? "^" : "**");
+                        fmt::format_to_mb(result, "{: >{}s} ", "", max_antigen_name_ + table_prefix);
+                        fmt::format_to_mb(result, "{:{}d}{:<2s} ", table_no + 1, table_no_width, matches ? "^" : "**");
                     }
 
                     for (const auto [sr_no, titer] : acmacs::enumerate(per_table_per_serum[table_no])) {
                         if (titer) {
                             if (const auto* titer1 = per_table_per_serum[0][sr_no]; table_no == 0 || !titer1 || *titer1 != *titer)
-                                fmt::format_to(result, "{: >{}s}", *titer, column_width);
+                                fmt::format_to_mb(result, "{: >{}s}", *titer, column_width);
                             else
-                                fmt::format_to(result, "{: >{}s}", "^", column_width);
+                                fmt::format_to_mb(result, "{: >{}s}", "^", column_width);
                         }
                         else
-                            fmt::format_to(result, "{: >{}s}", "", column_width);
+                            fmt::format_to_mb(result, "{: >{}s}", "", column_width);
                     }
                     first_table = false;
-                    fmt::format_to(result, "\n");
+                    fmt::format_to_mb(result, "\n");
                 }
             }
             if (present_in_tables < 2 && present_in_table(0))
-                fmt::format_to(result, "!!!!\n");
-            fmt::format_to(result, "\n\n");
+                fmt::format_to_mb(result, "!!!!\n");
+            fmt::format_to_mb(result, "\n\n");
         }
 
-        fmt::format_to(result, "\n");
+        fmt::format_to_mb(result, "\n");
         for (auto [sr_no, serum] : acmacs::enumerate(all_sera_, 1ul))
-            fmt::format_to(result, "{: >{}s} {:3d} {}\n", "", max_antigen_name_ + table_prefix + table_no_width, sr_no, serum.first);
+            fmt::format_to_mb(result, "{: >{}s} {:3d} {}\n", "", max_antigen_name_ + table_prefix + table_no_width, sr_no, serum.first);
 
         fmt::print("{}\n", fmt::to_string(result));
     }

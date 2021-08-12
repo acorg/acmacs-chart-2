@@ -199,10 +199,10 @@ std::string acmacs::chart::GridTest::Results::report() const
 std::string acmacs::chart::GridTest::Results::report(const ChartModify& chart, std::string_view pattern) const
 {
     fmt::memory_buffer out;
-    fmt::format_to(out, "{}\n", report());
+    fmt::format_to_mb(out, "{}\n", report());
     for (const auto& result : *this) {
         if (result)
-            fmt::format_to(out, "{} {} diff:{:8.4f} dist:{:7.4f}\n", result.diagnosis_str(true), format_point(pattern, chart, result.point_no, collapse_spaces_t::yes), result.contribution_diff, result.distance);
+            fmt::format_to_mb(out, "{} {} diff:{:8.4f} dist:{:7.4f}\n", result.diagnosis_str(true), format_point(pattern, chart, result.point_no, collapse_spaces_t::yes), result.contribution_diff, result.distance);
     }
     return fmt::to_string(out);
 

@@ -555,7 +555,7 @@ void test_insert_remove_serum(acmacs::chart::ChartP chart, size_t before, const 
     if (source_exported != modified_exported) {
         acmacs::file::write("/tmp/source.txt", source_exported, acmacs::file::force_compression::no);
         acmacs::file::write("/tmp/modified.txt", modified_exported, acmacs::file::force_compression::no);
-        throw std::runtime_error(fmt::format("test_insert_remove_serum: {}): exported chart difference, (no ediff!) diff /tmp/source.txt /tmp/modified.txt\n  before: {}", before));
+        throw std::runtime_error(fmt::format("test_insert_remove_serum:: exported chart difference, (no ediff!) diff /tmp/source.txt /tmp/modified.txt\n  before: {}", before));
     }
 
 } // test_insert_remove_serum

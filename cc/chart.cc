@@ -14,45 +14,45 @@
 std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_show, unsigned inf) const
 {
     fmt::memory_buffer text;
-    fmt::format_to(text, "{}\nAntigens: {}   Sera: {}\n", info()->make_info(), number_of_antigens(), number_of_sera());
+    fmt::format_to_mb(text, "{}\nAntigens: {}   Sera: {}\n", info()->make_info(), number_of_antigens(), number_of_sera());
     if (const auto layers = titers()->number_of_layers(); layers)
-        fmt::format_to(text, "Number of layers: {}\n", layers);
+        fmt::format_to_mb(text, "Number of layers: {}\n", layers);
     if (const auto having_too_few_numeric_titers = titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers->empty())
-        fmt::format_to(text, "Points having too few numeric titers:{} {}\n", having_too_few_numeric_titers->size(), having_too_few_numeric_titers);
+        fmt::format_to_mb(text, "Points having too few numeric titers:{} {}\n", having_too_few_numeric_titers->size(), having_too_few_numeric_titers);
 
     if (inf & info_data::column_bases) {
         auto cb = computed_column_bases(acmacs::chart::MinimumColumnBasis{});
-        fmt::format_to(text, "computed column bases:                 {:5.2f}\n", *cb);
+        fmt::format_to_mb(text, fmt::runtime("computed column bases:                 {:5.2f}\n"), *cb);
         for (auto projection_no : range_from_0_to(number_of_projections())) {
             if (auto fcb = projection(projection_no)->forced_column_bases(); fcb) {
-                fmt::format_to(text, "forced column bases for projection {:2d}: {:5.2f}\n", projection_no, *fcb);
-                fmt::format_to(text, "                                 diff: [");
+                fmt::format_to_mb(text, fmt::runtime("forced column bases for projection {:2ul}: {:5.2f}\n"), projection_no, *fcb);
+                fmt::format_to_mb(text, "                                 diff: [");
                 for (const auto sr_no : range_from_0_to(cb->size())) {
                     if (float_equal(cb->column_basis(sr_no), fcb->column_basis(sr_no)))
-                        fmt::format_to(text, "  .   ");
+                        fmt::format_to_mb(text, "  .   ");
                     else
-                        fmt::format_to(text, "{:5.2f} ", cb->column_basis(sr_no) - fcb->column_basis(sr_no));
+                        fmt::format_to_mb(text, "{:5.2f} ", cb->column_basis(sr_no) - fcb->column_basis(sr_no));
                 }
-                fmt::format_to(text, "]\n");
+                fmt::format_to_mb(text, "]\n");
             }
         }
     }
 
-    fmt::format_to(text, "{}\n", projections()->make_info(max_number_of_projections_to_show));
+    fmt::format_to_mb(text, "{}\n", projections()->make_info(max_number_of_projections_to_show));
 
     if (inf & info_data::tables && info()->number_of_sources() > 0) {
-        fmt::format_to(text, "\nTables:\n");
+        fmt::format_to_mb(text, "\nTables:\n");
         for (const auto src_no : range_from_0_to(info()->number_of_sources()))
-            fmt::format_to(text, "{:3d} {}\n", src_no, info()->source(src_no)->make_name());
+            fmt::format_to_mb(text, "{:3d} {}\n", src_no, info()->source(src_no)->make_name());
     }
 
     if (inf & info_data::tables_for_sera && info()->number_of_sources() > 0) {
         auto titers = this->titers();
         auto sera = this->sera();
         for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-            fmt::format_to(text, "SR {:3d} {}\n", sr_no, serum->format("{name_full_passage}"));
+            fmt::format_to_mb(text, "SR {:3d} {}\n", sr_no, serum->format("{name_full_passage}"));
             for (const auto layer_no : titers->layers_with_serum(sr_no))
-                fmt::format_to(text, "    {:3d} {}\n", layer_no, info()->source(layer_no)->make_name());
+                fmt::format_to_mb(text, "    {:3d} {}\n", layer_no, info()->source(layer_no)->make_name());
         }
     }
 
@@ -65,9 +65,9 @@ std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_
             else
                 dates.count("*empty*");
         }
-        fmt::format_to(text, "Antigen dates ({})\n", dates.size());
+        fmt::format_to_mb(text, "Antigen dates ({})\n", dates.size());
         for (const auto& [date, count] : dates.counter())
-            fmt::format_to(text, "    {:7s} {:4d}\n", date, count);
+            fmt::format_to_mb(text, "    {:7s} {:4d}\n", date, count);
     }
 
     return fmt::to_string(text);
@@ -79,12 +79,12 @@ std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_
 std::string acmacs::chart::Chart::make_name(std::optional<size_t> aProjectionNo) const
 {
     fmt::memory_buffer name;
-    fmt::format_to(name, "{}", info()->make_name());
+    fmt::format_to_mb(name, "{}", info()->make_name());
     if (auto prjs = projections(); !prjs->empty() && (!aProjectionNo || *aProjectionNo < prjs->size())) {
         auto prj = (*prjs)[aProjectionNo ? *aProjectionNo : 0];
-        fmt::format_to(name, " {}", prj->minimum_column_basis().format(">={}", MinimumColumnBasis::use_none::no));
+        fmt::format_to_mb(name, " {}", prj->minimum_column_basis().format(">={}", MinimumColumnBasis::use_none::no));
         if (const auto stress = prj->stress(); !std::isnan(stress))
-            fmt::format_to(name, " {:.4f}", stress);
+            fmt::format_to_mb(name, " {:.4f}", stress);
     }
     return fmt::to_string(name);
 
@@ -95,18 +95,18 @@ std::string acmacs::chart::Chart::make_name(std::optional<size_t> aProjectionNo)
 std::string acmacs::chart::Chart::description() const
 {
     fmt::memory_buffer desc;
-    fmt::format_to(desc, "{}", info()->make_name());
+    fmt::format_to_mb(desc, "{}", info()->make_name());
     if (auto prjs = projections(); !prjs->empty()) {
         auto prj = (*prjs)[0];
-        fmt::format_to(desc, "{}", prj->minimum_column_basis().format(">={}", MinimumColumnBasis::use_none::yes));
+        fmt::format_to_mb(desc, "{}", prj->minimum_column_basis().format(">={}", MinimumColumnBasis::use_none::yes));
         if (const auto stress = prj->stress(); !std::isnan(stress))
-            fmt::format_to(desc, " {:.4f}", stress);
+            fmt::format_to_mb(desc, " {:.4f}", stress);
     }
     if (info()->virus_type() == acmacs::virus::type_subtype_t{"B"})
-        fmt::format_to(desc, " {}", lineage());
-    fmt::format_to(desc, " AG:{} Sr:{}", number_of_antigens(), number_of_sera());
+        fmt::format_to_mb(desc, " {}", lineage());
+    fmt::format_to_mb(desc, " AG:{} Sr:{}", number_of_antigens(), number_of_sera());
     if (const auto layers = titers()->number_of_layers(); layers > 1)
-        fmt::format_to(desc, " ({} source tables)", layers);
+        fmt::format_to_mb(desc, " ({} source tables)", layers);
     return fmt::to_string(desc);
 
 } // acmacs::chart::Chart::description
@@ -250,26 +250,26 @@ std::string acmacs::chart::Chart::show_table(std::optional<size_t> layer_no) con
 
     const auto max_ag_name = static_cast<int>(max_full_name(*ags));
 
-    fmt::format_to(output, "{:>{}s}Serum full names are under the table\n{:>{}s}", "", max_ag_name + 6, "", max_ag_name);
+    fmt::format_to_mb(output, "{:>{}s}Serum full names are under the table\n{:>{}s}", "", max_ag_name + 6, "", max_ag_name);
     for (auto sr_ind : range_from_0_to(serum_indexes->size()))
-        fmt::format_to(output, "{:>7d}", sr_label(sr_ind));
-    fmt::format_to(output, "\n");
+        fmt::format_to_mb(output, "{:>7d}", sr_label(sr_ind));
+    fmt::format_to_mb(output, "\n");
 
-    fmt::format_to(output, "{:{}s}", "", max_ag_name + 2);
+    fmt::format_to_mb(output, "{:{}s}", "", max_ag_name + 2);
     for (auto sr_no : serum_indexes)
-        fmt::format_to(output, "{:>7s}", srs->at(sr_no)->format("{location_abbreviated}/{year2}"));
-    fmt::format_to(output, "\n");
+        fmt::format_to_mb(output, "{:>7s}", srs->at(sr_no)->format("{location_abbreviated}/{year2}"));
+    fmt::format_to_mb(output, "\n");
 
     for (auto ag_no : antigen_indexes) {
-        fmt::format_to(output, "{:<{}s}", ags->at(ag_no)->name_full(), max_ag_name + 2);
+        fmt::format_to_mb(output, "{:<{}s}", ags->at(ag_no)->name_full(), max_ag_name + 2);
         for (auto sr_no : serum_indexes)
-            fmt::format_to(output, "{:>7s}", *tt->titer(ag_no, sr_no));
-        fmt::format_to(output, "\n");
+            fmt::format_to_mb(output, "{:>7s}", *tt->titer(ag_no, sr_no));
+        fmt::format_to_mb(output, "\n");
     }
-    fmt::format_to(output, "\n");
+    fmt::format_to_mb(output, "\n");
 
     for (auto [sr_ind, sr_no] : acmacs::enumerate(serum_indexes))
-        fmt::format_to(output, "{:3d} {} {}\n", sr_label(sr_ind), srs->at(sr_no)->format("{location_abbreviated}/{year2}"), srs->at(sr_no)->name_full());
+        fmt::format_to_mb(output, "{:3d} {} {}\n", sr_label(sr_ind), srs->at(sr_no)->format("{location_abbreviated}/{year2}"), srs->at(sr_no)->name_full());
 
     return fmt::to_string(output);
 
@@ -386,13 +386,13 @@ std::string acmacs::chart::Projection::make_info() const
 {
     fmt::memory_buffer result;
     auto lt = layout();
-    fmt::format_to(result, "{:.14f} {}d", stress(), lt->number_of_dimensions());
+    fmt::format_to_mb(result, "{:.14f} {}d", stress(), lt->number_of_dimensions());
     if (auto cmt = comment(); !cmt.empty())
-        fmt::format_to(result, " <{}>", cmt);
+        fmt::format_to_mb(result, " <{}>", cmt);
     if (auto fcb = forced_column_bases(); fcb)
-        fmt::format_to(result, " forced-column-bases"); // fcb
+        fmt::format_to_mb(result, " forced-column-bases"); // fcb
     else
-        fmt::format_to(result, " >={}", minimum_column_basis());
+        fmt::format_to_mb(result, " >={}", minimum_column_basis());
     return fmt::to_string(result);
 
 } // acmacs::chart::Projection::make_info
@@ -454,9 +454,9 @@ acmacs::chart::Blobs acmacs::chart::Projection::blobs(double stress_diff, const 
 std::string acmacs::chart::Projections::make_info(size_t max_number_of_projections_to_show) const
 {
     fmt::memory_buffer text;
-    fmt::format_to(text, "Projections: {}", size());
+    fmt::format_to_mb(text, "Projections: {}", size());
     for (auto projection_no: range_from_0_to(std::min(max_number_of_projections_to_show, size())))
-        fmt::format_to(text, "\n{:3d} {}", projection_no, operator[](projection_no)->make_info());
+        fmt::format_to_mb(text, "\n{:3d} {}", projection_no, operator[](projection_no)->make_info());
     return fmt::to_string(text);
 
 } // acmacs::chart::Projections::make_info

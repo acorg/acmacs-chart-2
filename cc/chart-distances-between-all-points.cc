@@ -86,7 +86,7 @@ void write_text(std::string_view aFilename, size_t projection_no, const acmacs::
     for (const auto p1 : range_from_0_to(number_of_points - 1)) {
         for (const auto p2 : range_from_to(p1 + 1, number_of_points)) {
             const auto distance = layout->distance(p1, p2);
-            fmt::format_to(out, "{}\t{}\t{}\n", name(p1), name(p2), distance);
+            fmt::format_to_mb(out, "{}\t{}\t{}\n", name(p1), name(p2), distance);
         }
     }
     acmacs::file::write(aFilename, fmt::to_string(out));
