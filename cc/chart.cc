@@ -23,7 +23,7 @@ std::string acmacs::chart::Chart::make_info(size_t max_number_of_projections_to_
     if (inf & info_data::column_bases) {
         auto cb = computed_column_bases(acmacs::chart::MinimumColumnBasis{});
         fmt::format_to_mb(text, fmt::runtime("computed column bases:                 {:5.2f}\n"), *cb);
-        for (auto projection_no : range_from_0_to(number_of_projections())) {
+        for (auto projection_no : range_from_0_to(std::min(number_of_projections(), max_number_of_projections_to_show))) {
             if (auto fcb = projection(projection_no)->forced_column_bases(); fcb) {
                 fmt::format_to_mb(text, fmt::runtime("forced column bases for projection {:2d}: {:5.2f}\n"), projection_no, *fcb);
                 fmt::format_to_mb(text, "                                 diff: [");
