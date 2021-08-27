@@ -30,6 +30,7 @@ struct Options : public argv
     option<str>  match{*this, "match", dflt{"auto"}, desc{"match level: \"strict\", \"relaxed\", \"ignored\", \"auto\""}};
     option<str>  merge_type{*this, 'm', "merge-type", dflt{"simple"}, desc{"merge type: \"type1\"..\"type5\", \"incremental\" (type2), \"overlay\" (type3), \"simple\" (type1)"}};
     option<bool> combine_cheating_assays{*this, "combine-cheating-assays", desc{"combine tables if they have the same reference titers"}};
+    option<bool> no_combine_cheating_assays{*this, "no-combine-cheating-assays", desc{"ignored"}};
     option<bool> duplicates_distinct{*this, "duplicates-distinct", desc{"make duplicates distinct"}};
     option<str>  report_titers{*this, "report", desc{"titer merge report"}};
     option<bool> report_common_only{*this, "common-only", desc{"titer merge report for common antigens and sera only"}};
