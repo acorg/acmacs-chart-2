@@ -395,13 +395,14 @@ namespace acmacs::chart
 
             virtual bool is_egg(reassortant_as_egg rae = reassortant_as_egg::yes) const
             {
-                return rae == reassortant_as_egg::yes ? (!reassortant().empty() || passage().is_egg()) : (reassortant().empty() && passage().is_egg()); }
+                return rae == reassortant_as_egg::yes ? (!reassortant().empty() || passage().is_egg()) : (reassortant().empty() && passage().is_egg());
+            }
             bool is_cell() const { return !is_egg(reassortant_as_egg::yes); }
 
             std::string_view passage_type(reassortant_as_egg rae = reassortant_as_egg::yes) const
             {
                 using namespace std::string_view_literals;
-                if (passage().is_egg()) {
+                if (is_egg(reassortant_as_egg::yes)) {
                     if (reassortant().empty() || rae == reassortant_as_egg::yes)
                         return "egg"sv;
                     else
