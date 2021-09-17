@@ -62,11 +62,11 @@ std::string acmacs::chart::export_table_to_text(const Chart& chart, std::optiona
     const auto column_width = 8;
     const auto table_prefix = 5;
     const std::string_view reference_marker{":ref"};
-    fmt::format_to_mb(result, "{}{: >{}s}  ", separator, "", max_antigen_name + table_prefix + (reference_marker.size() + 1));
+    fmt::format_to_mb(result, "{}{: >{}s}{}{}  ", separator, "", max_antigen_name + table_prefix + (reference_marker.size() + 1) - (org_mode_separators == org_mode_separators_t::yes ? 2 : 0), separator, separator);
     for (auto serum_no : range_from_0_to(sera->size()))
         fmt::format_to_mb(result, "{}{: ^{}d}", separator, serum_no, column_width);
     fmt::format_to_mb(result, "{}\n", separator);
-    fmt::format_to_mb(result, "{}{: >{}s}  ", separator, "", max_antigen_name + table_prefix + (reference_marker.size() + 1));
+    fmt::format_to_mb(result, "{}{: >{}s}{}{}  ", separator, "", max_antigen_name + table_prefix + (reference_marker.size() + 1) - (org_mode_separators == org_mode_separators_t::yes ? 2 : 0), separator, separator);
     for (auto serum_no : serum_order)
         fmt::format_to_mb(result, "{}{: ^8s}", separator, sera->at(serum_no)->format("{location_abbreviated}/{year2}"), column_width);
     fmt::format_to_mb(result, "{}\n{}---\n", separator, separator);
