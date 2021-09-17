@@ -15,6 +15,7 @@ struct Options : public argv
 
     option<size_t> layer{*this, "layer"};
     option<bool> sort{*this, "sort-antigens-sera", desc{"sort antigens/sera to be able to compare with another table"}};
+    option<bool> org{*this, "org", desc{"inser org-mode separators"}};
 
     argument<str_array> charts{*this, arg_name{"chart-file"}, mandatory};
 };
@@ -27,7 +28,7 @@ int main(int argc, char* const argv[])
         for (size_t file_no = 0; file_no < opt.charts->size(); ++file_no) {
             auto chart = acmacs::chart::import_from_file((*opt.charts)[file_no]);
             const auto layer{opt.layer.has_value() ? std::optional<size_t>{opt.layer} : std::nullopt};
-            fmt::print("{}", acmacs::chart::export_table_to_text(*chart, layer, opt.sort));
+            fmt::print("{}", acmacs::chart::export_table_to_text(*chart, layer, opt.sort, opt.org ? acmacs::chart::org_mode_separators_t::yes : acmacs::chart::org_mode_separators_t::no));
         }
     }
     catch (std::exception& err) {
