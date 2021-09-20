@@ -1179,7 +1179,7 @@ std::unique_ptr<TitersModify::titer_merge_report> TitersModify::set_titers_from_
 // 3. If there are just thresholded titers, result is min (<) or max (>) of them
 // 4. Convert > and < titers to their next values, i.e. <40 to 20, >10240 to 20480, etc.
 // 5. Compute SD, if SD > 1, result is *
-// 6. If there are no < nor >, result is mean.
+// 6. If there are no < nor >, result is mean of log titers.
 // 7. if max(<) of thresholded is more than max on non-thresholded (e.g. <40 20), then find minimum of thresholded which is more than max on non-thresholded, it is the result with <
 // 8. if min(>) of thresholded is less than min on non-thresholded (e.g. >1280 2560), then find maximum of thresholded which is less than min on non-thresholded, it is the result with >
 // 9. otherwise result is next of of max/min non-thresholded with </> (e.g. <20 40 --> <80, <20 80 --> <160) "min-more-than >= min-regular", "max-less-than <= max-regular"
