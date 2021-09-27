@@ -525,15 +525,15 @@ def json_dumps(data, indent=2, indent_increment=None, toplevel=True, one_line_ma
 
     def make_one_line(data):
         if isinstance(data, set):
-            s = json.dumps(sorted(data, key=object_fields_sorting_key))
+            s = json.dumps(sorted(data, key=object_fields_sorting_key), ensure_ascii=False)
         elif isinstance(data, dict):
             s = "{"
             for no, k in enumerate(sorted(data, key=object_fields_sorting_key), start=1):
                 comma = ", " if no < len(data) else ""
-                s += "{}: {}{}".format(json.dumps(k), json_dumps(data[k], indent=0, indent_increment=None, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma)
+                s += "{}: {}{}".format(json.dumps(k, ensure_ascii=False), json_dumps(data[k], indent=0, indent_increment=None, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma)
             s += "}"
         else:
-            s = json.dumps(data, sort_keys=True)
+            s = json.dumps(data, sort_keys=True, ensure_ascii=False)
         return s
 
     def make_object(data):
@@ -543,7 +543,7 @@ def json_dumps(data, indent=2, indent_increment=None, toplevel=True, one_line_ma
             r = ["{"]
         for no, k in enumerate(sorted(data, key=object_fields_sorting_key), start=1):
             comma = "," if no < len(data) else ""
-            r.append("{:{}s}{}: {}{}".format("", indent, json.dumps(k), json_dumps(data[k], indent + indent_increment, indent_increment, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma))
+            r.append("{:{}s}{}: {}{}".format("", indent, json.dumps(k, ensure_ascii=False), json_dumps(data[k], indent + indent_increment, indent_increment, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma))
         r.append(end("}", indent))
         return r
 
