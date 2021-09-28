@@ -5,6 +5,7 @@
 #include "acmacs-base/range-v3.hh"
 #include "acmacs-virus/virus-name-normalize.hh"
 #include "acmacs-virus/passage.hh"
+#include "acmacs-virus/parsing-message.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/factory-export.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -65,6 +66,7 @@ void check_unknown(std::string_view name)
 
 void update_antigens(acmacs::chart::AntigensModify& antigens, const acmacs::virus::type_subtype_t& subtype, const acmacs::Lab& lab)
 {
+    std::set<std::string> not_found_locations;
     std::vector<std::pair<size_t, std::string>> full_names; // to find duplicates
     for (size_t ag_no{0}; ag_no < antigens.size(); ++ag_no) {
         auto& antigen = antigens.at(ag_no);
@@ -74,6 +76,7 @@ void update_antigens(acmacs::chart::AntigensModify& antigens, const acmacs::viru
         auto parsed_name = acmacs::virus::name::parse(antigen.name(), acmacs::virus::name::warn_on_empty::yes, acmacs::virus::name::extract_passage::no);
         if (parsed_name.not_good())
             AD_WARNING("AG {} \"{}\": {}", ag_no, antigen.name(), parsed_name.messages);
+        acmacs::virus::name::collect_not_found_locations(not_found_locations, parsed_name.messages);
         if (*parsed_name.subtype == "A")
             parsed_name.subtype = subtype;
         const auto new_name = parsed_name.name();
@@ -111,6 +114,15 @@ void update_antigens(acmacs::chart::AntigensModify& antigens, const acmacs::viru
             antigens.at(full_names[index].first).set_distinct();
             AD_LOG(acmacs::log::distinct, "AG {} \"{}\" vs. AG {}", full_names[index].first, antigens.at(full_names[index].first).name_full(), full_names[index - 1].first);
         }
+    }
+
+    // report not found locations
+    if (!not_found_locations.empty()) {
+        AD_PRINT("");
+        AD_WARNING("Not found locations ({})", not_found_locations.size());
+        for (const auto& loc : not_found_locations)
+            AD_PRINT("  {}", loc);
+        AD_PRINT("");
     }
 
 } // update_antigens
