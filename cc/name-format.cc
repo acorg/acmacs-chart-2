@@ -158,31 +158,32 @@ template <> struct fmt::formatter<sequence_aligned_t>
 #endif
 
 const std::tuple format_subst_ag_sr{
-    FKF("abbreviated_location_with_passage_type", acmacs::string::join(acmacs::string::join_space, location_abbreviated(ag_sr), ag_sr.passage().passage_type())), // mapi
-    FKF("abbreviated_name_with_passage_type", fmt::format("{}-{}", name_abbreviated(ag_sr), ag_sr.passage().passage_type())),                                     // mapi
-    FKF("annotations", ag_sr.annotations()),                                                                                                                      //
-    FKF("continent", ag_sr.location_data().continent),                                                                                                            //
-    FKF("country", ag_sr.location_data().country),                                                                                                                //
-    FKF("fields", fields(ag_sr)),                                                                                                                                 //
-    FKF("full_name", name_full(ag_sr)),                                                                                                                           //
-    FKF("latitude", ag_sr.location_data().latitude),                                                                                                              //
-    FKF("lineage", ag_sr.lineage().to_string()),                                                                                                                  //
-    FKF("location", acmacs::virus::location(ag_sr.name())),                                                                                                       //
-    FKF("location_abbreviated", location_abbreviated(ag_sr)),                                                                                                     //
-    FKF("longitude", ag_sr.location_data().longitude),                                                                                                            //
-    FKF("name", ag_sr.name()),                                                                                                                                    //
-    FKF("name_abbreviated", name_abbreviated(ag_sr)),                                                                                                             //
-    FKF("name_full", name_full(ag_sr)),                                                                                                                           //
-    FKF("name_full_passage", name_full_passage(ag_sr)),                                                                                                           //
-    FKF("name_without_subtype", acmacs::virus::without_subtype(ag_sr.name())),                                                                                    //
-    FKF("passage", ag_sr.passage()),                                                                                                                              //
-    FKF("passage_type", ag_sr.passage().passage_type()),                                                                                                          //
-    FKF("reassortant", ag_sr.reassortant()),                                                                                                                      //
-    FKF("year", year4(ag_sr)),                                                                                                                                    //
-    FKF("year2", year2(ag_sr)),                                                                                                                                   //
-    FKF("year4", year4(ag_sr)),                                                                                                                                   //
-    FKF("aa", sequence_aligned_t{ag_sr.sequence_aa()}),                                                                                                           //
-    FKF("nuc", sequence_aligned_t{ag_sr.sequence_nuc()}),                                                                                                         //
+    FKF("abbreviated_location_with_passage_type", acmacs::string::join(acmacs::string::join_space, location_abbreviated(ag_sr), ag_sr.passage().passage_type())),        // mapi
+    FKF("abbreviated_name_with_passage_type", fmt::format("{}-{}", name_abbreviated(ag_sr), ag_sr.passage().passage_type())),                                            // mapi
+    FKF("annotations", ag_sr.annotations()),                                                                                                                             //
+    FKF("continent", ag_sr.location_data().continent),                                                                                                                   //
+    FKF("country", ag_sr.location_data().country),                                                                                                                       //
+    FKF("fields", fields(ag_sr)),                                                                                                                                        //
+    FKF("full_name", name_full(ag_sr)),                                                                                                                                  //
+    FKF("latitude", ag_sr.location_data().latitude),                                                                                                                     //
+    FKF("lineage", ag_sr.lineage().to_string()),                                                                                                                         //
+    FKF("location", acmacs::virus::location(ag_sr.name())),                                                                                                              //
+    FKF("location_abbreviated", location_abbreviated(ag_sr)),                                                                                                            //
+    FKF("longitude", ag_sr.location_data().longitude),                                                                                                                   //
+    FKF("name", ag_sr.name()),                                                                                                                                           //
+    FKF("name_abbreviated", name_abbreviated(ag_sr)),                                                                                                                    //
+    FKF("name_full", name_full(ag_sr)),                                                                                                                                  //
+    FKF("name_full_passage", name_full_passage(ag_sr)),                                                                                                                  //
+    FKF("name_without_subtype", acmacs::virus::without_subtype(ag_sr.name())),                                                                                           //
+    FKF("name_anntotations_reassortant", acmacs::string::join(acmacs::string::join_space, ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), ag_sr.reassortant())), //
+    FKF("passage", ag_sr.passage()),                                                                                                                                     //
+    FKF("passage_type", ag_sr.passage().passage_type()),                                                                                                                 //
+    FKF("reassortant", ag_sr.reassortant()),                                                                                                                             //
+    FKF("year", year4(ag_sr)),                                                                                                                                           //
+    FKF("year2", year2(ag_sr)),                                                                                                                                          //
+    FKF("year4", year4(ag_sr)),                                                                                                                                          //
+    FKF("aa", sequence_aligned_t{ag_sr.sequence_aa()}),                                                                                                                  //
+    FKF("nuc", sequence_aligned_t{ag_sr.sequence_nuc()}),                                                                                                                //
 };
 
 const std::tuple format_subst_antigen{
