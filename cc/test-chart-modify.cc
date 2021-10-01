@@ -359,20 +359,20 @@ void test_insert_antigen(acmacs::chart::ChartP chart, size_t before, const argc_
         auto plot_spec_source = chart->plot_spec(), plot_spec_imported = imported->plot_spec();
 
         auto check_inserted = [&](size_t imported_ag_no) {
-                if (auto new_name = (*antigens_imported)[imported_ag_no]->name_full(); new_name.empty())
-                    throw std::runtime_error("inserted antigen has no name");
-                for (auto sr_no : acmacs::range(sera_source->size())) {
-                    if (!titers_imported->titer(imported_ag_no, sr_no).is_dont_care())
-                        throw std::runtime_error(fmt::format("inserted antigen has titer: sr_no:{} titer:{}", sr_no, *titers_imported->titer(imported_ag_no, sr_no)));
-                }
-                for (auto projection : *projections_imported) {
-                    if (auto imp = projection->layout()->at(imported_ag_no); imp.exists())
-                        throw std::runtime_error("inserted antigen has coordinates: " + acmacs::to_string(imp));
-                }
-            };
+            if (auto new_name = (*antigens_imported)[imported_ag_no]->name_full(); new_name.empty())
+                throw std::runtime_error("inserted antigen has no name");
+            for (auto sr_no : acmacs::range(sera_source->size())) {
+                if (!titers_imported->titer(imported_ag_no, sr_no).is_dont_care())
+                    throw std::runtime_error{AD_FORMAT("inserted antigen has titer: sr_no:{} titer:{}", sr_no, *titers_imported->titer(imported_ag_no, sr_no))};
+            }
+            for (auto projection : *projections_imported) {
+                if (auto imp = projection->layout()->at(imported_ag_no); imp.exists())
+                    throw std::runtime_error{AD_FORMAT("inserted antigen has coordinates: {}", imp)};
+            }
+        };
 
         size_t imported_ag_no = 0;
-        for (auto[source_ag_no, source_antigen] : acmacs::enumerate(*antigens_source)) {
+        for (auto [source_ag_no, source_antigen] : acmacs::enumerate(*antigens_source)) {
             if (source_ag_no == before) {
                 check_inserted(imported_ag_no);
                 ++imported_ag_no;
@@ -387,9 +387,9 @@ void test_insert_antigen(acmacs::chart::ChartP chart, size_t before, const argc_
             ++imported_ag_no;
         }
         if (imported_ag_no != imported->number_of_antigens())
-            throw std::runtime_error("invalid resulting imported_ag_no: " + acmacs::to_string(imported_ag_no) + ", expected: " + acmacs::to_string(imported->number_of_antigens()));
+            throw std::runtime_error{AD_FORMAT("invalid resulting imported_ag_no: {}, expected: ", imported_ag_no, imported->number_of_antigens())};
 
-        for (auto[source_sr_no, source_serum] : acmacs::enumerate(*sera_source))
+        for (auto [source_sr_no, source_serum] : acmacs::enumerate(*sera_source))
             compare_sera(chart, source_sr_no, source_serum, antigens_source->size(), imported, source_sr_no, antigens_imported->size(), compare_titers::no);
     }
     catch (std::exception& err) {
@@ -422,19 +422,19 @@ void test_insert_serum(acmacs::chart::ChartP chart, size_t before, const argc_ar
                 throw std::runtime_error("inserted serum has no name");
             for (auto ag_no : acmacs::range(antigens_source->size())) {
                 if (!titers_imported->titer(ag_no, imported_sr_no).is_dont_care())
-                    throw std::runtime_error(fmt::format("inserted serum has titer: ag_no:{} titer:{}", ag_no, *titers_imported->titer(ag_no, imported_sr_no)));
+                    throw std::runtime_error{AD_FORMAT("inserted serum has titer: ag_no:{} titer:{}", ag_no, *titers_imported->titer(ag_no, imported_sr_no))};
             }
             for (auto projection : *projections_imported) {
                 if (auto imp = projection->layout()->at(imported_sr_no + antigens_source->size()); imp.exists())
-                    throw std::runtime_error("inserted serum has coordinates: " + acmacs::to_string(imp));
+                    throw std::runtime_error{AD_FORMAT("inserted serum has coordinates: ", imp)};
             }
         };
 
-        for (auto[source_ag_no, source_antigen] : acmacs::enumerate(*antigens_source))
+        for (auto [source_ag_no, source_antigen] : acmacs::enumerate(*antigens_source))
             compare_antigens(chart, source_ag_no, source_antigen, imported, source_ag_no, compare_titers::no);
 
         size_t imported_sr_no = 0;
-        for (auto[source_sr_no, source_serum] : acmacs::enumerate(*sera_source)) {
+        for (auto [source_sr_no, source_serum] : acmacs::enumerate(*sera_source)) {
             if (source_sr_no == before) {
                 check_inserted(imported_sr_no);
                 ++imported_sr_no;

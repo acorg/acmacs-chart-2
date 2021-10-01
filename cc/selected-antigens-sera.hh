@@ -72,6 +72,10 @@ namespace acmacs::chart
                                           ranges::to_vector};
             }
 
+            Area area(size_t projection_no) const { return chart->projection(projection_no)->layout()->area(*points()); }
+
+            Area area_transformed(size_t projection_no) const { return chart->projection(projection_no)->transformed_layout()->area(*points()); }
+
             void exclude(const Selected<AgSr, Chrt>& to_exclude) { indexes.remove(ReverseSortedIndexes{*to_exclude.indexes}); }
 
             SelectedIterator<AgSr, Chrt> begin();
