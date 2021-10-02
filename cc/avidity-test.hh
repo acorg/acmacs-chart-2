@@ -59,7 +59,7 @@ namespace acmacs::chart
         struct Results
         {
             double original_stress;
-            std::vector<Result> results;
+            std::vector<Result> results{};
 
             const Result& get(size_t antigen_no) const
             {
