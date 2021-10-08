@@ -28,6 +28,7 @@ namespace acmacs::chart
         Titer(char typ, size_t value) : base_t(typ + std::to_string(value)) {}
         Titer(std::string_view source) : base_t(validate(source)) {}
         Titer(const Titer&) = default;
+        Titer& operator=(const Titer&) = default;
 
         Type type() const
         {
