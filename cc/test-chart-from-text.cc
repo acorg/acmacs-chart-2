@@ -83,7 +83,7 @@ std::vector<std::string> read_fields(std::istream& input)
                 result.emplace_back();
         }
         else {
-            result.back().append(1, c);
+            result.back().append(1, static_cast<char>(c));
         }
     }
     if (result.back().empty())

@@ -11,8 +11,12 @@ namespace acmacs::chart
         struct CoreEntry
         {
             CoreEntry() = default;
+            CoreEntry(const CoreEntry&) = default;
+            CoreEntry(CoreEntry&&) = default;
             template <typename AgSr> CoreEntry(size_t a_index, const AgSr& ag_sr) : index(a_index), name(ag_sr.name()), reassortant(ag_sr.reassortant()), annotations(ag_sr.annotations()) {}
             virtual ~CoreEntry() = default;
+            CoreEntry& operator=(const CoreEntry&) = default;
+            CoreEntry& operator=(CoreEntry&&) = default;
 
             static inline int compare(const CoreEntry& lhs, const CoreEntry& rhs)
             {
