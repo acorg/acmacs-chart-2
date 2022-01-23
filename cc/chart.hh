@@ -1094,6 +1094,3 @@ template <> struct fmt::formatter<acmacs::chart::Serum> : fmt::formatter<acmacs:
 
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
