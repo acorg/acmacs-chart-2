@@ -421,6 +421,3 @@ std::string acmacs::chart::format_help()
 } // acmacs::chart::format_help
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
