@@ -495,7 +495,8 @@ std::vector<acmacs::chart::Date> acmacs::chart::Antigens::all_dates(include_refe
 // ----------------------------------------------------------------------
 
 #include "acmacs-base/global-constructors-push.hh"
-static const std::regex sAnntotationToIgnore{"(CONC|RDE@|BOOST|BLEED|LAIV|^CDC$)"};
+static const std::regex sAntigenAnnotationToIgnore{"^10-[1-9]$"}; // concentration (Crick H3 PRN)
+static const std::regex sSerumAnnotationToIgnore{"(CONC|RDE@|BOOST|BLEED|LAIV|^CDC$)"};
 #include "acmacs-base/diagnostics-pop.hh"
 
 bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annotations& antigen, const acmacs::chart::Annotations& serum)
@@ -503,7 +504,9 @@ bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annota
     std::vector<std::string_view> antigen_fixed(antigen->size());
     auto antigen_fixed_end = antigen_fixed.begin();
     for (const auto& anno : antigen) {
-        *antigen_fixed_end++ = anno;
+        const std::string_view annos = static_cast<std::string_view>(anno);
+        if (!std::regex_search(std::begin(annos), std::end(annos), sAntigenAnnotationToIgnore))
+            *antigen_fixed_end++ = anno;
     }
     antigen_fixed.erase(antigen_fixed_end, antigen_fixed.end());
     std::sort(antigen_fixed.begin(), antigen_fixed.end());
@@ -512,7 +515,7 @@ bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annota
     auto serum_fixed_end = serum_fixed.begin();
     for (const auto& anno : serum) {
         const std::string_view annos = static_cast<std::string_view>(anno);
-        if (!std::regex_search(std::begin(annos), std::end(annos), sAnntotationToIgnore))
+        if (!std::regex_search(std::begin(annos), std::end(annos), sSerumAnnotationToIgnore))
             *serum_fixed_end++ = anno;
     }
     serum_fixed.erase(serum_fixed_end, serum_fixed.end());
@@ -666,6 +669,3 @@ acmacs::chart::TableDate acmacs::chart::table_date_from_sources(std::vector<std:
 } // acmacs::chart::table_date_from_sources
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
