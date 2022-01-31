@@ -566,22 +566,6 @@ acmacs::chart::Sera::homologous_canditates_t acmacs::chart::Sera::find_homologou
     for (auto [sr_no, serum] : acmacs::enumerate(*this)) {
         if (!check_antigens(sr_no, serum, true))
             check_antigens(sr_no, serum, false); // ignore anntotations, if no homologous antigen respecting annotations found
-
-        // if (auto ags = antigen_name_index.find(*serum->name()); ags != antigen_name_index.end()) {
-        //     for (auto ag_no : ags->second) {
-        //         auto antigen = aAntigens[ag_no];
-        //         if (dbg == debug::yes)
-        //             fmt::print(stderr, "DEBUG: SR {} {} R:{} A:{} P:{} -- AG {} {} R:{} A:{} P:{} -- A_match:{} R_match: {} P_match:{}\n",
-        //                        sr_no, *serum->name(), serum->annotations(), *serum->reassortant(), *serum->passage(),
-        //                        ag_no, *antigen->name(), antigen->annotations(), *antigen->reassortant(), *antigen->passage(),
-        //                        Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()), antigen->reassortant() == serum->reassortant(),
-        //                        match_passage(antigen->passage(), serum->passage(), *serum));
-        //         if (Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()) && antigen->reassortant() == serum->reassortant() &&
-        //             match_passage(antigen->passage(), serum->passage(), *serum)) {
-        //             result[sr_no].insert(ag_no);
-        //         }
-        //     }
-        // }
     }
 
     return result;
