@@ -495,7 +495,7 @@ std::vector<acmacs::chart::Date> acmacs::chart::Antigens::all_dates(include_refe
 // ----------------------------------------------------------------------
 
 #include "acmacs-base/global-constructors-push.hh"
-static const std::regex sAntigenAnnotationToIgnore{"^10-[1-9]$"}; // concentration (Crick H3 PRN)
+// static const std::regex sAntigenAnnotationToIgnore{"^10-[1-9]$"}; // concentration (Crick H3 PRN)
 static const std::regex sSerumAnnotationToIgnore{"(CONC|RDE@|BOOST|BLEED|LAIV|^CDC$)"};
 #include "acmacs-base/diagnostics-pop.hh"
 
@@ -504,9 +504,9 @@ bool acmacs::chart::Annotations::match_antigen_serum(const acmacs::chart::Annota
     std::vector<std::string_view> antigen_fixed(antigen->size());
     auto antigen_fixed_end = antigen_fixed.begin();
     for (const auto& anno : antigen) {
-        const std::string_view annos = static_cast<std::string_view>(anno);
-        if (!std::regex_search(std::begin(annos), std::end(annos), sAntigenAnnotationToIgnore))
-            *antigen_fixed_end++ = anno;
+        // const std::string_view annos = static_cast<std::string_view>(anno);
+        // if (!std::regex_search(std::begin(annos), std::end(annos), sAntigenAnnotationToIgnore))
+        *antigen_fixed_end++ = anno;
     }
     antigen_fixed.erase(antigen_fixed_end, antigen_fixed.end());
     std::sort(antigen_fixed.begin(), antigen_fixed.end());
@@ -541,22 +541,47 @@ acmacs::chart::Sera::homologous_canditates_t acmacs::chart::Sera::find_homologou
         antigen_name_index.emplace(antigen->name(), std::vector<size_t>{}).first->second.push_back(ag_no);
 
     acmacs::chart::Sera::homologous_canditates_t result(size());
-    for (auto [sr_no, serum] : acmacs::enumerate(*this)) {
+
+    const auto check_antigens = [&result, &antigen_name_index, &aAntigens, dbg, match_passage](size_t sr_no, const auto& serum,
+                                                                                               bool respect_annotations) -> bool { // returns if at least one antigen found
+        bool matched = false;
         if (auto ags = antigen_name_index.find(*serum->name()); ags != antigen_name_index.end()) {
             for (auto ag_no : ags->second) {
                 auto antigen = aAntigens[ag_no];
                 if (dbg == debug::yes)
-                    fmt::print(stderr, "DEBUG: SR {} {} R:{} A:{} P:{} -- AG {} {} R:{} A:{} P:{} -- A_match:{} R_match: {} P_match:{}\n",
-                               sr_no, *serum->name(), serum->annotations(), *serum->reassortant(), *serum->passage(),
-                               ag_no, *antigen->name(), antigen->annotations(), *antigen->reassortant(), *antigen->passage(),
-                               Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()), antigen->reassortant() == serum->reassortant(),
+                    fmt::print(stderr, "DEBUG: SR {} {} R:{} A:{} P:{} -- AG {} {} R:{} A:{} P:{} -- A_match:{} R_match: {} P_match:{}\n", sr_no, *serum->name(), serum->annotations(),
+                               *serum->reassortant(), *serum->passage(), ag_no, *antigen->name(), antigen->annotations(), *antigen->reassortant(), *antigen->passage(),
+                               !respect_annotations || Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()), antigen->reassortant() == serum->reassortant(),
                                match_passage(antigen->passage(), serum->passage(), *serum));
-                if (Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()) && antigen->reassortant() == serum->reassortant() &&
+                if ((!respect_annotations || Annotations::match_antigen_serum(antigen->annotations(), serum->annotations())) && antigen->reassortant() == serum->reassortant() &&
                     match_passage(antigen->passage(), serum->passage(), *serum)) {
                     result[sr_no].insert(ag_no);
+                    matched = true;
                 }
             }
         }
+        return matched;
+    };
+
+    for (auto [sr_no, serum] : acmacs::enumerate(*this)) {
+        if (!check_antigens(sr_no, serum, true))
+            check_antigens(sr_no, serum, false); // ignore anntotations, if no homologous antigen respecting annotations found
+
+        // if (auto ags = antigen_name_index.find(*serum->name()); ags != antigen_name_index.end()) {
+        //     for (auto ag_no : ags->second) {
+        //         auto antigen = aAntigens[ag_no];
+        //         if (dbg == debug::yes)
+        //             fmt::print(stderr, "DEBUG: SR {} {} R:{} A:{} P:{} -- AG {} {} R:{} A:{} P:{} -- A_match:{} R_match: {} P_match:{}\n",
+        //                        sr_no, *serum->name(), serum->annotations(), *serum->reassortant(), *serum->passage(),
+        //                        ag_no, *antigen->name(), antigen->annotations(), *antigen->reassortant(), *antigen->passage(),
+        //                        Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()), antigen->reassortant() == serum->reassortant(),
+        //                        match_passage(antigen->passage(), serum->passage(), *serum));
+        //         if (Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()) && antigen->reassortant() == serum->reassortant() &&
+        //             match_passage(antigen->passage(), serum->passage(), *serum)) {
+        //             result[sr_no].insert(ag_no);
+        //         }
+        //     }
+        // }
     }
 
     return result;
