@@ -314,6 +314,3 @@ template <> struct fmt::formatter<std::set<acmacs::chart::Titer>> : fmt::formatt
 };
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:

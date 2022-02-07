@@ -1080,6 +1080,3 @@ namespace acmacs::chart
 } // namespace acmacs::chart
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:

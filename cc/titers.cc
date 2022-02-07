@@ -431,6 +431,3 @@ std::string acmacs::chart::Titers::print() const
 } // acmacs::chart::Titers::print
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:

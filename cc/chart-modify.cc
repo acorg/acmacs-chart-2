@@ -2111,9 +2111,3 @@ void PlotSpecModify::insert_serum(size_t before)
 } // PlotSpecModify::insert_serum
 
 // ----------------------------------------------------------------------
-
-
-// ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
