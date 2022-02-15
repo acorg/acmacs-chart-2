@@ -39,6 +39,8 @@ int main(int argc, char* const argv[])
         if (!opt.dry_run) {
             if (!antigens_to_remove.empty())
                 chart.remove_antigens(antigens_to_remove);
+            if (opt.remove_projections)
+                chart.projections_modify().remove_all();
             acmacs::chart::export_factory(chart, *opt.output, opt.program_name());
         }
     }
@@ -50,6 +52,3 @@ int main(int argc, char* const argv[])
 }
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
