@@ -149,6 +149,17 @@ template <> struct fmt::formatter<sequence_aligned_t>
 
 // ----------------------------------------------------------------------
 
+inline std::string longest_clade(const acmacs::chart::Clades& clades)
+{
+    if (!clades.empty()) {
+        return *std::max_element(clades->begin(), clades.end(), [](const auto& en1, const auto& en2) { return en1.size() < en2.size(); });
+    }
+    else
+        return {};
+}
+
+// ----------------------------------------------------------------------
+
 #define FKF(key, call) std::pair{key, [](fmt::memory_buffer& output, std::string_view format, [[maybe_unused]] const auto& ag_sr) { fmt::format_to_mb(output, fmt::runtime(format), fmt::arg(key, call)); }}
 
 #pragma GCC diagnostic push
@@ -193,7 +204,8 @@ const std::tuple format_subst_antigen{
     FKF("designation", name_full(ag_sr)),                       //
     FKF("lab_ids", ag_sr.lab_ids().join()),                     //
     FKF("ref", ag_sr.reference() ? "Ref" : ""),                 //
-    FKF("clades", ag_sr.clades()),                                                                                                                  //
+    FKF("clades", ag_sr.clades()),                              //
+    FKF("clade", longest_clade(ag_sr.clades())),                //
     FKF("serum_species", ""),                                   //
     FKF("species", ""),                                         //
 };
@@ -207,7 +219,8 @@ const std::tuple format_subst_serum{
     FKF("serum_species", ag_sr.serum_species()),                                                                              //
     FKF("species", ag_sr.serum_species()),                                                                                    //
     FKF("date_in_brackets", ""),                                                                                              //
-    FKF("clades", ""),                                                                                                        //
+    FKF("clades", ag_sr.clades()),                                                                                            //
+    FKF("clade", longest_clade(ag_sr.clades())),                                                                              //
     FKF("lab_ids", ""),                                                                                                       //
     FKF("ref", ""),                                                                                                           //
 };
