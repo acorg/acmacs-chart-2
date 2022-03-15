@@ -363,6 +363,3 @@ void acmacs::chart::Stress::set_coordinates_of_disconnected(double* first, [[may
 } // acmacs::chart::Stress::set_coordinates_of_disconnected
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
