@@ -246,9 +246,3 @@ std::vector<std::vector<size_t>> get_cheating_assays(const Charts& charts)
 } // get_cheating_assays
 
 // ----------------------------------------------------------------------
-
-
-// ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
