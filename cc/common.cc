@@ -775,6 +775,3 @@ acmacs::chart::CommonAntigensSera::match_level_t acmacs::chart::CommonAntigensSe
 } // acmacs::chart::CommonAntigensSera::match_level
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:

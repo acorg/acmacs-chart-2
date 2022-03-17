@@ -611,6 +611,3 @@ std::string acmacs::chart::MergeReport::titer_merge_diagnostics(const ChartModif
 } // acmacs::chart::MergeReport::titer_merge_diagnostics
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:

@@ -194,6 +194,3 @@ template <> struct fmt::formatter<acmacs::chart::CommonAntigensSera::common_t> :
 };
 
 /// ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:

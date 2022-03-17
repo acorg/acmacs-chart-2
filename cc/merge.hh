@@ -67,8 +67,4 @@ template <> struct fmt::formatter<acmacs::chart::MergeReport::target_index_commo
     }
 };
 
-
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
