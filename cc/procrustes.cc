@@ -392,9 +392,3 @@ acmacs::chart::ProcrustesSummary acmacs::chart::procrustes_summary(const acmacs:
 } // acmacs::chart::summary
 
 // ----------------------------------------------------------------------
-
-
-// ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
