@@ -93,6 +93,22 @@ acmacs::chart::avidity::PerAdjust acmacs::chart::avidity::test(ChartModify& char
 
 // ----------------------------------------------------------------------
 
+const acmacs::chart::avidity::PerAdjust& acmacs::chart::avidity::Result::best_adjust() const
+{
+    if (const auto found = std::find_if(std::begin(adjusts), std::end(adjusts), [best = best_logged_adjust](const auto& en) { return float_equal(best, en.logged_adjust); });
+        found != std::end(adjusts)) {
+        return *found;
+    }
+    else {
+        for (const auto& adjust : adjusts)
+            AD_WARNING("avidity adjust {}", adjust);
+        throw std::runtime_error{AD_FORMAT("avidity: no best adjust entry for {} (internal error)", best_logged_adjust)};
+    }
+
+} // acmacs::chart::avidity::Result::best_adjust
+
+// ----------------------------------------------------------------------
+
 void acmacs::chart::avidity::Result::post_process()
 {
     if (const auto best = std::min_element(std::begin(adjusts), std::end(adjusts), [](const auto& en1, const auto& en2) { return en1.stress_diff < en2.stress_diff; });
@@ -120,9 +136,11 @@ std::shared_ptr<acmacs::chart::ProjectionModify> acmacs::chart::avidity::move_an
     auto& avidity_adjusts = projection->avidity_adjusts_modify();
     avidity_adjusts.resize(chart.number_of_antigens() + chart.number_of_sera());
     for (const auto& result : avidity_results.results) {
-        const auto& best_adjust = result.best_adjust();
-        layout->update(result.antigen_no, best_adjust.final_coordinates);
-        avidity_adjusts.set_logged(result.antigen_no, best_adjust.logged_adjust);
+        if (!float_zero(result.best_logged_adjust)) {
+            const auto& best_adjust = result.best_adjust();
+            layout->update(result.antigen_no, best_adjust.final_coordinates);
+            avidity_adjusts.set_logged(result.antigen_no, best_adjust.logged_adjust);
+        }
     }
     return projection;
 
@@ -143,6 +161,3 @@ void acmacs::chart::avidity::relax(ChartModify& chart, number_of_optimizations_t
 } // acmacs::chart::avidity::relax
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
