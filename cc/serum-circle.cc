@@ -407,6 +407,3 @@ acmacs::chart::SerumCoverageIndexes acmacs::chart::serum_coverage(const Titers& 
 }
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
