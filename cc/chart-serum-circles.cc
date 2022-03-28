@@ -594,9 +594,3 @@ void report_json(std::ostream& output, const acmacs::chart::Chart& chart, const 
 } // report_json
 
 // ----------------------------------------------------------------------
-
-
-// ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
