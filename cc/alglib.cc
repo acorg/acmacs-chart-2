@@ -281,6 +281,3 @@ void alglib::pca_full(acmacs::chart::OptimiserCallbackData& callback_data, acmac
 } // alglib::pca_full
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
