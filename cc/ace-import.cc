@@ -499,6 +499,3 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
 } // AcePlotSpec::label_style
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
