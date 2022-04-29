@@ -84,7 +84,7 @@ namespace acmacs::chart
         BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override { return acmacs::virus::Reassortant{data_["R"].get_or_default("")}; }
         LabIds lab_ids() const override { return data_["l"]; }
-        Clades clades() const override { return data_["c"]; }
+        Clades clades() const override;
         Annotations annotations() const override { const auto& rann = data_["a"]; Annotations ann(rann.size()); rjson::copy(rann, ann.begin()); return ann; }
         bool reference() const override { return data_["S"].get_or_default("").find("R") != std::string::npos; }
         bool sequenced() const override { return !data_["A"].empty(); }

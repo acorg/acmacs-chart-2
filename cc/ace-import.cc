@@ -240,6 +240,20 @@ BLineage AceSerum::lineage() const
 
 // ----------------------------------------------------------------------
 
+Clades AceAntigen::clades() const
+{
+    if (const auto& clades_old = data_["c"]; !clades_old.is_null())
+        return clades_old;
+
+    if (const auto& clades = data_["T"]["C"]; !clades.is_null())
+        return clades;
+
+    return Clades{};
+
+} // AceAntigen::clades
+
+// ----------------------------------------------------------------------
+
 std::optional<size_t> AceAntigens::find_by_full_name(std::string_view aFullName) const
 {
     if (mAntigenNameIndex.empty())
