@@ -89,6 +89,8 @@ void update_antigens(acmacs::chart::AntigensModify& antigens, const acmacs::viru
                 antigen.reassortant(parsed_name.reassortant);
             if (!parsed_name.extra.empty())
                 antigen.add_annotation(parsed_name.extra);
+            for (const auto& mutation : parsed_name.mutations)
+                antigen.add_annotation(mutation);
         }
         check_unknown(antigen.name());
 
@@ -171,6 +173,3 @@ void update_sera(acmacs::chart::SeraModify& sera, const acmacs::virus::type_subt
 } // update_sera
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
