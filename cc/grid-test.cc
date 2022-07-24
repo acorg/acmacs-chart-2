@@ -423,9 +423,3 @@ std::pair<acmacs::chart::GridTest::Results, size_t> acmacs::chart::grid_test(Cha
 } // acmacs::chart::grid_test
 
 // ----------------------------------------------------------------------
-
-
-// ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
