@@ -198,6 +198,3 @@ void acmacs::chart::pca(const Stress& stress, number_of_dimensions_t number_of_d
 } // acmacs::chart::pca
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:

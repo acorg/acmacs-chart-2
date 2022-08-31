@@ -575,6 +575,7 @@ namespace acmacs::chart
             modify();
             unmovable_ = a_unmovable;
         }
+        void reset_unmovable();
         void set_disconnected(const DisconnectedPoints& disconnect)
         {
             modify();

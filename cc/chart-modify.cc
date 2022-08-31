@@ -2029,6 +2029,18 @@ optimization_status ProjectionModify::relax(optimization_options options, Interm
 
 // ----------------------------------------------------------------------
 
+void ProjectionModify::reset_unmovable()
+{
+    modify();                   // otherwise does not work 2022-08-31
+    if (!unmovable_.empty()) {
+        modify();
+        unmovable_.clear();
+    }
+
+} // ProjectionModify::set_movable_all_unmovable
+
+// ----------------------------------------------------------------------
+
 ProcrustesData ProjectionModify::orient_to(const Projection& master)
 {
     acmacs::chart::CommonAntigensSera common(master.chart(), chart(), CommonAntigensSera::match_level_t::automatic);

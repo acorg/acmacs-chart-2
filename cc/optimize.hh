@@ -123,6 +123,3 @@ template <> struct fmt::formatter<acmacs::chart::optimization_status> : fmt::for
 
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
