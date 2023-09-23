@@ -189,7 +189,7 @@ template <> struct fmt::formatter<acmacs::chart::CommonAntigensSera::common_t> :
 {
     template <typename FormatContext> auto format(const acmacs::chart::CommonAntigensSera::common_t& common, FormatContext& ctx)
     {
-        return format_to(ctx.out(), "{{{},{}}}", common.primary, common.secondary);
+        return fmt::format_to(ctx.out(), "{{{},{}}}", common.primary, common.secondary);
     }
 };
 

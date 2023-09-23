@@ -128,11 +128,11 @@ template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::relax
         using namespace acmacs::chart::map_resolution_test_data;
         switch (rel) {
           case relax_from_full_table::no:
-              return format_to(ctx.out(), "no");
+              return fmt::format_to(ctx.out(), "no");
           case relax_from_full_table::yes:
-              return format_to(ctx.out(), "yes");
+              return fmt::format_to(ctx.out(), "yes");
         }
-        return format_to(ctx.out(), "unknown"); // g++9
+        return fmt::format_to(ctx.out(), "unknown"); // g++9
     }
 };
 
@@ -143,11 +143,11 @@ template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::colum
         using namespace acmacs::chart::map_resolution_test_data;
         switch (rel) {
           case column_bases_from_master::no:
-              return format_to(ctx.out(), "no");
+              return fmt::format_to(ctx.out(), "no");
           case column_bases_from_master::yes:
-              return format_to(ctx.out(), "yes");
+              return fmt::format_to(ctx.out(), "yes");
         }
-        return format_to(ctx.out(), "unknown"); // g++9
+        return fmt::format_to(ctx.out(), "unknown"); // g++9
     }
 };
 
@@ -155,16 +155,16 @@ template <> struct fmt::formatter<acmacs::chart::map_resolution_test_data::Param
 {
     template <typename FormatContext> auto format(const acmacs::chart::map_resolution_test_data::Parameters& param, FormatContext& ctx)
     {
-        format_to(ctx.out(), "map resolution test parameters\n");
-        format_to(ctx.out(), "  number_of_dimensions:                            {}\n", param.number_of_dimensions);
-        format_to(ctx.out(), "  number_of_optimizations:                         {}\n", param.number_of_optimizations);
-        format_to(ctx.out(), "  number_of_random_replicates_for_each_proportion: {}\n", param.number_of_random_replicates_for_each_proportion);
-        format_to(ctx.out(), "  proportions_to_dont_care:                        {}\n", param.proportions_to_dont_care);
-        format_to(ctx.out(), "  minimum_column_basis:                            {}\n", param.minimum_column_basis);
-        format_to(ctx.out(), "  column_bases_from_master:                        {}\n", param.column_bases_from_master);
-        format_to(ctx.out(), "  optimization_precision:                          {}\n", param.optimization_precision);
-        format_to(ctx.out(), "  relax_from_full_table:                           {}\n",   param.relax_from_full_table);
-        format_to(ctx.out(), "  save_charts_to:                                  {}",   param.relax_from_full_table);
+        fmt::format_to(ctx.out(), "map resolution test parameters\n");
+        fmt::format_to(ctx.out(), "  number_of_dimensions:                            {}\n", param.number_of_dimensions);
+        fmt::format_to(ctx.out(), "  number_of_optimizations:                         {}\n", param.number_of_optimizations);
+        fmt::format_to(ctx.out(), "  number_of_random_replicates_for_each_proportion: {}\n", param.number_of_random_replicates_for_each_proportion);
+        fmt::format_to(ctx.out(), "  proportions_to_dont_care:                        {}\n", param.proportions_to_dont_care);
+        fmt::format_to(ctx.out(), "  minimum_column_basis:                            {}\n", param.minimum_column_basis);
+        fmt::format_to(ctx.out(), "  column_bases_from_master:                        {}\n", param.column_bases_from_master);
+        fmt::format_to(ctx.out(), "  optimization_precision:                          {}\n", param.optimization_precision);
+        fmt::format_to(ctx.out(), "  relax_from_full_table:                           {}\n",   param.relax_from_full_table);
+        fmt::format_to(ctx.out(), "  save_charts_to:                                  {}",   param.relax_from_full_table);
         return ctx.out();
     }
 };

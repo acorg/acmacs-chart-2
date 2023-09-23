@@ -91,13 +91,13 @@ namespace acmacs::chart
 
 template <> struct fmt::formatter<acmacs::chart::ColumnBases> : fmt::formatter<acmacs::fmt_helper::float_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::ColumnBases& cb, FormatCtx& ctx) const {
-        format_to(ctx.out(), "[");
+        fmt::format_to(ctx.out(), "[");
         for (size_t sr_no{0}; sr_no < cb.size(); ++sr_no) {
             if (sr_no)
                 fmt::format_to(ctx.out(), " ");
             format_val(cb.column_basis(sr_no), ctx);
         }
-        return format_to(ctx.out(), "]");
+        return fmt::format_to(ctx.out(), "]");
     }
 };
 
@@ -106,7 +106,7 @@ template <> struct fmt::formatter<std::shared_ptr<acmacs::chart::ColumnBases>> :
         if (cb)
             return fmt::formatter<acmacs::chart::ColumnBases>::format(*cb, ctx);
         else
-            return format_to(ctx.out(), "<none>");
+            return fmt::format_to(ctx.out(), "<none>");
     }
 };
 

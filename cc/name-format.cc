@@ -136,9 +136,9 @@ template <> struct fmt::formatter<sequence_aligned_t>
     template <typename Seq, typename FormatContext> auto format(const Seq& seq, FormatContext& ctx)
     {
         if (first_ == 0)
-            return format_to(ctx.out(), "{}", *seq);
+            return fmt::format_to(ctx.out(), "{}", *seq);
         else
-            return format_to(ctx.out(), "{}", seq->substr(first_ - 1, len_ ? len_ : 1));
+            return fmt::format_to(ctx.out(), "{}", seq->substr(first_ - 1, len_ ? len_ : 1));
     }
 
   private:

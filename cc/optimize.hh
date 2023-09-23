@@ -117,7 +117,7 @@ namespace acmacs::chart
 template <> struct fmt::formatter<acmacs::chart::optimization_status> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::optimization_status& status, FormatCtx& ctx)
     {
-        return format_to(ctx.out(), "{} {:.12f} <- {:.12f}\n time: {}\n iter: {}\n nstress: {}", status.method, status.final_stress, status.initial_stress, status.time, status.number_of_iterations, status.number_of_stress_calculations);
+        return fmt::format_to(ctx.out(), "{} {:.12f} <- {:.12f}\n time: {}\n iter: {}\n nstress: {}", status.method, status.final_stress, status.initial_stress, status.time, status.number_of_iterations, status.number_of_stress_calculations);
     }
 };
 

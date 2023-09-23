@@ -63,7 +63,7 @@ namespace acmacs::chart
 template <> struct fmt::formatter<acmacs::chart::MergeReport::target_index_common_t> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::chart::MergeReport::target_index_common_t& value, FormatCtx& ctx)
     {
-        return format_to(ctx.out(), "[{}{}]", value.index, value.common ? ",common" : "");
+        return fmt::format_to(ctx.out(), "[{}{}]", value.index, value.common ? ",common" : "");
     }
 };
 

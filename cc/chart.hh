@@ -1075,7 +1075,7 @@ template <> struct std::iterator_traits<acmacs::chart::Projections::iterator>
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<acmacs::chart::BLineage> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::chart::BLineage& lineage, FormatCtx& ctx) const { return format_to(ctx.out(), "{}", lineage.to_string()); }
+    template <typename FormatCtx> auto format(const acmacs::chart::BLineage& lineage, FormatCtx& ctx) const { return fmt::format_to(ctx.out(), "{}", lineage.to_string()); }
 };
 
 template <> struct fmt::formatter<acmacs::chart::Antigen> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
